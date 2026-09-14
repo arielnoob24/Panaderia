@@ -1,4 +1,4 @@
-:root { --cream: #f6f0e5; --paper: #fffaf1; --ink: #26332e; --green: #23453b; --terracotta: #b9573e; --yellow: #e7b84b; --muted: #756f63; --line: #d9d0c0; --shadow: 0 18px 38px rgba(39, 49, 42, .1); }
+:root { --cream: #f6f0e5; --paper: #fffaf1; --ink: #19343b; --petroleum: #174f5c; --coral: #c9685d; --yellow: #e7b84b; --muted: #59676b; --line: #d9d0c0; --shadow: 0 18px 38px rgba(25, 52, 59, .14); --green: var(--petroleum); --terracotta: var(--coral); }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--cream); color: var(--ink); font-family: "DM Sans", sans-serif; font-size: 16px; line-height: 1.55; }
@@ -24,11 +24,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--yellow); outlin
 .catalog:has(#filter-masa-madre:checked) label[for="filter-masa-madre"],
 .catalog:has(#filter-bolleria:checked) label[for="filter-bolleria"],
 .catalog:has(#filter-tradicional:checked) label[for="filter-tradicional"],
-.catalog:has(#filter-cafeteria:checked) label[for="filter-cafeteria"] { background: var(--green); color: white; }
 .catalog:has(#filter-masa-madre:checked) .product-card:not([data-category="masa-madre"]),
 .catalog:has(#filter-bolleria:checked) .product-card:not([data-category="bolleria"]),
 .catalog:has(#filter-tradicional:checked) .product-card:not([data-category="tradicional"]),
-.catalog:has(#filter-cafeteria:checked) .product-card:not([data-category="cafeteria"]) { display: none; }
 .location-grid { grid-template-columns: 1fr 1.4fr; }
 @media (max-width: 900px) { .location-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 680px) { .location-grid { grid-template-columns: 1fr; } }
@@ -41,10 +39,22 @@ fieldset.filter-bar { min-width: 0; border-left: 0; border-right: 0; }
 .catalog:has(#filter-masa-madre:checked) .product-card:not([data-category="masa-madre"]),
 .catalog:has(#filter-bolleria:checked) .product-card:not([data-category="bolleria"]),
 .catalog:has(#filter-tradicional:checked) .product-card:not([data-category="tradicional"]),
-.catalog:has(#filter-cafeteria:checked) .product-card:not([data-category="cafeteria"]) { display: none; }
-.order-button { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .65rem; background: var(--green); color: white; font-size: .78rem; font-weight: 700; }
+.sign-band { background: var(--terracotta); color: white; }.sign-band-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 76px; }.sign-band p { margin: 0; font: 500 1.3rem "Playfair Display", serif; }.sign-band strong { color: var(--yellow); }.sign-mark { display: grid; width: 38px; height: 38px; place-items: center; border: 1px solid rgba(255,255,255,.7); border-radius: 50%; font: italic 600 .8rem "Playfair Display", serif; }.sign-note { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; }.mascot-slot { display: inline-flex; align-items: center; justify-content: center; text-align: center; border: 1px dashed rgba(255,255,255,.7); color: var(--yellow); font: italic .85rem "Playfair Display", serif; overflow: hidden; }.mascot-slot img { width: 100%; height: 100%; object-fit: contain; }.mascot-hero { width: 88px; height: 88px; margin-bottom: 1.3rem; border-radius: 50%; }.brand small { display: block; margin-top: .15rem; font: 400 .58rem "DM Sans", sans-serif; letter-spacing: .08em; text-transform: uppercase; }.mascot-footer { width: 64px; height: 64px; margin-bottom: .8rem; border-radius: 50%; font-size: .68rem; }.footer-identity { display: flex; flex-direction: column; align-items: flex-start; }.order-button { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .65rem; background: var(--green); color: white; font-size: .78rem; font-weight: 700; }
 .order-button:hover { background: var(--terracotta); }
 .location-grid { grid-template-columns: minmax(280px, .8fr) 1.2fr; }
+
+.catalog:has(#filter-pan:checked) .product-card:not([data-category="pan"]),
+.catalog:has(#filter-pasteles:checked) .product-card:not([data-category="pasteles"]),
+.catalog:has(#filter-tortas:checked) .product-card:not([data-category="tortas"]),
+.catalog:has(#filter-bocaditos:checked) .product-card:not([data-category="bocaditos"]),
+.catalog:has(#filter-dulces:checked) .product-card:not([data-category="dulces"]),
+.catalog:has(#filter-bebidas:checked) .product-card:not([data-category="bebidas"]) { display: none; }
+.catalog:has(#filter-pan:checked) .product-card[data-category="masa-madre"],
+.catalog:has(#filter-pasteles:checked) .product-card[data-category="bolleria"],
+.catalog:has(#filter-tortas:checked) .product-card[data-category="tradicional"],
+.product-card[data-category="masa-madre"] .product-category { font-size: 0; }.product-card[data-category="masa-madre"] .product-category::after { content: "Pan tradicional"; font-size: .65rem; }.product-card[data-category="bolleria"] .product-category { font-size: 0; }.product-card[data-category="bolleria"] .product-category::after { content: "Pasteles"; font-size: .65rem; }.product-card[data-category="tradicional"] .product-category { font-size: 0; }.product-card[data-category="tradicional"] .product-category::after { content: "Tortas"; font-size: .65rem; }
+
+@media (max-width: 680px) { .sign-band-inner { align-items: flex-start; flex-direction: column; justify-content: center; padding-top: 1rem; padding-bottom: 1rem; }.sign-band p { font-size: 1.1rem; } }
 
 @media (max-width: 680px) {
 	.nav-wrap { align-items: flex-start; flex-direction: column; padding: 1rem 0; }
@@ -53,3 +63,15 @@ fieldset.filter-bar { min-width: 0; border-left: 0; border-right: 0; }
 	.main-nav .nav-cta { padding: .45rem .7rem; }
 	.location-grid { grid-template-columns: 1fr; }
 }
+
+/* Palette overrides keep legacy selectors on the petroleum/coral system. */
+.hero-overlay { background: linear-gradient(90deg, rgba(16, 57, 67, .86) 0%, rgba(16, 57, 67, .45) 52%, rgba(16, 57, 67, .08) 100%); }
+.site-footer { background: var(--petroleum); }
+.status-dot { background: var(--yellow); box-shadow: 0 0 0 4px rgba(231, 184, 75, .18); }
+.map-panel { background: #dce7e7; }
+
+/* Four catalog categories */
+.catalog:has(#filter-tradicionales:checked) .product-card:not([data-category="tradicionales"]),
+.catalog:has(#filter-especiales:checked) .product-card:not([data-category="especiales"]),
+.catalog:has(#filter-dulces:checked) .product-card:not([data-category="dulces"]),
+.catalog:has(#filter-bebidas-frias:checked) .product-card:not([data-category="bebidas-frias"]) { display: none; }
