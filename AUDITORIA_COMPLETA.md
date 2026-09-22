@@ -311,4 +311,4 @@ Recomendación:
 - [x] Las imágenes tienen fallback y no provocan saltos de layout.
 - [x] La hoja de estilos no contiene bloques duplicados.
 - [ ] JSON-LD y metadatos pasan sus validadores.
-- [ ] Los flujos de menú, filtros, enlaces y estado de apertura tienen pruebas.
+- [ ] Los flujos de menú, filtros, enlaces y estado de apertura tienen pruebas automatizadas completas.

@@ -23,6 +23,36 @@ La interfaz tiene una identidad visual clara y apropiada para una panadería art
 
 El movimiento actual es contenido: existe un reveal al hacer scroll, hover moderado en tarjetas y soporte para `prefers-reduced-motion`. La siguiente mejora no debería consistir en añadir animaciones por todas partes, sino en darles un ritmo narrativo más coherente: una entrada escalonada del hero, filtros más suaves y una secuencia más completa para las tarjetas.
 
+## Estado de implementación
+
+### Ya realizado
+
+- [x] Contraste estable en la navegación superior con fondo petróleo semitransparente.
+- [x] CTA de WhatsApp con fondo y borde propios.
+- [x] Transición suave al cambiar categorías del catálogo.
+- [x] Stagger dinámico para todas las tarjetas visibles, con retraso máximo controlado.
+- [x] Entrada escalonada del hero para mascota, eyebrow, título, texto y acciones.
+- [x] Menú móvil con `opacity`, `transform`, `visibility` y `pointer-events`.
+- [x] Icono del menú transformado en una X al abrirse.
+- [x] Textura global reducida y enviada detrás del contenido.
+- [x] Transición de carga para la imagen del hero.
+- [x] Estado visual de carga y fallback del mapa.
+- [x] Transición de entrada para imágenes lazy y fallback de imagen no disponible.
+- [x] Estados de hover y foco con transiciones coherentes.
+- [x] Separación visual del filtro sticky mediante sombra.
+- [x] Uso de `safe-area-inset-bottom` para el botón flotante.
+- [x] Neutralización de transformaciones y zoom bajo `prefers-reduced-motion`.
+
+### Pendiente de comprobar o mejorar
+
+- [ ] Medir formalmente todos los colores con WCAG AA sobre las imágenes más claras.
+- [ ] Reducir selectivamente la jerarquía tipográfica y el espacio vertical si las pruebas visuales lo recomiendan.
+- [ ] Añadir un desfase específico entre imagen y texto en la sección de historia.
+- [ ] Añadir un pulso sutil al indicador de frescura, solo si no distrae.
+- [ ] Probar el posible solapamiento del aviso del hero y WhatsApp en alturas móviles cortas.
+- [ ] Evaluar una indicación de desplazamiento horizontal para filtros en pantallas estrechas.
+- [ ] Considerar parallax únicamente después de medir rendimiento y experiencia.
+
 ## Hallazgos priorizados
 
 ### Observaciones confirmadas por la captura
