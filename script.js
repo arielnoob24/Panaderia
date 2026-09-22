@@ -6,6 +6,7 @@
     if (!menuToggle || !navigation) return;
     menuToggle.setAttribute('aria-expanded', 'false');
     menuToggle.setAttribute('aria-label', 'Abrir menú');
+    navigation.setAttribute('aria-hidden', 'true');
     navigation.classList.remove('is-open');
   };
 
@@ -13,6 +14,7 @@
     const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
     menuToggle.setAttribute('aria-expanded', String(!isOpen));
     menuToggle.setAttribute('aria-label', isOpen ? 'Abrir menú' : 'Cerrar menú');
+    navigation.setAttribute('aria-hidden', String(isOpen));
     navigation.classList.toggle('is-open', !isOpen);
   });
 
