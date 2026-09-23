@@ -1026,6 +1026,101 @@ Recomendación: cuando existan fotografías reales del local, alojarlas en el re
 5. Derivar los diez tintes sueltos de los cinco colores base.
 6. Renombrar los tokens al vocabulario nuevo, en último lugar, cuando ya no queden valores sueltos que renombrar.
 
+## Cuarta ronda: la sección de historia
+
+Fecha: 2026-09-23. Auditoría dirigida a una sola sección, `#historia`, a partir de una observación del usuario mirándola en escritorio: **"creo que está demasiado texto"**.
+
+### Veredicto: no sobra texto, sobraba un fallo de maqueta
+
+La sección tiene **85 palabras y 572 caracteres**, y la cobertura de tinta de la columna es del **5,5 %**. Un muro de texto real ronda el 12-20 %. En volumen es de las zonas más escuetas del sitio.
+
+La impresión era correcta, pero la causa no era la extensión. Eran dos cosas medibles:
+
+1. **Un fallo de maqueta que añadía 429 px de altura muerta.** Ver H1.
+2. **Repetición**: de las 65 palabras de texto corrido, unas 19 dicen algo que ya se ha dicho.
+
+Corregido solo el fallo de maqueta, sin tocar una palabra, la sección pasa de **1158 px a 767 px de alto, un 34 % menos**.
+
+### H1. La fotografía llevaba todo este tiempo renderizándose en 1:2,23, no en 4:5
+
+Evidencia: `.story-photo img` declaraba `aspect-ratio: 4 / 5`, y el `<img>` lleva `width="760" height="950"`.
+
+Medido a 1418 px, antes de corregir: la foto renderizaba **439 × 978 px, ratio 1:2,23**, con la altura computada en **950 px**. La desviación respecto al 4:5 previsto era de **429 px**.
+
+Causa: los atributos `width` y `height` del HTML actúan como pistas de presentación de CSS. La regla de autor `width: 100%` anula la de anchura, pero **nada anulaba la de altura**, así que quedaba fijada en 950 px. Y `aspect-ratio` solo se aplica cuando una de las dos dimensiones es `auto`; con ambas definidas, se ignora en silencio.
+
+Impacto, y es mayor de lo que parece:
+
+- La foto medía 293 px más que la columna de texto, así que gobernaba la retícula y dejaba unos 146 px de fondo vacío encima y otros tantos debajo del texto. Ese hueco es lo que hacía que el texto pareciera abundante: estaba rodeado de vacío.
+- `object-fit: cover` recortaba los lados para llenar una caja mucho más alta de lo previsto. **Esto explica retroactivamente por qué las dos primeras fotografías de esta sección no se veían bien**: no era la elección de la foto ni el recorte del archivo, era que el hueco no tenía la proporción que decía tener. El trabajo de recortar el archivo a 4:5 se estaba anulando en el navegador.
+- El radio orgánico se calculaba sobre una caja del doble de alto, así que la curva superior salía más pronunciada de lo diseñado.
+
+Corrección: `height: auto` en `.story-photo img`. Verificado después a 1418 y 1898 px: **439 × 549 y 433 × 542, ratio 1:1,25 exacto**. El desfase entre foto y columna baja de 293 px a 10 px.
+
+Lección: **añadir `width` y `height` a una imagen para reservar el hueco es correcto, pero si el CSS usa `aspect-ratio` hay que acompañarlo de `height: auto`**, o el atributo gana y el ratio no se aplica nunca. Conviene revisar si esto afecta a otras imágenes del sitio.
+
+### H2. El titular se partía en tres líneas dejando "nuestro" huérfano
+
+Evidencia: el titular usa un salto de línea manual y `clamp(2.8rem, 5.4vw, 4.6rem)`. A 1418 px, la segunda línea necesitaba unos 650 px en una columna de 640, así que desbordaba por 10 px y se rompía en tres líneas, con una huérfana de 8 caracteres.
+
+Medido: dos líneas hasta 1300 px de viewport; **tres líneas a partir de 1320**, es decir en la mayoría de escritorios reales: 1366, 1440, 1512 y 1920.
+
+Corrección: bajar el techo del `clamp` a `4.25rem`. Verificado a 1418 y 1898 px: dos líneas en ambos. Se probó también `4.4rem`, que no basta, y re-partir el salto de línea, que tampoco.
+
+### H3. El lead y el titular son el mismo ámbar, la misma cursiva y la misma familia
+
+Evidencia: el `em` del titular y el lead usaban ambos `var(--ambar)` en cursiva Georgia. Solo cambiaba el tamaño, y el salto era de 22,4 a 16 px, un ×1,4, por debajo del ×1,5 habitual entre entradilla y cuerpo.
+
+Impacto: se veían **cinco líneas ámbar cursiva seguidas**. El lead no contrastaba con el titular, lo prolongaba. El **31,4 % de la tinta de la columna era ámbar**, contra el 10 % que fija el reparto 60-30-10 del propio sistema.
+
+Corrección parcial aplicada: el lead sube a `1.5rem` con interlínea `1.35`, lo que lleva el salto a ×1,5 y lo deja en una sola línea. **Queda pendiente decidir si además debe dejar de ser ámbar**, para que el color de marca sea exclusivo del titular.
+
+### H4. La regla del lead era silenciosamente inefectiva
+
+Evidencia: el selector `.story-copy > p:not(.eyebrow)` tiene especificidad 0-2-1 y ganaba a `.story-copy .lead`, que es 0-2-0. Por eso el color necesitaba `!important`. Y cualquier otra propiedad que ambas reglas fijaran, como `max-width`, simplemente no surtía efecto desde la regla del lead.
+
+Corrección: el selector pasa a `.story-copy > p.lead` y se retira el `!important`.
+
+### H5. Repetición: la misma idea dicha cuatro veces
+
+Evidencia literal, dentro de la misma sección:
+
+- La idea de lentitud aparece **cuatro veces**: en el titular "El **tiempo** es nuestro ingrediente", en el lead "no hacemos pan **rápido**… vale la **espera**", en el principio 02 "**Tiempo**, temperatura y **paciencia**", y en el pie de foto "**Despacio** sabe mejor".
+- Los tres pilares se enuncian **dos veces seguidas**: el párrafo dice "trabajamos con masa madre viva, fermentaciones largas y productores que conocemos por su nombre", y 48 px más abajo los tres principios repiten lo mismo **en el mismo orden**.
+- "Masa madre viva" está repetido **palabra por palabra** entre el párrafo y el título 01.
+
+Impacto: unas 19 de las 65 palabras de texto corrido son redundantes. El lector procesa el mismo mensaje tres veces y lo contabiliza como volumen. **Esta es la causa real de la impresión del usuario**, una vez descontado el fallo de maqueta.
+
+Recomendación: repartir funciones sin solape. El lead dice el porqué, el párrafo dice el quién y el cuándo, los principios dicen el qué. La propuesta concreta de recorte está pendiente de aprobación, porque es texto de marca y la decisión es del usuario.
+
+### H6. Otros hallazgos menores
+
+- **Tres bordes derechos distintos** en la misma columna: el titular llega a 401 px, el párrafo está topado a 530 px por `max-width`, y los principios y el filete ocupan los 640 px completos. El filete sobresale 110 px respecto al párrafo que tiene encima.
+- **Las descripciones de los principios miden 32-34 caracteres por línea**, un 24 % por debajo del mínimo editorial de 45, con interlínea de 1,17 frente al 1,55 del párrafo. Son el texto más pequeño, más estrecho y más apretado de la sección a la vez.
+- **Seis reglas usan la abreviatura `font:` sin indicar interlínea**, lo que reinicia el interlineado a `normal` y descarta el 1,55 heredado del `body`.
+- **"Ingredientes locales" y "Conoce nuestros locales"** quedan a 48 px, con la misma palabra en dos significados distintos.
+- **La entrada lateral se ejecuta casi entera fuera de pantalla**: con umbral de 0,12 sobre una columna de 657 px, arranca cuando solo son visibles unos 150 px, el 23 %. El resto de la transición termina antes de entrar en el viewport.
+- **Faltan cuatro tildes** en la sección: rápido, todavía, días, Fermentación. Se recoge también en la auditoría de contenido.
+
+### Lo que ya funciona en esta sección
+
+- **El contraste, sin excepción**: ocho comprobaciones, mínimo 5,76:1 sobre el fondo oscuro.
+- **El ritmo vertical entre bloques**, con saltos que crecen a medida que baja la jerarquía, y un 25 % de aire en la columna. No había muro de texto por falta de aire.
+- **El filete que se dibuja de izquierda a derecha** antes de los principios: describe lo que hace el elemento.
+- **La secuencia numerada 01, 02, 03** con retardos escalonados.
+- **El pie de foto** sobresaliendo 14 px: comprobado que no colisiona, quedan 99 px de holgura, y el recorte de la sección impide barras horizontales.
+- **La medida del párrafo largo**, 69 caracteres por línea, está dentro de la referencia editorial.
+
+### Estado de la cuarta ronda
+
+- [x] H1, ratio de la fotografía corregido.
+- [x] H2, titular en dos líneas.
+- [x] H4, especificidad del lead y `!important` retirado.
+- [x] H3, tamaño e interlínea del lead.
+- [ ] H3, decidir si el lead deja de ser ámbar.
+- [ ] H5, recorte del texto. Propuesta lista, pendiente de aprobación por ser texto de marca.
+- [ ] H6, bordes derechos, medida de las descripciones, interlíneas, choque de "locales", umbral de la animación y tildes.
+
 ## Qué ya funciona
 
 - La paleta crema, petróleo, coral y amarillo tiene identidad clara.
