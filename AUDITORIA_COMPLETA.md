@@ -312,3 +312,4 @@ Recomendación:
 - [x] La hoja de estilos no contiene bloques duplicados.
 - [ ] JSON-LD y metadatos pasan sus validadores.
 - [ ] Los flujos de menú, filtros, enlaces y estado de apertura tienen pruebas automatizadas completas.
+

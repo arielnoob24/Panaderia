@@ -2,18 +2,20 @@
 
 Primera ronda: 2026-09-22. Segunda ronda, geometría y variedad de animación: 2026-09-23. Tercera ronda, paleta, color e imágenes: 2026-09-23.
 
+Este es el archivo 1 de 6. Índice de todas las auditorías: [AUDITORIAS.md](AUDITORIAS.md).
+
 ## Por qué separar las auditorías
 
 Sí conviene trabajar por tipos. Una auditoría completa sirve para tener el mapa general, pero las revisiones especializadas permiten pensar con más profundidad en un objetivo concreto sin mezclarlo con datos de negocio, SEO o infraestructura.
 
-Orden recomendado para futuras auditorías:
+Orden recomendado para futuras auditorías, y estado actual:
 
-1. Estética y animaciones.
-2. Accesibilidad.
-3. Responsive y experiencia móvil.
-4. Rendimiento y recursos.
-5. SEO y datos estructurados.
-6. Contenido y conversión.
+1. [Estética y animaciones](AUDITORIA_ESTETICA_ANIMACIONES.md): este archivo. Tres rondas hechas.
+2. [Accesibilidad](AUDITORIA_ACCESIBILIDAD.md): primera ronda hecha el 2026-09-23.
+3. [Responsive y experiencia móvil](AUDITORIA_RESPONSIVE_MOVIL.md): primera ronda hecha el 2026-09-23.
+4. [Rendimiento y recursos](AUDITORIA_RENDIMIENTO_RECURSOS.md): primera ronda hecha el 2026-09-23.
+5. [SEO y datos estructurados](AUDITORIA_SEO_DATOS_ESTRUCTURADOS.md): primera ronda hecha el 2026-09-23.
+6. [Contenido y conversión](AUDITORIA_CONTENIDO_CONVERSION.md): primera ronda hecha el 2026-09-23.
 
 Este archivo cubre únicamente estética, movimiento y sensación de interacción. No evalúa precios, teléfonos, URLs, horarios, direcciones, imágenes provisionales ni otros datos de negocio.
 
