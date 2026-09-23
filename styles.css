@@ -81,6 +81,8 @@ section[id] { scroll-margin-top: 96px; }
 .eyebrow { margin: 0 0 1rem; color: var(--coral); font: 700 .7rem Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
 .eyebrow.light { color: var(--yellow); }
 .hero .eyebrow { color: var(--terracotta); }
+/* El coral sobre el marrón oscuro da 1.73:1. Cualquier eyebrow en sección oscura usa ámbar. */
+.story .eyebrow, .site-footer .eyebrow { color: var(--yellow); }
 .hero h1 { max-width: 640px; margin: 0; font: 500 clamp(4rem, 8vw, 7rem)/.92 Georgia, serif; }
 .hero h1 em, h2 em { color: var(--yellow); font-weight: 500; }
 .hero h1 em { color: var(--terracotta); }

@@ -1,6 +1,6 @@
 # Auditoría estética y de animaciones: El Tradicional
 
-Primera ronda: 2026-09-22. Segunda ronda, geometría y variedad de animación: 2026-09-23.
+Primera ronda: 2026-09-22. Segunda ronda, geometría y variedad de animación: 2026-09-23. Tercera ronda, paleta, color e imágenes: 2026-09-23.
 
 ## Por qué separar las auditorías
 
@@ -22,6 +22,8 @@ Este archivo cubre únicamente estética, movimiento y sensación de interacció
 La interfaz tiene una identidad visual clara y apropiada para una panadería artesanal. La mezcla de crema, petróleo, coral y amarillo, junto con serif editorial y sans-serif funcional, crea una dirección reconocible.
 
 El movimiento actual es contenido: existe un reveal al hacer scroll, hover moderado en tarjetas y soporte para `prefers-reduced-motion`. La siguiente mejora no debería consistir en añadir animaciones por todas partes, sino en darles un ritmo narrativo más coherente: una entrada escalonada del hero, filtros más suaves y una secuencia más completa para las tarjetas.
+
+La tercera ronda mide la paleta contra dos reglas concretas: máximo cinco colores, tres principales y dos secundarios, y el reparto 60-30-10 con el color primario en los elementos dominantes, los encabezados, los CTA clave y el logotipo. El sitio no cumple ninguna de las dos. Hay unos 27 valores de color distintos en lugar de 5, dos tokens son el mismo color con nombres diferentes, y el reparto medido es 66 / 34 / 1,4, con el color de marca por debajo del 1 % cuando debería rondar el 10 %. De paso aparecieron dos defectos que no eran de gusto sino de funcionamiento: un texto con 1,73:1 de contraste y una fotografía que devolvía 404 en dos tarjetas. Ambos quedaron corregidos.
 
 La segunda ronda confirma con datos dos percepciones que quedaban como sensación. Primera: el sitio se ve cuadrado porque en 231 líneas de CSS solo hay 6 radios declarados, cinco de ellos círculos decorativos, y la página es una pila de seis bandas a sangre con cortes perfectamente rectos. Segunda: todo se anima igual porque existe **un único patrón de entrada** (opacidad más desplazamiento vertical) aplicado a seis tipos de componente distintos, con dos `@keyframes` de contenido idéntico, y porque las once declaraciones de movimiento usan la misma curva `ease`. El detalle está en la sección "Segunda ronda", con 12 hallazgos de geometría y 13 de movimiento, un mapa de animación por zona y una escala de radios propuesta.
 
@@ -90,6 +92,26 @@ Sigue pendiente, por decisión explícita:
 - [ ] Pulso del indicador de frescura. Es el único bucle infinito propuesto y el de mayor riesgo; se decide aparte.
 - [ ] Módulo destacado en el catálogo con `grid-column: span 2`. Cambia la jerarquía del contenido, no solo la forma.
 - [ ] Hombros de banda en el límite entre locales y footer. Ver la nota de implementación.
+
+### Tercera ronda, estado
+
+Corregido el 2026-09-23:
+
+- [x] Contraste del eyebrow "Nuestra manera": de 1,73:1 a 5,76:1, con una regla estructural para que ningún eyebrow en sección oscura pueda repetir el fallo (C2).
+- [x] Foto con respuesta 404 sustituida; las dos tarjetas que mostraban "Imagen no disponible" ya cargan (I1).
+- [x] Diez fotografías distintas para diez espacios, en lugar de cuatro repetidas; todas comprobadas con respuesta 200 (I2).
+- [x] Foto de la sección de historia cambiada por una que sí ilustra el texto, con los textos alternativos reescritos para describir lo que aparece (I3).
+
+Pendiente de decisión, porque afecta a la identidad y no solo al código:
+
+- [ ] Unificar `--ink` y `--petroleum`, que hoy son el mismo valor con dos nombres (C1).
+- [ ] Llevar el ámbar del menos del 1 % actual al 8-10 % que pide la regla (C3).
+- [ ] Unificar los CTA en el color de marca, empezando por los nueve botones "Pedir" (C4).
+- [ ] Dar color de marca al símbolo del logotipo (C5).
+- [ ] Sustituir los seis colores ajenos a la paleta: el verde salvia, el verde grisáceo, el rosa, el azul del mapa y los dos halos de estado (C6).
+- [ ] Derivar los diez tintes sueltos de los cinco colores base (C7).
+- [ ] Renombrar los tokens al vocabulario nuevo, en último lugar (C8).
+- [ ] Sustituir la imagen enlazada a un tercero y evaluar alojar las fotografías en el repositorio (I4, I5).
 
 ### Notas de implementación
 
@@ -712,6 +734,218 @@ Por relación entre impacto percibido y riesgo:
 4. ¿Los nueve productos son el catálogo definitivo? El número condiciona la fila huérfana de G4 y el stagger diagonal.
 5. ¿Se puede reescribir la lista plana de `revealItems` en [script.js](script.js#L106)? Todo el Eje B depende de sustituirla por un mapa de zona a clase; si el JS debe quedar congelado, la variedad tendría que lograrse solo con selectores por sección, que es más frágil.
 
+## Tercera ronda: paleta, color e imágenes
+
+Fecha de revisión: 2026-09-23. Esta ronda nace de una observación externa: la paleta debería tener como máximo cinco colores, tres principales y dos secundarios, y el color primario de marca debería ocupar los elementos dominantes, los encabezados principales, los CTA clave y el logotipo, siguiendo la regla 60-30-10.
+
+La conclusión es que el sitio no cumple ninguna de las dos reglas, y que la causa no es el gusto sino la acumulación: la paleta creció por añadidos sueltos y nunca se consolidó.
+
+### Inventario de color
+
+En [styles.css](styles.css) hay **18 valores hexadecimales distintos y 9 bases `rgb` distintas**, es decir, alrededor de 27 colores frente a los 5 que pide la regla. Solo 10 están declarados como token en `:root`; el resto son valores escritos a mano dentro de las reglas.
+
+| Token | Valor | Tono real | Observación |
+|---|---|---|---|
+| `--cream` | `#f7f1e7` | crema cálido | Fondo dominante. Correcto. |
+| `--paper` | `#fffdf8` | blanco cálido | Superficies elevadas. Correcto. |
+| `--ink` | `#3a2822` | marrón muy oscuro | **Idéntico a `--petroleum`.** |
+| `--petroleum` | `#3a2822` | marrón muy oscuro | **Duplicado exacto de `--ink`.** El nombre ya no describe el color. |
+| `--coral` | `#7a4030` | marrón rojizo oscuro | No es coral. Es el tono oscuro de la terracota. |
+| `--yellow` | `#d79b4a` | ámbar | Es el color de marca real, pero apenas se usa. |
+| `--muted` | `#5e514a` | marrón grisáceo | Tono de `--ink`, no un color propio. |
+| `--line` | `#ded2c2` | arena | Tono de `--cream`, no un color propio. |
+| `--terracotta` | `#a85f45` | terracota | Mismo tono que `--coral`, más claro. |
+| `--sage` | `#71806a` | verde salvia | **Único verde del sitio. Se usa una sola vez.** |
+
+Fuera de `:root`, sin token: `#efece6`, `#e7ded2`, `#e1d4c5`, `#e5ddd2`, `#eee4d8`, `#d8cabe`, `#f2ca68`, `#d5dfd6`, `#ffd0c9`, y las bases `rgba(220, 231, 231)`, `rgba(231, 184, 75)`, `rgba(169, 79, 72)`, `rgba(168, 95, 69)`.
+
+### Reparto real frente a la regla 60-30-10
+
+Medición hecha en el navegador sobre la página completa, sumando la altura de cada sección a sangre y dividiéndola por la altura total del documento. A 1418 px de ancho, sobre un documento de 5409 px:
+
+| Familia | Secciones | Altura | Reparto real | Regla |
+|---|---|---:|---:|---:|
+| Claro, crema y papel | hero, catálogo, locales | 3552 px | **65,7 %** | 60 % |
+| Oscuro, marrón | header, historia, footer | 1868 px | **34,5 %** | 30 % |
+| Terracota | franja de identidad | 76 px | **1,4 %** | — |
+| Ámbar, el color de marca | botón del hero, botón flotante, números, pie de foto | — | **por debajo del 1 %** | 10 % |
+
+El 60 y el 30 están razonablemente cerca del objetivo. **El problema está localizado por completo en el 10 %**: el color que debería funcionar como acento de marca es el que menos aparece de todos, y el hueco lo ocupa el marrón oscuro, que ya tiene asignado el 30 %.
+
+Es una medición por área de sección, no por píxel, así que no cuenta las fotografías ni los elementos pequeños. Sirve para ver el orden de magnitud, no para auditar un decimal.
+
+### Hallazgos
+
+#### Alto
+
+##### C1. `--ink` y `--petroleum` son el mismo color
+
+Evidencia: [styles.css](styles.css#L4) y [styles.css](styles.css#L5), ambos `#3a2822`.
+
+Impacto: la paleta aparenta tener un color más de los que tiene. Y quien cambie `--ink` creyendo que ajusta solo el color del texto cambiará también el header, la sección de historia y el footer, porque son el mismo valor con otro nombre. Es una trampa esperando a la próxima edición.
+
+Recomendación: dejar un único token y usarlo en los dos sitios. Si en el futuro el fondo oscuro debe separarse del color de texto, esa separación debe nacer como una decisión, no heredarse de un duplicado accidental.
+
+##### C2. El eyebrow de la sección de historia fallaba el contraste con 1,73:1
+
+Evidencia: `.eyebrow` ([styles.css](styles.css#L86)) usa `--coral` `#7a4030`, y en la sección de historia el fondo es `#3a2822`. El `<p class="eyebrow">Nuestra manera</p>` de [index.html](index.html#L108) no llevaba el modificador `.light`.
+
+Impacto: 1,73:1 frente al 4,5:1 que exige WCAG AA para texto pequeño. Era el peor contraste del sitio con diferencia, y encima en un texto de 0,7 rem en mayúsculas con espaciado ancho, que ya es el caso más difícil de leer.
+
+Estado: **corregido en esta ronda.** En lugar de añadir la clase en el HTML, se resolvió con una regla estructural, para que ningún eyebrow futuro en una sección oscura pueda repetir el fallo. El ámbar sobre el marrón oscuro da 5,76:1, que cumple AA.
+
+##### C3. El acento de marca ocupa menos del 1 % en lugar del 10 %
+
+Evidencia: la medición de la sección anterior.
+
+Impacto: la regla 60-30-10 no es decorativa; su función es que exista un color que el ojo asocie a "esto es de la marca y esto se puede pulsar". Hoy ese papel no lo cumple nadie: el ámbar aparece en el botón del hero, en el botón flotante, en los números de los principios y en el pie de foto, y en ningún sitio más. Entre esos puntos hay pantallas enteras sin una sola aparición del color de marca.
+
+Recomendación: subir el ámbar hasta ocupar entre el 8 y el 10 % concentrándolo donde significa algo, no repartiéndolo: todas las acciones primarias, los números y contadores, el símbolo de la marca, y el subrayado o el filete que marca la sección activa. No usarlo en párrafos ni en fondos grandes, porque entonces deja de leerse como acento.
+
+##### C4. Los CTA están repartidos entre dos colores distintos
+
+Evidencia: en ámbar, `.button-yellow` ([styles.css](styles.css#L92)) y `.floating-whatsapp` ([styles.css](styles.css#L203)). En marrón oscuro, `.nav-cta` ([styles.css](styles.css#L63)), `.order-button` ([styles.css](styles.css#L146)) y `.map-link` ([styles.css](styles.css#L188)).
+
+Impacto: es el incumplimiento más concreto de la guía recibida. De los cinco tipos de llamada a la acción, dos usan el color de marca y tres usan el mismo marrón que el texto del cuerpo. El caso grave es `.order-button`: es el botón "Pedir", se repite nueve veces, es la conversión real del catálogo, y hoy tiene exactamente el mismo color que el texto que lo rodea. No destaca como acción.
+
+Recomendación: el ámbar pasa a ser el color de toda acción primaria, empezando por "Pedir". El marrón oscuro queda para acciones secundarias, y el borde o el texto bastan para las terciarias. Esto por sí solo resuelve buena parte de C3, porque son nueve botones repartidos por la zona más larga de la página.
+
+##### C5. El logotipo no lleva el color de marca
+
+Evidencia: `.brand-mark` ([styles.css](styles.css#L55)) usa `border: 1px solid currentColor`, y el color heredado es blanco tanto en el header como en el footer.
+
+Impacto: la guía pide explícitamente que el color primario aparezca en el logotipo. Hoy el símbolo "ET" es blanco en sus dos apariciones, así que la marca no tiene color propio en el único elemento que la representa siempre.
+
+Recomendación: el aro y las iniciales en ámbar sobre los fondos oscuros. Comprobado: 5,76:1, cumple AA.
+
+#### Medio
+
+##### C6. Seis colores que no pertenecen a ninguna familia
+
+Evidencia y uso:
+
+| Color | Dónde | Problema |
+|---|---|---|
+| `--sage` `#71806a` | borde izquierdo del aviso del hero ([styles.css](styles.css#L97)) | Único verde del sitio, usado una sola vez. |
+| `#d5dfd6` | texto de "Abierto hoy" y dirección destacada ([styles.css](styles.css#L171), [L175](styles.css#L175)) | Verde grisáceo, ajeno a la paleta cálida. |
+| `#ffd0c9` | estado "Cerrado hoy" ([styles.css](styles.css#L172)) | Rosa, ajeno a la paleta. |
+| `rgba(220, 231, 231)` | capa de carga del mapa ([styles.css](styles.css#L185)) | Azul grisáceo frío sobre una paleta cálida. |
+| `rgba(231, 184, 75)` | halo del indicador de frescura ([styles.css](styles.css#L98)) | Es un ámbar **distinto** de `--yellow`, sin motivo. |
+| `rgba(169, 79, 72)` | halo del indicador cerrado ([styles.css](styles.css#L99)) | Un rojo que no existe en la paleta. |
+
+Impacto: son seis tonos que nadie eligió como parte de la identidad; llegaron como valores de conveniencia. Aisladamente ninguno se nota, pero juntos son la razón de que la paleta se sienta imprecisa aunque los colores grandes estén bien.
+
+Recomendación: el verde y el rosa de los estados abierto y cerrado se sustituyen por ámbar y por el tono oscuro de terracota, que ya existen. El halo del indicador usa `--yellow` en lugar de su propio ámbar. La capa de carga del mapa usa crema con transparencia. El `--sage` desaparece.
+
+##### C7. Diez tintes escritos a mano, sin token
+
+Evidencia: `#efece6`, `#e7ded2`, `#e1d4c5`, `#e5ddd2`, `#eee4d8`, `#d8cabe`, `#ded2c2`, `#f2ca68`, más los dos de C6.
+
+Impacto: casi todos son variaciones legítimas de crema o de ámbar, así que el problema no es que existan sino que no se derivan de nada. Si mañana cambia la crema, estos diez valores se quedan donde están y la paleta se parte en dos.
+
+Recomendación: expresarlos como tonos de los cinco colores base, con `color-mix()` o con `rgba` sobre la base correspondiente, de forma que un cambio en el color raíz arrastre a sus derivados.
+
+##### C8. Los nombres de los tokens ya no describen los colores
+
+Evidencia: `--petroleum` es marrón, `--coral` es marrón rojizo, `--sage` es un verde que ya no se usa, `--yellow` es ámbar.
+
+Impacto: son restos de una paleta anterior, la de tonos fríos, que se sustituyó por la de horno sin renombrar los tokens. Cualquiera que lea el CSS esperando un azul petróleo se encontrará un marrón. Es la misma clase de deuda que los tintes azul y verde de las sombras que ya detectó la segunda ronda en G5.
+
+Recomendación: renombrar a nombres que describan la función o la materia: `--masa`, `--horno`, `--miga`, `--corteza`, `--ambar`.
+
+#### Bajo
+
+##### C9. La terracota solo alcanza AA para texto grande
+
+Evidencia: `--terracotta` `#a85f45` sobre crema da **4,26:1**, por debajo del 4,5 que exige AA para texto pequeño.
+
+Impacto: hoy es correcto, porque solo se usa en el `<em>` del titular del hero, que ronda los 7 rem. Pero no hay nada que impida que mañana se use en un texto de 0,7 rem, y ahí fallaría.
+
+Recomendación: dejar escrito que la terracota clara es un color de titular y de superficie, y que para texto pequeño se usa su tono oscuro `#7a4030`, que da 7,18:1 sobre crema.
+
+##### C10. Los estados abierto y cerrado se comunican con colores de otra paleta
+
+Evidencia: [styles.css](styles.css#L171-L172) y [styles.css](styles.css#L98-L99).
+
+Impacto: el verde y el rosa son la convención habitual para disponible y no disponible, pero aquí chocan con una paleta enteramente cálida y además no se apoyan en ningún otro elemento del sistema. Se solapa con C6.
+
+Recomendación: mantener la distinción con ámbar para abierto y terracota oscura para cerrado, y reforzarla con el texto, que ya existe, para no depender solo del color.
+
+### Paleta propuesta: tres principales y dos secundarios
+
+Cada color admite tonos derivados. Un tono más claro o más oscuro del mismo matiz **no cuenta como un color nuevo**, siempre que se derive del valor base y no se escriba a mano.
+
+| Papel | Nombre propuesto | Valor | Uso | Reparto |
+|---|---|---|---|---|
+| Principal 1 | `--masa` | `#f7f1e7` | Fondo dominante de la página | 60 % |
+| Principal 2 | `--horno` | `#3a2822` | Texto, header, sección de historia, footer | 30 % |
+| Principal 3 | `--ambar` | `#d79b4a` | **Color de marca.** Acciones primarias, símbolo, números, acentos | 10 % |
+| Secundario 1 | `--corteza` | `#a85f45` | Franja de identidad, énfasis tipográfico, eyebrows sobre fondo claro | puntual |
+| Secundario 2 | `--papel` | `#fffdf8` | Superficies elevadas: tarjetas, panel del mapa | puntual |
+
+Tonos derivados admitidos, que no suman colores nuevos:
+
+- `--corteza-oscura` `#7a4030`, el actual `--coral`: la terracota bajada de luminosidad para texto pequeño sobre fondo claro, donde el tono claro no llega a AA. Ver C9.
+- `--ambar-claro` `#f2ca68`, el actual hover del botón amarillo.
+- `--horno-suave` `#5e514a`, el actual `--muted`: texto secundario.
+- `--masa-linea` `#ded2c2`, el actual `--line`: bordes y filetes.
+- Los fondos de imagen pendiente y las capas de carga, como crema con transparencia.
+
+Los que desaparecen: `--petroleum` por duplicado, `--sage` por ajeno, y los seis tonos de C6.
+
+### Imágenes
+
+Hallazgos surgidos al revisar la fotografía de la sección de historia.
+
+##### I1. Una de las fotos devolvía 404 y dejaba dos tarjetas vacías
+
+Evidencia: `photo-1585478259715-876acc5be8eb` respondía **404** en Unsplash y se usaba en "Pan enrollado" y "Pan de queso con cebolla".
+
+Impacto: las dos tarjetas mostraban el texto "Imagen no disponible" en producción. El fallback funcionaba correctamente, que es la buena noticia, pero el contenido estaba roto.
+
+Estado: **corregido en esta ronda.**
+
+##### I2. Cuatro fotos distintas para once espacios, una de ellas repetida siete veces
+
+Evidencia: antes de esta ronda, `photo-1636378126357-7e5f200771c5` aparecía 7 veces, entre ellas el fondo del hero, la foto de la sección de historia y dos productos.
+
+Impacto: es la causa directa de que la foto de historia "no se acabara de ver bien". No era un problema de encuadre sino de repetición: el lector ya había visto esa misma hogaza en el hero y en dos tarjetas, así que al llegar a la sección de historia la imagen no aportaba nada nuevo. Una vitrina que enseña el mismo pan con cuatro nombres distintos también daña la credibilidad del catálogo.
+
+Estado: **corregido en esta ronda.** Ahora hay diez fotos distintas para diez espacios visibles, todas comprobadas con respuesta 200, y la única repetición que queda es intencionada: la foto del hero se reutiliza en las etiquetas `og:image`, `twitter:image` y en el JSON-LD, que es exactamente para lo que sirven.
+
+##### I3. La foto de historia no ilustraba lo que dice el texto
+
+Evidencia: el texto alternativo decía "Manos trabajando una masa sobre una mesa en la panadería", pero la imagen era un primer plano de miga, sin manos ni mesa.
+
+Impacto: además del desajuste visual, el texto alternativo describía algo que no estaba en la imagen, lo que es un fallo de accesibilidad: quien use lector de pantalla recibía una descripción falsa.
+
+Estado: **corregido en esta ronda.** La foto nueva muestra unas manos sosteniendo un pan sobre un paño, y todos los textos alternativos de las imágenes sustituidas se reescribieron para describir lo que realmente aparece.
+
+##### I4. La imagen de bebidas depende de un tercero sin control
+
+Evidencia: [index.html](index.html#L102) enlaza `revistamercado.do`.
+
+Impacto: es el único recurso que no viene de Unsplash. No hay garantía de permanencia, de licencia ni de rendimiento, y si ese sitio la borra o la renombra, la tarjeta queda con el fallback.
+
+Recomendación: sustituirla por una fotografía propia del producto real, que además es lo correcto para un catálogo, o por una de banco con licencia comprobada.
+
+##### I5. Todas las fotos son enlaces externos, sin copia local
+
+Evidencia: las diez imágenes de producto y de sección son peticiones a `images.unsplash.com`; el único archivo propio del repositorio es la mascota.
+
+Impacto: el sitio depende por completo de un servicio externo para su contenido visual. El fallback de imagen no disponible está bien resuelto, pero un fallo de Unsplash dejaría la vitrina entera sin fotos. También implica que el recorte y la calidad se deciden por parámetros de URL, no por archivos optimizados.
+
+Recomendación: cuando existan fotografías reales del local, alojarlas en el repositorio y servirlas en varios tamaños. Mientras tanto, conviene dejar constancia de que las imágenes son provisionales.
+
+### Orden de aplicación sugerido para la paleta
+
+1. Unificar `--ink` y `--petroleum` en un solo token. Es un cambio sin efecto visual y quita la trampa.
+2. Pasar `.order-button` a ámbar. Es el cambio que más mueve el reparto 60-30-10 y el que más ayuda a la conversión, porque son nueve botones en la sección más larga.
+3. Pasar `.nav-cta` y `.map-link` a la jerarquía nueva, y dar color de marca al símbolo del logotipo.
+4. Sustituir los seis colores ajenos de C6 por tonos de la paleta.
+5. Derivar los diez tintes sueltos de los cinco colores base.
+6. Renombrar los tokens al vocabulario nuevo, en último lugar, cuando ya no queden valores sueltos que renombrar.
+
 ## Qué ya funciona
 
 - La paleta crema, petróleo, coral y amarillo tiene identidad clara.
@@ -771,3 +1005,5 @@ Esta es una auditoría estática centrada en estética y movimiento. Se revisaro
 Comprobaciones de la segunda ronda: lectura íntegra de los tres archivos; búsqueda de `border-radius|clip-path|border-image|mask` en el CSS, con 7 coincidencias, 6 radios más un `clip-path` de accesibilidad; búsqueda de `transition|animation|@keyframes|cubic-bezier|ease`, con 28 líneas y el 100 % de las curvas en `ease`; búsqueda de `is-filtering` en todo el proyecto, con 2 coincidencias en el JS y ninguna en el CSS; búsqueda de `style=` en el HTML, sin coincidencias, lo que confirma que el inventario es completo; recuento cruzado de 9 tarjetas contra `repeat(4, 1fr)` y de 5 hijos del hero contra `nth-child(1..5)`; y verificación de dónde existe `overflow: hidden` para saber qué correcciones de radio cuestan una sola línea.
 
 No se abrió el sitio en un navegador: no hay medición de FPS, Lighthouse ni contraste real. Las afirmaciones sobre coste de pintado se basan en la propiedad animada, no en una medición.
+
+Comprobaciones de la tercera ronda, esta vez sí con navegador: inventario de color por búsqueda de valores hexadecimales y `rgb` en la hoja de estilos, con 18 y 9 valores únicos respectivamente; cálculo de la relación de contraste WCAG de 18 pares de color de primer plano y fondo, que localizó el fallo de 1,73:1 y confirmó que el resto cumple AA; comprobación del código de respuesta HTTP de las once imágenes del sitio, que encontró un 404; medición en el navegador del reparto de área por sección, a 1418 px y a 738 px de ancho; y renderizado de la página completa, de la sección de historia y de la vista móvil para verificar cada cambio antes de publicarlo. Las fotografías candidatas se revisaron visualmente, ya recortadas a la proporción real del hueco, antes de elegirlas.
