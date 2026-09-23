@@ -87,7 +87,7 @@ section[id] { scroll-margin-top: 96px; }
 .hero-content.is-ready > .mascot-slot { animation-name: knead; animation-duration: 700ms; animation-timing-function: var(--ease-accent); animation-delay: 180ms; }
 @keyframes rise { from { opacity: 0; transform: translateY(var(--rise, 8px)); } to { opacity: 1; transform: none; } }
 @keyframes knead { from { opacity: 0; transform: rotate(-3.5deg) scale(.96); } to { opacity: 1; transform: none; } }
-.eyebrow { margin: 0 0 1rem; color: var(--corteza-oscura); font: 700 .7rem Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+.eyebrow { margin: 0 0 1rem; color: var(--corteza-oscura); font: 700 .7rem/1.4 Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
 .eyebrow.light { color: var(--ambar); }
 /* La corteza clara da 4.26:1 sobre crema: vale para titulares, no para texto de .7rem. */
 .hero .eyebrow { color: var(--corteza-oscura); }
@@ -168,16 +168,18 @@ section[id] { scroll-margin-top: 96px; }
 .story-grid { display: grid; grid-template-columns: minmax(300px, .8fr) 1.2fr; gap: clamp(3rem, 8vw, 8rem); align-items: center; }
 .story-photo { position: relative; }
 .story-photo img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--r-mass); }
-.image-caption { position: absolute; right: -14px; bottom: 36px; padding: .7rem 1rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-btn) var(--r-btn) var(--r-btn) 0; font: italic 1rem Georgia, serif; }
+.image-caption { position: absolute; right: -14px; bottom: 36px; padding: .7rem 1rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-btn) var(--r-btn) var(--r-btn) 0; font: italic 1rem/1.3 Georgia, serif; }
 .story-copy h2 { margin-bottom: 2rem; }
 .story-copy h2 em { color: var(--ambar); }
 .story-copy > p:not(.eyebrow) { max-width: 530px; color: var(--sobre-horno); }
-.story-copy > p.lead { max-width: none; color: var(--ambar); font: italic 1.5rem/1.35 Georgia, serif; }
+/* El ambar es del titular. El lead se distingue por cursiva y tamano, no por color,
+   para que el color de marca no ocupe cinco lineas seguidas. */
+.story-copy > p.lead { max-width: none; color: var(--sobre-horno); font: italic 1.5rem/1.35 Georgia, serif; }
 .principles { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 3rem 0; padding-top: 1.5rem; }
 .principles::before { position: absolute; top: 0; right: 0; left: 0; height: 1px; content: ""; background: rgba(255, 255, 255, .25); transform-origin: left; }
-.principles h3 { margin: .5rem 0; font: 500 1.2rem Georgia, serif; }
-.principles p { margin: 0; color: var(--sobre-horno-tenue); font: .8rem Arial, sans-serif; }
-.principle-number { color: var(--ambar); font: .7rem Arial, sans-serif; }
+.principles h3 { margin: .5rem 0; font: 500 1.2rem/1.25 Georgia, serif; }
+.principles p { margin: 0; color: var(--sobre-horno-tenue); font: .85rem/1.45 Arial, sans-serif; }
+.principle-number { color: var(--ambar); font: .7rem/1.4 Arial, sans-serif; }
 .dark { color: var(--ambar); }
 
 .locations { background: var(--papel); }

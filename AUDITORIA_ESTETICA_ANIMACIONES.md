@@ -1117,9 +1117,24 @@ Recomendación: repartir funciones sin solape. El lead dice el porqué, el párr
 - [x] H2, titular en dos líneas.
 - [x] H4, especificidad del lead y `!important` retirado.
 - [x] H3, tamaño e interlínea del lead.
-- [ ] H3, decidir si el lead deja de ser ámbar.
-- [ ] H5, recorte del texto. Propuesta lista, pendiente de aprobación por ser texto de marca.
-- [ ] H6, bordes derechos, medida de las descripciones, interlíneas, choque de "locales", umbral de la animación y tildes.
+- [x] H3, el lead deja de ser ámbar y pasa a crema. El color de marca queda reservado al titular, y el lead se distingue por cursiva y tamaño.
+- [x] H5, texto recortado. De **85 a 64 palabras, un 25 % menos**, y de 572 a 410 caracteres. Se quitó del párrafo la frase que enumeraba los tres pilares, porque están 48 px más abajo, y su contenido se recuperó en el principio 03, así que no se perdió información. Detalle abajo.
+- [x] H6, parte: interlíneas declaradas en las cinco reglas de la sección que usaban `font:` sin ellas; descripciones de los principios a `.85rem` con `1.45`; "Ingredientes locales" pasa a "Origen cercano" para no chocar con "Conoce nuestros locales"; y las cuatro tildes corregidas, junto con otras cuatro del resto del sitio.
+- [ ] H6, resto. Dos puntos se revisaron y **se decidió no aplicarlos**, con motivo:
+  - **Bordes derechos.** La recomendación era unificar la columna a 640 px, pero eso contradice la propia medición del informe: el párrafo mide 69 caracteres por línea a 530 px, y a 640 px pasaría de 80, por encima del máximo editorial de 75. Que el texto corrido sea más estrecho que la rejilla de principios es una decisión editorial normal, no un descuadre. Se deja como está.
+  - **Umbral de la animación de entrada.** Tras corregir H1 la columna mide 559 px en vez de 657, así que el problema se reduce solo. Cambiar el umbral afecta a los veinte elementos animados del sitio para una mejora marginal en uno. Se deja anotado por si algún día se anima por bloques.
+
+### El recorte de texto aplicado
+
+| Bloque | Antes | Después |
+|---|---|---|
+| Lead | "No hacemos pan rapido. Hacemos pan que vale la espera." | "No hacemos pan **rápido**. Hacemos pan que vale la espera." |
+| Párrafo | "**Desde que abrimos nuestras puertas, trabajamos con masa madre viva, fermentaciones largas y productores que conocemos por su nombre.** Cada madrugada, nuestro equipo llega cuando la ciudad todavia duerme." | "Cada madrugada, nuestro equipo llega cuando la ciudad **todavía** duerme." |
+| Principio 01 | "Un cultivo que cuidamos todos los dias **y que da sabor real**." | "Un cultivo que cuidamos todos los **días**." |
+| Principio 02 | "**Fermentacion** natural" · "**Tiempo**, temperatura y **paciencia** para una miga inolvidable." | "**Fermentación** natural" · "Temperatura y **reposo** para una miga inolvidable." |
+| Principio 03 | "**Ingredientes locales**" · "Elegimos origen, estacionalidad y relaciones honestas." | "**Origen cercano**" · "Productores que conocemos por su nombre." |
+
+El principio 03 recupera literalmente la frase que se quitó del párrafo. No se inventó contenido nuevo en ninguna parte.
 
 ## Qué ya funciona
 
