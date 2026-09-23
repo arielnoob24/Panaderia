@@ -30,7 +30,9 @@ Evidencia: la dirección dice "Audio-PhoneComputer / Calle Eloy Alfaro y Gabriel
 
 Impacto: "Audio-PhoneComputer" suena a tienda de electrónica, no a panadería. Si es una referencia para ubicar el local, del tipo "junto a Audio-PhoneComputer", falta decirlo; tal como está, parece que la panadería se llama así. Para un negocio local, la dirección es información crítica: si confunde, la gente no llega.
 
-Recomendación: si es una referencia, escribirlo como tal: "Junto a Audio-PhoneComputer". Si es el local que comparte espacio, explicarlo. Y revisarlo también en el JSON-LD, donde alimenta la ficha del negocio.
+Recomendación: si es una referencia, escribirlo como tal: "Junto a Audio-PhoneComputer". Si es el local que comparte espacio, explicarlo.
+
+Estado: **corregido el 2026-09-23.** Se retiró del texto visible y del `streetAddress` del JSON-LD, donde alimentaba la ficha de negocio local. La dirección queda como "Calle Eloy Alfaro y Gabriel Espinosa, esquina. Tena, Ecuador". Si era una referencia útil para localizar el sitio, conviene reponerla escrita como tal.
 
 #### C3. El indicador de disponibilidad siempre dice "Disponible", y nadie lo ha decidido
 
@@ -123,7 +125,7 @@ Recomendación: añadir la unidad donde no se deduzca: "por unidad", "la funda",
 Por orden de urgencia.
 
 - [ ] **Poner el número de WhatsApp y el teléfono reales** (C1). Sin esto, el sitio no convierte.
-- [ ] Aclarar el nombre o la referencia del local (C2).
+- [x] Nombre del local aclarado: se retiró "Audio-PhoneComputer" del texto y del JSON-LD (C2).
 - [ ] Decidir qué hacer con el indicador de disponibilidad (C3).
 - [ ] Repasar las tildes de todo el texto visible (C4).
 - [ ] Sustituir la fotografía de bebidas (C5).

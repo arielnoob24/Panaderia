@@ -190,8 +190,7 @@ section[id] { scroll-margin-top: 96px; }
 .location-grid { display: grid; grid-template-columns: minmax(280px, .8fr) 1.2fr; gap: 1.3rem; }
 .location-card { padding: 1.6rem; border: 1px solid var(--masa-linea); border-radius: var(--r-card); }
 .featured-location { background: var(--horno); color: white; border-color: var(--horno); }
-.location-card-top { display: flex; justify-content: space-between; align-items: center; gap: 1rem; }
-.location-index { color: var(--ambar); font: 700 .7rem Arial, sans-serif; }
+.location-card-top { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
 .open-label { display: flex; gap: .5rem; align-items: center; color: var(--sobre-horno-tenue); font: .68rem Arial, sans-serif; }
 .open-label.is-closed { color: var(--aviso-cerrado); }
 .location-card h3 { margin: 2.4rem 0 .7rem; font: 500 2rem Georgia, serif; }
@@ -203,7 +202,9 @@ section[id] { scroll-margin-top: 96px; }
 .location-card dt { color: var(--horno-suave); }
 .featured-location dt { color: var(--sobre-horno-tenue); }
 .location-card dd { margin: 0; font-weight: 700; }
-.location-link { color: var(--corteza-oscura); font: 700 .78rem Arial, sans-serif; }
+.location-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--corteza-oscura); font: 700 .78rem/1.4 Arial, sans-serif; }
+/* Version en linea de los iconos: mismo encuadre y mismo trazo que .principle-icon. */
+.link-icon { display: block; width: 18px; height: 18px; flex: 0 0 auto; }
 .featured-location .location-link { color: var(--ambar); }
 .map-panel { position: relative; min-height: 330px; overflow: hidden; background: var(--masa-honda); border: 1px solid var(--masa-linea); border-radius: var(--r-panel); }
 .map-panel.is-loading::before { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; content: "Cargando mapa"; color: var(--horno-suave); background: rgba(247, 241, 231, .88); font: .8rem Arial, sans-serif; }

@@ -1145,6 +1145,16 @@ Decisiones que respetan el sistema ya establecido:
 
 Nota de coherencia: esto **estrena un lenguaje de iconos** que antes no existía en el sitio. Si en el futuro se añaden iconos en otra sección, tienen que seguir el mismo trazo de 1,4, el mismo encuadre de 24 y el mismo ámbar, o la familia se rompe.
 
+### H8. La tarjeta de local y el enlace al mapa
+
+Tres cambios pedidos por el usuario sobre la tarjeta de la sección de locales, aplicados el 2026-09-23.
+
+- **Fuera el "01".** Numerar un único local no aportaba nada, y el número competía con el indicador de abierto. Al quitarlo, `.location-card-top` pasa de `space-between` a `flex-end` para que el estado siga a la derecha, y la regla `.location-index` se retira por quedar muerta.
+- **Fuera "Audio-PhoneComputer".** Parecía el nombre del negocio. Es el hallazgo C2 de la auditoría de contenido, y se retiró también del `streetAddress` del JSON-LD, donde alimentaba la ficha de negocio local.
+- **Chincheta en el enlace al mapa.** El enlace "Google Maps / Waze" solo tenía la flecha de enlace externo, que indica que se abre fuera pero no qué se va a ver. Se añadió una chincheta de 18 px, **primera aplicación de la familia de iconos de H7 fuera de los principios**: mismo encuadre de 24, mismo trazo de 1,4, mismo ámbar heredado por `currentColor`, y también decorativa, porque el texto del enlace ya dice a dónde lleva.
+
+Queda una decisión abierta: el enlace "Ver en el mapa" que flota sobre el propio mapa hace lo mismo y no lleva chincheta. Se dejó sin ella a propósito, porque ahí el contexto ya es un mapa y el icono sería redundante, pero conviene revisarlo si algún día se separan los dos enlaces.
+
 ### El recorte de texto aplicado
 
 | Bloque | Antes | Después |

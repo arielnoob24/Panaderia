@@ -101,7 +101,8 @@ Observación menor: ni el título ni la descripción mencionan la ciudad. Para u
 
 - [ ] **Corregir las tres URL que apuntan a `ejemplo.com`** (S1). Es lo más urgente de todo el proyecto.
 - [ ] Crear `robots.txt` y `sitemap.xml` con la ruta `/Panaderia/` (S2).
-- [ ] Sustituir o retirar el teléfono y la dirección de marcador del JSON-LD (S3).
+- [x] Dirección del JSON-LD corregida: se retiró "(Audio-PhoneComputer)" del `streetAddress` (S3, parte).
+- [ ] **El teléfono del JSON-LD sigue siendo un marcador**, `+593 99 000 0000` (S3, resto).
 - [ ] Añadir datos estructurados de menú para los nueve productos (S4).
 - [ ] Declarar dimensiones de la imagen para compartir y planificar una propia (S5).
 - [ ] Probar a incluir "Tena" en el título o la descripción (S7).
