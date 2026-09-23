@@ -51,13 +51,16 @@ La segunda ronda confirma con datos dos percepciones que quedaban como sensació
 
 ### Pendiente de comprobar o mejorar
 
-- [ ] Medir formalmente todos los colores con WCAG AA sobre las imágenes más claras.
-- [ ] Reducir selectivamente la jerarquía tipográfica y el espacio vertical si las pruebas visuales lo recomiendan.
-- [ ] Añadir un desfase específico entre imagen y texto en la sección de historia.
-- [ ] Añadir un pulso sutil al indicador de frescura, solo si no distrae.
-- [ ] Probar el posible solapamiento del aviso del hero y WhatsApp en alturas móviles cortas.
-- [ ] Evaluar una indicación de desplazamiento horizontal para filtros en pantallas estrechas.
-- [ ] Considerar parallax únicamente después de medir rendimiento y experiencia.
+Revisado el 2026-09-23: varios de estos puntos se resolvieron en la segunda y la tercera ronda sin que esta lista se actualizara. Estado real:
+
+- [x] Desfase entre imagen y texto en la sección de historia. La foto entra con revelado por máscara y el texto 140 ms después, con entrada lateral.
+- [x] Pulso sutil en el indicador de frescura. Es el único bucle del sitio y solo actúa en el aviso del hero.
+- [x] Indicación de desplazamiento horizontal en los filtros. Resuelta con capas de fondo, sin JavaScript.
+- [x] Solapamiento del aviso del hero con el botón de WhatsApp. Medido y descartado: el aviso ocupa de y 608 a 669 y el botón de y 1039 a 1082. Queda por comprobar en alturas cercanas a 650 px.
+- [x] Parallax. Decidido que no, con motivo técnico: la textura fija a pantalla completa y el filtro del iframe del mapa lo hacen caro. Está razonado en "Dónde no conviene añadir variedad".
+- [x] Jerarquía tipográfica: los títulos de sección bajan a `clamp(2.8rem, 5.4vw, 4.6rem)`, reservando el tamaño máximo al hero.
+- [ ] **Espacio vertical.** La otra mitad de ese punto sigue sin tocar: `.section-pad` mantiene 8 rem en escritorio y 5,5 rem en móvil. Convendría reducir el espacio anterior al catálogo para que los productos aparezcan antes tras el hero.
+- [ ] **Contraste sobre las fotografías más claras.** Se han medido 29 pares de color de la interfaz y todos cumplen AA, pero eso es texto sobre fondo plano. Falta el caso difícil: texto sobre imagen. Hoy el riesgo es bajo porque la cabecera lleva fondo propio y el hero tiene degradado, pero no está medido.
 
 ### Segunda ronda, aplicado el 2026-09-23
 
