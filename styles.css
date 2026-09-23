@@ -62,7 +62,6 @@ section[id] { scroll-margin-top: 96px; }
 .site-header { position: absolute; top: 0; width: 100%; z-index: 10; color: white; background: rgba(58, 40, 34, .88); border-bottom: 1px solid rgba(255, 255, 255, .18); }
 .nav-wrap { display: flex; align-items: center; justify-content: space-between; min-height: 86px; border-bottom: 1px solid rgba(255, 255, 255, .3); }
 .brand { display: inline-flex; align-items: center; gap: .65rem; font: 600 1.15rem Georgia, serif; }
-.brand-mark { display: grid; width: 32px; height: 32px; place-items: center; border: 1px solid currentColor; color: var(--ambar); border-radius: 50%; font: italic 600 1.1rem Georgia, serif; }
 .brand small { display: block; margin-top: .15rem; font: 400 .58rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .main-nav { display: flex; align-items: center; gap: 2rem; font: .88rem Arial, sans-serif; }
 .main-nav a, .footer-links a { transition: color var(--dur-micro) var(--ease-ui); }
@@ -113,7 +112,6 @@ section[id] { scroll-margin-top: 96px; }
 .sign-band-inner { display: flex; align-items: center; justify-content: space-between; gap: 1rem; min-height: 76px; }
 .sign-band p { margin: 0; font: 500 1.3rem Georgia, serif; }
 .sign-band strong { color: var(--papel); }
-.sign-mark { display: grid; width: 48px; height: 48px; place-items: center; border: 1px solid rgba(255, 255, 255, .7); border-radius: 50%; font: italic 600 .9rem Georgia, serif; }
 .sign-note { font: .7rem Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
 
 .section-pad { padding: 8rem 0; }
@@ -205,6 +203,11 @@ section[id] { scroll-margin-top: 96px; }
 .footer-identity { display: flex; flex-direction: column; align-items: flex-start; }
 .mascot-slot { display: inline-flex; align-items: center; justify-content: center; overflow: hidden; border: 0; border-radius: 50%; color: var(--ambar); }
 .mascot-slot img { width: 100%; height: 100%; object-fit: contain; }
+/* La mascota es la unica marca del sitio: sustituye al monograma ET en la
+   cabecera y en la franja. Por debajo de 40px la ilustracion deja de leerse,
+   asi que el circulo de fondo le da forma reconocible en los tamanos pequenos. */
+.mascot-brand { width: 44px; height: 44px; background: radial-gradient(circle, rgba(215, 155, 74, .22) 62%, transparent 63%); }
+.mascot-sign { width: 52px; height: 52px; flex: 0 0 auto; border: 1px solid rgba(255, 255, 255, .55); }
 .mascot-hero { width: 104px; height: 104px; margin-bottom: 1.3rem; background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
 .mascot-footer { width: 72px; height: 72px; margin-bottom: .8rem; background: radial-gradient(circle, rgba(215, 155, 74, .18) 62%, transparent 63%); }
 .footer-grid > p { margin: 0; color: var(--sobre-horno-tenue); font: italic 1.2rem Georgia, serif; }
@@ -230,11 +233,11 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .reveal-mask img { clip-path: inset(0 0 14% 0); transform: scale(1.03); transition: opacity var(--dur-base) var(--ease-out), clip-path var(--dur-scene) var(--ease-out), transform var(--dur-scene) var(--ease-out); }
 .reveal-mask.is-visible img { clip-path: inset(0); transform: none; }
 
-.reveal-band .sign-mark, .reveal-band p, .reveal-band .sign-note { opacity: 0; transition: opacity var(--dur-slow) var(--ease-soft), transform var(--dur-slow) var(--ease-soft); }
-.reveal-band .sign-mark { transform: translateX(-12px); transition-delay: 120ms; }
+.reveal-band .mascot-sign, .reveal-band p, .reveal-band .sign-note { opacity: 0; transition: opacity var(--dur-slow) var(--ease-soft), transform var(--dur-slow) var(--ease-soft); }
+.reveal-band .mascot-sign { transform: translateX(-12px); transition-delay: 120ms; }
 .reveal-band p { transform: translateX(-12px); transition-delay: 150ms; }
 .reveal-band .sign-note { transform: translateX(12px); transition-delay: 180ms; }
-.reveal-band.is-visible .sign-mark, .reveal-band.is-visible p, .reveal-band.is-visible .sign-note { opacity: 1; transform: none; }
+.reveal-band.is-visible .mascot-sign, .reveal-band.is-visible p, .reveal-band.is-visible .sign-note { opacity: 1; transform: none; }
 
 .principles.reveal-line::before { transform: scaleX(0); transition: transform var(--dur-editorial) var(--ease-soft); }
 .principles.reveal-line.is-visible::before { transform: scaleX(1); }
@@ -285,7 +288,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .map-panel iframe { min-height: 270px; }
   .sign-band-inner { align-items: flex-start; flex-direction: column; justify-content: center; padding: 1rem 0; }
   .sign-band p { font-size: 1.1rem; }
-  .reveal-band .sign-mark, .reveal-band p, .reveal-band .sign-note { transform: none; }
+  .reveal-band .mascot-sign, .reveal-band p, .reveal-band .sign-note { transform: none; }
   .reveal-x { transform: translateY(18px); }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .footer-brand, .footer-note { grid-column: 1 / -1; }
@@ -298,7 +301,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; }
   [data-motion], [data-motion].is-visible, .hero-content.is-ready > *, .product-card.catalog-enter { opacity: 1; transform: none; animation: none; transition: none; }
   .reveal-mask img, .reveal-mask.is-visible img { clip-path: none; transform: none; }
-  .reveal-band .sign-mark, .reveal-band p, .reveal-band .sign-note, .principles.reveal-line > div, .principles.reveal-line .principle-number, .principles.reveal-line::before { opacity: 1; transform: none; transition: none; }
+  .reveal-band .mascot-sign, .reveal-band p, .reveal-band .sign-note, .principles.reveal-line > div, .principles.reveal-line .principle-number, .principles.reveal-line::before { opacity: 1; transform: none; transition: none; }
   .hero-image { transform: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
   .menu-toggle span, .button-yellow:hover, .button-yellow:focus-visible, .order-button:hover, .order-button:focus-visible, .product-card:hover, .product-card:hover .product-image img { transform: none; }

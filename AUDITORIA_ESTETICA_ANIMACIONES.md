@@ -112,6 +112,7 @@ Paleta consolidada el 2026-09-23:
 - [x] Los diez tintes sueltos convertidos en tonos con nombre. **Cero valores de color escritos a mano fuera de `:root`** (C7).
 - [x] Tokens renombrados al vocabulario nuevo: `--masa`, `--horno`, `--ambar`, `--corteza`, `--papel` (C8).
 - [x] La franja de identidad pasa a la corteza clara, que es el papel que le asigna la paleta. Verificado: blanco sobre ese fondo da 4,79:1, cumple AA.
+- [x] Una sola marca: la mascota sustituye al monograma "ET" en la cabecera y en la franja, y se retira el "ET" duplicado del pie. Tamaños subidos a 44 y 52 px, porque por debajo de 40 px la ilustración no se lee (C11).
 
 Resultado: **5 colores y 9 tonos derivados de ellos**, frente a los 27 valores sueltos del inicio. Los 11 pares de color nuevos se comprobaron con WCAG antes de aplicarlos y todos cumplen AA.
 
@@ -891,6 +892,22 @@ Evidencia: [styles.css](styles.css#L171-L172) y [styles.css](styles.css#L98-L99)
 Impacto: el verde y el rosa son la convención habitual para disponible y no disponible, pero aquí chocan con una paleta enteramente cálida y además no se apoyan en ningún otro elemento del sistema. Se solapa con C6.
 
 Recomendación: mantener la distinción con ámbar para abierto y terracota oscura para cerrado, y reforzarla con el texto, que ya existe, para no depender solo del color.
+
+##### C11. El sitio tenía dos marcas distintas compitiendo
+
+Evidencia: convivían dos símbolos. El monograma "ET" en un círculo aparecía en la cabecera, en la franja de identidad y en el pie. La mascota panadera aparecía en el hero y en el pie. En el pie estaban **los dos, uno al lado del otro**.
+
+Impacto: una marca debe tener un símbolo, no dos. Con dos, ninguno se fija en la memoria, y el caso del pie era el más claro: la mascota de 72 px y justo debajo el círculo "ET", como si fueran cosas distintas.
+
+Estado: **corregido el 2026-09-23.** La mascota es ahora la única marca del sitio, en las cuatro apariciones. El monograma se retiró por completo, y con él sus reglas de CSS.
+
+Dos consecuencias que conviene tener presentes, porque son el precio de elegir un símbolo ilustrado:
+
+1. **Por debajo de 40 px la mascota deja de leerse.** Se comprobó renderizándola a 28, 32, 40, 48, 56 y 72 px: a 32 px, que era el tamaño del monograma en la cabecera, la ilustración es una mancha, mientras que "ET" se leía nítido. Por eso la marca de cabecera se subió a 44 px y la de la franja a 52 px, y ambas van dentro del círculo de fondo que ya usaba el hero. El círculo es lo que le da silueta reconocible en tamaño pequeño; sin él, la figura flota y no se lee como marca.
+
+2. **La ilustración trae colores que no están en la paleta de cinco.** La mascota tiene blanco, un rojo en el pantalón y varios tonos de piel y de pan. Antes eso aparecía en dos sitios; ahora aparece en cuatro. No es grave a estos tamaños, pero significa que la regla de los cinco colores se cumple en la interfaz y no en la ilustración. Si en algún momento se quiere cumplir del todo, habría que redibujar la mascota con la paleta o crear una versión monocroma para los tamaños pequeños.
+
+Esto sustituye la recomendación de C5. Aquel hallazgo proponía dar color de marca al monograma; al desaparecer el monograma, lo que mantiene el vínculo con la paleta es el círculo ámbar de fondo, no el símbolo.
 
 ### Paleta propuesta: tres principales y dos secundarios
 
