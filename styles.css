@@ -196,7 +196,7 @@ section[id] { scroll-margin-top: 96px; }
 .location-card h3 { margin: 1.2rem 0 .6rem; font: 500 2rem/1.1 Georgia, serif; }
 .location-card address { color: var(--horno-suave); font: .88rem/1.5 Arial, sans-serif; font-style: normal; }
 .featured-location address { color: var(--sobre-horno-tenue); }
-.location-card dl { margin: 1.1rem 0; padding-top: .9rem; border-top: 1px solid var(--masa-linea); font: .85rem/1.5 Arial, sans-serif; }
+.location-card dl { margin: 1.1rem 0 0; padding-top: .9rem; border-top: 1px solid var(--masa-linea); font: .85rem/1.5 Arial, sans-serif; }
 .featured-location dl { border-color: rgba(255, 255, 255, .2); }
 .location-card dl div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin: .3rem 0; }
 .location-card dt { color: var(--horno-suave); }
@@ -205,15 +205,13 @@ section[id] { scroll-margin-top: 96px; }
 /* La fila de hoy la marca el JS con el mismo dia que ya calcula para abierto/cerrado. */
 .location-card dl div.is-today dt, .location-card dl div.is-today dd { color: var(--ambar); }
 .dia-hoy { margin-left: .5rem; padding: .1rem .38rem; background: rgba(215, 155, 74, .1); border-radius: var(--r-hair); color: var(--ambar); font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; vertical-align: .08em; }
-.location-link { display: inline-flex; align-items: center; gap: .4rem; color: var(--corteza-oscura); font: 700 .78rem/1.4 Arial, sans-serif; }
 /* Version en linea de los iconos: mismo encuadre y mismo trazo que .principle-icon. */
 .link-icon { display: block; width: 18px; height: 18px; flex: 0 0 auto; }
-.featured-location .location-link { color: var(--ambar); }
-.map-panel { position: relative; min-height: 300px; overflow: hidden; background: var(--masa-honda); border: 1px solid var(--masa-linea); border-radius: var(--r-panel); }
+.map-panel { position: relative; min-height: 270px; overflow: hidden; background: var(--masa-honda); border: 1px solid var(--masa-linea); border-radius: var(--r-panel); }
 .map-panel.is-loading::before { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; content: "Cargando mapa"; color: var(--horno-suave); background: rgba(247, 241, 231, .88); font: .8rem Arial, sans-serif; }
-.map-panel iframe { width: 100%; height: 100%; min-height: 300px; border: 0; filter: sepia(.2) saturate(.7); }
+.map-panel iframe { width: 100%; height: 100%; min-height: 270px; border: 0; filter: sepia(.2) saturate(.7); }
 .map-fallback { display: none; padding: 1rem; color: var(--horno-suave); font: .85rem Arial, sans-serif; }
-.map-link { position: absolute; bottom: 15px; left: 15px; z-index: 2; padding: .7rem 1rem; background: var(--horno); color: white; border-radius: var(--r-pill); font: 700 .75rem Arial, sans-serif; }
+.map-link { position: absolute; bottom: 15px; left: 15px; z-index: 2; display: inline-flex; align-items: center; gap: .4rem; padding: .7rem 1rem; background: var(--horno); color: white; border-radius: var(--r-pill); font: 700 .75rem Arial, sans-serif; }
 
 .image-unavailable { display: grid; place-items: center; background: var(--masa-honda); }
 .image-unavailable::before { content: "Imagen no disponible"; padding: 1rem; color: var(--horno-suave); font: .8rem Arial, sans-serif; text-align: center; }
@@ -235,7 +233,7 @@ section[id] { scroll-margin-top: 96px; }
 .footer-note { grid-column: 1 / -1; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, .15); font: .68rem Arial, sans-serif !important; }
 .floating-whatsapp { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
-.button-yellow, .nav-cta, .text-link, .location-link, .map-link { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
+.button-yellow, .nav-cta, .text-link, .map-link { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible, .nav-cta:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
 .floating-whatsapp:hover { background: var(--ambar-claro); }
 a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline-offset: 3px; box-shadow: 0 0 0 5px var(--ambar); }

@@ -1197,6 +1197,23 @@ La etiqueta se inserta como texto real desde JavaScript, no con `content` en CSS
 
 **Un tropiezo que la medición evitó:** las dos primeras versiones del distintivo y de la etiqueta usaban fondos ámbar al 14 % y al 16 %, y **fallaban AA por muy poco**, 4,48 y 4,33 frente al 4,5 exigido. La causa es que un fondo tintado aclara la tarjeta y reduce el contraste con el texto ámbar que lleva encima, algo que no se aprecia a ojo. Se barrieron opacidades del 6 al 14 % y se fijó el 10 %, que da **4,79**. Es el tipo de fallo que un fondo decorativo introduce sin que nadie lo note.
 
+### H11. Dos enlaces distintos que llevaban exactamente a la misma URL
+
+Observación del usuario: el enlace "Google Maps / Waze" de la tarjeta sobra teniendo el mapa al lado.
+
+Comprobado, y era más redundante de lo que parecía a simple vista: **los dos enlaces apuntaban a la misma dirección, carácter por carácter**, `google.com/maps/dir/?api=1&destination=-1.004033,-77.812690`. No eran dos acciones parecidas, eran la misma acción duplicada. El texto distinto, "Google Maps / Waze" frente a "Ver en el mapa", hacía pensar que ofrecían cosas diferentes.
+
+Aplicado el 2026-09-23:
+
+- Retirado el enlace de la tarjeta, con sus reglas `.location-link` y `.featured-location .location-link`, que quedaban muertas, y su entrada en la lista de transiciones.
+- **La chincheta se trasladó al enlace que sobrevive**, en lugar de eliminarse con el enlace que la alojaba. La señal visual que se había pedido dos cambios antes sigue cumpliendo su función, ahora sobre la única acción que queda.
+
+**Y otra vez hubo que reequilibrar la fila.** Al quitar el enlace, la tarjeta se quedó en unos 276 px mientras el mapa mantenía 300 px de mínimo, así que la tarjeta volvía a estirarse y **el hueco reaparecía en su borde inferior**, el mismo problema de H9. Se retiró el margen inferior del horario, que existía para separarlo del enlace retirado, y el mínimo del mapa bajó a 270 px.
+
+Resultado medido: **tarjeta 280 px, mapa 280 px, desfase 0**. La tarjeta ha pasado de 338 px al principio de esta serie a 280, un 17 % menos, sin perder ninguna información.
+
+Patrón que conviene recordar: en esta rejilla, **cada vez que se quita contenido de la tarjeta hay que revisar el mínimo del mapa**, o el ahorro no se nota porque el estiramiento lo absorbe. Ha pasado dos veces seguidas.
+
 ### El recorte de texto aplicado
 
 | Bloque | Antes | Después |
