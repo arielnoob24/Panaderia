@@ -102,15 +102,22 @@ Corregido el 2026-09-23:
 - [x] Diez fotografías distintas para diez espacios, en lugar de cuatro repetidas; todas comprobadas con respuesta 200 (I2).
 - [x] Foto de la sección de historia cambiada por una que sí ilustra el texto, con los textos alternativos reescritos para describir lo que aparece (I3).
 
-Pendiente de decisión, porque afecta a la identidad y no solo al código:
+Paleta consolidada el 2026-09-23:
 
-- [ ] Unificar `--ink` y `--petroleum`, que hoy son el mismo valor con dos nombres (C1).
-- [ ] Llevar el ámbar del menos del 1 % actual al 8-10 % que pide la regla (C3).
-- [ ] Unificar los CTA en el color de marca, empezando por los nueve botones "Pedir" (C4).
-- [ ] Dar color de marca al símbolo del logotipo (C5).
-- [ ] Sustituir los seis colores ajenos a la paleta: el verde salvia, el verde grisáceo, el rosa, el azul del mapa y los dos halos de estado (C6).
-- [ ] Derivar los diez tintes sueltos de los cinco colores base (C7).
-- [ ] Renombrar los tokens al vocabulario nuevo, en último lugar (C8).
+- [x] `--ink` y `--petroleum` unificados en un solo token (C1).
+- [x] El ámbar pasa de 8 a 18 elementos, repartidos por todas las secciones, y de 2 de 5 tipos de CTA a 4 de 5 (C3).
+- [x] CTA unificados en el color de marca: los nueve botones "Pedir", el WhatsApp de la navegación, el botón del hero y el flotante. El enlace del mapa se queda en marrón a propósito, como acción secundaria, para que la jerarquía siga significando algo (C4).
+- [x] El símbolo del logotipo lleva color de marca en sus dos apariciones, header y footer (C5).
+- [x] Los seis colores ajenos sustituidos: el verde salvia del aviso del hero pasa a ámbar, el verde grisáceo y el rosa de los estados pasan a tonos de la paleta, el azul de la capa del mapa pasa a crema, y los dos halos de estado usan ahora el ámbar y la corteza reales en lugar de dos colores propios (C6).
+- [x] Los diez tintes sueltos convertidos en tonos con nombre. **Cero valores de color escritos a mano fuera de `:root`** (C7).
+- [x] Tokens renombrados al vocabulario nuevo: `--masa`, `--horno`, `--ambar`, `--corteza`, `--papel` (C8).
+- [x] La franja de identidad pasa a la corteza clara, que es el papel que le asigna la paleta. Verificado: blanco sobre ese fondo da 4,79:1, cumple AA.
+
+Resultado: **5 colores y 9 tonos derivados de ellos**, frente a los 27 valores sueltos del inicio. Los 11 pares de color nuevos se comprobaron con WCAG antes de aplicarlos y todos cumplen AA.
+
+Pendiente:
+
+- [ ] Derivar los nueve tonos con `color-mix()` en lugar de fijarlos como hexadecimales, para que un cambio en un color base arrastre a sus derivados. Hoy están agrupados y documentados en `:root`, que resuelve la trazabilidad pero no la propagación automática.
 - [ ] Sustituir la imagen enlazada a un tercero y evaluar alojar las fotografías en el repositorio (I4, I5).
 
 ### Notas de implementación
@@ -768,11 +775,25 @@ Medición hecha en el navegador sobre la página completa, sumando la altura de 
 | Claro, crema y papel | hero, catálogo, locales | 3552 px | **65,7 %** | 60 % |
 | Oscuro, marrón | header, historia, footer | 1868 px | **34,5 %** | 30 % |
 | Terracota | franja de identidad | 76 px | **1,4 %** | — |
-| Ámbar, el color de marca | botón del hero, botón flotante, números, pie de foto | — | **por debajo del 1 %** | 10 % |
+| Ámbar, el color de marca | botón del hero, botón flotante, pie de foto | 0,35 % del área | **residual** | 10 % |
 
-El 60 y el 30 están razonablemente cerca del objetivo. **El problema está localizado por completo en el 10 %**: el color que debería funcionar como acento de marca es el que menos aparece de todos, y el hueco lo ocupa el marrón oscuro, que ya tiene asignado el 30 %.
+El 60 y el 30 están razonablemente cerca del objetivo. **El problema está localizado por completo en el acento**: el color que debería funcionar como marca es el que menos aparece de todos.
 
-Es una medición por área de sección, no por píxel, así que no cuenta las fotografías ni los elementos pequeños. Sirve para ver el orden de magnitud, no para auditar un decimal.
+#### Cómo se mide el 10 %, y cómo no
+
+Una corrección a la primera redacción de esta sección, que comparaba el área en píxeles del ámbar con el 10 % de la regla como si fueran la misma magnitud. No lo son, y la medición posterior lo dejó claro.
+
+El 60 y el 30 sí son área: son fondos, y se miden sumando superficie. **El 10 no es área.** Un color que ocupara el 10 % de los píxeles de una página dejaría de ser un acento y pasaría a ser un tercer fondo. En una maqueta con fotografía, un acento bien aplicado rara vez pasa del 1 % de píxeles.
+
+Lo que el 10 % describe es **presencia y consistencia**: que el color de marca aparezca en cada pantalla, y que marque siempre lo mismo. Así que el criterio correcto para auditarlo no es el área sino la cobertura:
+
+- Cuántos de los tipos de acción primaria llevan el color de marca.
+- En cuántas de las apariciones del logotipo aparece.
+- Cuántos elementos del acento hay y si están repartidos por todas las secciones o concentrados en una.
+
+Contra ese criterio, el estado inicial era: **2 de 5 tipos de CTA**, **0 de 2 logotipos**, y 8 elementos concentrados casi todos en el hero y en el pie.
+
+Es una medición por área de sección, no por píxel, así que no cuenta las fotografías. Sirve para ver el orden de magnitud, no para auditar un decimal.
 
 ### Hallazgos
 
