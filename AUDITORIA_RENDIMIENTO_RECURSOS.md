@@ -138,16 +138,32 @@ Esto es lo más sano del proyecto y conviene no estropearlo.
 - Todo el movimiento anima solo `transform` y `opacity`, que son las propiedades baratas. No se anima `width`, `height`, `top` ni `margin` en ningún sitio.
 - Desde la segunda ronda, la sombra de hover de las tarjetas se anima por opacidad de un pseudo-elemento en lugar de interpolar `box-shadow`, que era el efecto más caro de la página.
 
+## Aplicado el 2026-09-23
+
+**De 945 KB a 294 KB: un 69 % menos.** Medido igual que antes, a 1418 px de ancho.
+
+| | Antes | Después |
+|---|---:|---:|
+| Transferido | 945 KB | **294 KB** |
+| Imagen del hero | 138 KB | 71 KB |
+| Foto más pesada del catálogo | 304 KB | 55 KB |
+| Mascota | 216 KB | **8 KB** |
+| Fotos del catálogo | 61–304 KB | 12–55 KB |
+
+Qué se hizo:
+
+- [x] `srcset` con cuatro anchuras y `sizes` en las nueve fotografías de Unsplash (P3). El navegador pide ahora 280 px para las tarjetas en vez de 700, y 640 para la de historia en vez de 1000.
+- [x] La mascota se redimensionó a 224 px y se cuantizó a 128 colores conservando la transparencia: **de 216 925 a 8 277 bytes, un 96 % menos** (P4). Se comprobó a 44, 52, 72 y 104 px sobre fondo oscuro, crema y terracota: indistinguible del original. El archivo pasa a llamarse `mascota.png`, porque el anterior era la descarga de vista previa de una herramienta de recorte.
+- [x] La fotografía que comprimía mal baja a `q=58`, ya que seguía pesando el triple que sus vecinas al mismo tamaño (P2).
+- [x] La imagen del hero pasa a `image-set()` con versiones 1x y 2x, de modo que una pantalla normal ya no descarga la de retina (P7).
+- [x] `preconnect` a `images.unsplash.com` y `preload` de la imagen del hero con `fetchpriority="high"` e `imagesrcset` alineado con el CSS, para que no se descargue dos veces (P6).
+- [x] Las cuatro imágenes de la mascota declaran ya `width` y `height`, lo que además cierra el hallazgo A3 de la auditoría de accesibilidad.
+
 ## Pendiente
 
-Por orden de ahorro esperado.
-
-- [ ] `srcset` y `sizes` en las diez fotografías (P3). Es el mayor ahorro.
-- [ ] Rehacer la mascota como SVG o como WebP pequeño (P4). Unos 200 KB de ahorro.
-- [ ] Bajar la calidad o cambiar la fotografía de 304 KB (P2).
-- [ ] `preconnect` a Unsplash y `preload` de la imagen del hero (P6, P7).
-- [ ] Sustituir la imagen alojada en un tercero (P8).
-- [ ] Medir de nuevo después de todo lo anterior y anotar el resultado.
+- [ ] Sustituir la imagen alojada en un tercero (P8). No admite `srcset` porque no acepta parámetros de tamaño, así que es la única foto que sigue sin optimizar.
+- [ ] Valorar convertir la mascota a SVG. Con 8 KB ya no es urgente, pero un vector escalaría perfecto en los cuatro tamaños.
+- [ ] Medir con Lighthouse y con limitación de red real, que es lo que esta auditoría no ha podido hacer.
 
 ## Nota de validación
 

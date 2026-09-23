@@ -102,7 +102,7 @@ Impacto: 320 px sigue siendo la anchura de referencia mínima habitual. El conte
 
 ## Pendiente
 
-- [ ] Señal de desplazamiento en la barra de filtros (R2).
+- [x] Señal de desplazamiento en la barra de filtros, aplicada el 2026-09-23 (R2). Se resolvió sin JavaScript, con capas de fondo `local` que se mueven con el contenido y descubren una sombra cuando queda algo fuera. Verificado: 5 capas con `background-attachment: local, local, scroll, scroll, scroll`.
 - [ ] Punto de ruptura propio para `.story-grid` a unos 820 px (R3).
 - [ ] Revisar si las reglas de 2 y 1 columna del catálogo siguen haciendo falta con `auto-fill` (R4).
 - [ ] Probar en alturas móviles cortas, cerca de 650 px (R5).

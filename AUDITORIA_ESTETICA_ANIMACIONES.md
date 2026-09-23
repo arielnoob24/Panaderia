@@ -88,12 +88,16 @@ Movimiento:
 - [x] Stagger diagonal por fila más columna en el catálogo, tanto en la entrada inicial como al filtrar.
 - [x] Acento único de amasado en la mascota, subrayado que crece en la navegación, secuencia numerada en los principios y entrada diferida del botón flotante.
 
+Cerrado el 2026-09-23, en la misma tanda que el bloque de rendimiento:
+
+- [x] **Señal de desplazamiento en la barra de filtros.** No se hizo el indicador deslizante que proponía el mapa de zonas, porque exigía medir desde JavaScript y recalcular al arrastrar. Se resolvió mejor y sin JavaScript: cuatro capas de fondo, dos ancladas al contenido con `background-attachment: local` y dos ancladas al elemento, de modo que las primeras tapan a las segundas cuando no queda nada fuera y las descubren cuando sí. Verificado: `background-attachment: local, local, scroll, scroll, scroll`. Esto cierra también el hallazgo R2 de la auditoría de responsive.
+- [x] **Pulso del indicador de frescura.** Aplicado como único bucle infinito del sitio, y solo en el aviso del hero, no en la etiqueta de estado de locales, tal como pedía el mapa de zonas. Es un halo que crece de `scale(1)` a `scale(2.8)` desvaneciéndose, en 2400 ms. Queda desactivado explícitamente bajo `prefers-reduced-motion`, sin depender de que la neutralización general lo cubra.
+- [x] **Hombros de banda entre locales y pie.** Resuelto el problema que lo había bloqueado: el pie se monta 40 px sobre la sección de locales con margen negativo, compensando con el mismo valor de relleno superior. Así sus esquinas redondeadas descubren el papel de la sección de encima y no la crema del `body`. Verificado en render: no aparece la cuña de color que se temía.
+- [x] **Jerarquía tipográfica.** Los títulos de sección bajan de `clamp(3rem, 6vw, 5.3rem)` a `clamp(2.8rem, 5.4vw, 4.6rem)`, de modo que el tamaño máximo queda reservado al titular del hero. Era un pendiente de la primera ronda.
+
 Sigue pendiente, por decisión explícita:
 
-- [ ] Indicador de píldora deslizante en la barra de filtros. Necesita medición desde JavaScript y recálculo al hacer scroll horizontal; se dejó solo la forma de píldora y las transiciones.
-- [ ] Pulso del indicador de frescura. Es el único bucle infinito propuesto y el de mayor riesgo; se decide aparte.
-- [ ] Módulo destacado en el catálogo con `grid-column: span 2`. Cambia la jerarquía del contenido, no solo la forma.
-- [ ] Hombros de banda en el límite entre locales y footer. Ver la nota de implementación.
+- [ ] Módulo destacado en el catálogo con `grid-column: span 2`. Cambia la jerarquía del contenido, no solo la forma, así que es una decisión de negocio: hay que elegir qué producto se destaca.
 
 ### Tercera ronda, estado
 
@@ -120,7 +124,7 @@ Resultado: **5 colores y 9 tonos derivados de ellos**, frente a los 27 valores s
 
 Pendiente:
 
-- [ ] Derivar los nueve tonos con `color-mix()` en lugar de fijarlos como hexadecimales, para que un cambio en un color base arrastre a sus derivados. Hoy están agrupados y documentados en `:root`, que resuelve la trazabilidad pero no la propagación automática.
+- [ ] Derivar los nueve tonos con `color-mix()` en lugar de fijarlos como hexadecimales. **Se evaluó el 2026-09-23 y se decidió no hacerlo por ahora**, con este motivo: los nueve tonos se eligieron uno a uno para cumplir contraste AA, y se verificaron los once pares resultantes. Sustituirlos por mezclas calculadas desplaza varios de ellos lo bastante como para tener que volver a comprobar los once pares, a cambio de una ventaja, la propagación automática al cambiar un color base, que en una paleta estática de cinco colores rara vez se necesita. Queda anotado como mejora posible, no como deuda.
 - [ ] Sustituir la imagen enlazada a un tercero y evaluar alojar las fotografías en el repositorio (I4, I5).
 
 ### Notas de implementación

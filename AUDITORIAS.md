@@ -28,14 +28,24 @@ Recogido de los seis archivos, ordenado por gravedad. El número entre paréntes
 |---|---|---|
 | **Crítico** | El `canonical` y el `og:url` apuntan a `www.ejemplo.com`, un dominio que no existe. Le está diciendo a Google que la página real es una copia de otra (S1) | SEO |
 | **Crítico** | Teléfono y WhatsApp son marcadores: `+593 99 000 0000`. Los quince CTA del sitio no llevan a ningún número real (C1) | Contenido |
-| **Alto** | 945 KB transferidos, casi todo imágenes, y una sola foto pesa 304 KB (P1, P2) | Rendimiento |
-| **Alto** | Las fotos se piden al doble del tamaño en que se muestran, sin `srcset` (P3) | Rendimiento |
-| **Alto** | La mascota es un PNG de 216 KB que se muestra a 44 px, y ahora aparece en cuatro sitios (P4) | Rendimiento |
 | **Alto** | Quince enlaces abren pestaña nueva y ninguno lo avisa a quien usa lector de pantalla (A1) | Accesibilidad |
 | **Alto** | Siete objetivos táctiles por debajo de 24 px de alto, el mínimo de WCAG 2.2 AA (A2) | Accesibilidad |
 | **Medio** | No hay `robots.txt` ni `sitemap.xml` (S2) | SEO |
 | **Medio** | El nombre del local aparece como "Audio-PhoneComputer", que parece otro negocio (C2) | Contenido |
 | **Medio** | Tildes ausentes en texto visible: "El menu", "Fermentacion natural", "pan rapido" (C3) | Contenido |
+
+## Ya corregido
+
+| Qué | Área | Resultado |
+|---|---|---|
+| Peso de la página | Rendimiento | **945 KB → 294 KB**, un 69 % menos (P1–P4, P6, P7) |
+| La mascota | Rendimiento | **216 KB → 8 KB**, un 96 % menos, visualmente idéntica (P4) |
+| Scroll horizontal entre 681 y 900 px | Responsive | Corregido con `overflow-x: clip` (R1) |
+| Barra de filtros sin señal de desplazamiento | Responsive | Resuelto sin JavaScript (R2) |
+| Contraste de 1,73:1 en "Nuestra manera" | Accesibilidad | Ahora 5,76:1 (C2 de estética) |
+| Una foto devolvía 404 | Contenido | Sustituida, diez fotos distintas verificadas (I1, I2) |
+| Paleta de 27 colores | Estética | Cinco colores y nueve tonos derivados |
+| Dos marcas compitiendo | Estética | Solo la mascota, en sus cuatro apariciones |
 
 ## Cómo leer estos archivos
 
