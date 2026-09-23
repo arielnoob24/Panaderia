@@ -1239,6 +1239,26 @@ La tarjeta sigue midiendo 280 px y el desfase con el mapa sigue en 0, así que e
 
 **Descartado a propuesta del usuario:** añadir botones de WhatsApp y de llamada a la tarjeta, que es lo que recomiendan las guías de fichas de local. Su argumento es que esos contactos ya están en el pie y en el botón flotante, y es razonable: repetirlos aquí sería el mismo tipo de duplicación que acabamos de retirar con el enlace al mapa. Queda anotado que la tarjeta no tiene ninguna acción propia, por si en el futuro se decide lo contrario.
 
+### H13. Los contactos del pie eran tres enlaces planos, con el número repetido
+
+El usuario aportó una referencia visual: etiqueta del canal encima, y debajo el icono junto al dato en negrita **subrayado**.
+
+Estado anterior: tres enlaces en columna, "Instagram ↗", "+593 99 000 0000" y "WhatsApp ↗", todos del mismo tamaño y peso. Dos problemas:
+
+- **El número estaba duplicado de hecho.** El enlace `tel:` y el de WhatsApp apuntaban al mismo número; uno lo mostraba y el otro lo escondía tras la palabra "WhatsApp". Eran el mismo dato contado dos veces, igual que el enlace al mapa de H11.
+- **El canal pesaba más que el dato.** "Instagram" y "WhatsApp" son la categoría; lo que alguien quiere copiar o pulsar es el usuario y el número, y estaban al mismo nivel o escondidos.
+
+Aplicado el 2026-09-23, siguiendo la referencia: dos bloques, cada uno con el nombre del canal en pequeño y apagado, y debajo el icono junto al dato en ámbar, negrita y subrayado. El subrayado es parte de la referencia y cumple además una función: **es la única señal de que el dato es pulsable**, ahora que se ha retirado la flecha.
+
+Los dos iconos se dibujaron en la misma familia de H7: encuadre de 24, trazo de 1,4 y `currentColor`, así que heredan el ámbar y no añaden color ni peticiones.
+
+Contraste verificado: dato 5,76:1, etiqueta 8,70:1, hover 8,91:1.
+
+**Dos cosas que conviene saber:**
+
+- **Desaparece el enlace `tel:`**, que permitía pulsar para llamar desde el móvil. Era el mismo número, así que no se pierde información, pero sí se pierde esa acción. Si se quiere conservar, lo natural es un tercer bloque "Teléfono" con el mismo patrón.
+- **`@eltradicional` es un marcador inventado**, igual que el número. El enlace de Instagram apunta a `instagram.com` sin cuenta, así que hoy no lleva a ningún perfil. Hay que sustituir las dos cosas.
+
 ### El recorte de texto aplicado
 
 | Bloque | Antes | Después |
