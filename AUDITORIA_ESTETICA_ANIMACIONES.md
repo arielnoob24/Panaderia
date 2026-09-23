@@ -59,8 +59,8 @@ Revisado el 2026-09-23: varios de estos puntos se resolvieron en la segunda y la
 - [x] Solapamiento del aviso del hero con el botón de WhatsApp. Medido y descartado: el aviso ocupa de y 608 a 669 y el botón de y 1039 a 1082. Queda por comprobar en alturas cercanas a 650 px.
 - [x] Parallax. Decidido que no, con motivo técnico: la textura fija a pantalla completa y el filtro del iframe del mapa lo hacen caro. Está razonado en "Dónde no conviene añadir variedad".
 - [x] Jerarquía tipográfica: los títulos de sección bajan a `clamp(2.8rem, 5.4vw, 4.6rem)`, reservando el tamaño máximo al hero.
-- [ ] **Espacio vertical.** La otra mitad de ese punto sigue sin tocar: `.section-pad` mantiene 8 rem en escritorio y 5,5 rem en móvil. Convendría reducir el espacio anterior al catálogo para que los productos aparezcan antes tras el hero.
-- [ ] **Contraste sobre las fotografías más claras.** Se han medido 29 pares de color de la interfaz y todos cumplen AA, pero eso es texto sobre fondo plano. Falta el caso difícil: texto sobre imagen. Hoy el riesgo es bajo porque la cabecera lleva fondo propio y el hero tiene degradado, pero no está medido.
+- [x] **Espacio vertical**, aplicado el 2026-09-23. `.section-pad` baja de 8 a 6,5 rem, y de 5,5 a 4,5 rem en móvil. El catálogo recibe además un `padding-top` propio de 4,5 rem, 3 rem en móvil, porque la franja coral ya lo separa del hero. El documento pasa de 5409 a 4894 px de alto, un 10 % menos, y el catálogo empieza en y 796 en lugar de y 1000.
+- [x] **Contraste sobre las fotografías más claras**, medido el 2026-09-23. Ver la sección siguiente. Encontró un fallo real y se corrigió.
 
 ### Segunda ronda, aplicado el 2026-09-23
 
@@ -130,7 +130,40 @@ Pendiente:
 - [ ] Derivar los nueve tonos con `color-mix()` en lugar de fijarlos como hexadecimales. **Se evaluó el 2026-09-23 y se decidió no hacerlo por ahora**, con este motivo: los nueve tonos se eligieron uno a uno para cumplir contraste AA, y se verificaron los once pares resultantes. Sustituirlos por mezclas calculadas desplaza varios de ellos lo bastante como para tener que volver a comprobar los once pares, a cambio de una ventaja, la propagación automática al cambiar un color base, que en una paleta estática de cinco colores rara vez se necesita. Queda anotado como mejora posible, no como deuda.
 - [ ] Sustituir la imagen enlazada a un tercero y evaluar alojar las fotografías en el repositorio (I4, I5).
 
-### Notas de implementación
+### Medición de contraste sobre imagen
+
+Hecha el 2026-09-23. Es el caso que faltaba: hasta ahora se habían medido 29 pares de color, pero todos de texto sobre fondo plano. Aquí el fondo es una fotografía, y cambia píxel a píxel.
+
+Método: se renderizó la página dos veces, una normal para obtener los límites reales de cada texto con `Range.getClientRects`, y otra con esos textos en `visibility: hidden` para ver el fondo exacto que hay debajo. Después se muestreó un píxel de cada dos dentro de esas regiones y se calculó la relación de contraste de cada uno contra el color del texto, quedándose con **el peor píxel**, no con la media.
+
+### El fallo que encontró
+
+| Zona | Antes | Umbral | Después |
+|---|---:|---:|---:|
+| Eyebrow del hero, "PANADERÍA Y PASTELERÍA EL TRADICIONAL" | **3,85** | 4,5 | **6,49** |
+
+Causa: `.hero .eyebrow` usaba `--corteza`, la terracota clara, sobre la zona crema del hero. **El 100 % de los píxeles muestreados fallaba.**
+
+Esto corrige además un error de esta misma auditoría. El hallazgo C9 decía que la terracota clara "hoy es correcto, porque solo se usa en el `<em>` del titular del hero, que ronda los 7 rem". Era falso: también se usaba en el eyebrow, que mide 0,7 rem. El aviso de C9 era acertado y el diagnóstico de dónde se aplicaba, no. Corregido usando `--corteza-oscura`, el tono que C9 ya señalaba como el adecuado para texto pequeño.
+
+### El resto, verificado
+
+Peor píxel de cada zona, en escritorio a 1418 px y en móvil a 512 px, donde el degradado del hero es vertical y llega a dejar ver la foto al 40 %.
+
+| Zona | Escritorio | Móvil | Umbral |
+|---|---:|---:|---:|
+| Marca en la cabecera, sobre la foto | 9,69 | 9,69 | 3,0 |
+| Enlaces de navegación, sobre la foto | 9,94 | — | 4,5 |
+| Eyebrow del hero, ya corregido | 6,49 | 6,23 | 4,5 |
+| Titular `h1` | 11,57 | 10,49 | 3,0 |
+| `h1` en cursiva, en terracota clara | 4,16 | — | 3,0 |
+| Párrafo del hero | 12,41 | 9,39 | 4,5 |
+| Enlace "Encuentra tu local" | 12,41 | 7,45 | 4,5 |
+| Zona baja del hero en móvil, la peor del degradado | — | 5,76 | 4,5 |
+
+La cursiva del titular queda en 4,16, que cumple el umbral de texto grande pero no llegaría al de texto pequeño. Está bien donde está, a 7 rem, y no debe reutilizarse ese color en tamaños menores.
+
+## Notas de implementación
 
 Cuatro puntos donde lo aplicado se aparta de lo que proponía la auditoría, con el motivo.
 
