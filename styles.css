@@ -179,7 +179,11 @@ section[id] { scroll-margin-top: 96px; }
 .principles::before { position: absolute; top: 0; right: 0; left: 0; height: 1px; content: ""; background: rgba(255, 255, 255, .25); transform-origin: left; }
 .principles h3 { margin: .5rem 0; font: 500 1.2rem/1.25 Georgia, serif; }
 .principles p { margin: 0; color: var(--sobre-horno-tenue); font: .85rem/1.45 Arial, sans-serif; }
-.principle-number { color: var(--ambar); font: .7rem/1.4 Arial, sans-serif; }
+/* El icono y el numero forman una sola marca. Los iconos son SVG en linea:
+   ni una peticion mas, y heredan el color con currentColor. */
+.principle-mark { display: flex; align-items: center; gap: .55rem; margin-bottom: .85rem; color: var(--ambar); }
+.principle-icon { display: block; width: 38px; height: 38px; flex: 0 0 auto; }
+.principle-number { color: inherit; font: .7rem/1.4 Arial, sans-serif; letter-spacing: .08em; }
 .dark { color: var(--ambar); }
 
 .locations { background: var(--papel); }
@@ -258,8 +262,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .principles.reveal-line > div:nth-child(2) { transition-delay: 230ms; }
 .principles.reveal-line > div:nth-child(3) { transition-delay: 340ms; }
 .principles.reveal-line.is-visible > div { opacity: 1; transform: none; }
-.principles.reveal-line .principle-number { display: inline-block; transform: scale(.85); transition: transform var(--dur-slow) var(--ease-soft); transition-delay: inherit; }
-.principles.reveal-line.is-visible .principle-number { transform: none; }
+.principles.reveal-line .principle-mark { transform: scale(.85); transform-origin: left center; transition: transform var(--dur-slow) var(--ease-soft); transition-delay: inherit; }
+.principles.reveal-line.is-visible .principle-mark { transform: none; }
 
 @media (hover: hover) and (pointer: fine) {
   .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-2px); }
@@ -314,7 +318,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; }
   [data-motion], [data-motion].is-visible, .hero-content.is-ready > *, .product-card.catalog-enter { opacity: 1; transform: none; animation: none; transition: none; }
   .reveal-mask img, .reveal-mask.is-visible img { clip-path: none; transform: none; }
-  .reveal-band .mascot-sign, .reveal-band p, .reveal-band .sign-note, .principles.reveal-line > div, .principles.reveal-line .principle-number, .principles.reveal-line::before { opacity: 1; transform: none; transition: none; }
+  .reveal-band .mascot-sign, .reveal-band p, .reveal-band .sign-note, .principles.reveal-line > div, .principles.reveal-line .principle-mark, .principles.reveal-line::before { opacity: 1; transform: none; transition: none; }
   .hero-image { transform: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
   .hero-note .status-dot::after { display: none; }

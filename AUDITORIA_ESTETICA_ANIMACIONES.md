@@ -16,7 +16,7 @@ Orden recomendado para futuras auditorías, y estado actual:
 4. [Rendimiento y recursos](AUDITORIA_RENDIMIENTO_RECURSOS.md): primera ronda hecha el 2026-09-23.
 5. [SEO y datos estructurados](AUDITORIA_SEO_DATOS_ESTRUCTURADOS.md): primera ronda hecha el 2026-09-23.
 6. [Contenido y conversión](AUDITORIA_CONTENIDO_CONVERSION.md): primera ronda hecha el 2026-09-23.
-
+<!--  -->
 Este archivo cubre únicamente estética, movimiento y sensación de interacción. No evalúa precios, teléfonos, URLs, horarios, direcciones, imágenes provisionales ni otros datos de negocio.
 
 ## Resumen
@@ -1120,9 +1120,30 @@ Recomendación: repartir funciones sin solape. El lead dice el porqué, el párr
 - [x] H3, el lead deja de ser ámbar y pasa a crema. El color de marca queda reservado al titular, y el lead se distingue por cursiva y tamaño.
 - [x] H5, texto recortado. De **85 a 64 palabras, un 25 % menos**, y de 572 a 410 caracteres. Se quitó del párrafo la frase que enumeraba los tres pilares, porque están 48 px más abajo, y su contenido se recuperó en el principio 03, así que no se perdió información. Detalle abajo.
 - [x] H6, parte: interlíneas declaradas en las cinco reglas de la sección que usaban `font:` sin ellas; descripciones de los principios a `.85rem` con `1.45`; "Ingredientes locales" pasa a "Origen cercano" para no chocar con "Conoce nuestros locales"; y las cuatro tildes corregidas, junto con otras cuatro del resto del sitio.
+- [x] H7, los tres principios dejan de ser solo texto: iconos de línea en ámbar. Detalle abajo.
 - [ ] H6, resto. Dos puntos se revisaron y **se decidió no aplicarlos**, con motivo:
   - **Bordes derechos.** La recomendación era unificar la columna a 640 px, pero eso contradice la propia medición del informe: el párrafo mide 69 caracteres por línea a 530 px, y a 640 px pasaría de 80, por encima del máximo editorial de 75. Que el texto corrido sea más estrecho que la rejilla de principios es una decisión editorial normal, no un descuadre. Se deja como está.
   - **Umbral de la animación de entrada.** Tras corregir H1 la columna mide 559 px en vez de 657, así que el problema se reduce solo. Cambiar el umbral afecta a los veinte elementos animados del sitio para una mejora marginal en uno. Se deja anotado por si algún día se anima por bloques.
+
+### H7. Los tres principios eran solo texto
+
+Observación del usuario tras aplicar el recorte: el bloque de principios "solo con texto me parece aburrido".
+
+Es cierto y es consecuencia del propio recorte: al quitar la repetición, los tres principios quedaron reducidos a título más una frase corta cada uno, sin ningún elemento que los distinguiera entre sí ni del párrafo de arriba. Tres columnas de texto seguidas.
+
+Se plantearon cuatro salidas: iconos de línea, numeral grande editorial, número dentro de un aro, y fotografía pequeña por principio. **El usuario eligió iconos de línea.**
+
+Aplicado: tres iconos dibujados a medida, un tarro de masa madre con burbujas, un reloj y una espiga, a 38 px y con el número al lado formando una sola marca.
+
+Decisiones que respetan el sistema ya establecido:
+
+- **SVG en línea, no archivos.** Cero peticiones nuevas, coherente con que el sitio no tenga dependencias ni fuentes web.
+- **`stroke="currentColor"`**, de modo que heredan el ámbar de `.principle-mark`. No introducen ningún color fuera de los cinco de la paleta.
+- **`aria-hidden="true"` y `focusable="false"`**: son decorativos, porque el título de al lado ya dice lo mismo. Si no, el lector de pantalla anunciaría dos veces cada principio.
+- **La animación de entrada pasa del número a la marca completa**, así que el escalonado 01, 02, 03 sigue funcionando, y la neutralización bajo `prefers-reduced-motion` se actualizó al selector nuevo.
+- Se comprobó el dibujo a 110, 48 y 38 px antes de fijarlo. La primera versión de la espiga se empastaba por debajo de 40 px y se redibujó con los granos más abiertos.
+
+Nota de coherencia: esto **estrena un lenguaje de iconos** que antes no existía en el sitio. Si en el futuro se añaden iconos en otra sección, tienen que seguir el mismo trazo de 1,4, el mismo encuadre de 24 y el mismo ámbar, o la familia se rompe.
 
 ### El recorte de texto aplicado
 
