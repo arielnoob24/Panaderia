@@ -255,9 +255,14 @@
         marca.remove();
       }
     });
-    const reason = holiday ? ' · Día festivo' : '';
-    const status = isOpen ? 'Abierto hoy' : 'Cerrado hoy';
-    label.lastChild.textContent = ` ${status}${reason}`;
+    // Google y Yelp muestran el estado con la hora, no solo "abierto": es el dato
+    // que responde la pregunta real, "¿me da tiempo a ir?". Ya se calculaba y se tiraba.
+    let estado;
+    if (holiday) estado = 'Cerrado · día festivo';
+    else if (isOpen) estado = `Abierto · cierra ${closing}`;
+    else if (currentMinutes < toMinutes(opening)) estado = `Cerrado · abre ${opening}`;
+    else estado = 'Cerrado · abre mañana';
+    label.lastChild.textContent = ` ${estado}`;
   };
   updateOpeningStatus();
   window.setInterval(updateOpeningStatus, 60000);
