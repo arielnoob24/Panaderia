@@ -22,8 +22,8 @@ jobs:
           set -euo pipefail
           test -s index.html
           test -s styles.css
-          test -s mascota-removebg-preview.png
-          grep -q 'mascota-removebg-preview.png' index.html
+          test -s mascota.png
+          grep -q 'mascota.png' index.html
           test "$(grep -o '<article class="product-card"' index.html | wc -l)" -eq 9
           test "$(grep -o 'id="filter-' index.html | wc -l)" -eq 5
           if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html styles.css; then
