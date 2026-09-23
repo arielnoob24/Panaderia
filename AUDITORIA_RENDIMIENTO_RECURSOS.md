@@ -140,24 +140,31 @@ Esto es lo más sano del proyecto y conviene no estropearlo.
 
 ## Aplicado el 2026-09-23
 
-**De 945 KB a 294 KB: un 69 % menos.** Medido igual que antes, a 1418 px de ancho.
+**De 945 KB a 333 KB: un 65 % menos.** Medido sobre el sitio publicado, a 1418 px de ancho y densidad 1.
 
 | | Antes | Después |
 |---|---:|---:|
-| Transferido | 945 KB | **294 KB** |
+| **Total de la página** | **945 KB** | **333 KB** |
 | Imagen del hero | 138 KB | 71 KB |
 | Foto más pesada del catálogo | 304 KB | 55 KB |
 | Mascota | 216 KB | **8 KB** |
-| Fotos del catálogo | 61–304 KB | 12–55 KB |
+| Fotos del catálogo | 61–304 KB | 11–55 KB |
+| HTML, CSS y JS juntos, ya comprimidos por el servidor | — | 15 KB |
+
+Desglose del total: 259 KB de fotografías de Unsplash, 51 KB de la fotografía propia de la sección de historia, 8 KB de la mascota y 15 KB de HTML, CSS y JavaScript comprimidos.
+
+Una nota sobre cómo se midió, porque el primer intento salió mal y conviene que quede escrito: medir sumando lo que devuelve cada URL del HTML **da un número falso**, porque cuenta a la vez todas las versiones de `srcset` y el navegador solo descarga una. Y medir con la API de rendimiento desde una página local da 0 para los archivos propios, porque GitHub Pages no envía la cabecera `Timing-Allow-Origin` y el origen es distinto. El número bueno combina las dos fuentes: la API para lo que sirve Unsplash, que sí envía esa cabecera, y el tamaño servido real para los archivos del repositorio.
 
 Qué se hizo:
 
-- [x] `srcset` con cuatro anchuras y `sizes` en las nueve fotografías de Unsplash (P3). El navegador pide ahora 280 px para las tarjetas en vez de 700, y 640 para la de historia en vez de 1000.
+- [x] `srcset` con cuatro anchuras y `sizes` en las fotografías de Unsplash (P3). El navegador pide ahora 280 px para las tarjetas en vez de 700, y 640 para la de historia en vez de 1000.
 - [x] La mascota se redimensionó a 224 px y se cuantizó a 128 colores conservando la transparencia: **de 216 925 a 8 277 bytes, un 96 % menos** (P4). Se comprobó a 44, 52, 72 y 104 px sobre fondo oscuro, crema y terracota: indistinguible del original. El archivo pasa a llamarse `mascota.png`, porque el anterior era la descarga de vista previa de una herramienta de recorte.
 - [x] La fotografía que comprimía mal baja a `q=58`, ya que seguía pesando el triple que sus vecinas al mismo tamaño (P2).
 - [x] La imagen del hero pasa a `image-set()` con versiones 1x y 2x, de modo que una pantalla normal ya no descarga la de retina (P7).
 - [x] `preconnect` a `images.unsplash.com` y `preload` de la imagen del hero con `fetchpriority="high"` e `imagesrcset` alineado con el CSS, para que no se descargue dos veces (P6).
 - [x] Las cuatro imágenes de la mascota declaran ya `width` y `height`, lo que además cierra el hallazgo A3 de la auditoría de accesibilidad.
+
+- [x] **La fotografía de la sección de historia pasa a ser propia y local.** La aportó el usuario en 3:4; se recortó a 4:5 centrado, que solo pierde un 6,7 % de alto, y se generaron dos tamaños servidos por `srcset`: 430 px a calidad 74 para pantalla normal, 51 KB, y 860 px a calidad 60 para densidad doble, 132 KB. El archivo original pesaba 971 KB. Es la primera fotografía propia del sitio, lo que además empieza a resolver el hallazgo I5 de la auditoría de estética.
 
 ## Pendiente
 

@@ -38,12 +38,13 @@ Recogido de los seis archivos, ordenado por gravedad. El número entre paréntes
 
 | Qué | Área | Resultado |
 |---|---|---|
-| Peso de la página | Rendimiento | **945 KB → 294 KB**, un 69 % menos (P1–P4, P6, P7) |
+| Peso de la página | Rendimiento | **945 KB → 333 KB**, un 65 % menos, medido en el sitio publicado (P1–P4, P6, P7) |
 | La mascota | Rendimiento | **216 KB → 8 KB**, un 96 % menos, visualmente idéntica (P4) |
 | Scroll horizontal entre 681 y 900 px | Responsive | Corregido con `overflow-x: clip` (R1) |
 | Barra de filtros sin señal de desplazamiento | Responsive | Resuelto sin JavaScript (R2) |
 | Contraste de 1,73:1 en "Nuestra manera" | Accesibilidad | Ahora 5,76:1 (C2 de estética) |
 | Una foto devolvía 404 | Contenido | Sustituida, diez fotos distintas verificadas (I1, I2) |
+| La foto de historia no encajaba en el hueco vertical | Estética | Sustituida por una fotografía propia, recortada a 4:5 (I3) |
 | Paleta de 27 colores | Estética | Cinco colores y nueve tonos derivados |
 | Dos marcas compitiendo | Estética | Solo la mascota, en sus cuatro apariciones |
 
