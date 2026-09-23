@@ -1214,6 +1214,31 @@ Resultado medido: **tarjeta 280 px, mapa 280 px, desfase 0**. La tarjeta ha pasa
 
 Patrón que conviene recordar: en esta rejilla, **cada vez que se quita contenido de la tarjeta hay que revisar el mínimo del mapa**, o el ahorro no se nota porque el estiramiento lo absorbe. Ha pasado dos veces seguidas.
 
+### H12. La jerarquía de la tarjeta de local estaba invertida
+
+Observación del usuario: "Tena se repite, no sé si eso se debería corregir". Se repetía, y al comprobarlo apareció algo de fondo.
+
+**La repetición:** el título decía "Tena" y dos líneas más abajo la dirección decía "Tena, Ecuador". Mismo problema que el del texto de historia, en pequeño.
+
+**Lo de fondo, medido:**
+
+| Dato | Tamaño | Tono | ¿Lo necesita quien lee? |
+|---|---|---|---|
+| "Tena", la ciudad | **2 rem, 32 px** | el más brillante | No: ya sabe en qué ciudad está |
+| La calle | **0,88 rem, 14 px** | `--sobre-horno-tenue`, **el más apagado de la tarjeta** | Sí: es lo que hay que leer para llegar |
+
+Es decir, el dato prescindible se mostraba con el doble de tamaño y el máximo contraste, y el dato imprescindible con el mínimo de ambos. Eso explica mejor que nada por qué la tarjeta se sentía plana: no era falta de adornos, era que **lo importante no parecía importante**.
+
+Aplicado el 2026-09-23:
+
+- La dirección pierde la línea "Tena, Ecuador". **La localidad y el país siguen declarados en el JSON-LD**, así que no se pierde nada de cara a buscadores ni a la ficha de negocio local; solo desaparece de la lectura, donde sobraba.
+- La calle sube de `.88rem` a `1rem`, pasa a peso 500 y al tono `--sobre-horno`, que da **11,10:1** de contraste frente a los 8,70 de antes.
+- El nombre de la ciudad baja de `2rem` a `1.7rem`, para que deje de competir con la línea que ahora manda.
+
+La tarjeta sigue midiendo 280 px y el desfase con el mapa sigue en 0, así que esta vez no hubo que reequilibrar la fila.
+
+**Descartado a propuesta del usuario:** añadir botones de WhatsApp y de llamada a la tarjeta, que es lo que recomiendan las guías de fichas de local. Su argumento es que esos contactos ya están en el pie y en el botón flotante, y es razonable: repetirlos aquí sería el mismo tipo de duplicación que acabamos de retirar con el enlace al mapa. Queda anotado que la tarjeta no tiene ninguna acción propia, por si en el futuro se decide lo contrario.
+
 ### El recorte de texto aplicado
 
 | Bloque | Antes | Después |
