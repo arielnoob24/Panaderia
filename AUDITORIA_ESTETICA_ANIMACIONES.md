@@ -1153,6 +1153,32 @@ Tres cambios pedidos por el usuario sobre la tarjeta de la sección de locales, 
 - **Fuera "Audio-PhoneComputer".** Parecía el nombre del negocio. Es el hallazgo C2 de la auditoría de contenido, y se retiró también del `streetAddress` del JSON-LD, donde alimentaba la ficha de negocio local.
 - **Chincheta en el enlace al mapa.** El enlace "Google Maps / Waze" solo tenía la flecha de enlace externo, que indica que se abre fuera pero no qué se va a ver. Se añadió una chincheta de 18 px, **primera aplicación de la familia de iconos de H7 fuera de los principios**: mismo encuadre de 24, mismo trazo de 1,4, mismo ámbar heredado por `currentColor`, y también decorativa, porque el texto del enlace ya dice a dónde lleva.
 
+### H9. La tarjeta de local tenía un tercio de su altura en huecos
+
+Observación del usuario: "me gusta la información que muestra pero creo que hay muchos espacios en blanco".
+
+Medido antes de tocar nada, sumando el hueco anterior a cada elemento: la tarjeta medía 335 × 338 px y **107 px eran huecos, el 32 % de su altura**.
+
+| Hueco | Antes | Causa |
+|---|---:|---|
+| Antes del título "Tena" | **38 px** | `margin-top: 2.4rem`, heredado de cuando había que separarlo del "01" |
+| Alto de la dirección | 54 px | `min-height: 54px`, dimensionado para tres líneas cuando ahora son dos |
+| Antes y después del horario | 24 px cada uno | `margin: 1.5rem 0` |
+| Entre filas del horario | 6,4 px cada una | `margin: .4rem 0` |
+
+Es decir, dos de los cuatro huecos eran restos de decisiones anteriores: el margen del título existía por el número que acabábamos de quitar, y el `min-height` por una dirección de tres líneas que ya no lo es.
+
+Aplicado:
+
+- Margen superior del título de `2.4rem` a `1.2rem`.
+- `min-height` de la dirección retirado. **Si algún día hay más de un local, probablemente haya que reponerlo**, porque su función era alinear las tarjetas entre sí.
+- Márgenes del horario de `1.5rem` a `1.1rem`, y de sus filas de `.4rem` a `.25rem`.
+- Interlíneas declaradas en las tres reglas que usaban `font:` sin ellas, igual que en la sección de historia.
+
+Resultado: la tarjeta pasa de **338 a 315 px**, y los huecos del 32 % al **24 %**.
+
+**Un segundo efecto que había que resolver, y que no era evidente:** la tarjeta y el mapa comparten fila de rejilla, y por defecto los elementos se estiran a la altura de la fila. El mapa tenía `min-height: 330px`, así que al encoger el contenido de la tarjeta el hueco no desaparecía: **se trasladaba al final de la tarjeta**, que seguía estirándose hasta 340 px. Bajando el mínimo del mapa a 300 px, la altura de la fila la marca ahora el contenido real de la tarjeta, y el hueco desaparece de verdad en lugar de moverse de sitio.
+
 Queda una decisión abierta: el enlace "Ver en el mapa" que flota sobre el propio mapa hace lo mismo y no lleva chincheta. Se dejó sin ella a propósito, porque ahí el contexto ya es un mapa y el icono sería redundante, pero conviene revisarlo si algún día se separan los dos enlaces.
 
 ### El recorte de texto aplicado
