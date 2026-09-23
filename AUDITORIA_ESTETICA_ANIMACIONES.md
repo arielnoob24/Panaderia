@@ -55,32 +55,55 @@ La segunda ronda confirma con datos dos percepciones que quedaban como sensació
 - [ ] Evaluar una indicación de desplazamiento horizontal para filtros en pantallas estrechas.
 - [ ] Considerar parallax únicamente después de medir rendimiento y experiencia.
 
-### Pendiente de la segunda ronda
+### Segunda ronda, aplicado el 2026-09-23
 
 Geometría:
 
-- [ ] Definir tokens de radio en `:root` y eliminar el radio huérfano de 2 px (G1, G9).
-- [ ] Redondear tarjetas de producto, tarjetas de local, botones, panel del mapa y botón flotante (G2, G7).
-- [ ] Romper las seis bandas rectas con hombros de 40 px en historia, locales y footer (G3).
-- [ ] Sustituir la grilla fija de 4 columnas por `auto-fill` para que la fila se recomponga al filtrar (G4).
-- [ ] Tokenizar tres niveles de sombra y quitar los tintes azul y verde heredados (G5).
-- [ ] Corregir el aro punteado de la mascota y evaluar el blob difuminado detrás (G6).
-- [ ] Decidir si se aceptan los gestos orgánicos: radio de masa en la foto de historia, sello girado, cinta con esquina cortada (G8).
-- [ ] Unificar la escala de diámetros de las marcas circulares (G12).
+- [x] Tokens de radio en `:root` y eliminación del radio huérfano de 2 px (G1, G9).
+- [x] Radios en tarjetas de producto, tarjetas de local, botones, panel del mapa, botón flotante, menú móvil, aviso del hero, enlace del mapa y skip-link (G2, G7).
+- [x] Hombros de 40 px en la sección de historia y separador curvo bajo la franja coral (G3).
+- [x] Grilla del catálogo con `auto-fill` y `minmax(260px, 1fr)` (G4, parcial).
+- [x] Tres niveles de sombra tokenizados y tintes azul y verde eliminados (G5).
+- [x] Mascota sin aro punteado, con halo radial, tamaños 104 y 72 px, y blob difuminado detrás en el hero (G6).
+- [x] Gestos orgánicos: radio de masa en la foto de historia, sello circular girado en las etiquetas y cinta con esquina cortada en el pie de foto (G8).
+- [x] Escala de diámetros de las marcas circulares unificada (G12).
 
 Movimiento:
 
-- [ ] Definir tokens de duración y las cinco curvas de easing, y dejar de usar `ease` (M2).
-- [ ] Fusionar los dos `@keyframes` idénticos en uno con amplitud por variable (M1).
-- [ ] Sustituir la lista plana de `revealItems` por un mapa de zona a clase (M1, M6).
-- [ ] Escribir en CSS el estado de salida de `.is-filtering`, hoy un hook muerto (M3).
-- [ ] Dar transición a `.order-button`, a los enlaces de nav y footer, y a los filtros (M4, M5).
-- [ ] Quitar el `transform` del panel del mapa y dejarlo solo con opacidad (M7).
-- [ ] Mover la sombra de hover de las tarjetas a un pseudo-elemento con `opacity` (M8).
-- [ ] Añadir listener de `change` a `prefers-reduced-motion` y migrar la lista manual de clases a un selector estructural (M9).
-- [ ] Añadir eje X en franja de identidad y texto de historia, y revelado por máscara en la foto (M10).
-- [ ] Desacoplar el stagger del hero de `nth-child` y escalar la amplitud por peso tipográfico (M11).
-- [ ] Añadir `scroll-margin-top` a las secciones con `id` (M12).
+- [x] Tokens de duración y las cinco curvas de easing; `ease` eliminado de toda la hoja (M2).
+- [x] Los dos `@keyframes` idénticos fusionados en `rise`, con amplitud por variable (M1).
+- [x] Mapa de zona a clase en lugar de la lista plana de `revealItems`, con `data-motion` (M1, M6).
+- [x] Estado de salida de `.is-filtering` escrito en CSS, con fase real de salida de 160 ms antes del cambio (M3).
+- [x] Transición en `.order-button`, enlaces de navegación y footer, y filtros, con duración distinta para hover y para `:checked` (M4, M5).
+- [x] Panel del mapa sin `transform`, solo opacidad (M7).
+- [x] Sombra de hover de las tarjetas movida a un pseudo-elemento animado por `opacity` (M8).
+- [x] Listener de `change` en `prefers-reduced-motion` y neutralización por `[data-motion]` en lugar de la lista manual (M9).
+- [x] Eje X en la franja de identidad y en el texto de historia, y revelado por máscara en la foto (M10).
+- [x] Stagger del hero desacoplado de `nth-child`, con amplitud por peso tipográfico (M11).
+- [x] `scroll-margin-top` en las secciones con `id` (M12).
+- [x] Stagger diagonal por fila más columna en el catálogo, tanto en la entrada inicial como al filtrar.
+- [x] Acento único de amasado en la mascota, subrayado que crece en la navegación, secuencia numerada en los principios y entrada diferida del botón flotante.
+
+Sigue pendiente, por decisión explícita:
+
+- [ ] Indicador de píldora deslizante en la barra de filtros. Necesita medición desde JavaScript y recálculo al hacer scroll horizontal; se dejó solo la forma de píldora y las transiciones.
+- [ ] Pulso del indicador de frescura. Es el único bucle infinito propuesto y el de mayor riesgo; se decide aparte.
+- [ ] Módulo destacado en el catálogo con `grid-column: span 2`. Cambia la jerarquía del contenido, no solo la forma.
+- [ ] Hombros de banda en el límite entre locales y footer. Ver la nota de implementación.
+
+### Notas de implementación
+
+Cuatro puntos donde lo aplicado se aparta de lo que proponía la auditoría, con el motivo.
+
+1. **La tarjeta de producto no lleva `overflow: hidden`.** La auditoría proponía usarlo para que la imagen heredase las esquinas superiores. Pero M8 mueve la sombra de hover a un `::after` con `inset: 0`, y su sombra se dibuja fuera de la caja: con `overflow: hidden` quedaría recortada y el hover perdería la elevación. La solución aplicada da radio completo a `.product-card` y radio superior a `.product-image`, que ya tenía su propio `overflow: hidden`. Los dos ejes se resuelven sin conflicto.
+
+2. **La franja de identidad no usa `clip-path`.** El patrón propuesto era un despliegue en altura con `inset(0 0 100% 0)`. Es incompatible con el separador curvo de G3, porque ese separador es un pseudo-elemento que sobresale 26 px por debajo de la franja y `inset()` no admite valores negativos: al terminar la animación en `inset(0)` el separador quedaría recortado para siempre. Se conservó el separador, que es el gesto de forma más visible, y la franja entra solo con el movimiento horizontal de sus tres hijos. Sigue siendo un patrón distinto al del resto del sitio, que es lo que pedía M10.
+
+3. **El radio de masa se recalibró.** El valor propuesto, con porcentajes verticales cercanos al 50 %, convierte una foto de proporción 4/5 en un óvalo puntiagudo. Se comprobó en render y se sustituyó por `46% 54% 44% 56% / 7% 8% 7% 8%`: porcentajes horizontales amplios y verticales pequeños, que curvan los bordes superior e inferior dejando los laterales rectos. La foto se lee como una hogaza, no como una elipse.
+
+4. **Los hombros de banda solo se aplicaron a la sección de historia.** Redondear una sección revela el fondo del `body`, no el de la sección vecina. Funciona en historia porque encima está el catálogo, que también es crema. En el límite entre locales, que es papel, y el footer, aparecería una cuña de crema visible. Queda pendiente hasta decidir si se unifica ese fondo.
+
+Además, el radio de 3 px para `.availability` se omitió porque ese elemento no tiene fondo ni borde, así que el radio no sería visible.
 
 ## Hallazgos priorizados
 

@@ -33,18 +33,38 @@
   const catalogStatus = document.querySelector('.catalog-status');
   const productGrid = document.querySelector('.product-grid');
   const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const updateCatalog = (shouldAnimate = false) => {
+
+  // El stagger lineal recorre la cuadrícula como una tabla. La diagonal se lee como
+  // una bandeja que se llena, así que el retraso depende de fila más columna.
+  const columnCount = (grid) => {
+    if (!grid) return 1;
+    const columns = window.getComputedStyle(grid).gridTemplateColumns;
+    if (!columns || columns === 'none') return 1;
+    return columns.split(' ').filter(Boolean).length || 1;
+  };
+  const diagonalDelay = (index, columns, step, max) => {
+    const row = Math.floor(index / columns);
+    const column = index % columns;
+    return Math.min((row + column) * step, max);
+  };
+
+  let filterRun = 0;
+  const applyFilter = (shouldAnimate = false) => {
     const selected = filters.find((filter) => filter.checked);
     const category = selected?.id.replace('filter-', '') || 'todos';
+    const animate = shouldAnimate && !reducedMotion.matches;
+    const columns = columnCount(productGrid);
+    const entering = [];
     let visibleCount = 0;
 
-    if (shouldAnimate && !reducedMotion.matches) productGrid?.classList.add('is-filtering');
+    productGrid?.classList.remove('is-filtering');
     products.forEach((product) => {
       const visible = category === 'todos' || product.dataset.category === category;
       product.hidden = !visible;
       if (visible) {
-        product.style.setProperty('--catalog-delay', `${Math.min(visibleCount * 45, 360)}ms`);
-        product.classList.toggle('catalog-enter', shouldAnimate && !reducedMotion.matches);
+        product.style.setProperty('--catalog-delay', `${diagonalDelay(visibleCount, columns, 40, 320)}ms`);
+        product.classList.toggle('catalog-enter', animate);
+        if (animate) entering.push(product);
         visibleCount += 1;
       } else {
         product.classList.remove('catalog-enter');
@@ -60,15 +80,27 @@
     });
 
     if (catalogStatus) catalogStatus.textContent = `${visibleCount} producto${visibleCount === 1 ? '' : 's'} disponible${visibleCount === 1 ? '' : 's'} en esta categoría.`;
-    if (shouldAnimate && !reducedMotion.matches) {
-      window.setTimeout(() => {
-        productGrid?.classList.remove('is-filtering');
-        products.forEach((product) => product.classList.remove('catalog-enter'));
-      }, 700);
-    }
+    if (!animate) return;
+
+    const run = ++filterRun;
+    const clearEnter = () => {
+      if (run !== filterRun) return;
+      products.forEach((product) => product.classList.remove('catalog-enter'));
+    };
+    entering[entering.length - 1]?.addEventListener('animationend', clearEnter, { once: true });
+    window.setTimeout(clearEnter, 780);
   };
-  filters.forEach((filter) => filter.addEventListener('change', () => updateCatalog(true)));
-  updateCatalog();
+  // La salida es la única del sitio: los productos actuales se atenúan con una curva
+  // acelerada y solo después entra la categoría nueva con la curva desacelerada.
+  filters.forEach((filter) => filter.addEventListener('change', () => {
+    if (reducedMotion.matches) {
+      applyFilter(false);
+      return;
+    }
+    productGrid?.classList.add('is-filtering');
+    window.setTimeout(() => applyFilter(true), 160);
+  }));
+  applyFilter();
 
   document.querySelectorAll('img').forEach((image) => {
     image.parentElement?.classList.add('is-loading');
@@ -103,24 +135,64 @@
     });
   });
 
-  const revealItems = document.querySelectorAll('.section-heading, .product-card, .story-photo, .story-copy, .location-card, .map-panel');
-  revealItems.forEach((item) => item.classList.add('reveal'));
+  // Una animación dominante por zona. El patrón describe la forma de cada zona:
+  // fade-up de base, máscara para la foto en retrato, eje X para el texto y la franja,
+  // secuencia numerada para los principios y solo opacidad para el iframe del mapa.
+  const motionMap = [
+    ['.sign-band', 'reveal-band'],
+    ['.section-heading', 'reveal'],
+    ['.product-card', 'reveal'],
+    ['.story-photo', 'reveal-mask'],
+    ['.story-copy', 'reveal-x'],
+    ['.principles', 'reveal-line'],
+    ['.location-card', 'reveal'],
+    ['.map-panel', 'reveal-fade']
+  ];
+  const motionItems = [];
+  motionMap.forEach(([selector, pattern]) => {
+    document.querySelectorAll(selector).forEach((item) => {
+      item.classList.add(pattern);
+      item.dataset.motion = pattern;
+      motionItems.push(item);
+    });
+  });
   document.querySelectorAll('.product-grid, .location-grid').forEach((grid) => grid.classList.add('reveal-stagger'));
-  products.forEach((product, index) => product.style.setProperty('--reveal-delay', `${Math.min(index * 45, 400)}ms`));
-  document.querySelector('.hero-content')?.classList.add('is-ready');
+  const revealColumns = columnCount(productGrid);
+  products.forEach((product, index) => product.style.setProperty('--reveal-delay', `${diagonalDelay(index, revealColumns, 40, 320)}ms`));
 
+  const heroContent = document.querySelector('.hero-content');
+  if (heroContent) {
+    // La amplitud acompaña al peso tipográfico: el titular recorre más que el eyebrow.
+    const riseByIndex = [8, 6, 16, 10, 8];
+    [...heroContent.children].forEach((child, index) => {
+      child.style.setProperty('--rise', `${riseByIndex[index] ?? 8}px`);
+      child.style.setProperty('--hero-delay', `${Math.min(index * 70, 420)}ms`);
+    });
+    heroContent.classList.add('is-ready');
+  }
+
+  let revealObserver = null;
   if ('IntersectionObserver' in window && !reducedMotion.matches) {
-    const revealObserver = new IntersectionObserver((entries, observer) => {
+    revealObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         entry.target.classList.add('is-visible');
         observer.unobserve(entry.target);
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
-    revealItems.forEach((item) => revealObserver.observe(item));
+    motionItems.forEach((item) => revealObserver.observe(item));
   } else {
-    revealItems.forEach((item) => item.classList.add('is-visible'));
+    motionItems.forEach((item) => item.classList.add('is-visible'));
   }
+
+  reducedMotion.addEventListener('change', (event) => {
+    if (!event.matches) return;
+    revealObserver?.disconnect();
+    revealObserver = null;
+    motionItems.forEach((item) => item.classList.add('is-visible'));
+    productGrid?.classList.remove('is-filtering');
+    products.forEach((product) => product.classList.remove('catalog-enter'));
+  });
 
   const easterSunday = (year) => {
     const a = year % 19;
