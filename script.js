@@ -240,6 +240,21 @@
     const isOpen = !holiday && currentMinutes >= toMinutes(opening) && currentMinutes < toMinutes(closing);
     label.classList.toggle('is-closed', !isOpen);
     label.querySelector('.status-dot')?.classList.toggle('is-closed', !isOpen);
+
+    // Senalar que fila del horario es la de hoy, reutilizando el dia ya calculado.
+    location.querySelectorAll('dl div[data-dias]').forEach((fila) => {
+      const esHoy = fila.dataset.dias.split(',').includes(String(day));
+      fila.classList.toggle('is-today', esHoy);
+      let marca = fila.querySelector('.dia-hoy');
+      if (esHoy && !marca) {
+        marca = document.createElement('span');
+        marca.className = 'dia-hoy';
+        marca.textContent = 'hoy';
+        fila.querySelector('dt')?.appendChild(marca);
+      } else if (!esHoy && marca) {
+        marca.remove();
+      }
+    });
     const reason = holiday ? ' · Día festivo' : '';
     const status = isOpen ? 'Abierto hoy' : 'Cerrado hoy';
     label.lastChild.textContent = ` ${status}${reason}`;

@@ -1181,6 +1181,22 @@ Resultado: la tarjeta pasa de **338 a 315 px**, y los huecos del 32 % al **24 %*
 
 Queda una decisión abierta: el enlace "Ver en el mapa" que flota sobre el propio mapa hace lo mismo y no lleva chincheta. Se dejó sin ella a propósito, porque ahí el contexto ya es un mapa y el icono sería redundante, pero conviene revisarlo si algún día se separan los dos enlaces.
 
+### H10. La tarjeta seguía siendo plana, y el horario era el texto más pequeño
+
+Observación del usuario tras comprimir los huecos: la tarjeta "se ve como aburrida", y el horario "se ve muy pequeño".
+
+Ambas cosas eran ciertas y la segunda era medible: el horario estaba a `.75rem`, **12 px, el texto más pequeño de toda la tarjeta**, siendo el dato que más gente va a consultar. La dirección, que se lee una vez, era mayor que el horario, que se lee cada vez.
+
+Aplicado el 2026-09-23:
+
+- **El horario sube de `.75rem` a `.85rem`** y las horas usan `font-variant-numeric: tabular-nums`, de modo que las cifras de las dos filas quedan alineadas en columna en lugar de bailar.
+- **El estado pasa de texto suelto a distintivo con fondo**: píldora con fondo ámbar al 10 %, borde y texto ámbar. Da un ancla visual en la esquina superior, que antes estaba vacía.
+- **Se señala la fila del horario que corresponde a hoy**, en ámbar y con una etiqueta "hoy". No es decoración: reutiliza el día que [script.js](script.js) ya calcula para decidir si está abierto, así que no añade lógica nueva ni una segunda fuente de verdad. Las filas declaran sus días en `data-dias` y el JavaScript marca la que toca.
+
+La etiqueta se inserta como texto real desde JavaScript, no con `content` en CSS, para que un lector de pantalla la anuncie como parte del contenido.
+
+**Un tropiezo que la medición evitó:** las dos primeras versiones del distintivo y de la etiqueta usaban fondos ámbar al 14 % y al 16 %, y **fallaban AA por muy poco**, 4,48 y 4,33 frente al 4,5 exigido. La causa es que un fondo tintado aclara la tarjeta y reduce el contraste con el texto ámbar que lleva encima, algo que no se aprecia a ojo. Se barrieron opacidades del 6 al 14 % y se fijó el 10 %, que da **4,79**. Es el tipo de fallo que un fondo decorativo introduce sin que nadie lo note.
+
 ### El recorte de texto aplicado
 
 | Bloque | Antes | Después |
