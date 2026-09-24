@@ -13,6 +13,7 @@
   --corteza-oscura: #7a4030;   /* corteza para texto pequeno sobre fondo claro */
   --ambar-claro: #f2ca68;      /* ambar en hover */
   --horno-suave: #5e514a;      /* texto secundario sobre fondo claro */
+  --horno-claro: #7a6c65;      /* horno aclarado con masa, para el puntero en los filtros */
   --masa-linea: #ded2c2;       /* bordes y filetes */
   --masa-honda: #e4ded4;       /* fondo de imagen mientras no hay foto */
   --masa-carga: #ded5c8;       /* fondo de imagen cargando */
@@ -134,7 +135,7 @@ section[id] { scroll-margin-top: 96px; }
 .filter-bar { position: sticky; top: 0; z-index: 4; display: flex; gap: .5rem; min-width: 0; margin: 0 0 1rem; padding: 1rem 0; overflow-x: auto; background: linear-gradient(to right, var(--masa) 40%, rgba(247, 241, 231, 0)) left center / 44px 100% no-repeat local, linear-gradient(to left, var(--masa) 40%, rgba(247, 241, 231, 0)) right center / 44px 100% no-repeat local, radial-gradient(farthest-side at 0 50%, rgba(58, 40, 34, .22), rgba(58, 40, 34, 0)) left center / 16px 100% no-repeat scroll, radial-gradient(farthest-side at 100% 50%, rgba(58, 40, 34, .22), rgba(58, 40, 34, 0)) right center / 16px 100% no-repeat scroll, var(--masa); border: 0; border-top: 1px solid var(--masa-linea); border-bottom: 1px solid var(--masa-linea); box-shadow: 0 8px 14px rgba(58, 40, 34, .06); }
 .filter { flex: 0 0 auto; padding: .65rem 1rem; background: transparent; color: var(--horno-suave); border: 0; border-radius: var(--r-pill); cursor: pointer; font: .85rem Arial, sans-serif; transition: color var(--dur-micro) var(--ease-ui), background-color var(--dur-micro) var(--ease-ui); }
 /* El puntero muestra el tono claro; lo seleccionado, el oscuro. */
-.filter:hover { background: var(--horno-suave); color: white; }
+.filter:hover { background: var(--horno-claro); color: white; }
 .filter-input:checked + .filter { background: var(--horno); color: white; }
 .filter-input:checked + .filter { transition-duration: var(--dur-base); }
 .filter-input { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; pointer-events: none; }

@@ -1265,11 +1265,13 @@ Evidencia: una sola regla, `.filter:hover, .filter-input:checked + .filter`, dab
 
 Impacto: al pasar el puntero por una categoría no seleccionada, se volvía idéntica a la seleccionada, de modo que durante ese instante la barra mostraba **dos categorías con aspecto de activas**. El puntero decía "esto ya está elegido" cuando en realidad decía "esto se puede elegir".
 
-Aplicado el 2026-09-23: el puntero pasa a `--horno-suave`, que es el tono claro del mismo color y ya estaba declarado en la paleta, así que no añade ningún color nuevo. Lo seleccionado conserva `--horno`.
+Aplicado el 2026-09-23: el puntero pasa a un tono claro del mismo color y lo seleccionado conserva `--horno`.
+
+**Corregido el 2026-09-24:** el primer intento usó `--horno-suave`, que ya estaba en la paleta, pero el usuario avisó de que apenas se notaba. Medido: `--horno-suave` es solo 3,5 veces más luminoso que `--horno`, una separación demasiado corta para leerse de un vistazo. Se barrió la mezcla de `--horno` con `--masa` buscando el punto más claro que siguiera cumpliendo AA con texto blanco: al 60 % ya baja a 4,25 y falla, así que se fijó el 66 %, `#7a6c65`, que da **5,05:1** y es **6,2 veces más luminoso** que el seleccionado, casi el doble de separación que antes. Queda declarado como `--horno-claro`, un tono derivado más, no un color nuevo.
 
 Detalle de orden que importa: la regla de seleccionado se colocó **después** de la de puntero, porque ambas tienen la misma especificidad. Al revés, pasar el puntero por la categoría ya activa la habría aclarado, dando a entender que se estaba deseleccionando.
 
-Contraste con texto blanco: **7,63:1** en el estado de puntero, 13,94:1 en el seleccionado. Ambos cumplen AA.
+Contraste final con texto blanco: **5,05:1** en el estado de puntero y 13,94:1 en el seleccionado. Ambos cumplen AA.
 
 ### El recorte de texto aplicado
 
