@@ -1259,6 +1259,18 @@ Contraste verificado: dato 5,76:1, etiqueta 8,70:1, hover 8,91:1.
 - **Desaparece el enlace `tel:`**, que permitía pulsar para llamar desde el móvil. Era el mismo número, así que no se pierde información, pero sí se pierde esa acción. Si se quiere conservar, lo natural es un tercer bloque "Teléfono" con el mismo patrón.
 - **`@eltradicional` es un marcador inventado**, igual que el número. El enlace de Instagram apunta a `instagram.com` sin cuenta, así que hoy no lleva a ningún perfil. Hay que sustituir las dos cosas.
 
+### H14. El puntero y la categoría seleccionada se pintaban igual
+
+Evidencia: una sola regla, `.filter:hover, .filter-input:checked + .filter`, daba a los dos estados **exactamente el mismo fondo**, `--horno`.
+
+Impacto: al pasar el puntero por una categoría no seleccionada, se volvía idéntica a la seleccionada, de modo que durante ese instante la barra mostraba **dos categorías con aspecto de activas**. El puntero decía "esto ya está elegido" cuando en realidad decía "esto se puede elegir".
+
+Aplicado el 2026-09-23: el puntero pasa a `--horno-suave`, que es el tono claro del mismo color y ya estaba declarado en la paleta, así que no añade ningún color nuevo. Lo seleccionado conserva `--horno`.
+
+Detalle de orden que importa: la regla de seleccionado se colocó **después** de la de puntero, porque ambas tienen la misma especificidad. Al revés, pasar el puntero por la categoría ya activa la habría aclarado, dando a entender que se estaba deseleccionando.
+
+Contraste con texto blanco: **7,63:1** en el estado de puntero, 13,94:1 en el seleccionado. Ambos cumplen AA.
+
 ### El recorte de texto aplicado
 
 | Bloque | Antes | Después |
