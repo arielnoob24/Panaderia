@@ -244,6 +244,10 @@ section[id] { scroll-margin-top: 96px; }
 .footer-note { grid-column: 1 / -1; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, .15); font: .68rem Arial, sans-serif !important; }
 .floating-whatsapp { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
+/* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
+.button > span[aria-hidden], .text-link > span[aria-hidden], .nav-cta > span[aria-hidden], .order-button > span[aria-hidden], .map-link > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
+.button-yellow:focus-visible > span[aria-hidden] { transform: translateY(3px); }
+.text-link:focus-visible > span[aria-hidden], .nav-cta:focus-visible > span[aria-hidden], .order-button:focus-visible > span[aria-hidden], .map-link:focus-visible > span[aria-hidden] { transform: translate(2px, -2px); }
 .button-yellow, .nav-cta, .text-link, .map-link { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible, .nav-cta:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
 .floating-whatsapp:hover { background: var(--ambar-claro); }
@@ -280,6 +284,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 
 @media (hover: hover) and (pointer: fine) {
   .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-2px); }
+  .button-yellow:hover > span[aria-hidden] { transform: translateY(3px); }
+  .text-link:hover > span[aria-hidden], .nav-cta:hover > span[aria-hidden],
+  .order-button:hover > span[aria-hidden], .map-link:hover > span[aria-hidden] { transform: translate(2px, -2px); }
   .product-card:hover { transform: translateY(-5px); }
   .product-card:hover::after { opacity: 1; }
   .product-card:hover .product-image img { transform: scale(1.04); }
@@ -335,6 +342,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .hero-image { transform: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
   .hero-note .status-dot::after { display: none; }
+  .button > span[aria-hidden], .text-link > span[aria-hidden], .nav-cta > span[aria-hidden], .order-button > span[aria-hidden], .map-link > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
   .menu-toggle span, .button-yellow:hover, .button-yellow:focus-visible, .order-button:hover, .order-button:focus-visible, .product-card:hover, .product-card:hover .product-image img { transform: none; }
   .main-nav a:not(.nav-cta)::after { transition: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }

@@ -1273,6 +1273,31 @@ Detalle de orden que importa: la regla de seleccionado se colocó **después** d
 
 Contraste final con texto blanco: **5,05:1** en el estado de puntero y 13,94:1 en el seleccionado. Ambos cumplen AA.
 
+### H15. Los dos botones del hero apenas reaccionaban
+
+Observación del usuario: "Ver el menú" y "Encuentra tu local" "no tienen animaciones, alguna cosa deberían tener".
+
+Comprobado, y era desigual:
+
+- `.button-yellow` sí reaccionaba, pero poco: subía 2 px y aclaraba el fondo.
+- `.text-link` **solo cambiaba de color**. Es exactamente el hallazgo 9 de la primera ronda, "los enlaces de texto solo cambian de color", que seguía abierto.
+
+Aplicado el 2026-09-24. En lugar de inventar un efecto, se aprovechó algo que ya estaba ahí: **cada enlace lleva una flecha que dice lo que hace**, y hasta ahora la flecha no hacía nada.
+
+- La flecha de bajada de "Ver el menú" **baja** 3 px. Ese enlace lleva al catálogo, que está más abajo.
+- La flecha diagonal de "Encuentra tu local" **se va en diagonal**, 2 px arriba y 2 a la derecha. Esa flecha significa "esto te lleva a otro sitio".
+
+Se aplicó a todos los enlaces del sitio que llevan flecha, no solo a los dos del hero: el WhatsApp de la navegación, los nueve botones "Pedir", el enlace del mapa y los contactos del pie. Así el gesto es una familia y no una excepción, que es lo que pedía el hallazgo 9.
+
+Detalles de implementación:
+
+- El movimiento vive dentro de `@media (hover: hover) and (pointer: fine)`, para que en pantallas táctiles no se quede pegado tras el toque.
+- Hay versión equivalente para `:focus-visible`, fuera de esa consulta, de modo que quien navega con teclado recibe la misma respuesta.
+- Las flechas están neutralizadas bajo `prefers-reduced-motion`.
+- Usa la duración y la curva de interfaz ya existentes, `--dur-fast` y `--ease-ui`, así que no añade valores nuevos al sistema de movimiento.
+
+Esto cierra el hallazgo 9 de la primera ronda.
+
 ### El recorte de texto aplicado
 
 | Bloque | Antes | Después |
