@@ -1296,6 +1296,10 @@ Detalles de implementación:
 - Las flechas están neutralizadas bajo `prefers-reduced-motion`.
 - Usa la duración y la curva de interfaz ya existentes, `--dur-fast` y `--ease-ui`, así que no añade valores nuevos al sistema de movimiento.
 
+**Corregido el 2026-09-24:** el usuario avisó de que seguía sin notarse nada. Se comprobó que el mecanismo funcionaba, con los selectores casando sobre el marcado real y `transition-property: transform` aplicado a las flechas, así que el problema no era técnico sino de magnitud: **3 px y 2 px son demasiado poco para percibirse** en un glifo pequeño. Se subieron a 6 px en la flecha de bajada y a 4 px en diagonal, y el botón amarillo pasa de subir 2 px a subir 3 y ganar sombra, para que el alzado se lea como tal.
+
+Anotación de método: durante la comprobación, dos intentos de leer las reglas con la API de hojas de estilo devolvieron cero, y **eso no era evidencia de que el CSS estuviera roto**: el navegador no deja leer las reglas de una hoja de otro origen ni de una hoja local. La comprobación válida fue mucho más simple, preguntar si el selector encuentra el elemento. Conviene recordarlo antes de dar por roto algo que funciona.
+
 Esto cierra el hallazgo 9 de la primera ronda.
 
 ### El recorte de texto aplicado

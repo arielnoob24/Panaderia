@@ -246,8 +246,8 @@ section[id] { scroll-margin-top: 96px; }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 /* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
 .button > span[aria-hidden], .text-link > span[aria-hidden], .nav-cta > span[aria-hidden], .order-button > span[aria-hidden], .map-link > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
-.button-yellow:focus-visible > span[aria-hidden] { transform: translateY(3px); }
-.text-link:focus-visible > span[aria-hidden], .nav-cta:focus-visible > span[aria-hidden], .order-button:focus-visible > span[aria-hidden], .map-link:focus-visible > span[aria-hidden] { transform: translate(2px, -2px); }
+.button-yellow:focus-visible > span[aria-hidden] { transform: translateY(6px); }
+.text-link:focus-visible > span[aria-hidden], .nav-cta:focus-visible > span[aria-hidden], .order-button:focus-visible > span[aria-hidden], .map-link:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
 .button-yellow, .nav-cta, .text-link, .map-link { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible, .nav-cta:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
 .floating-whatsapp:hover { background: var(--ambar-claro); }
@@ -283,10 +283,10 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .principles.reveal-line.is-visible .principle-mark { transform: none; }
 
 @media (hover: hover) and (pointer: fine) {
-  .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-2px); }
-  .button-yellow:hover > span[aria-hidden] { transform: translateY(3px); }
+  .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+  .button-yellow:hover > span[aria-hidden] { transform: translateY(6px); }
   .text-link:hover > span[aria-hidden], .nav-cta:hover > span[aria-hidden],
-  .order-button:hover > span[aria-hidden], .map-link:hover > span[aria-hidden] { transform: translate(2px, -2px); }
+  .order-button:hover > span[aria-hidden], .map-link:hover > span[aria-hidden] { transform: translate(4px, -4px); }
   .product-card:hover { transform: translateY(-5px); }
   .product-card:hover::after { opacity: 1; }
   .product-card:hover .product-image img { transform: scale(1.04); }
