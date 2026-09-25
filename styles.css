@@ -66,13 +66,11 @@ section[id] { scroll-margin-top: 96px; }
 .brand small { display: block; margin-top: .15rem; font: 400 .58rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .main-nav { display: flex; align-items: center; gap: 2rem; font: .88rem Arial, sans-serif; }
 .main-nav a, .footer-links a { transition: color var(--dur-micro) var(--ease-ui); }
-.main-nav a:not(.nav-cta):hover, .footer-links a:hover { color: var(--ambar); }
+.main-nav a:hover, .footer-links a:hover { color: var(--ambar); }
 .footer-links .contacto-valor:hover { color: var(--ambar-claro); }
-.main-nav a:not(.nav-cta) { position: relative; }
-.main-nav a:not(.nav-cta)::after { position: absolute; right: 0; bottom: -4px; left: 0; height: 1px; content: ""; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform var(--dur-micro) var(--ease-ui); }
-.main-nav a:not(.nav-cta):hover::after, .main-nav a:not(.nav-cta):focus-visible::after { transform: scaleX(1); }
-.nav-cta { padding: .72rem 1.1rem; background: var(--ambar); color: var(--horno); border: 1px solid var(--ambar); border-radius: var(--r-btn); }
-.nav-cta:hover { color: var(--horno); background: var(--ambar-claro); border-color: var(--ambar-claro); }
+.main-nav a { position: relative; }
+.main-nav a::after { position: absolute; right: 0; bottom: -4px; left: 0; height: 1px; content: ""; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform var(--dur-micro) var(--ease-ui); }
+.main-nav a:hover::after, .main-nav a:focus-visible::after { transform: scaleX(1); }
 .menu-toggle { display: none; padding: 8px; background: none; border: 0; color: white; cursor: pointer; }
 .menu-toggle span { display: block; width: 23px; height: 2px; margin: 4px 0; background: currentColor; transition: transform var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-ui); }
 .menu-toggle[aria-expanded="true"] span:first-child { transform: translateY(6px) rotate(45deg); }
@@ -245,11 +243,11 @@ section[id] { scroll-margin-top: 96px; }
 .floating-whatsapp { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 /* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
-.button > span[aria-hidden], .text-link > span[aria-hidden], .nav-cta > span[aria-hidden], .order-button > span[aria-hidden], .map-link > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
+.button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .map-link > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible > span[aria-hidden] { transform: translateY(6px); }
-.text-link:focus-visible > span[aria-hidden], .nav-cta:focus-visible > span[aria-hidden], .map-link:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
-.button-yellow, .nav-cta, .text-link, .map-link { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
-.button-yellow:focus-visible, .nav-cta:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
+.text-link:focus-visible > span[aria-hidden], .map-link:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
+.button-yellow, .text-link, .map-link { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
+.button-yellow:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
 .floating-whatsapp:hover { background: var(--ambar-claro); }
 a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline-offset: 3px; box-shadow: 0 0 0 5px var(--ambar); }
 
@@ -285,7 +283,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 @media (hover: hover) and (pointer: fine) {
   .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
   .button-yellow:hover > span[aria-hidden] { transform: translateY(6px); }
-  .text-link:hover > span[aria-hidden], .nav-cta:hover > span[aria-hidden],
+  .text-link:hover > span[aria-hidden],
   .map-link:hover > span[aria-hidden] { transform: translate(4px, -4px); }
   .product-card:hover { transform: translateY(-5px); }
   .product-card:hover::after { opacity: 1; }
@@ -304,7 +302,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .main-nav { position: absolute; top: calc(100% + .5rem); right: 16px; left: auto; display: flex; visibility: hidden; width: min(250px, calc(100vw - 32px)); flex-direction: column; align-items: stretch; gap: .15rem; padding: .55rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }
   .main-nav.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
   .main-nav a { padding: .6rem .7rem; }
-  .main-nav a:not(.nav-cta)::after { display: none; }
+  .main-nav a::after { display: none; }
   .hero { min-height: 650px; }
   .hero-image { width: 100%; background-position: 70% 80%; }
   .hero-overlay { background: linear-gradient(180deg, rgba(247, 241, 231, .96) 0%, rgba(247, 241, 231, .9) 62%, rgba(247, 241, 231, .6)); }
@@ -342,9 +340,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .hero-image { transform: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
   .hero-note .status-dot::after { display: none; }
-  .button > span[aria-hidden], .text-link > span[aria-hidden], .nav-cta > span[aria-hidden], .order-button > span[aria-hidden], .map-link > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
+  .button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .map-link > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
   .menu-toggle span, .button-yellow:hover, .button-yellow:focus-visible, .order-button:hover, .order-button:focus-visible, .product-card:hover, .product-card:hover .product-image img { transform: none; }
-  .main-nav a:not(.nav-cta)::after { transition: none; }
+  .main-nav a::after { transition: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
   .product-image img { opacity: 1; }
 }

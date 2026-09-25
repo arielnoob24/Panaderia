@@ -1302,6 +1302,18 @@ Anotación de método: durante la comprobación, dos intentos de leer las reglas
 
 Esto cierra el hallazgo 9 de la primera ronda.
 
+### H16. El WhatsApp de la navegación estaba duplicado con el del pie
+
+Observación del usuario: el botón de la barra superior sobra teniendo el contacto en el pie.
+
+Retirado el 2026-09-24, junto con sus quince referencias en la hoja de estilos: las dos reglas propias, que quedaban muertas, las cuatro listas de selectores donde aparecía, y las cinco exclusiones `:not(.nav-cta)` de los enlaces de navegación, que ya no hacen falta.
+
+**Un efecto que conviene tener presente.** Antes de esta sesión había tres accesos generales a WhatsApp: la navegación, el botón flotante y el pie. El botón flotante pasó a ser el carrito, así que al retirar también el de la navegación **el contacto general queda solo en el pie**, al final de la página.
+
+Es coherente con lo que se ha ido haciendo, que es quitar duplicados, y el pedido tiene ahora su propia vía a través del carrito. Pero significa que quien esté mirando el catálogo y quiera **preguntar algo**, en lugar de pedir, tiene que bajar hasta el final. Si eso resulta molesto en uso real, la solución no es devolver el botón idéntico, sino decidir dónde vive la consulta: por ejemplo, un enlace discreto junto al catálogo.
+
+Efecto secundario en la paleta: la cabecera pierde su único elemento ámbar de fondo. Queda el símbolo de la marca, que también es ámbar, así que el color de marca sigue presente arriba.
+
 ### El recorte de texto aplicado
 
 | Bloque | Antes | Después |
