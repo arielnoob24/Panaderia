@@ -71,6 +71,30 @@ Impacto: hay tres problemas a la vez. Primero, de marca: un sitio que argumenta 
 
 Recomendación: una fotografía propia de la nevera del local, o de las bebidas que realmente se venden servidas sobre la mesa. Y valorar si conviene mostrar las marcas o describir la categoría de forma genérica.
 
+#### C11. El pedido pasa a ser un carrito
+
+Petición del usuario: que los botones "Pedir" dejen de abrir un enlace por producto y funcionen como un carrito al que se van añadiendo cosas.
+
+Situación anterior: cada uno de los nueve botones abría WhatsApp con un mensaje de un solo producto. Para pedir tres cosas había que abrir WhatsApp tres veces y enviar tres mensajes, o escribirlo a mano. Era el cuello de botella real de la conversión.
+
+Aplicado el 2026-09-24:
+
+- Los botones pasan a decir **"Añadir"** y acumulan productos, con cantidades.
+- El botón flotante pasa a ser el acceso al pedido, con un **contador de unidades**. El contacto general de WhatsApp no se pierde: sigue en la navegación y en el pie.
+- Un panel lateral lista lo añadido, con control de cantidad por línea, subtotales y **total**.
+- Un único botón envía **todo el pedido en un solo mensaje** de WhatsApp, con las líneas y el total ya redactados.
+- El pedido **sobrevive a recargar la página**, guardado en el navegador.
+
+Decisiones que conviene tener anotadas:
+
+- **Sigue saliendo por WhatsApp, y no puede ser de otro modo**: el sitio es estático y no tiene servidor ni pasarela de pago. El carrito organiza el pedido; no lo cobra.
+- **Está hecho como mejora progresiva.** El HTML conserva los nueve enlaces `wa.me` originales, y es JavaScript el que los convierte en botones de añadir. Si el JavaScript falla o está desactivado, los botones siguen diciendo "Pedir" y funcionan exactamente como antes, con un mensaje por producto. Se verificó que los nueve enlaces siguen intactos en el marcado.
+- Si el navegador bloquea el almacenamiento, por ejemplo en ventana privada, el pedido sigue funcionando en memoria; solo se pierde al recargar.
+
+Accesibilidad: el panel es un diálogo modal con foco atrapado mientras está abierto, se cierra con Escape, devuelve el foco al botón que lo abrió, y cada adición se anuncia por una región `aria-live`. Los botones de cantidad llevan etiqueta que nombra el producto, para que no se anuncien como "más" y "menos" sueltos.
+
+**Sigue pendiente lo de C1**: el número de WhatsApp es un marcador, así que hoy el pedido se compone bien pero se envía a un número que no existe.
+
 #### C6. Falta la información que decide una compra
 
 Evidencia: el sitio da producto, precio, horario y ubicación. No dice nada sobre pedido mínimo, tiempo de preparación, formas de pago, si hay entrega a domicilio, ni si se puede encargar para una fecha.
@@ -129,7 +153,8 @@ Por orden de urgencia.
 - [ ] Decidir qué hacer con el indicador de disponibilidad (C3).
 - [ ] Repasar las tildes de todo el texto visible (C4).
 - [ ] Sustituir la fotografía de bebidas (C5).
-- [ ] Añadir cómo se pide, en cuánto tiempo, cómo se paga y si hay entrega (C6).
+- [x] El pedido se acumula en un carrito y se envía en un solo mensaje (C11).
+- [ ] Añadir cómo se pide, en cuánto tiempo, cómo se paga y si hay entrega (C6). Ahora es más necesario: el carrito da un total, y quien lo ve se preguntará por el pago y la entrega.
 - [ ] Hacer real el aviso de frescura, o redactarlo de forma que siempre lo sea (C7).
 - [ ] Actualizar o generar el año del pie (C8).
 - [ ] Indicar la unidad en los precios donde no se deduzca (C10).

@@ -264,6 +264,180 @@
     else estado = 'Cerrado · abre mañana';
     label.lastChild.textContent = ` ${estado}`;
   };
+
+  // ---- Carrito ---------------------------------------------------------
+  // El sitio es estatico, asi que el pedido sigue saliendo por WhatsApp. Lo que
+  // cambia es que se envia una sola vez con todo en vez de un mensaje por
+  // producto. Los botones siguen siendo enlaces: si esto falla, funcionan solos.
+  const WHATSAPP = '593990000000';
+  const CLAVE = 'eltradicional-pedido';
+  const pedido = new Map();
+
+  const dinero = (n) => '$' + n.toFixed(2);
+  const idDe = (nombre) => nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
+
+  const leerGuardado = () => {
+    try {
+      const crudo = window.localStorage.getItem(CLAVE);
+      if (!crudo) return;
+      JSON.parse(crudo).forEach((l) => {
+        if (l && l.id && l.nombre && l.cantidad > 0) pedido.set(l.id, { nombre: l.nombre, precio: Number(l.precio) || 0, cantidad: Math.min(l.cantidad, 99) });
+      });
+    } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza vacio */ }
+  };
+  const guardar = () => {
+    try {
+      window.localStorage.setItem(CLAVE, JSON.stringify([...pedido].map(([id, l]) => ({ id, ...l }))));
+    } catch (e) { /* en ventana privada no se puede guardar; el pedido sigue vivo en memoria */ }
+  };
+
+  // Panel, fondo y region de avisos se crean desde JavaScript: sin JS no hacen falta.
+  const fondo = document.createElement('div');
+  fondo.className = 'carrito-fondo';
+  const panel = document.createElement('aside');
+  panel.className = 'carrito-panel';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-modal', 'true');
+  panel.setAttribute('aria-labelledby', 'carrito-titulo');
+  panel.innerHTML =
+    '<div class="carrito-cabecera"><h2 id="carrito-titulo">Tu pedido</h2>'
+    + '<button class="carrito-cerrar" type="button" aria-label="Cerrar el pedido">×</button></div>'
+    + '<div class="carrito-cuerpo"><ul class="carrito-lista"></ul>'
+    + '<p class="carrito-vacio">Todavía no has añadido nada.</p></div>'
+    + '<div class="carrito-pie"><div class="carrito-total"><span>Total</span><strong>$0.00</strong></div>'
+    + '<a class="button button-yellow carrito-enviar" href="#" target="_blank" rel="noopener">'
+    + 'Enviar pedido por WhatsApp <span aria-hidden="true">↗</span></a></div>';
+  const avisos = document.createElement('p');
+  avisos.className = 'sr-only';
+  avisos.setAttribute('role', 'status');
+  avisos.setAttribute('aria-live', 'polite');
+  document.body.append(fondo, panel, avisos);
+
+  const lista = panel.querySelector('.carrito-lista');
+  const vacio = panel.querySelector('.carrito-vacio');
+  const totalEl = panel.querySelector('.carrito-total strong');
+  const enviar = panel.querySelector('.carrito-enviar');
+
+  const total = () => [...pedido.values()].reduce((s, l) => s + l.precio * l.cantidad, 0);
+  const unidades = () => [...pedido.values()].reduce((s, l) => s + l.cantidad, 0);
+
+  const mensaje = () => {
+    const lineas = [...pedido.values()].map((l) => `• ${l.cantidad} × ${l.nombre} — ${dinero(l.precio * l.cantidad)}`);
+    return `Hola, quiero hacer este pedido:\n${lineas.join('\n')}\n\nTotal: ${dinero(total())}`;
+  };
+
+  const boton = document.querySelector('.floating-whatsapp');
+  const cuenta = document.createElement('span');
+  cuenta.className = 'carrito-cuenta';
+  cuenta.hidden = true;
+
+  const pintar = () => {
+    lista.textContent = '';
+    for (const [id, l] of pedido) {
+      const li = document.createElement('li');
+      li.className = 'carrito-linea';
+      li.innerHTML =
+        `<div><h3>${l.nombre}</h3><p class="carrito-precio">${dinero(l.precio)} la unidad</p>`
+        + `<div class="carrito-cantidad"><button type="button" data-menos aria-label="Quitar uno de ${l.nombre}">−</button>`
+        + `<output>${l.cantidad}</output>`
+        + `<button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div></div>`
+        + `<span class="carrito-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
+      li.querySelector('[data-menos]').addEventListener('click', () => cambiar(id, -1));
+      li.querySelector('[data-mas]').addEventListener('click', () => cambiar(id, 1));
+      lista.append(li);
+    }
+    const hayAlgo = pedido.size > 0;
+    vacio.hidden = hayAlgo;
+    totalEl.textContent = dinero(total());
+    enviar.setAttribute('aria-disabled', String(!hayAlgo));
+    enviar.href = hayAlgo ? `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje())}` : '#';
+    const n = unidades();
+    cuenta.hidden = n === 0;
+    cuenta.textContent = n;
+    if (boton) boton.setAttribute('aria-label', n ? `Ver el pedido, ${n} producto${n === 1 ? '' : 's'}` : 'Ver el pedido, vacío');
+    guardar();
+  };
+
+  const cambiar = (id, delta) => {
+    const l = pedido.get(id);
+    if (!l) return;
+    l.cantidad += delta;
+    if (l.cantidad < 1) pedido.delete(id); else pedido.set(id, l);
+    pintar();
+  };
+
+  let ultimoFoco = null;
+  const abrir = () => {
+    ultimoFoco = document.activeElement;
+    fondo.classList.add('is-open');
+    panel.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    panel.querySelector('.carrito-cerrar').focus();
+  };
+  const cerrar = () => {
+    fondo.classList.remove('is-open');
+    panel.classList.remove('is-open');
+    document.body.style.overflow = '';
+    ultimoFoco?.focus();
+  };
+  const abierto = () => panel.classList.contains('is-open');
+
+  fondo.addEventListener('click', cerrar);
+  panel.querySelector('.carrito-cerrar').addEventListener('click', cerrar);
+  document.addEventListener('keydown', (e) => {
+    if (!abierto()) return;
+    if (e.key === 'Escape') { cerrar(); return; }
+    if (e.key !== 'Tab') return;
+    // El foco no debe escaparse del panel mientras esta abierto.
+    const focos = [...panel.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])')]
+      .filter((el) => el.offsetParent !== null && el.getAttribute('aria-disabled') !== 'true');
+    if (!focos.length) return;
+    const primero = focos[0], ultimo = focos[focos.length - 1];
+    if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
+    else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
+  });
+
+  // El boton flotante pasa a ser el acceso al pedido. El contacto general de
+  // WhatsApp sigue en la navegacion y en el pie, asi que no se pierde.
+  if (boton) {
+    boton.removeAttribute('href');
+    boton.removeAttribute('target');
+    boton.removeAttribute('rel');
+    boton.setAttribute('role', 'button');
+    boton.setAttribute('tabindex', '0');
+    boton.textContent = '';
+    const icono = document.createElement('span');
+    icono.setAttribute('aria-hidden', 'true');
+    icono.textContent = '◔';
+    const texto = document.createElement('span');
+    texto.textContent = 'Mi pedido';
+    boton.append(icono, texto, cuenta);
+    boton.addEventListener('click', abrir);
+    boton.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
+  }
+
+  // Cada boton "Pedir" sigue siendo un enlace valido; aqui se convierte en "Anadir".
+  document.querySelectorAll('.product-card .order-button').forEach((enlace) => {
+    const tarjeta = enlace.closest('.product-card');
+    const nombre = tarjeta.querySelector('h3')?.textContent.trim();
+    const precio = parseFloat((tarjeta.querySelector('.product-bottom strong')?.textContent || '').replace(/[^0-9.]/g, ''));
+    if (!nombre || Number.isNaN(precio)) return;
+    const id = idDe(nombre);
+    enlace.innerHTML = 'Añadir <span aria-hidden="true">+</span>';
+    enlace.setAttribute('aria-label', `Añadir ${nombre} al pedido`);
+    enlace.addEventListener('click', (e) => {
+      e.preventDefault();
+      const l = pedido.get(id) || { nombre, precio, cantidad: 0 };
+      l.cantidad = Math.min(l.cantidad + 1, 99);
+      pedido.set(id, l);
+      pintar();
+      avisos.textContent = `${nombre} añadido. ${unidades()} producto${unidades() === 1 ? '' : 's'} en el pedido.`;
+    });
+  });
+
+  leerGuardado();
+  pintar();
+
   updateOpeningStatus();
   window.setInterval(updateOpeningStatus, 60000);
 })();
