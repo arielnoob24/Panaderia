@@ -167,7 +167,9 @@ section[id] { scroll-margin-top: 96px; }
 .order-button { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .65rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-chip); font: 700 .78rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
 .order-button:hover, .order-button:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
 
-.story { background: var(--horno); color: white; border-radius: var(--r-band) var(--r-band) 0 0; overflow-x: clip; }
+/* Banda cerrada por las cuatro esquinas: sin la seccion clara que habia debajo, la historia
+   necesita su propio final en curva y una franja de masa que la separe del pie. */
+.story { margin-bottom: 5rem; background: var(--horno); color: white; border-radius: var(--r-band); overflow-x: clip; }
 .story-grid { display: grid; grid-template-columns: minmax(300px, .8fr) 1.2fr; gap: clamp(3rem, 8vw, 8rem); align-items: center; }
 .story-photo { position: relative; }
 .story-photo img { width: 100%; height: auto; aspect-ratio: 4 / 5; object-fit: cover; border-radius: var(--r-mass); }
@@ -195,7 +197,9 @@ section[id] { scroll-margin-top: 96px; }
 .image-unavailable { display: grid; place-items: center; background: var(--masa-honda); }
 .image-unavailable::before { content: "Imagen no disponible"; padding: 1rem; color: var(--horno-suave); font: .8rem Arial, sans-serif; text-align: center; }
 .image-unavailable img { display: none; }
-.site-footer { position: relative; margin-top: calc(-1 * var(--r-band)); padding: calc(2rem + var(--r-band)) 0 2rem; background: var(--horno); color: white; border-radius: var(--r-band) var(--r-band) 0 0; }
+/* El pie ya no se monta sobre nada: el margen negativo y su relleno compensado se fueron
+   con la seccion clara, asi que recupera un relleno superior normal. */
+.site-footer { padding: 2.6rem 0 2rem; background: var(--horno); color: white; border-radius: var(--r-band) var(--r-band) 0 0; }
 .footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1.1fr; gap: 1.6rem 2.5rem; align-items: start; }
 /* Encabezados de columna: el mismo gris tenue y el mismo cuerpo pequeno de .contacto-tipo,
    en mayusculas para que ordenen sin competir con la marca. */
@@ -314,6 +318,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .heading-row { display: block; }
   .section-intro { margin-top: 1.5rem; }
   .product-grid, .story-grid { grid-template-columns: 1fr; }
+  .story { margin-bottom: 3rem; }
   .story-photo { max-width: 420px; margin: auto; }
   .principles { grid-template-columns: 1fr; gap: 1rem; }
   .sign-band-inner { align-items: flex-start; flex-direction: column; justify-content: center; padding: 1rem 0; }
