@@ -1322,7 +1322,13 @@ Efecto secundario en la paleta: la cabecera pierde su único elemento ámbar de 
 
 **Las descripciones de producto se retiraron.** Nueve frases del tipo "Miga suave, corteza tostada y sabor casero" bajo nombres que ya dicen lo mismo. Las tarjetas quedan bastante más cortas. Conviene vigilar un caso: "Palanqueta" es un nombre regional que quizá no todo el mundo conozca, y era el que más se apoyaba en su descripción.
 
-**El pie tenía el 43 % de su altura en relleno**, 136 px de 315. Se recortó el relleno vertical, la separación de la rejilla, el hueco entre los dos contactos y el tamaño de la mascota. Resultado: **de 315 a 258 px, un 18 % menos**.
+**El pie tenía el 43 % de su altura en relleno**, 136 px de 315. Se recortó el relleno vertical, la separación de la rejilla, el hueco entre los dos contactos y el tamaño de la mascota: de 315 a 258 px.
+
+**Segunda pasada**, porque seguía sobrando sitio y el hueco había cambiado de naturaleza: ya no era vertical sino **horizontal**. Tres columnas repartían tres bloques pequeños a lo ancho de todo el contenedor, dejando cientos de píxeles vacíos entre la marca, el lema y los contactos.
+
+La solución no fue seguir recortando márgenes sino **reordenar**: todo pasa a una sola fila, con la marca a la izquierda, **el lema ocupando el centro que antes estaba vacío**, y los dos contactos uno al lado del otro a la derecha. La mascota pasa a ir junto al nombre en vez de encima. En móvil todo vuelve a apilarse.
+
+Resultado: **de 315 px a 203, un 36 % menos**, y el vacío del centro desaparece porque ahora hay contenido en él. Lección: cuando un bloque se siente vacío, a veces el problema no es cuánto espacio hay sino **cómo está repartido el contenido dentro de él**.
 
 **"Carrito" pasa a llamarse "canasta"** en todo el interfaz, y también en las clases y comentarios del código, para que el nombre visible y el del código no se separen. Es además mejor palabra para una panadería: un carrito es de supermercado.
 
