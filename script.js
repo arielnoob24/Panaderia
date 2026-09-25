@@ -265,7 +265,7 @@
     label.lastChild.textContent = ` ${estado}`;
   };
 
-  // ---- Carrito ---------------------------------------------------------
+  // ---- Canasta ---------------------------------------------------------
   // El sitio es estatico, asi que el pedido sigue saliendo por WhatsApp. Lo que
   // cambia es que se envia una sola vez con todo en vez de un mensaje por
   // producto. Los botones siguen siendo enlaces: si esto falla, funcionan solos.
@@ -293,55 +293,55 @@
 
   // Panel, fondo y region de avisos se crean desde JavaScript: sin JS no hacen falta.
   const fondo = document.createElement('div');
-  fondo.className = 'carrito-fondo';
+  fondo.className = 'canasta-fondo';
   const panel = document.createElement('aside');
-  panel.className = 'carrito-panel';
+  panel.className = 'canasta-panel';
   panel.setAttribute('role', 'dialog');
   panel.setAttribute('aria-modal', 'true');
-  panel.setAttribute('aria-labelledby', 'carrito-titulo');
+  panel.setAttribute('aria-labelledby', 'canasta-titulo');
   panel.innerHTML =
-    '<div class="carrito-cabecera"><h2 id="carrito-titulo">Tu pedido</h2>'
-    + '<button class="carrito-cerrar" type="button" aria-label="Cerrar el pedido">×</button></div>'
-    + '<div class="carrito-cuerpo"><ul class="carrito-lista"></ul>'
-    + '<p class="carrito-vacio">Todavía no has añadido nada.</p></div>'
-    + '<div class="carrito-pie"><div class="carrito-total"><span>Total</span><strong>$0.00</strong></div>'
-    + '<a class="button button-yellow carrito-enviar" href="#" target="_blank" rel="noopener">'
-    + 'Enviar pedido por WhatsApp <span aria-hidden="true">↗</span></a></div>';
+    '<div class="canasta-cabecera"><h2 id="canasta-titulo">Tu canasta</h2>'
+    + '<button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div>'
+    + '<div class="canasta-cuerpo"><ul class="canasta-lista"></ul>'
+    + '<p class="canasta-vacio">Tu canasta está vacía.</p></div>'
+    + '<div class="canasta-pie"><div class="canasta-total"><span>Total</span><strong>$0.00</strong></div>'
+    + '<a class="button button-yellow canasta-enviar" href="#" target="_blank" rel="noopener">'
+    + 'Enviar la canasta por WhatsApp <span aria-hidden="true">↗</span></a></div>';
   const avisos = document.createElement('p');
   avisos.className = 'sr-only';
   avisos.setAttribute('role', 'status');
   avisos.setAttribute('aria-live', 'polite');
   document.body.append(fondo, panel, avisos);
 
-  const lista = panel.querySelector('.carrito-lista');
-  const vacio = panel.querySelector('.carrito-vacio');
-  const totalEl = panel.querySelector('.carrito-total strong');
-  const enviar = panel.querySelector('.carrito-enviar');
+  const lista = panel.querySelector('.canasta-lista');
+  const vacio = panel.querySelector('.canasta-vacio');
+  const totalEl = panel.querySelector('.canasta-total strong');
+  const enviar = panel.querySelector('.canasta-enviar');
 
   const total = () => [...pedido.values()].reduce((s, l) => s + l.precio * l.cantidad, 0);
   const unidades = () => [...pedido.values()].reduce((s, l) => s + l.cantidad, 0);
 
   const mensaje = () => {
     const lineas = [...pedido.values()].map((l) => `• ${l.cantidad} × ${l.nombre} — ${dinero(l.precio * l.cantidad)}`);
-    return `Hola, quiero hacer este pedido:\n${lineas.join('\n')}\n\nTotal: ${dinero(total())}`;
+    return `Hola, quiero pedir esto:\n${lineas.join('\n')}\n\nTotal: ${dinero(total())}`;
   };
 
   const boton = document.querySelector('.floating-whatsapp');
   const cuenta = document.createElement('span');
-  cuenta.className = 'carrito-cuenta';
+  cuenta.className = 'canasta-cuenta';
   cuenta.hidden = true;
 
   const pintar = () => {
     lista.textContent = '';
     for (const [id, l] of pedido) {
       const li = document.createElement('li');
-      li.className = 'carrito-linea';
+      li.className = 'canasta-linea';
       li.innerHTML =
-        `<div><h3>${l.nombre}</h3><p class="carrito-precio">${dinero(l.precio)} la unidad</p>`
-        + `<div class="carrito-cantidad"><button type="button" data-menos aria-label="Quitar uno de ${l.nombre}">−</button>`
+        `<div><h3>${l.nombre}</h3><p class="canasta-precio">${dinero(l.precio)} la unidad</p>`
+        + `<div class="canasta-cantidad"><button type="button" data-menos aria-label="Quitar uno de ${l.nombre}">−</button>`
         + `<output>${l.cantidad}</output>`
         + `<button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div></div>`
-        + `<span class="carrito-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
+        + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
       li.querySelector('[data-menos]').addEventListener('click', () => cambiar(id, -1));
       li.querySelector('[data-mas]').addEventListener('click', () => cambiar(id, 1));
       lista.append(li);
@@ -354,7 +354,7 @@
     const n = unidades();
     cuenta.hidden = n === 0;
     cuenta.textContent = n;
-    if (boton) boton.setAttribute('aria-label', n ? `Ver el pedido, ${n} producto${n === 1 ? '' : 's'}` : 'Ver el pedido, vacío');
+    if (boton) boton.setAttribute('aria-label', n ? `Ver la canasta, ${n} producto${n === 1 ? '' : 's'}` : 'Ver la canasta, vacía');
     guardar();
   };
 
@@ -372,7 +372,7 @@
     fondo.classList.add('is-open');
     panel.classList.add('is-open');
     document.body.style.overflow = 'hidden';
-    panel.querySelector('.carrito-cerrar').focus();
+    panel.querySelector('.canasta-cerrar').focus();
   };
   const cerrar = () => {
     fondo.classList.remove('is-open');
@@ -383,7 +383,7 @@
   const abierto = () => panel.classList.contains('is-open');
 
   fondo.addEventListener('click', cerrar);
-  panel.querySelector('.carrito-cerrar').addEventListener('click', cerrar);
+  panel.querySelector('.canasta-cerrar').addEventListener('click', cerrar);
   document.addEventListener('keydown', (e) => {
     if (!abierto()) return;
     if (e.key === 'Escape') { cerrar(); return; }
@@ -410,7 +410,7 @@
     icono.setAttribute('aria-hidden', 'true');
     icono.textContent = '◔';
     const texto = document.createElement('span');
-    texto.textContent = 'Mi pedido';
+    texto.textContent = 'Mi canasta';
     boton.append(icono, texto, cuenta);
     boton.addEventListener('click', abrir);
     boton.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
@@ -424,14 +424,14 @@
     if (!nombre || Number.isNaN(precio)) return;
     const id = idDe(nombre);
     enlace.innerHTML = 'Añadir <span aria-hidden="true">+</span>';
-    enlace.setAttribute('aria-label', `Añadir ${nombre} al pedido`);
+    enlace.setAttribute('aria-label', `Añadir ${nombre} a la canasta`);
     enlace.addEventListener('click', (e) => {
       e.preventDefault();
       const l = pedido.get(id) || { nombre, precio, cantidad: 0 };
       l.cantidad = Math.min(l.cantidad + 1, 99);
       pedido.set(id, l);
       pintar();
-      avisos.textContent = `${nombre} añadido. ${unidades()} producto${unidades() === 1 ? '' : 's'} en el pedido.`;
+      avisos.textContent = `${nombre} añadido. ${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
     });
   });
 

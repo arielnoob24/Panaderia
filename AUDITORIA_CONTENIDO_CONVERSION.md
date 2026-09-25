@@ -71,7 +71,7 @@ Impacto: hay tres problemas a la vez. Primero, de marca: un sitio que argumenta 
 
 Recomendación: una fotografía propia de la nevera del local, o de las bebidas que realmente se venden servidas sobre la mesa. Y valorar si conviene mostrar las marcas o describir la categoría de forma genérica.
 
-#### C11. El pedido pasa a ser un carrito
+#### C11. El pedido pasa a ser una canasta
 
 Petición del usuario: que los botones "Pedir" dejen de abrir un enlace por producto y funcionen como un carrito al que se van añadiendo cosas.
 
@@ -79,7 +79,7 @@ Situación anterior: cada uno de los nueve botones abría WhatsApp con un mensaj
 
 Aplicado el 2026-09-24:
 
-- Los botones pasan a decir **"Añadir"** y acumulan productos, con cantidades.
+- Los botones pasan a decir **"Añadir"** y acumulan productos, con cantidades. Se llama **canasta**, no carrito: es la palabra que corresponde a una panadería.
 - El botón flotante pasa a ser el acceso al pedido, con un **contador de unidades**. El contacto general de WhatsApp no se pierde: sigue en la navegación y en el pie.
 - Un panel lateral lista lo añadido, con control de cantidad por línea, subtotales y **total**.
 - Un único botón envía **todo el pedido en un solo mensaje** de WhatsApp, con las líneas y el total ya redactados.

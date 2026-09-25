@@ -1314,6 +1314,18 @@ Es coherente con lo que se ha ido haciendo, que es quitar duplicados, y el pedid
 
 Efecto secundario en la paleta: la cabecera pierde su único elemento ámbar de fondo. Queda el símbolo de la marca, que también es ámbar, así que el color de marca sigue presente arriba.
 
+### H17. Cinco observaciones de uso, 2026-09-24
+
+**El cambio de categoría era un salto de color.** El fondo aparecía de golpe en 160 ms. Ahora entra creciendo desde el 82 % de su tamaño con opacidad, en 280 ms y con la curva de entrada, mediante un pseudo-elemento. Un fondo que crece se percibe más suave que uno que se enciende, aunque la duración sea parecida.
+
+**El mapa secuestraba el desplazamiento.** El iframe capturaba la rueda del ratón, así que al pasar por encima haciendo scroll la página se detenía y el mapa hacía zoom. Se le puso `pointer-events: none`: el mapa pasa a ser una referencia visual y para manejarlo está el botón "Ver en el mapa", que ya existía. Se le añadió también `tabindex="-1"`, porque un mapa que no se puede manejar tampoco debe recibir el foco al tabular.
+
+**Las descripciones de producto se retiraron.** Nueve frases del tipo "Miga suave, corteza tostada y sabor casero" bajo nombres que ya dicen lo mismo. Las tarjetas quedan bastante más cortas. Conviene vigilar un caso: "Palanqueta" es un nombre regional que quizá no todo el mundo conozca, y era el que más se apoyaba en su descripción.
+
+**El pie tenía el 43 % de su altura en relleno**, 136 px de 315. Se recortó el relleno vertical, la separación de la rejilla, el hueco entre los dos contactos y el tamaño de la mascota. Resultado: **de 315 a 258 px, un 18 % menos**.
+
+**"Carrito" pasa a llamarse "canasta"** en todo el interfaz, y también en las clases y comentarios del código, para que el nombre visible y el del código no se separen. Es además mejor palabra para una panadería: un carrito es de supermercado.
+
 ### El recorte de texto aplicado
 
 | Bloque | Antes | Después |
