@@ -123,30 +123,17 @@
     heroPreload.addEventListener('load', () => heroImage.classList.add('is-loaded'), { once: true });
     heroPreload.src = getComputedStyle(heroImage).backgroundImage.match(/url\(["']?(.*?)["']?\)/)?.[1] || '';
   }
-  document.querySelectorAll('.map-panel iframe').forEach((map) => {
-    const panel = map.parentElement;
-    panel?.classList.add('is-loading');
-    map.addEventListener('load', () => panel?.classList.remove('is-loading'), { once: true });
-    map.addEventListener('error', () => {
-      map.hidden = true;
-      panel?.classList.remove('is-loading');
-      const fallback = map.parentElement?.querySelector('.map-fallback');
-      if (fallback) fallback.style.display = 'block';
-    });
-  });
 
   // Una animación dominante por zona. El patrón describe la forma de cada zona:
   // fade-up de base, máscara para la foto en retrato, eje X para el texto y la franja,
-  // secuencia numerada para los principios y solo opacidad para el iframe del mapa.
+  // y secuencia numerada para los principios.
   const motionMap = [
     ['.sign-band', 'reveal-band'],
     ['.section-heading', 'reveal'],
     ['.product-card', 'reveal'],
     ['.story-photo', 'reveal-mask'],
     ['.story-copy', 'reveal-x'],
-    ['.principles', 'reveal-line'],
-    ['.location-card', 'reveal'],
-    ['.map-panel', 'reveal-fade']
+    ['.principles', 'reveal-line']
   ];
   const motionItems = [];
   motionMap.forEach(([selector, pattern]) => {
@@ -156,7 +143,7 @@
       motionItems.push(item);
     });
   });
-  document.querySelectorAll('.product-grid, .location-grid').forEach((grid) => grid.classList.add('reveal-stagger'));
+  document.querySelectorAll('.product-grid').forEach((grid) => grid.classList.add('reveal-stagger'));
   const revealColumns = columnCount(productGrid);
   products.forEach((product, index) => product.style.setProperty('--reveal-delay', `${diagonalDelay(index, revealColumns, 40, 320)}ms`));
 
@@ -228,7 +215,7 @@
     return hours * 60 + minutes;
   };
   const updateOpeningStatus = () => {
-    const location = document.querySelector('.featured-location');
+    const location = document.querySelector('.footer-visita');
     const label = location?.querySelector('.open-label');
     if (!location || !label) return;
     const now = new Date();

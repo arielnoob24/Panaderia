@@ -47,7 +47,7 @@
 
 * { box-sizing: border-box; }
 body { -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; }
-input, textarea, address, .location-card dl, a[href^="tel:"] { -webkit-user-select: text; -ms-user-select: text; user-select: text; -webkit-touch-callout: default; }
+input, textarea, address, .footer-horario, a[href^="tel:"] { -webkit-user-select: text; -ms-user-select: text; user-select: text; -webkit-touch-callout: default; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--masa); color: var(--horno); font-family: Georgia, "Times New Roman", serif; font-size: 16px; line-height: 1.55; }
 body::before { position: fixed; inset: 0; z-index: 0; pointer-events: none; content: ""; opacity: .035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.09'/%3E%3C/svg%3E"); }
@@ -65,9 +65,8 @@ section[id] { scroll-margin-top: 96px; }
 .brand { display: inline-flex; align-items: center; gap: .65rem; font: 600 1.15rem Georgia, serif; }
 .brand small { display: block; margin-top: .15rem; font: 400 .58rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .main-nav { display: flex; align-items: center; gap: 2rem; font: .88rem Arial, sans-serif; }
-.main-nav a, .footer-links a { transition: color var(--dur-micro) var(--ease-ui); }
-.main-nav a:hover, .footer-links a:hover { color: var(--ambar); }
-.main-nav a { position: relative; }
+.main-nav a { position: relative; transition: color var(--dur-micro) var(--ease-ui); }
+.main-nav a:hover { color: var(--ambar); }
 .main-nav a::after { position: absolute; right: 0; bottom: -4px; left: 0; height: 1px; content: ""; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform var(--dur-micro) var(--ease-ui); }
 .main-nav a:hover::after, .main-nav a:focus-visible::after { transform: scaleX(1); }
 .menu-toggle { display: none; padding: 8px; background: none; border: 0; color: white; cursor: pointer; }
@@ -190,41 +189,14 @@ section[id] { scroll-margin-top: 96px; }
 .principle-number { color: inherit; font: .7rem/1.4 Arial, sans-serif; letter-spacing: .08em; }
 .dark { color: var(--ambar); }
 
-.locations { background: var(--papel); }
-.location-grid { display: grid; grid-template-columns: minmax(280px, .8fr) 1.2fr; gap: 1.3rem; }
-.location-card { padding: 1.6rem; border: 1px solid var(--masa-linea); border-radius: var(--r-card); }
-.featured-location { background: var(--horno); color: white; border-color: var(--horno); }
-.location-card-top { display: flex; justify-content: flex-end; align-items: center; gap: 1rem; }
-.open-label { display: inline-flex; gap: .45rem; align-items: center; padding: .34rem .7rem .34rem .55rem; background: rgba(215, 155, 74, .1); border: 1px solid rgba(215, 155, 74, .4); border-radius: var(--r-pill); color: var(--ambar); font: 700 .68rem/1.3 Arial, sans-serif; }
-.open-label.is-closed { background: rgba(168, 95, 69, .14); border-color: rgba(168, 95, 69, .45); color: var(--aviso-cerrado); }
-.location-card h3 { margin: 1.1rem 0 .5rem; font: 500 1.7rem/1.1 Georgia, serif; }
-/* La calle es lo que hay que leer para llegar, no la ciudad: por eso pesa mas que antes. */
-.location-card address { color: var(--horno); font: 500 1rem/1.45 Arial, sans-serif; font-style: normal; }
-.featured-location address { color: var(--sobre-horno); }
-.location-card dl { margin: 1.1rem 0 0; padding-top: .9rem; border-top: 1px solid var(--masa-linea); font: .85rem/1.5 Arial, sans-serif; }
-.featured-location dl { border-color: rgba(255, 255, 255, .2); }
-.location-card dl div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin: .3rem 0; }
-.location-card dt { color: var(--horno-suave); }
-.featured-location dt { color: var(--sobre-horno-tenue); }
-.location-card dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 700; }
-/* La fila de hoy la marca el JS con el mismo dia que ya calcula para abierto/cerrado. */
-.location-card dl div.is-today dt, .location-card dl div.is-today dd { color: var(--ambar); }
-.dia-hoy { margin-left: .5rem; padding: .1rem .38rem; background: rgba(215, 155, 74, .1); border-radius: var(--r-hair); color: var(--ambar); font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; vertical-align: .08em; }
 /* Version en linea de los iconos: mismo encuadre y mismo trazo que .principle-icon. */
 .link-icon { display: block; width: 18px; height: 18px; flex: 0 0 auto; }
-.map-panel { position: relative; min-height: 270px; overflow: hidden; background: var(--masa-honda); border: 1px solid var(--masa-linea); border-radius: var(--r-panel); }
-.map-panel.is-loading::before { position: absolute; inset: 0; z-index: 1; display: grid; place-items: center; content: "Cargando mapa"; color: var(--horno-suave); background: rgba(247, 241, 231, .88); font: .8rem Arial, sans-serif; }
-/* El mapa es una referencia visual, no un mapa manejable: al capturar la rueda
-   del raton cortaba el desplazamiento de la pagina. Para manejarlo esta el boton. */
-.map-panel iframe { width: 100%; height: 100%; min-height: 270px; border: 0; pointer-events: none; filter: sepia(.2) saturate(.7); }
-.map-fallback { display: none; padding: 1rem; color: var(--horno-suave); font: .85rem Arial, sans-serif; }
-.map-link { position: absolute; bottom: 15px; left: 15px; z-index: 2; display: inline-flex; align-items: center; gap: .4rem; padding: .7rem 1rem; background: var(--horno); color: white; border-radius: var(--r-pill); font: 700 .75rem Arial, sans-serif; }
 
 .image-unavailable { display: grid; place-items: center; background: var(--masa-honda); }
 .image-unavailable::before { content: "Imagen no disponible"; padding: 1rem; color: var(--horno-suave); font: .8rem Arial, sans-serif; text-align: center; }
 .image-unavailable img { display: none; }
 .site-footer { position: relative; margin-top: calc(-1 * var(--r-band)); padding: calc(2rem + var(--r-band)) 0 2rem; background: var(--horno); color: white; border-radius: var(--r-band) var(--r-band) 0 0; }
-.footer-grid { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1.2fr; gap: 1.6rem 2.5rem; align-items: start; }
+.footer-grid { display: grid; grid-template-columns: 1.5fr 1fr 1.1fr; gap: 1.6rem 2.5rem; align-items: start; }
 /* Encabezados de columna: el mismo gris tenue y el mismo cuerpo pequeno de .contacto-tipo,
    en mayusculas para que ordenen sin competir con la marca. */
 .footer-col h3 { margin: 0 0 .85rem; color: var(--sobre-horno-tenue); font: 700 .72rem/1.3 Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
@@ -239,9 +211,25 @@ section[id] { scroll-margin-top: 96px; }
 .mascot-hero { width: 104px; height: 104px; margin-bottom: 1.3rem; background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
 .mascot-footer { width: 54px; height: 54px; background: radial-gradient(circle, rgba(215, 155, 74, .18) 62%, transparent 63%); }
 .footer-lema { margin: .9rem 0 0; color: var(--sobre-horno-tenue); font: italic 1.05rem/1.4 Georgia, serif; }
-.footer-links { display: flex; flex-direction: column; gap: .55rem; margin: 0; padding: 0; list-style: none; font: .85rem/1.4 Arial, sans-serif; }
 .footer-visita address { color: var(--sobre-horno); font: .85rem/1.5 Arial, sans-serif; font-style: normal; }
-.footer-horario { margin: .65rem 0 0; color: var(--sobre-horno-tenue); font: .85rem/1.6 Arial, sans-serif; font-variant-numeric: tabular-nums; }
+/* La insignia de abierto/cerrado viene de la tarjeta de locales: ya estaba
+   pensada para fondo oscuro, asi que en el pie solo necesita su propio aire. */
+.open-label { display: inline-flex; gap: .45rem; align-items: center; margin-bottom: .75rem; padding: .34rem .7rem .34rem .55rem; background: rgba(215, 155, 74, .1); border: 1px solid rgba(215, 155, 74, .4); border-radius: var(--r-pill); color: var(--ambar); font: 700 .68rem/1.3 Arial, sans-serif; }
+.open-label.is-closed { background: rgba(168, 95, 69, .2); border-color: rgba(168, 95, 69, .55); color: var(--aviso-cerrado); }
+/* El margen superior del punto es del aviso del hero; dentro de la insignia va centrado. */
+.open-label .status-dot { margin-top: 0; }
+/* La corteza oscura del punto se pierde sobre el horno: cerrado toma el mismo tinte claro que su texto. */
+.open-label .status-dot.is-closed { background: var(--aviso-cerrado); box-shadow: 0 0 0 4px rgba(217, 185, 169, .18); }
+.footer-horario { margin: .65rem 0 0; padding-top: .7rem; border-top: 1px solid rgba(255, 255, 255, .15); color: var(--sobre-horno-tenue); font: .85rem/1.5 Arial, sans-serif; }
+.footer-horario div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin: .3rem 0; }
+.footer-horario dt { color: var(--sobre-horno-tenue); }
+.footer-horario dd { margin: 0; color: var(--sobre-horno); font-variant-numeric: tabular-nums; font-weight: 700; }
+/* La fila de hoy la marca el JS con el mismo dia que ya calcula para abierto/cerrado. */
+.footer-horario div.is-today dt, .footer-horario div.is-today dd { color: var(--ambar); }
+.dia-hoy { margin-left: .5rem; padding: .1rem .38rem; background: rgba(215, 155, 74, .12); border-radius: var(--r-hair); color: var(--ambar); font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; vertical-align: .08em; }
+/* El enlace al mapa sobrevive al panel borrado: en el pie es un enlace claro, como .contacto-valor. */
+.footer-mapa { display: inline-flex; align-items: center; gap: .45rem; margin-top: 1rem; color: var(--ambar); font: 700 .8rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.footer-mapa:hover { color: var(--ambar-claro); }
 .footer-contacto .contacto + .contacto { margin-top: 1rem; }
 /* Etiqueta encima y el dato debajo con icono, subrayado, para que el dato sea lo que pesa. */
 .contacto { display: flex; flex-direction: column; gap: .3rem; }
@@ -254,10 +242,10 @@ section[id] { scroll-margin-top: 96px; }
 .floating-whatsapp { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 /* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
-.button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .map-link > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
+.button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible > span[aria-hidden] { transform: translateY(6px); }
-.text-link:focus-visible > span[aria-hidden], .map-link:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
-.button-yellow, .text-link, .map-link { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
+.text-link:focus-visible > span[aria-hidden], .footer-mapa:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
+.button-yellow, .text-link, .footer-mapa { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
 .floating-whatsapp:hover { background: var(--ambar-claro); }
 a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline-offset: 3px; box-shadow: 0 0 0 5px var(--ambar); }
@@ -268,9 +256,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 
 .reveal-x { opacity: 0; transform: translateX(18px); transition: opacity 700ms var(--ease-soft) 140ms, transform 700ms var(--ease-soft) 140ms; }
 .reveal-x.is-visible { opacity: 1; transform: none; }
-
-.reveal-fade { opacity: 0; transition: opacity var(--dur-editorial) var(--ease-out) 120ms; }
-.reveal-fade.is-visible { opacity: 1; }
 
 .reveal-mask img { clip-path: inset(0 0 14% 0); transform: scale(1.03); transition: opacity var(--dur-base) var(--ease-out), clip-path var(--dur-scene) var(--ease-out), transform var(--dur-scene) var(--ease-out); }
 .reveal-mask.is-visible img { clip-path: inset(0); transform: none; }
@@ -295,7 +280,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
   .button-yellow:hover > span[aria-hidden] { transform: translateY(6px); }
   .text-link:hover > span[aria-hidden],
-  .map-link:hover > span[aria-hidden] { transform: translate(4px, -4px); }
+  .footer-mapa:hover > span[aria-hidden] { transform: translate(4px, -4px); }
   .product-card:hover { transform: translateY(-5px); }
   .product-card:hover::after { opacity: 1; }
   .product-card:hover .product-image img { transform: scale(1.04); }
@@ -303,9 +288,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 @media (max-width: 900px) {
   .product-grid { grid-template-columns: repeat(2, 1fr); }
   .story-grid { gap: 3rem; }
-  .location-grid { grid-template-columns: 1fr 1fr; }
-  .map-panel { grid-column: 1 / -1; }
+  /* Tres columnas en dos huecos dejarian la marca sola y estrecha: pasa a toda la fila. */
   .footer-grid { grid-template-columns: 1fr 1fr; }
+  .footer-marca { grid-column: 1 / -1; }
 }
 @media (max-width: 680px) {
   .container { width: min(100% - 32px, 540px); }
@@ -328,11 +313,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .catalog { padding-top: 3rem; }
   .heading-row { display: block; }
   .section-intro { margin-top: 1.5rem; }
-  .product-grid, .location-grid, .story-grid { grid-template-columns: 1fr; }
+  .product-grid, .story-grid { grid-template-columns: 1fr; }
   .story-photo { max-width: 420px; margin: auto; }
   .principles { grid-template-columns: 1fr; gap: 1rem; }
-  .map-panel { grid-column: auto; min-height: 270px; }
-  .map-panel iframe { min-height: 270px; }
   .sign-band-inner { align-items: flex-start; flex-direction: column; justify-content: center; padding: 1rem 0; }
   .sign-band p { font-size: 1.1rem; }
   .reveal-band .mascot-sign, .reveal-band p, .reveal-band .sign-note { transform: none; }
@@ -349,7 +332,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .hero-image { transform: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
   .hero-note .status-dot::after { display: none; }
-  .button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .map-link > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
+  .button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
   .menu-toggle span, .button-yellow:hover, .button-yellow:focus-visible, .order-button:hover, .order-button:focus-visible, .product-card:hover, .product-card:hover .product-image img { transform: none; }
   .main-nav a::after { transition: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
