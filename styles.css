@@ -388,13 +388,75 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-aviso { margin: .4rem 0 0; color: var(--corteza-oscura); font: .78rem/1.4 Arial, sans-serif; }
 .canasta-aviso[hidden] { display: none; }
 .canasta-nota { margin: .7rem 0 0; color: var(--horno-suave); font: .75rem/1.45 Arial, sans-serif; text-align: center; }
-.canasta-enviar { width: 100%; justify-content: center; }
-.canasta-enviar[aria-disabled="true"] { opacity: .45; pointer-events: none; }
+.canasta-enviar, .canasta-pagar, .canasta-avisar { width: 100%; justify-content: center; }
+.canasta-enviar[aria-disabled="true"], .canasta-pagar[aria-disabled="true"] { opacity: .45; pointer-events: none; }
 .canasta-cuenta { display: grid; min-width: 22px; height: 22px; padding: 0 6px; place-items: center; background: var(--horno); border-radius: var(--r-pill); color: var(--papel); font: 700 .72rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .canasta-cuenta[hidden] { display: none; }
+
+/* ---- Pago simulado ----------------------------------------------------
+   Los tres pasos (canasta, pago, comprobante) viven dentro del mismo panel:
+   cada uno es una columna con su cuerpo desplazable y su pie fijo, y solo
+   uno esta visible. Nada de colores nuevos: el ambar marca lo elegido y lo
+   aprobado, la corteza marca lo que esta mal. */
+.canasta-pasos { display: flex; flex: 1; min-height: 0; flex-direction: column; }
+.canasta-paso { display: flex; flex: 1; min-height: 0; flex-direction: column; animation: paso-entra var(--dur-base) var(--ease-out) both; }
+.canasta-paso[hidden] { display: none; }
+@keyframes paso-entra { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
+.canasta-panel button.button { font: 700 1rem/1.55 Georgia, "Times New Roman", serif; cursor: pointer; }
+.canasta-panel button.button:disabled { cursor: progress; }
+.canasta-volver { display: inline-flex; align-items: center; gap: .45rem; margin-bottom: 1rem; padding: .3rem 0; background: none; border: 0; color: var(--horno-suave); cursor: pointer; font: 700 .82rem/1.3 Arial, sans-serif; transition: color var(--dur-fast) var(--ease-ui); }
+.canasta-volver:hover { color: var(--horno); }
+.canasta-volver > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
+.canasta-volver:hover > span[aria-hidden], .canasta-volver:focus-visible > span[aria-hidden] { transform: translateX(-4px); }
+.pago-demo, .recibo-simulado { margin: 0 0 1.1rem; padding: .7rem .85rem; background: rgba(215, 155, 74, .16); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; color: var(--horno); font: .82rem/1.5 Arial, sans-serif; }
+.pago-demo strong { display: block; }
+.pago-total { margin-bottom: .3rem; }
+.pago-modalidad { margin: 0 0 1.2rem; color: var(--horno-suave); font: .82rem/1.4 Arial, sans-serif; }
+.pago-metodos { margin-bottom: 1rem; }
+.pago-detalle[hidden] { display: none; }
+.pago-dato { margin: 0 0 .7rem; color: var(--horno-suave); font: .82rem/1.5 Arial, sans-serif; }
+.pago-prueba { margin: 0 0 .9rem; padding: .6rem .8rem; background: var(--masa); border: 1px dashed var(--masa-linea); border-radius: var(--r-chip); color: var(--horno-suave); font: .78rem/1.5 Arial, sans-serif; }
+.pago-prueba strong { color: var(--horno); font-variant-numeric: tabular-nums; }
+.pago-campo { margin-bottom: .7rem; }
+.pago-campo label { display: block; margin-bottom: .3rem; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
+.pago-campo input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .95rem/1.3 Arial, sans-serif; font-variant-numeric: tabular-nums; transition: border-color var(--dur-fast) var(--ease-ui); }
+.pago-campo input:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
+.pago-campo input.is-mal { border-color: var(--corteza); }
+.pago-campo-error { margin: .3rem 0 0; color: var(--corteza-oscura); font: .74rem/1.4 Arial, sans-serif; }
+.pago-campo-error[hidden] { display: none; }
+.pago-fila { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+.pago-banco { display: grid; margin: 0 0 .8rem; gap: .35rem; }
+.pago-banco div, .recibo-datos div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .4rem; border-bottom: 1px solid var(--masa-linea); }
+.pago-banco dt, .recibo-datos dt { color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
+.pago-banco dd, .recibo-datos dd { margin: 0; font: 700 .84rem/1.4 Arial, sans-serif; text-align: right; }
+.pago-cuenta, .recibo-numero { font-variant-numeric: tabular-nums; -webkit-user-select: text; -ms-user-select: text; user-select: text; }
+.pago-copiar { width: 100%; padding: .6rem .8rem; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .8rem/1.3 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
+.pago-copiar:hover { background: var(--masa-honda); }
+.pago-copiado { margin: .45rem 0 0; color: var(--horno-suave); font: .76rem/1.4 Arial, sans-serif; text-align: center; }
+.pago-copiado[hidden] { display: none; }
+.pago-ficticio { margin: .85rem 0 0; }
+.pago-qr-caja { display: grid; gap: .6rem; justify-items: center; }
+.pago-qr { width: 170px; max-width: 100%; height: auto; padding: .5rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-chip); color: var(--horno); }
+.pago-qr-alt { margin: 0; color: var(--horno-suave); font: .76rem/1.45 Arial, sans-serif; text-align: center; }
+.pago-error { margin: 0 0 .7rem; text-align: center; }
+.pago-girando { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(58, 40, 34, .25); border-top-color: var(--horno); border-radius: 50%; vertical-align: -2px; animation: girar 700ms linear infinite; }
+@keyframes girar { to { transform: rotate(360deg); } }
+.recibo-sello { display: flex; align-items: center; gap: .55rem; margin: 0 0 .8rem; font: 500 1.3rem/1.2 Georgia, serif; }
+.recibo-sello span { display: grid; width: 30px; height: 30px; flex: none; place-items: center; background: var(--ambar); border-radius: 50%; color: var(--horno); font: 700 .95rem/1 Arial, sans-serif; }
+.recibo-datos { display: grid; margin: 0 0 1.3rem; gap: .4rem; }
+.recibo-datos div[hidden] { display: none; }
+.recibo-titulo { margin: 0 0 .5rem; color: var(--horno-suave); font: 700 .78rem/1.3 Arial, sans-serif; }
+.recibo-lista { margin: 0; padding: 0; list-style: none; }
+.recibo-lista li { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--masa-linea); font: .85rem/1.4 Arial, sans-serif; font-variant-numeric: tabular-nums; }
+.canasta-listo { display: block; width: 100%; margin-top: .6rem; padding: .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .85rem/1.3 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
+.canasta-listo:hover { background: var(--masa); }
+
 @media (max-width: 680px) {
   .canasta-panel { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
   .canasta-panel, .canasta-fondo { transition: none; }
+  .canasta-paso { animation: none; }
+  .pago-girando { animation: none; }
+  .canasta-volver > span[aria-hidden] { transform: none !important; }
 }
