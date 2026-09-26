@@ -371,6 +371,23 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-pie { padding: 1.2rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--masa-linea); }
 .canasta-total { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; font: .95rem/1.3 Arial, sans-serif; }
 .canasta-total strong { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
+.canasta-entrega { margin: 0 0 1.1rem; padding: 0; border: 0; }
+.canasta-entrega[hidden] { display: none; }
+.canasta-entrega legend { padding: 0; margin-bottom: .55rem; color: var(--horno-suave); font: 700 .78rem/1.3 Arial, sans-serif; }
+.canasta-opciones { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+.canasta-opciones label { display: block; cursor: pointer; }
+.canasta-opciones input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.canasta-opciones span { display: grid; place-items: center; padding: .7rem .5rem; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno-suave); font: 700 .82rem/1.2 Arial, sans-serif; text-align: center; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+.canasta-opciones input:checked + span { background: rgba(215, 155, 74, .16); border-color: var(--ambar); color: var(--horno); }
+.canasta-opciones input:focus-visible + span { outline: 2px solid var(--horno); outline-offset: 2px; }
+.canasta-direccion { margin-top: .7rem; }
+.canasta-direccion[hidden] { display: none; }
+.canasta-direccion label { display: block; margin-bottom: .35rem; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
+.canasta-direccion input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .9rem/1.3 Arial, sans-serif; }
+.canasta-direccion input:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
+.canasta-aviso { margin: .4rem 0 0; color: var(--corteza-oscura); font: .78rem/1.4 Arial, sans-serif; }
+.canasta-aviso[hidden] { display: none; }
+.canasta-nota { margin: .7rem 0 0; color: var(--horno-suave); font: .75rem/1.45 Arial, sans-serif; text-align: center; }
 .canasta-enviar { width: 100%; justify-content: center; }
 .canasta-enviar[aria-disabled="true"] { opacity: .45; pointer-events: none; }
 .canasta-cuenta { display: grid; min-width: 22px; height: 22px; padding: 0 6px; place-items: center; background: var(--horno); border-radius: var(--r-pill); color: var(--papel); font: 700 .72rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }

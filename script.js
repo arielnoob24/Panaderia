@@ -253,12 +253,14 @@
   };
 
   // ---- Canasta ---------------------------------------------------------
-  // El sitio es estatico, asi que el pedido sigue saliendo por WhatsApp. Lo que
-  // cambia es que se envia una sola vez con todo en vez de un mensaje por
-  // producto. Los botones siguen siendo enlaces: si esto falla, funcionan solos.
+  // El sitio es estatico, asi que el pedido viaja por WhatsApp. Pero WhatsApp es
+  // el medio, no la oferta: antes de confirmar se elige retiro o domicilio y eso
+  // va escrito en el mensaje. Los botones siguen siendo enlaces: si esto falla,
+  // funcionan solos.
   const WHATSAPP = '593990000000';
   const CLAVE = 'eltradicional-pedido';
   const pedido = new Map();
+  const entrega = { modo: 'retiro', direccion: '' };
 
   const dinero = (n) => '$' + n.toFixed(2);
   const idDe = (nombre) => nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
@@ -267,14 +269,25 @@
     try {
       const crudo = window.localStorage.getItem(CLAVE);
       if (!crudo) return;
-      JSON.parse(crudo).forEach((l) => {
+      // Antes se guardaba solo el array de lineas; se sigue aceptando ese formato.
+      const dato = JSON.parse(crudo);
+      const lineas = Array.isArray(dato) ? dato : (dato.lineas || []);
+      lineas.forEach((l) => {
         if (l && l.id && l.nombre && l.cantidad > 0) pedido.set(l.id, { nombre: l.nombre, precio: Number(l.precio) || 0, cantidad: Math.min(l.cantidad, 99) });
       });
+      if (!Array.isArray(dato)) {
+        if (dato.modo === 'domicilio') entrega.modo = 'domicilio';
+        if (typeof dato.direccion === 'string') entrega.direccion = dato.direccion.slice(0, 200);
+      }
     } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza vacio */ }
   };
   const guardar = () => {
     try {
-      window.localStorage.setItem(CLAVE, JSON.stringify([...pedido].map(([id, l]) => ({ id, ...l }))));
+      window.localStorage.setItem(CLAVE, JSON.stringify({
+        lineas: [...pedido].map(([id, l]) => ({ id, ...l })),
+        modo: entrega.modo,
+        direccion: entrega.direccion,
+      }));
     } catch (e) { /* en ventana privada no se puede guardar; el pedido sigue vivo en memoria */ }
   };
 
@@ -291,9 +304,24 @@
     + '<button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div>'
     + '<div class="canasta-cuerpo"><ul class="canasta-lista"></ul>'
     + '<p class="canasta-vacio">Tu canasta está vacía.</p></div>'
-    + '<div class="canasta-pie"><div class="canasta-total"><span>Total</span><strong>$0.00</strong></div>'
+    + '<div class="canasta-pie">'
+    + '<fieldset class="canasta-entrega"><legend>¿Cómo lo quieres?</legend>'
+    + '<div class="canasta-opciones">'
+    + '<label><input type="radio" name="canasta-entrega" value="retiro" checked>'
+    + '<span>Paso retirando</span></label>'
+    + '<label><input type="radio" name="canasta-entrega" value="domicilio">'
+    + '<span>A domicilio</span></label></div>'
+    + '<div class="canasta-direccion" hidden>'
+    + '<label for="canasta-dir">¿A dónde lo llevamos?</label>'
+    + '<input id="canasta-dir" type="text" autocomplete="street-address" '
+    + 'placeholder="Calle, número y una referencia">'
+    + '<p class="canasta-aviso" role="alert" hidden>Escribe la dirección para poder llevarlo.</p>'
+    + '</div></fieldset>'
+    + '<div class="canasta-total"><span>Total</span><strong>$0.00</strong></div>'
     + '<a class="button button-yellow canasta-enviar" href="#" target="_blank" rel="noopener">'
-    + 'Enviar la canasta por WhatsApp <span aria-hidden="true">↗</span></a></div>';
+    + 'Confirmar el pedido <span aria-hidden="true">↗</span></a>'
+    + '<p class="canasta-nota">Se abre WhatsApp con el pedido escrito. Ahí confirmas la hora y el pago.</p>'
+    + '</div>';
   const avisos = document.createElement('p');
   avisos.className = 'sr-only';
   avisos.setAttribute('role', 'status');
@@ -304,13 +332,22 @@
   const vacio = panel.querySelector('.canasta-vacio');
   const totalEl = panel.querySelector('.canasta-total strong');
   const enviar = panel.querySelector('.canasta-enviar');
+  const radios = [...panel.querySelectorAll('input[name="canasta-entrega"]')];
+  const bloqueDir = panel.querySelector('.canasta-direccion');
+  const campoDir = panel.querySelector('#canasta-dir');
+  const avisoDir = panel.querySelector('.canasta-aviso');
+  const bloqueEntrega = panel.querySelector('.canasta-entrega');
 
   const total = () => [...pedido.values()].reduce((s, l) => s + l.precio * l.cantidad, 0);
   const unidades = () => [...pedido.values()].reduce((s, l) => s + l.cantidad, 0);
 
   const mensaje = () => {
     const lineas = [...pedido.values()].map((l) => `• ${l.cantidad} × ${l.nombre} — ${dinero(l.precio * l.cantidad)}`);
-    return `Hola, quiero pedir esto:\n${lineas.join('\n')}\n\nTotal: ${dinero(total())}`;
+    // La modalidad viaja escrita en el mensaje: quien atiende no tiene que preguntarla.
+    const comoLoQuiere = entrega.modo === 'domicilio'
+      ? `Entrega: a domicilio\nDirección: ${entrega.direccion}`
+      : 'Entrega: paso retirando por el local';
+    return `Hola, quiero pedir esto:\n${lineas.join('\n')}\n\nTotal: ${dinero(total())}\n${comoLoQuiere}`;
   };
 
   const boton = document.querySelector('.floating-whatsapp');
@@ -333,9 +370,18 @@
       li.querySelector('[data-mas]').addEventListener('click', () => cambiar(id, 1));
       lista.append(li);
     }
+    pintarPie();
+  };
+
+  const pintarPie = () => {
     const hayAlgo = pedido.size > 0;
     vacio.hidden = hayAlgo;
+    bloqueEntrega.hidden = !hayAlgo;
+    bloqueDir.hidden = entrega.modo !== 'domicilio';
     totalEl.textContent = dinero(total());
+    // El boton nombra lo que va a pasar, no el canal por el que pasa.
+    enviar.innerHTML = (entrega.modo === 'domicilio' ? 'Confirmar el pedido a domicilio' : 'Confirmar el pedido para retirar')
+      + ' <span aria-hidden="true">↗</span>';
     enviar.setAttribute('aria-disabled', String(!hayAlgo));
     enviar.href = hayAlgo ? `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje())}` : '#';
     const n = unidades();
@@ -344,6 +390,30 @@
     if (boton) boton.setAttribute('aria-label', n ? `Ver la canasta, ${n} producto${n === 1 ? '' : 's'}` : 'Ver la canasta, vacía');
     guardar();
   };
+
+  // Elegir retiro o domicilio: lo unico que cambia es el pie.
+  radios.forEach((radio) => radio.addEventListener('change', () => {
+    if (!radio.checked) return;
+    entrega.modo = radio.value === 'domicilio' ? 'domicilio' : 'retiro';
+    avisoDir.hidden = true;
+    pintarPie();
+    if (entrega.modo === 'domicilio') campoDir.focus();
+  }));
+
+  campoDir.addEventListener('input', () => {
+    entrega.direccion = campoDir.value.trim().slice(0, 200);
+    if (entrega.direccion) avisoDir.hidden = true;
+    pintarPie();
+  });
+
+  // Sin direccion no se puede llevar nada: en vez de dejar el boton muerto,
+  // se avisa y se lleva el foco al campo que falta.
+  enviar.addEventListener('click', (e) => {
+    if (entrega.modo !== 'domicilio' || entrega.direccion) return;
+    e.preventDefault();
+    avisoDir.hidden = false;
+    campoDir.focus();
+  });
 
   const cambiar = (id, delta) => {
     const l = pedido.get(id);
@@ -376,7 +446,7 @@
     if (e.key === 'Escape') { cerrar(); return; }
     if (e.key !== 'Tab') return;
     // El foco no debe escaparse del panel mientras esta abierto.
-    const focos = [...panel.querySelectorAll('button, a[href], [tabindex]:not([tabindex="-1"])')]
+    const focos = [...panel.querySelectorAll('button, a[href], input, [tabindex]:not([tabindex="-1"])')]
       .filter((el) => el.offsetParent !== null && el.getAttribute('aria-disabled') !== 'true');
     if (!focos.length) return;
     const primero = focos[0], ultimo = focos[focos.length - 1];
@@ -423,6 +493,8 @@
   });
 
   leerGuardado();
+  radios.forEach((radio) => { radio.checked = radio.value === entrega.modo; });
+  campoDir.value = entrega.direccion;
   pintar();
 
   updateOpeningStatus();
