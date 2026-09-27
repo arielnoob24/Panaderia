@@ -709,8 +709,20 @@
 
   const TITULOS = { canasta: 'Tu canasta', pago: 'Pago del pedido', comprobante: 'Pedido confirmado' };
   let pasoActual = 'canasta';
-  const irA = (nombre, mover = true) => {
+
+  // Al llegar al pago el panel deja de ser una gaveta lateral y se planta en el
+  // centro, con el resto desenfocado: pagar merece toda la pantalla, no un
+  // costado. La forma solo se recalcula con el panel abierto, asi que al cerrar
+  // la tarjeta se desvanece donde estaba en vez de saltar al borde.
+  const pintarForma = () => {
+    const centrado = pasoActual !== 'canasta';
+    panel.classList.toggle('is-centrado', centrado);
+    fondo.classList.toggle('is-difuminado', centrado);
+  };
+
+  const irA = (nombre, mover = true, forma = true) => {
     pasoActual = nombre;
+    if (forma) pintarForma();
     // El dialogo se sigue nombrando por el mismo h2, que cambia con el paso.
     titulo.textContent = TITULOS[nombre];
     pasos.forEach((s) => { s.hidden = s.dataset.paso !== nombre; });
@@ -814,6 +826,7 @@
   let ultimoFoco = null;
   const abrir = () => {
     ultimoFoco = document.activeElement;
+    pintarForma();
     fondo.classList.add('is-open');
     panel.classList.add('is-open');
     document.body.style.overflow = 'hidden';
@@ -838,7 +851,7 @@
       metodos.forEach((m) => { m.checked = m.value === 'efectivo'; });
       pintar();
     }
-    irA('canasta', false);
+    irA('canasta', false, false);
     ultimoFoco?.focus();
   };
   const abierto = () => panel.classList.contains('is-open');
