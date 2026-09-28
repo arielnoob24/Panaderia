@@ -880,12 +880,16 @@
     boton.setAttribute('role', 'button');
     boton.setAttribute('tabindex', '0');
     boton.textContent = '';
-    const icono = document.createElement('span');
-    icono.setAttribute('aria-hidden', 'true');
-    icono.textContent = '◔';
-    const texto = document.createElement('span');
-    texto.textContent = 'Mi canasta';
-    boton.append(icono, texto, cuenta);
+    boton.classList.add('is-canasta');
+    // Canasta de pan: asa de arco, cuerpo ahusado y dos mimbres. Mismo trazo
+    // que los iconos del pie, para que no parezca prestado de otro sitio.
+    boton.insertAdjacentHTML('beforeend',
+      '<svg class="canasta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+      + 'stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+      + '<path d="M7.6 9.4a4.4 4.4 0 0 1 8.8 0"/>'
+      + '<path d="M3.6 9.4h16.8l-1.5 8.2a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z"/>'
+      + '<path d="M9.7 12.7l.6 3.5"/><path d="M14.3 12.7l-.6 3.5"/></svg>');
+    boton.append(cuenta);
     boton.addEventListener('click', abrir);
     boton.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
   }

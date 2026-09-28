@@ -252,6 +252,11 @@ section[id] { scroll-margin-top: 96px; }
 .button-yellow, .text-link, .footer-mapa { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
 .floating-whatsapp:hover { background: var(--ambar-claro); }
+/* Ya convertido en canasta, el boton es solo el dibujo: circulo y cuenta en la
+   esquina. Sin JS no lleva esta clase y sigue siendo la pastilla de WhatsApp. */
+.floating-whatsapp.is-canasta { width: 56px; height: 56px; padding: 0; justify-content: center; }
+.floating-whatsapp .canasta-icono { width: 30px; height: 30px; flex: none; }
+.floating-whatsapp .canasta-cuenta { position: absolute; top: -3px; right: -3px; box-shadow: 0 0 0 2px var(--papel); }
 a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline-offset: 3px; box-shadow: 0 0 0 5px var(--ambar); }
 
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity var(--dur-editorial) var(--ease-out), transform var(--dur-editorial) var(--ease-out); }
