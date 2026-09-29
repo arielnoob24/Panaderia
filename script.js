@@ -994,11 +994,38 @@
   panelC.setAttribute('aria-modal', 'true');
   panelC.setAttribute('aria-labelledby', 'cuenta-titulo');
 
-  const campoHtml = (id, etiqueta, extra, opcional) =>
-    `<div class="cuenta-campo"><label for="cuenta-${id}">${etiqueta}`
-    + (opcional ? ' <span class="cuenta-campo-opcional">(opcional)</span>' : '')
-    + `</label><input id="cuenta-${id}" ${extra} aria-describedby="cuenta-${id}-error">`
-    + `<p class="cuenta-campo-error" id="cuenta-${id}-error" hidden></p></div>`;
+  // opciones: opcional, prefijo (texto fijo pegado al campo), describe (ids que
+  // se suman al aria-describedby) y despues (lo que va entre campo y error).
+  const campoHtml = (id, etiqueta, extra, opciones = {}) => {
+    const describe = (opciones.describe ? opciones.describe + ' ' : '') + `cuenta-${id}-error`;
+    const campo = `<input id="cuenta-${id}" ${extra} aria-describedby="${describe}">`;
+    return `<div class="cuenta-campo"><label for="cuenta-${id}">${etiqueta}`
+      + (opciones.opcional ? ' <span class="cuenta-campo-opcional">(opcional)</span>' : '')
+      + '</label>'
+      + (opciones.prefijo
+        ? `<div class="cuenta-conprefijo"><span class="cuenta-prefijo">${opciones.prefijo}</span>${campo}</div>`
+        : campo)
+      + (opciones.despues || '')
+      + `<p class="cuenta-campo-error" id="cuenta-${id}-error" hidden></p></div>`;
+  };
+
+  // Lo que tiene que cumplir la contrasena, escrito una sola vez: de aqui salen
+  // la lista que se ve debajo del campo y la comprobacion de si vale.
+  const REGLAS = [
+    { id: 'largo', texto: 'Al menos 8 caracteres', cumple: (v) => v.length >= 8 },
+    { id: 'minuscula', texto: 'Una letra minúscula', cumple: (v) => /[a-zñáéíóúü]/.test(v) },
+    { id: 'mayuscula', texto: 'Una letra mayúscula', cumple: (v) => /[A-ZÑÁÉÍÓÚÜ]/.test(v) },
+    { id: 'numero', texto: 'Un número', cumple: (v) => /[0-9]/.test(v) },
+  ];
+  // El +593 esta fijo delante del campo, asi que el numero va sin el cero de
+  // 09... Quien lo escriba de memoria con el cero no se equivoca: se lo come.
+  const soloNueve = (v) => v.replace(/\D/g, '').replace(/^0+/, '').slice(0, 9);
+  const telefonoBonito = (d) => (d ? `+593 ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}` : '');
+
+  const reglasHtml = '<ul class="cuenta-reglas" id="cuenta-clave-reglas">'
+    + REGLAS.map((r) => `<li data-regla="${r.id}">${r.texto}`
+      + '<span class="sr-only cuenta-regla-estado">, falta</span></li>').join('')
+    + '</ul>';
 
   panelC.innerHTML =
     '<div class="cuenta-cabecera"><h2 id="cuenta-titulo" tabindex="-1">Crear cuenta</h2>'
@@ -1011,12 +1038,14 @@
     + 'en ninguna parte. No escribas una contraseña de verdad.</p>'
     + campoHtml('nombre', 'Nombre y apellido', 'type="text" autocomplete="name" maxlength="60" placeholder="Ariel Escobar"')
     + campoHtml('correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
-    + campoHtml('telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="0990000000"')
-    + campoHtml('direccion', 'Dirección', 'type="text" autocomplete="street-address" maxlength="200" placeholder="Calle, número y una referencia"', true)
-    + '<div class="cuenta-fila">'
-    + campoHtml('clave', 'Contraseña', 'type="password" autocomplete="new-password" maxlength="40"')
-    + campoHtml('repite', 'Repítela', 'type="password" autocomplete="new-password" maxlength="40"')
-    + '</div></div>'
+    + campoHtml('telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel" '
+      + 'maxlength="9" placeholder="990001122"', { prefijo: '+593' })
+    + campoHtml('direccion', 'Dirección', 'type="text" autocomplete="street-address" maxlength="200" '
+      + 'placeholder="Calle, número y una referencia"', { opcional: true })
+    + campoHtml('clave', 'Contraseña', 'type="password" autocomplete="new-password" maxlength="40"',
+      { describe: 'cuenta-clave-reglas', despues: reglasHtml })
+    + campoHtml('repite', 'Repite la contraseña', 'type="password" autocomplete="new-password" maxlength="40"')
+    + '</div>'
     + '<div class="cuenta-pie">'
     + '<p class="cuenta-aviso" role="alert" hidden></p>'
     + '<button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button>'
@@ -1082,29 +1111,64 @@
   // Mismo trato que en la tarjeta: un campo solo se marca cuando ya lo tocaste
   // o cuando ya intentaste enviar. Avisar antes de escribir nada no ayuda.
   const datos = { nombre: '', correo: '', telefono: '', direccion: '', clave: '', repite: '' };
-  const campos = ['nombre', 'correo', 'telefono', 'direccion', 'clave', 'repite'].map((clave) => ({
-    clave,
-    input: panelC.querySelector(`#cuenta-${clave}`),
-    error: panelC.querySelector(`#cuenta-${clave}-error`),
+  // Cada campo elige cuando se le puede reganar. El correo y el telefono, al
+  // salir de ellos: corregir a alguien el correo en la tercera letra no ayuda.
+  // La contrasena no se marca nunca en rojo mientras escribes, porque la lista
+  // de abajo ya va diciendo lo que falta; solo al intentar crear la cuenta.
+  const campos = [
+    { clave: 'nombre' },
+    { clave: 'correo' },
+    { clave: 'telefono' },
+    { clave: 'direccion' },
+    { clave: 'clave', soloAlIntentar: true },
+    { clave: 'repite' },
+  ].map((campo) => Object.assign(campo, {
+    input: panelC.querySelector(`#cuenta-${campo.clave}`),
+    error: panelC.querySelector(`#cuenta-${campo.clave}-error`),
   }));
   const tocadosC = new Set();
   let intentadoC = false;
 
   const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  // El correo no se despacha con un "algo esta mal": se dice que le falta.
+  const fallaCorreo = (v) => {
+    if (!v) return 'Escribe tu correo.';
+    if (!v.includes('@')) return 'Le falta el @.';
+    if (!/\.[a-z]{2,}$/i.test(v)) return 'Le falta el final, como .com o .ec.';
+    if (!CORREO.test(v)) return 'Revisa el correo, algo no cuadra.';
+    return '';
+  };
   const fallosCuenta = () => {
     const f = {};
     if (datos.nombre.length < 3) f.nombre = 'Escribe tu nombre.';
     else if (!datos.nombre.includes(' ')) f.nombre = 'Falta el apellido.';
-    if (!CORREO.test(datos.correo)) f.correo = 'Revisa el correo, algo le falta.';
-    if (!/^\d{10}$/.test(datos.telefono)) f.telefono = 'Son 10 números, como 0990000000.';
-    if (datos.clave.length < 8) f.clave = 'Al menos 8 caracteres.';
+    const correo = fallaCorreo(datos.correo);
+    if (correo) f.correo = correo;
+    // Tras el +593 el numero va sin el cero: los celulares de aqui son 09...,
+    // asi que quedan nueve cifras que empiezan en 9.
+    if (!datos.telefono) f.telefono = 'Escribe tu número.';
+    else if (!/^9\d{8}$/.test(datos.telefono)) f.telefono = 'Son 9 números después del +593, empezando por 9.';
+    if (REGLAS.some((r) => !r.cumple(datos.clave))) f.clave = 'A la contraseña le falta algo de la lista.';
     if (datos.repite !== datos.clave) f.repite = 'Las dos no son iguales.';
     return f;
   };
+
+  // La lista de obligaciones se repinta en cada tecla: es la unica parte del
+  // formulario que contesta mientras escribes, y por eso no hay que adivinar.
+  const pintarReglas = () => {
+    REGLAS.forEach((r) => {
+      const fila = panelC.querySelector(`[data-regla="${r.id}"]`);
+      const hecha = r.cumple(datos.clave);
+      fila.classList.toggle('is-hecha', hecha);
+      fila.querySelector('.cuenta-regla-estado').textContent = hecha ? ', cumplido' : ', falta';
+    });
+  };
   const pintarCampos = () => {
     const fallos = fallosCuenta();
-    campos.forEach(({ clave, input, error }) => {
-      const texto = (intentadoC || tocadosC.has(clave)) ? fallos[clave] : '';
+    pintarReglas();
+    campos.forEach(({ clave, input, error, soloAlIntentar }) => {
+      const momento = soloAlIntentar ? intentadoC : (intentadoC || tocadosC.has(clave));
+      const texto = momento ? fallos[clave] : '';
       error.hidden = !texto;
       error.textContent = texto || '';
       input.setAttribute('aria-invalid', texto ? 'true' : 'false');
@@ -1114,8 +1178,9 @@
   };
   campos.forEach(({ clave, input }) => {
     input.addEventListener('input', () => {
-      // El telefono solo admite cifras; las contrasenas se dejan tal cual.
-      if (clave === 'telefono') input.value = input.value.replace(/\D/g, '').slice(0, 10);
+      // El telefono solo admite cifras. El 0 de 09... se lo come el +593, asi
+      // que escribir el numero de memoria tambien funciona.
+      if (clave === 'telefono') input.value = soloNueve(input.value);
       datos[clave] = (clave === 'clave' || clave === 'repite') ? input.value : input.value.trim();
       pintarCampos();
     });
@@ -1160,7 +1225,7 @@
       if (!dato || !dato.nombre || typeof dato.correo !== 'string') return;
       sesion.nombre = String(dato.nombre).slice(0, 60);
       sesion.correo = String(dato.correo).slice(0, 80);
-      sesion.telefono = String(dato.telefono || '').slice(0, 10);
+      sesion.telefono = soloNueve(String(dato.telefono || ''));
       sesion.direccion = String(dato.direccion || '').slice(0, 200);
       sesion.dentro = true;
     } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza fuera */ }
@@ -1189,7 +1254,7 @@
     panelC.querySelector('.cuenta-avatar').textContent = iniciales(sesion.nombre);
     panelC.querySelector('.cuenta-sesion-nombre').textContent = sesion.nombre;
     panelC.querySelector('.cuenta-sesion-correo').textContent = sesion.correo;
-    panelC.querySelector('.cuenta-dato-telefono').textContent = sesion.telefono || '—';
+    panelC.querySelector('.cuenta-dato-telefono').textContent = telefonoBonito(sesion.telefono) || '—';
     panelC.querySelector('.cuenta-dato-direccion').textContent = sesion.direccion || 'Sin dirección guardada';
   };
 

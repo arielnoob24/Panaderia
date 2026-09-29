@@ -397,6 +397,25 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .cuenta-maqueta strong { color: var(--corteza-oscura); }
 .cuenta-campo-opcional { color: var(--horno-claro); font-weight: 400; }
 
+/* El +593 no se escribe: va fijo delante del campo, pegado a el, y los dos se
+   leen como una sola caja. Asi el numero se teclea como se dice. */
+.cuenta-conprefijo { display: flex; align-items: stretch; }
+.cuenta-prefijo { display: grid; flex: 0 0 auto; place-items: center; padding: 0 .7rem; background: var(--masa); border: 1px solid var(--masa-linea); border-right: 0; border-radius: var(--r-btn) 0 0 var(--r-btn); color: var(--horno-suave); font: 700 .9rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; transition: border-color var(--dur-fast) var(--ease-ui); }
+.cuenta-conprefijo input { min-width: 0; flex: 1; border-radius: 0 var(--r-btn) var(--r-btn) 0; }
+/* El borde del prefijo acompana al del campo, para que la caja siga siendo una. */
+.cuenta-conprefijo:has(input:focus-visible) .cuenta-prefijo { border-color: var(--ambar); }
+.cuenta-conprefijo:has(input.is-mal) .cuenta-prefijo { border-color: var(--corteza); }
+
+/* Lo que debe cumplir la contrasena, debajo del campo y contestando en cada
+   tecla: es la unica parte del formulario que habla mientras escribes. Cada
+   obligacion se marca en cuanto se cumple, y ninguna se pone en rojo: son
+   cosas que faltan, no errores cometidos. */
+.cuenta-reglas { display: grid; gap: .3rem; margin: .55rem 0 0; padding: 0; list-style: none; }
+.cuenta-reglas li { display: flex; align-items: center; gap: .5rem; color: var(--horno-suave); font: .74rem/1.4 Arial, sans-serif; transition: color var(--dur-fast) var(--ease-ui); }
+.cuenta-reglas li::before { display: grid; width: 15px; height: 15px; flex: 0 0 auto; place-items: center; content: ""; border: 1px solid var(--masa-linea); border-radius: 50%; color: var(--horno); font-size: .62rem; line-height: 1; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.cuenta-reglas li.is-hecha { color: var(--horno); }
+.cuenta-reglas li.is-hecha::before { content: "\2713"; background: var(--ambar); border-color: var(--ambar); }
+
 /* Cambiar de crear a entrar no es la accion principal: es un enlace, no un boton. */
 .cuenta-cambiar { display: block; width: 100%; margin: .8rem 0 0; padding: .3rem; background: none; border: 0; color: var(--corteza-oscura); cursor: pointer; font: .8rem/1.4 Arial, sans-serif; text-align: center; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .cuenta-cambiar:hover { color: var(--horno); }
@@ -542,7 +561,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .pago-campo input.is-mal, .cuenta-campo input.is-mal { border-color: var(--corteza); }
 .pago-campo-error, .cuenta-campo-error { margin: .3rem 0 0; color: var(--corteza-oscura); font: .74rem/1.4 Arial, sans-serif; }
 .pago-campo-error[hidden], .cuenta-campo-error[hidden] { display: none; }
-.pago-fila, .cuenta-fila { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+.pago-fila { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
 .pago-banco { display: grid; margin: 0 0 .8rem; gap: .35rem; }
 .pago-banco div, .recibo-datos div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .4rem; border-bottom: 1px solid var(--masa-linea); }
 .pago-banco dt, .recibo-datos dt { color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
