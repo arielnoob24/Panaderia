@@ -63,6 +63,10 @@ section[id] { scroll-margin-top: 96px; }
 .site-header { position: absolute; top: 0; width: 100%; z-index: 10; color: white; background: rgba(58, 40, 34, .88); border-bottom: 1px solid rgba(255, 255, 255, .18); }
 .nav-wrap { display: flex; align-items: center; justify-content: space-between; min-height: 86px; border-bottom: 1px solid rgba(255, 255, 255, .3); }
 .brand { display: inline-flex; align-items: center; gap: .65rem; font: 600 1.15rem Georgia, serif; }
+/* El logo trae el nombre y la bajada dibujados, asi que en la cabecera sustituye
+   a la mascota con el texto al lado. Manda el alto: en una barra de 86px el logo
+   tiene que caber con aire, y el ancho sale solo de su proporcion. */
+.brand-logo { display: block; width: auto; height: 58px; }
 .brand small { display: block; margin-top: .15rem; font: 400 .58rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .main-nav { display: flex; align-items: center; gap: 2rem; font: .88rem Arial, sans-serif; }
 .main-nav > a, .nav-grupo-boton { position: relative; transition: color var(--dur-micro) var(--ease-ui); }
@@ -89,6 +93,15 @@ section[id] { scroll-margin-top: 96px; }
 .nav-grupo.is-open .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
 .nav-submenu a { padding: .55rem .7rem; border-radius: var(--r-chip); white-space: nowrap; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
 .nav-submenu a:hover, .nav-submenu a:focus-visible { background: rgba(255, 255, 255, .1); color: var(--ambar); }
+/* El JavaScript ya abre al pasar el cursor, pero solo si matchMedia reconoce el
+   raton; en un portatil con pantalla tactil no siempre lo hace. Esto lo abre
+   igual, sin depender de nadie. Va con min-width porque en el telefono el
+   desplegable es una sangria y no un panel flotante. */
+@media (hover: hover) and (pointer: fine) and (min-width: 681px) {
+  .nav-grupo:hover .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
+  .nav-grupo:hover .nav-grupo-flecha { transform: rotate(180deg); }
+  .nav-grupo:hover .nav-grupo-boton::after { transform: scaleX(1); }
+}
 
 .menu-toggle { display: none; padding: 8px; background: none; border: 0; color: white; cursor: pointer; }
 .menu-toggle span { display: block; width: 23px; height: 2px; margin: 4px 0; background: currentColor; transition: transform var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-ui); }
@@ -264,10 +277,9 @@ section[id] { scroll-margin-top: 96px; }
 .footer-identity { display: flex; align-items: center; gap: .9rem; }
 .mascot-slot { display: inline-flex; align-items: center; justify-content: center; overflow: hidden; border: 0; border-radius: 50%; color: var(--ambar); }
 .mascot-slot img { width: 100%; height: 100%; object-fit: contain; }
-/* La mascota es la unica marca del sitio: sustituye al monograma ET en la
-   cabecera y en la franja. Por debajo de 40px la ilustracion deja de leerse,
-   asi que el circulo de fondo le da forma reconocible en los tamanos pequenos. */
-.mascot-brand { width: 44px; height: 44px; background: radial-gradient(circle, rgba(215, 155, 74, .22) 62%, transparent 63%); }
+/* La mascota acompana en el hero, en la franja y en el pie; en la cabecera manda
+   el logo. Por debajo de 40px la ilustracion deja de leerse, asi que el circulo
+   de fondo le da forma reconocible en los tamanos pequenos. */
 .mascot-sign { width: 52px; height: 52px; flex: 0 0 auto; border: 1px solid rgba(255, 255, 255, .55); }
 .mascot-hero { width: 104px; height: 104px; margin-bottom: 1.3rem; background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
 .mascot-footer { width: 54px; height: 54px; background: radial-gradient(circle, rgba(215, 155, 74, .18) 62%, transparent 63%); }
@@ -365,6 +377,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 @media (max-width: 680px) {
   .container { width: min(100% - 32px, 540px); }
   .nav-wrap { min-height: 70px; }
+  .brand-logo { height: 44px; }
   .menu-toggle { display: block; }
   .main-nav { position: absolute; top: calc(100% + .5rem); right: 16px; left: auto; display: flex; visibility: hidden; width: min(250px, calc(100vw - 32px)); flex-direction: column; align-items: stretch; gap: .15rem; padding: .55rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }
   .main-nav.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
