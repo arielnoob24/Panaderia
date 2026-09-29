@@ -2,11 +2,24 @@
   const menuToggle = document.querySelector('.menu-toggle');
   const navigation = document.querySelector('#main-nav');
 
+  // "Tienda" agrupa las tres categorias del catalogo. Manda el clic, que es lo
+  // que funciona con teclado y con el dedo; en raton, ademas, se abre al pasar
+  // por encima, porque ahi si existe eso de pasar por encima.
+  const grupo = document.querySelector('.nav-grupo');
+  const grupoBoton = grupo?.querySelector('.nav-grupo-boton');
+  const abrirGrupo = (abierto) => {
+    if (!grupo || !grupoBoton) return;
+    grupo.classList.toggle('is-open', abierto);
+    grupoBoton.setAttribute('aria-expanded', String(abierto));
+  };
+
   const closeMenu = (restoreFocus = false) => {
     if (!menuToggle || !navigation) return;
     menuToggle.setAttribute('aria-expanded', 'false');
     menuToggle.setAttribute('aria-label', 'Abrir menú');
     navigation.classList.remove('is-open');
+    // Al plegarse el menu del telefono, la tienda no se queda abierta debajo.
+    abrirGrupo(false);
     if (restoreFocus) menuToggle.focus();
   };
 
@@ -22,8 +35,28 @@
     if (navigation?.classList.contains('is-open') && !navigation.contains(event.target) && !menuToggle.contains(event.target)) closeMenu();
   });
   document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape') closeMenu(true);
+    if (event.key !== 'Escape') return;
+    // Si lo abierto era la tienda, el foco vuelve a su boton y no al de menu,
+    // que en pantalla grande ni siquiera se ve.
+    const tiendaAbierta = grupo?.classList.contains('is-open');
+    closeMenu(true);
+    if (tiendaAbierta) grupoBoton?.focus();
   });
+
+  if (grupo && grupoBoton) {
+    grupoBoton.addEventListener('click', () => abrirGrupo(!grupo.classList.contains('is-open')));
+    if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+      grupo.addEventListener('mouseenter', () => abrirGrupo(true));
+      grupo.addEventListener('mouseleave', () => abrirGrupo(false));
+    }
+    // Si el clic o el foco se van a otra parte, el desplegable ya no pinta nada.
+    document.addEventListener('click', (event) => {
+      if (!grupo.contains(event.target)) abrirGrupo(false);
+    });
+    document.addEventListener('focusin', (event) => {
+      if (!grupo.contains(event.target)) abrirGrupo(false);
+    });
+  }
   window.addEventListener('resize', () => {
     if (window.innerWidth > 680) closeMenu();
   });
