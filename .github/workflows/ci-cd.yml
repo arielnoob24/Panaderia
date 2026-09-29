@@ -24,8 +24,26 @@ jobs:
           test -s styles.css
           test -s mascota.png
           grep -q 'mascota.png' index.html
-          test "$(grep -o '<article class="product-card"' index.html | wc -l)" -eq 9
-          test "$(grep -o 'id="filter-' index.html | wc -l)" -eq 5
+          # El catalogo crece y encoge: un numero exacto obliga a acordarse de
+          # tocar el CI cada vez que entra un producto, y cuando no te acuerdas
+          # el sitio deja de publicarse sin que nadie lo note. Se comprueba que
+          # el archivo no venga truncado y que filtros y categorias cuadren,
+          # que es lo que de verdad puede romperse.
+          test "$(grep -o '<article class="product-card"' index.html | wc -l)" -ge 8
+          categorias=$(grep -o 'data-category="[^"]*"' index.html | sed 's/.*="//;s/"$//' | sort -u)
+          filtros=$(grep -o 'id="filter-[^"]*"' index.html | sed 's/.*id="filter-//;s/"$//' | sort -u)
+          for c in $categorias; do
+            if ! echo "$filtros" | grep -qx "$c"; then
+              echo "La categoria '$c' no tiene filtro en la barra."
+              exit 1
+            fi
+          done
+          for f in $filtros; do
+            if [ "$f" != "todos" ] && ! echo "$categorias" | grep -qx "$f"; then
+              echo "El filtro '$f' no tiene ningun producto detras."
+              exit 1
+            fi
+          done
           if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html styles.css; then
             echo 'Se encontro una referencia no permitida a cafeteria, cafe o cocteles.'
             exit 1
