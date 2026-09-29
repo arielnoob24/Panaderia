@@ -331,6 +331,10 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .product-card:hover .product-image img { transform: scale(1.04); }
 }
 @media (max-width: 900px) {
+  /* Cinco entradas y el boton de la cuenta no caben con el aire de escritorio:
+     entre la tableta y el movil la barra se aprieta en vez de desbordarse. */
+  .main-nav { gap: 1.1rem; font-size: .82rem; }
+  .nav-cuenta { padding: .4rem .7rem; font-size: .76rem; }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
   .story-grid { gap: 3rem; }
   /* Tres columnas en dos huecos dejarian la marca sola y estrecha: pasa a toda la fila. */

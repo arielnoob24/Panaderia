@@ -103,6 +103,19 @@
   }));
   applyFilter();
 
+  // Tres entradas de la barra nombran una categoria. Sin JavaScript son enlaces
+  // normales que bajan al catalogo, que ya es la respuesta correcta; con JS
+  // ademas dejan puesto el filtro, para que bajar a "Bebidas" no aterrice en el
+  // pan y toque buscar.
+  document.querySelectorAll('.main-nav a[data-filtro]').forEach((enlace) => {
+    enlace.addEventListener('click', () => {
+      const filtro = document.querySelector(`#filter-${enlace.dataset.filtro}`);
+      if (!filtro || filtro.checked) return;
+      filtro.checked = true;
+      filtro.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+  });
+
   document.querySelectorAll('img').forEach((image) => {
     image.parentElement?.classList.add('is-loading');
     const markImageLoaded = () => {
