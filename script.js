@@ -253,6 +253,23 @@
     label.lastChild.textContent = ` ${estado}`;
   };
 
+  // Mientras un panel esta abierto el foco no puede escaparse a la pagina de
+  // detras, y Escape lo cierra. Lo mismo hace falta en la canasta y en la cuenta,
+  // asi que vive una sola vez aqui.
+  const atraparFoco = (panel, abierto, cerrar) => {
+    document.addEventListener('keydown', (e) => {
+      if (!abierto()) return;
+      if (e.key === 'Escape') { cerrar(); return; }
+      if (e.key !== 'Tab') return;
+      const focos = [...panel.querySelectorAll('button, a[href], input, [tabindex]:not([tabindex="-1"])')]
+        .filter((el) => el.offsetParent !== null && !el.disabled && el.getAttribute('aria-disabled') !== 'true');
+      if (!focos.length) return;
+      const primero = focos[0], ultimo = focos[focos.length - 1];
+      if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
+      else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
+    });
+  };
+
   // ---- Canasta ---------------------------------------------------------
   // El sitio es estatico, asi que el pedido viaja por WhatsApp. Pero WhatsApp es
   // el medio, no la oferta: antes de confirmar se elige retiro o domicilio y eso
@@ -264,6 +281,8 @@
   const CLAVE = 'eltradicional-pedido';
   const pedido = new Map();
   const entrega = { modo: 'retiro', direccion: '' };
+  // La cuenta es una maqueta sin servidor; se rellena en la seccion de mas abajo.
+  const sesion = { nombre: '', correo: '', telefono: '', direccion: '', dentro: false };
   // Los datos de la tarjeta viven aqui y solo aqui: no se guardan ni se envian
   // a ningun lado, y se borran al salir del paso de pago.
   const tarjeta = { numero: '', vence: '', cvv: '', titular: '' };
@@ -479,11 +498,14 @@
     const comoLoQuiere = entrega.modo === 'domicilio'
       ? `Entrega: a domicilio\nDirección: ${entrega.direccion}`
       : 'Entrega: paso retirando por el local';
+    // Estando dentro de la cuenta el pedido sale con nombre: quien atiende no
+    // tiene que preguntar de quien es.
+    const quien = sesion.dentro ? `\nA nombre de: ${sesion.nombre}` : '';
     // El numero de pedido y el metodo solo existen despues del paso de pago; sin
     // ellos el mensaje es el de siempre.
     const cabecera = cobro.numero ? `Hola, confirmo el pedido ${cobro.numero}:` : 'Hola, quiero pedir esto:';
     const pago = cobro.numero ? `\nPago: ${cobro.detalle} (simulado, sin cobro real)` : '';
-    return `${cabecera}\n${lineas.join('\n')}\n\nTotal: ${dinero(total())}\n${comoLoQuiere}${pago}`;
+    return `${cabecera}\n${lineas.join('\n')}\n\nTotal: ${dinero(total())}\n${comoLoQuiere}${quien}${pago}`;
   };
 
   const boton = document.querySelector('.floating-whatsapp');
@@ -863,18 +885,7 @@
 
   fondo.addEventListener('click', cerrar);
   panel.querySelector('.canasta-cerrar').addEventListener('click', cerrar);
-  document.addEventListener('keydown', (e) => {
-    if (!abierto()) return;
-    if (e.key === 'Escape') { cerrar(); return; }
-    if (e.key !== 'Tab') return;
-    // El foco no debe escaparse del panel mientras esta abierto.
-    const focos = [...panel.querySelectorAll('button, a[href], input, [tabindex]:not([tabindex="-1"])')]
-      .filter((el) => el.offsetParent !== null && !el.disabled && el.getAttribute('aria-disabled') !== 'true');
-    if (!focos.length) return;
-    const primero = focos[0], ultimo = focos[focos.length - 1];
-    if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
-    else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
-  });
+  atraparFoco(panel, abierto, cerrar);
 
   // El boton flotante pasa a ser el acceso al pedido. El contacto general de
   // WhatsApp sigue en la navegacion y en el pie, asi que no se pierde.
@@ -965,6 +976,343 @@
   radios.forEach((radio) => { radio.checked = radio.value === entrega.modo; });
   campoDir.value = entrega.direccion;
   pintar();
+
+  // ---- Cuenta ----------------------------------------------------------
+  // Maqueta de cuentas. No hay servidor detras, asi que nada de esto viaja a
+  // ninguna parte: la cuenta queda escrita en este navegador y en ningun otro
+  // sitio. La contrasena se pide, se comprueba y se tira; no se guarda ni aqui
+  // ni en el navegador, porque guardarla seria ensenar a hacerlo mal. Por lo
+  // mismo, "entrar" no puede comprobar ninguna contrasena: no hay con que
+  // compararla, y el panel lo dice en voz alta en vez de fingir que si.
+  const CLAVE_CUENTA = 'eltradicional-cuenta';
+
+  const fondoC = document.createElement('div');
+  fondoC.className = 'cuenta-fondo';
+  const panelC = document.createElement('aside');
+  panelC.className = 'cuenta-panel';
+  panelC.setAttribute('role', 'dialog');
+  panelC.setAttribute('aria-modal', 'true');
+  panelC.setAttribute('aria-labelledby', 'cuenta-titulo');
+
+  const campoHtml = (id, etiqueta, extra, opcional) =>
+    `<div class="cuenta-campo"><label for="cuenta-${id}">${etiqueta}`
+    + (opcional ? ' <span class="cuenta-campo-opcional">(opcional)</span>' : '')
+    + `</label><input id="cuenta-${id}" ${extra} aria-describedby="cuenta-${id}-error">`
+    + `<p class="cuenta-campo-error" id="cuenta-${id}-error" hidden></p></div>`;
+
+  panelC.innerHTML =
+    '<div class="cuenta-cabecera"><h2 id="cuenta-titulo" tabindex="-1">Crear cuenta</h2>'
+    + '<button class="cuenta-cerrar" type="button" aria-label="Cerrar">×</button></div>'
+
+    + '<section class="cuenta-paso" data-paso="crear">'
+    + '<div class="cuenta-cuerpo">'
+    + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Este sitio no tiene '
+    + 'servidor: la cuenta se guarda solo en este navegador y la contraseña no se guarda '
+    + 'en ninguna parte. No escribas una contraseña de verdad.</p>'
+    + campoHtml('nombre', 'Nombre y apellido', 'type="text" autocomplete="name" maxlength="60" placeholder="Ariel Escobar"')
+    + campoHtml('correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
+    + campoHtml('telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel" maxlength="10" placeholder="0990000000"')
+    + campoHtml('direccion', 'Dirección', 'type="text" autocomplete="street-address" maxlength="200" placeholder="Calle, número y una referencia"', true)
+    + '<div class="cuenta-fila">'
+    + campoHtml('clave', 'Contraseña', 'type="password" autocomplete="new-password" maxlength="40"')
+    + campoHtml('repite', 'Repítela', 'type="password" autocomplete="new-password" maxlength="40"')
+    + '</div></div>'
+    + '<div class="cuenta-pie">'
+    + '<p class="cuenta-aviso" role="alert" hidden></p>'
+    + '<button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button>'
+    + '<button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button>'
+    + '</div></section>'
+
+    + '<section class="cuenta-paso" data-paso="entrar" hidden>'
+    + '<div class="cuenta-cuerpo">'
+    + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor no hay '
+    + 'contraseña que comprobar: entra cualquiera. Solo se busca el correo de la cuenta '
+    + 'que creaste en este navegador.</p>'
+    + campoHtml('entrar-correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
+    + campoHtml('entrar-clave', 'Contraseña', 'type="password" autocomplete="current-password" maxlength="40"')
+    + '</div>'
+    + '<div class="cuenta-pie">'
+    + '<p class="cuenta-aviso" role="alert" hidden></p>'
+    + '<button class="button button-yellow cuenta-entrar" type="button">Entrar</button>'
+    + '<button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button>'
+    + '</div></section>'
+
+    + '<section class="cuenta-paso" data-paso="sesion" hidden>'
+    + '<div class="cuenta-cuerpo">'
+    + '<div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span>'
+    + '<div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div>'
+    + '<dl class="cuenta-datos">'
+    + '<div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div>'
+    + '<div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div>'
+    + '</dl>'
+    + '<p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p>'
+    + '</div>'
+    + '<div class="cuenta-pie">'
+    + '<button class="cuenta-salir" type="button">Salir de la cuenta</button>'
+    + '<p class="cuenta-nota">Salir solo borra la cuenta de este navegador. '
+    + 'No hay ningún otro lugar donde estuviera guardada.</p>'
+    + '</div></section>';
+  document.body.append(fondoC, panelC);
+
+  // La entrada vive en la navegacion y se crea desde aqui: sin JavaScript no
+  // habria panel que abrir, asi que tampoco tiene que haber boton.
+  const PERSONA = '<svg class="nav-cuenta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+    + 'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<circle cx="12" cy="8.2" r="3.6"/>'
+    + '<path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/></svg>';
+  const navCuenta = document.createElement('button');
+  navCuenta.type = 'button';
+  navCuenta.className = 'nav-cuenta';
+  navigation?.append(navCuenta);
+
+  const tituloC = panelC.querySelector('#cuenta-titulo');
+  const pasosC = [...panelC.querySelectorAll('.cuenta-paso')];
+  const avisoCrear = panelC.querySelector('[data-paso="crear"] .cuenta-aviso');
+  const avisoEntrar = panelC.querySelector('[data-paso="entrar"] .cuenta-aviso');
+  const correoEntrar = panelC.querySelector('#cuenta-entrar-correo');
+  const claveEntrar = panelC.querySelector('#cuenta-entrar-clave');
+  const errorEntrarCorreo = panelC.querySelector('#cuenta-entrar-correo-error');
+
+  const TITULOS_CUENTA = { crear: 'Crear cuenta', entrar: 'Entrar', sesion: 'Tu cuenta' };
+  const verPaso = (nombre) => {
+    pasosC.forEach((paso) => { paso.hidden = paso.dataset.paso !== nombre; });
+    tituloC.textContent = TITULOS_CUENTA[nombre];
+  };
+
+  // Mismo trato que en la tarjeta: un campo solo se marca cuando ya lo tocaste
+  // o cuando ya intentaste enviar. Avisar antes de escribir nada no ayuda.
+  const datos = { nombre: '', correo: '', telefono: '', direccion: '', clave: '', repite: '' };
+  const campos = ['nombre', 'correo', 'telefono', 'direccion', 'clave', 'repite'].map((clave) => ({
+    clave,
+    input: panelC.querySelector(`#cuenta-${clave}`),
+    error: panelC.querySelector(`#cuenta-${clave}-error`),
+  }));
+  const tocadosC = new Set();
+  let intentadoC = false;
+
+  const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  const fallosCuenta = () => {
+    const f = {};
+    if (datos.nombre.length < 3) f.nombre = 'Escribe tu nombre.';
+    else if (!datos.nombre.includes(' ')) f.nombre = 'Falta el apellido.';
+    if (!CORREO.test(datos.correo)) f.correo = 'Revisa el correo, algo le falta.';
+    if (!/^\d{10}$/.test(datos.telefono)) f.telefono = 'Son 10 números, como 0990000000.';
+    if (datos.clave.length < 8) f.clave = 'Al menos 8 caracteres.';
+    if (datos.repite !== datos.clave) f.repite = 'Las dos no son iguales.';
+    return f;
+  };
+  const pintarCampos = () => {
+    const fallos = fallosCuenta();
+    campos.forEach(({ clave, input, error }) => {
+      const texto = (intentadoC || tocadosC.has(clave)) ? fallos[clave] : '';
+      error.hidden = !texto;
+      error.textContent = texto || '';
+      input.setAttribute('aria-invalid', texto ? 'true' : 'false');
+      input.classList.toggle('is-mal', Boolean(texto));
+    });
+    return fallos;
+  };
+  campos.forEach(({ clave, input }) => {
+    input.addEventListener('input', () => {
+      // El telefono solo admite cifras; las contrasenas se dejan tal cual.
+      if (clave === 'telefono') input.value = input.value.replace(/\D/g, '').slice(0, 10);
+      datos[clave] = (clave === 'clave' || clave === 'repite') ? input.value : input.value.trim();
+      pintarCampos();
+    });
+    input.addEventListener('blur', () => { tocadosC.add(clave); pintarCampos(); });
+  });
+
+  // Las contrasenas no se quedan escritas al cerrar: ni en el campo ni en la
+  // variable. Es lo unico de aqui que no debe sobrevivir al panel.
+  const olvidarFormulario = () => {
+    campos.forEach(({ clave, input }) => { datos[clave] = ''; input.value = ''; });
+    tocadosC.clear();
+    intentadoC = false;
+    pintarCampos();
+    avisoCrear.hidden = true;
+    avisoEntrar.hidden = true;
+    correoEntrar.value = '';
+    claveEntrar.value = '';
+    errorEntrarCorreo.hidden = true;
+    correoEntrar.classList.remove('is-mal');
+  };
+
+  const guardarCuenta = () => {
+    try {
+      // Solo lo que hace falta para el pedido. La contrasena no entra aqui.
+      window.localStorage.setItem(CLAVE_CUENTA, JSON.stringify({
+        nombre: sesion.nombre, correo: sesion.correo,
+        telefono: sesion.telefono, direccion: sesion.direccion,
+      }));
+    } catch (e) { /* en ventana privada no se puede guardar; la sesion sigue viva en memoria */ }
+  };
+  const correoGuardado = () => {
+    try {
+      const crudo = window.localStorage.getItem(CLAVE_CUENTA);
+      return crudo ? String(JSON.parse(crudo).correo || '') : '';
+    } catch (e) { return ''; }
+  };
+  const leerCuenta = () => {
+    try {
+      const crudo = window.localStorage.getItem(CLAVE_CUENTA);
+      if (!crudo) return;
+      const dato = JSON.parse(crudo);
+      if (!dato || !dato.nombre || typeof dato.correo !== 'string') return;
+      sesion.nombre = String(dato.nombre).slice(0, 60);
+      sesion.correo = String(dato.correo).slice(0, 80);
+      sesion.telefono = String(dato.telefono || '').slice(0, 10);
+      sesion.direccion = String(dato.direccion || '').slice(0, 200);
+      sesion.dentro = true;
+    } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza fuera */ }
+  };
+
+  const iniciales = (nombre) => nombre.split(/\s+/).filter(Boolean).slice(0, 2)
+    .map((parte) => parte[0].toUpperCase()).join('');
+
+  const pintarSesion = () => {
+    if (!sesion.dentro) {
+      navCuenta.classList.remove('is-dentro');
+      navCuenta.innerHTML = `${PERSONA}Entrar`;
+      navCuenta.setAttribute('aria-label', 'Entrar o crear una cuenta');
+      return;
+    }
+    navCuenta.classList.add('is-dentro');
+    // El nombre lo escribe quien usa el sitio, asi que entra como texto y no como
+    // HTML: con innerHTML, un nombre con etiquetas dentro se ejecutaria.
+    navCuenta.textContent = '';
+    const marca = document.createElement('span');
+    marca.className = 'nav-cuenta-iniciales';
+    marca.setAttribute('aria-hidden', 'true');
+    marca.textContent = iniciales(sesion.nombre);
+    navCuenta.append(marca, sesion.nombre.split(/\s+/)[0]);
+    navCuenta.setAttribute('aria-label', `Tu cuenta, ${sesion.nombre}`);
+    panelC.querySelector('.cuenta-avatar').textContent = iniciales(sesion.nombre);
+    panelC.querySelector('.cuenta-sesion-nombre').textContent = sesion.nombre;
+    panelC.querySelector('.cuenta-sesion-correo').textContent = sesion.correo;
+    panelC.querySelector('.cuenta-dato-telefono').textContent = sesion.telefono || '—';
+    panelC.querySelector('.cuenta-dato-direccion').textContent = sesion.direccion || 'Sin dirección guardada';
+  };
+
+  // Tener cuenta sirve para no volver a escribir lo mismo: la direccion pasa a la
+  // canasta, pero solo si esta vacia. Lo que ya escribiste manda sobre la cuenta.
+  const prellenarPedido = () => {
+    if (!sesion.dentro || !sesion.direccion || entrega.direccion) return;
+    entrega.direccion = sesion.direccion;
+    campoDir.value = sesion.direccion;
+    pintarPie();
+  };
+
+  let ultimoFocoC = null;
+  const abiertoC = () => panelC.classList.contains('is-open');
+  const abrirC = () => {
+    ultimoFocoC = document.activeElement;
+    // Con sesion abierta se entra a la ficha; sin ella, a crear la cuenta.
+    verPaso(sesion.dentro ? 'sesion' : 'crear');
+    fondoC.classList.add('is-open');
+    panelC.classList.add('is-open');
+    document.body.style.overflow = 'hidden';
+    tituloC.focus();
+  };
+  const cerrarC = () => {
+    fondoC.classList.remove('is-open');
+    panelC.classList.remove('is-open');
+    document.body.style.overflow = '';
+    olvidarFormulario();
+    // En el telefono el menu se cerro al abrir el panel, asi que el boton al que
+    // habria que volver esta escondido: el foco va al de abrir el menu, que si se ve.
+    if (ultimoFocoC && ultimoFocoC.offsetParent === null) menuToggle?.focus();
+    else ultimoFocoC?.focus();
+  };
+
+  navCuenta.addEventListener('click', () => { closeMenu(); abrirC(); });
+  fondoC.addEventListener('click', cerrarC);
+  panelC.querySelector('.cuenta-cerrar').addEventListener('click', cerrarC);
+  atraparFoco(panelC, abiertoC, cerrarC);
+
+  panelC.querySelectorAll('.cuenta-cambiar').forEach((boton) => {
+    boton.addEventListener('click', () => {
+      avisoCrear.hidden = true;
+      avisoEntrar.hidden = true;
+      verPaso(boton.dataset.va);
+      tituloC.focus();
+    });
+  });
+
+  // Entrar en la sesion es lo mismo se venga de crear la cuenta o de reconocerla.
+  const entrarEnSesion = (aviso) => {
+    guardarCuenta();
+    pintarSesion();
+    prellenarPedido();
+    olvidarFormulario();
+    verPaso('sesion');
+    tituloC.focus();
+    avisos.textContent = aviso;
+  };
+
+  panelC.querySelector('.cuenta-crear').addEventListener('click', () => {
+    intentadoC = true;
+    const fallos = pintarCampos();
+    const malos = Object.keys(fallos);
+    if (malos.length) {
+      avisoCrear.hidden = false;
+      avisoCrear.textContent = malos.length === 1
+        ? 'Falta corregir un campo.'
+        : `Faltan ${malos.length} campos por corregir.`;
+      campos.find(({ clave }) => clave === malos[0])?.input.focus();
+      return;
+    }
+    sesion.nombre = datos.nombre;
+    sesion.correo = datos.correo;
+    sesion.telefono = datos.telefono;
+    sesion.direccion = datos.direccion;
+    sesion.dentro = true;
+    entrarEnSesion(`Cuenta creada. Entraste como ${sesion.nombre}.`);
+  });
+
+  panelC.querySelector('.cuenta-entrar').addEventListener('click', () => {
+    const escrito = correoEntrar.value.trim();
+    const marcar = (texto) => {
+      errorEntrarCorreo.hidden = !texto;
+      errorEntrarCorreo.textContent = texto || '';
+      correoEntrar.setAttribute('aria-invalid', texto ? 'true' : 'false');
+      correoEntrar.classList.toggle('is-mal', Boolean(texto));
+    };
+    if (!CORREO.test(escrito)) { marcar('Revisa el correo, algo le falta.'); correoEntrar.focus(); return; }
+    marcar('');
+    // Sin servidor solo se puede reconocer la cuenta de este navegador. Decirlo
+    // asi es mas honrado que inventar un "correo o contrasena incorrectos".
+    const guardado = correoGuardado();
+    if (!guardado) {
+      avisoEntrar.hidden = false;
+      avisoEntrar.textContent = 'En este navegador no hay ninguna cuenta creada todavía.';
+      return;
+    }
+    if (guardado.toLowerCase() !== escrito.toLowerCase()) {
+      avisoEntrar.hidden = false;
+      avisoEntrar.textContent = `Ese correo no es el de la cuenta de este navegador (${guardado}).`;
+      return;
+    }
+    leerCuenta();
+    entrarEnSesion(`Entraste como ${sesion.nombre}.`);
+  });
+
+  panelC.querySelector('.cuenta-salir').addEventListener('click', () => {
+    const nombre = sesion.nombre;
+    sesion.nombre = '';
+    sesion.correo = '';
+    sesion.telefono = '';
+    sesion.direccion = '';
+    sesion.dentro = false;
+    try { window.localStorage.removeItem(CLAVE_CUENTA); } catch (e) { /* no habia nada guardado */ }
+    pintarSesion();
+    verPaso('crear');
+    tituloC.focus();
+    avisos.textContent = `Saliste de la cuenta de ${nombre}.`;
+  });
+
+  leerCuenta();
+  pintarSesion();
+  prellenarPedido();
 
   updateOpeningStatus();
   window.setInterval(updateOpeningStatus, 60000);

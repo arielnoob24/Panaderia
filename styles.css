@@ -345,6 +345,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .main-nav.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
   .main-nav a { padding: .6rem .7rem; }
   .main-nav a::after { display: none; }
+  .nav-cuenta { justify-content: center; margin-top: .4rem; }
   .hero { min-height: 650px; }
   .hero-image { width: 100%; background-position: 70% 80%; }
   .hero-overlay { background: linear-gradient(180deg, rgba(247, 241, 231, .96) 0%, rgba(247, 241, 231, .9) 62%, rgba(247, 241, 231, .6)); }
@@ -379,6 +380,50 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .floating-whatsapp { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
 }
 
+/* ---- Cuenta -----------------------------------------------------------
+   Maqueta de cuentas: no hay servidor detras. El panel es el mismo objeto que
+   el de la canasta -de ahi que comparta cabecera, cuerpo, pie y campos- pero
+   nace centrado, como la tarjeta del pago: entrar no es una gaveta lateral, es
+   un alto en el camino. Solo esta aqui lo que de verdad cambia. */
+.cuenta-fondo { background: rgba(58, 40, 34, .42); -webkit-backdrop-filter: blur(7px) saturate(.85); backdrop-filter: blur(7px) saturate(.85); }
+.cuenta-panel { position: fixed; top: 50%; right: 50%; z-index: 21; display: flex; width: min(430px, calc(100vw - 32px)); max-height: min(88vh, 800px); flex-direction: column; background: var(--papel); border-radius: var(--r-btn); box-shadow: var(--shadow-float); opacity: 0; visibility: hidden; transform: translate(50%, -50%) scale(.97); transition: opacity var(--dur-base) var(--ease-in), visibility var(--dur-base); }
+.cuenta-panel.is-open { opacity: 1; visibility: visible; transform: translate(50%, -50%); animation: pago-centra var(--dur-base) var(--ease-out) both; }
+.cuenta-paso[hidden] { display: none; }
+.cuenta-paso { display: flex; min-height: 0; flex-direction: column; }
+
+/* El aviso de que esto es una maqueta va primero y no se puede confundir con un
+   campo: mismo tono de corteza que los demas avisos de simulacion del sitio. */
+.cuenta-maqueta { margin: 0 0 1.1rem; padding: .7rem .85rem; background: rgba(168, 95, 69, .1); border-left: 3px solid var(--corteza); border-radius: 0 var(--r-chip) var(--r-chip) 0; color: var(--horno-suave); font: .76rem/1.5 Arial, sans-serif; }
+.cuenta-maqueta strong { color: var(--corteza-oscura); }
+.cuenta-campo-opcional { color: var(--horno-claro); font-weight: 400; }
+
+/* Cambiar de crear a entrar no es la accion principal: es un enlace, no un boton. */
+.cuenta-cambiar { display: block; width: 100%; margin: .8rem 0 0; padding: .3rem; background: none; border: 0; color: var(--corteza-oscura); cursor: pointer; font: .8rem/1.4 Arial, sans-serif; text-align: center; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.cuenta-cambiar:hover { color: var(--horno); }
+
+/* Dentro de la cuenta: las iniciales hacen de retrato y los datos se leen como
+   una ficha, no como un formulario que todavia se pueda escribir. */
+.cuenta-sesion { display: flex; align-items: center; gap: .9rem; margin-bottom: 1.1rem; }
+.cuenta-avatar { display: grid; width: 54px; height: 54px; flex: 0 0 auto; place-items: center; background: var(--ambar); border-radius: 50%; color: var(--horno); font: 700 1.25rem/1 Arial, sans-serif; letter-spacing: .02em; }
+.cuenta-sesion-nombre { margin: 0; font: 500 1.2rem/1.2 Georgia, serif; }
+.cuenta-sesion-correo { margin: .2rem 0 0; color: var(--horno-suave); font: .82rem/1.3 Arial, sans-serif; word-break: break-word; }
+.cuenta-datos { margin: 0; padding-top: .9rem; border-top: 1px solid var(--masa-linea); }
+.cuenta-datos div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .55rem 0; border-bottom: 1px solid var(--masa-linea); }
+.cuenta-datos dt { color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
+.cuenta-datos dd { margin: 0; color: var(--horno); font: 700 .85rem/1.4 Arial, sans-serif; text-align: right; word-break: break-word; }
+.cuenta-salir { display: block; width: 100%; padding: .8rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--corteza-oscura); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.cuenta-salir:hover { background: var(--masa); border-color: var(--corteza); }
+
+/* La entrada a la cuenta vive en la navegacion, sobre el horno: pastilla
+   perfilada para que se distinga de los tres enlaces sin gritar mas que ellos. */
+.nav-cuenta { display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .85rem; background: none; border: 1px solid rgba(255, 255, 255, .45); border-radius: var(--r-pill); color: white; cursor: pointer; font: 700 .8rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+.nav-cuenta:hover { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
+.nav-cuenta .nav-cuenta-icono { width: 17px; height: 17px; flex: 0 0 auto; }
+/* Ya dentro, las iniciales sustituyen al icono y el ambar dice que hay sesion. */
+.nav-cuenta.is-dentro { padding-left: .35rem; background: rgba(215, 155, 74, .16); border-color: var(--ambar); }
+.nav-cuenta.is-dentro:hover { background: var(--ambar); }
+.nav-cuenta-iniciales { display: grid; width: 26px; height: 26px; flex: 0 0 auto; place-items: center; background: var(--ambar); border-radius: 50%; color: var(--horno); font: 700 .68rem/1 Arial, sans-serif; }
+
 /* Telefono estrecho: el control abierto mide mas que la mitad de la ficha, asi que
    el precio se queda en su linea y la cantidad pasa debajo, alineada a la izquierda.
    Al abrirse crece a lo ancho sin mover nada de sitio. */
@@ -410,8 +455,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
    lo que cambia es que ahora se envia una sola vez con todo, en vez de un
    mensaje por producto. Si el JavaScript falla, los botones "Pedir" siguen
    siendo enlaces normales y el sitio funciona como antes. */
-.canasta-fondo { position: fixed; inset: 0; z-index: 20; background: rgba(58, 40, 34, .55); opacity: 0; pointer-events: none; transition: opacity var(--dur-base) var(--ease-out); }
-.canasta-fondo.is-open { opacity: 1; pointer-events: auto; }
+.canasta-fondo, .cuenta-fondo { position: fixed; inset: 0; z-index: 20; background: rgba(58, 40, 34, .55); opacity: 0; pointer-events: none; transition: opacity var(--dur-base) var(--ease-out); }
+.canasta-fondo.is-open, .cuenta-fondo.is-open { opacity: 1; pointer-events: auto; }
 .canasta-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 21; display: flex; width: min(420px, 100%); flex-direction: column; background: var(--papel); box-shadow: var(--shadow-float); transform: translateX(100%); visibility: hidden; transition: transform var(--dur-base) var(--ease-in), visibility var(--dur-base); }
 .canasta-panel.is-open { transform: none; visibility: visible; transition: transform var(--dur-base) var(--ease-out), visibility var(--dur-base); }
 /* Desde el pago el mismo panel cambia de forma: tarjeta centrada sobre un fondo
@@ -424,13 +469,13 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
    desplomaria al alto de la cabecera. */
 .canasta-panel.is-centrado .canasta-pasos, .canasta-panel.is-centrado .canasta-paso, .canasta-panel.is-centrado .canasta-cuerpo { flex: 0 1 auto; }
 @keyframes pago-centra { from { opacity: 0; transform: translate(50%, -50%) scale(.97); } to { opacity: 1; transform: translate(50%, -50%); } }
-.canasta-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.5rem 1rem; border-bottom: 1px solid var(--masa-linea); }
-.canasta-cabecera h2 { margin: 0; font: 500 1.6rem/1.1 Georgia, serif; }
-.canasta-cabecera h2:focus { outline: none; }
-.canasta-cabecera h2:focus-visible { outline: 2px solid var(--ambar); outline-offset: 5px; border-radius: 3px; }
-.canasta-cerrar { display: grid; width: 40px; height: 40px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 1.5rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.canasta-cerrar:hover { background: var(--masa); }
-.canasta-cuerpo { flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; }
+.canasta-cabecera, .cuenta-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.5rem 1rem; border-bottom: 1px solid var(--masa-linea); }
+.canasta-cabecera h2, .cuenta-cabecera h2 { margin: 0; font: 500 1.6rem/1.1 Georgia, serif; }
+.canasta-cabecera h2:focus, .cuenta-cabecera h2:focus { outline: none; }
+.canasta-cabecera h2:focus-visible, .cuenta-cabecera h2:focus-visible { outline: 2px solid var(--ambar); outline-offset: 5px; border-radius: 3px; }
+.canasta-cerrar, .cuenta-cerrar { display: grid; width: 40px; height: 40px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 1.5rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
+.canasta-cerrar:hover, .cuenta-cerrar:hover { background: var(--masa); }
+.canasta-cuerpo, .cuenta-cuerpo { flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; }
 .canasta-lista { margin: 0; padding: 0; list-style: none; }
 .canasta-linea { display: grid; grid-template-columns: 1fr auto; gap: .2rem 1rem; padding: .9rem 0; border-bottom: 1px solid var(--masa-linea); }
 .canasta-linea h3 { margin: 0; font: 500 1.05rem/1.25 Georgia, serif; }
@@ -441,7 +486,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-cantidad button:hover { background: var(--masa); }
 .canasta-cantidad output { min-width: 26px; font: 700 .9rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; }
 .canasta-vacio { margin: 2rem 0; color: var(--horno-suave); font: .9rem/1.5 Arial, sans-serif; text-align: center; }
-.canasta-pie { padding: 1.2rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--masa-linea); }
+.canasta-pie, .cuenta-pie { padding: 1.2rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--masa-linea); }
 .canasta-total { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; font: .95rem/1.3 Arial, sans-serif; }
 .canasta-total strong { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
 .canasta-entrega { margin: 0 0 1.1rem; padding: 0; border: 0; }
@@ -458,9 +503,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-direccion label { display: block; margin-bottom: .35rem; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
 .canasta-direccion input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .9rem/1.3 Arial, sans-serif; }
 .canasta-direccion input:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
-.canasta-aviso { margin: .4rem 0 0; color: var(--corteza-oscura); font: .78rem/1.4 Arial, sans-serif; }
-.canasta-aviso[hidden] { display: none; }
-.canasta-nota { margin: .7rem 0 0; color: var(--horno-suave); font: .75rem/1.45 Arial, sans-serif; text-align: center; }
+.canasta-aviso, .cuenta-aviso { margin: .4rem 0 0; color: var(--corteza-oscura); font: .78rem/1.4 Arial, sans-serif; }
+.canasta-aviso[hidden], .cuenta-aviso[hidden] { display: none; }
+.canasta-nota, .cuenta-nota { margin: .7rem 0 0; color: var(--horno-suave); font: .75rem/1.45 Arial, sans-serif; text-align: center; }
 .canasta-enviar, .canasta-pagar, .canasta-avisar { width: 100%; justify-content: center; }
 .canasta-enviar[aria-disabled="true"], .canasta-pagar[aria-disabled="true"] { opacity: .45; pointer-events: none; }
 .canasta-cuenta { display: grid; min-width: 22px; height: 22px; padding: 0 6px; place-items: center; background: var(--horno); border-radius: var(--r-pill); color: var(--papel); font: 700 .72rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }
@@ -490,14 +535,14 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .pago-dato { margin: 0 0 .7rem; color: var(--horno-suave); font: .82rem/1.5 Arial, sans-serif; }
 .pago-prueba { margin: 0 0 .9rem; padding: .6rem .8rem; background: var(--masa); border: 1px dashed var(--masa-linea); border-radius: var(--r-chip); color: var(--horno-suave); font: .78rem/1.5 Arial, sans-serif; }
 .pago-prueba strong { color: var(--horno); font-variant-numeric: tabular-nums; }
-.pago-campo { margin-bottom: .7rem; }
-.pago-campo label { display: block; margin-bottom: .3rem; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
-.pago-campo input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .95rem/1.3 Arial, sans-serif; font-variant-numeric: tabular-nums; transition: border-color var(--dur-fast) var(--ease-ui); }
-.pago-campo input:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
-.pago-campo input.is-mal { border-color: var(--corteza); }
-.pago-campo-error { margin: .3rem 0 0; color: var(--corteza-oscura); font: .74rem/1.4 Arial, sans-serif; }
-.pago-campo-error[hidden] { display: none; }
-.pago-fila { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+.pago-campo, .cuenta-campo { margin-bottom: .7rem; }
+.pago-campo label, .cuenta-campo label { display: block; margin-bottom: .3rem; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
+.pago-campo input, .cuenta-campo input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .95rem/1.3 Arial, sans-serif; font-variant-numeric: tabular-nums; transition: border-color var(--dur-fast) var(--ease-ui); }
+.pago-campo input:focus-visible, .cuenta-campo input:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
+.pago-campo input.is-mal, .cuenta-campo input.is-mal { border-color: var(--corteza); }
+.pago-campo-error, .cuenta-campo-error { margin: .3rem 0 0; color: var(--corteza-oscura); font: .74rem/1.4 Arial, sans-serif; }
+.pago-campo-error[hidden], .cuenta-campo-error[hidden] { display: none; }
+.pago-fila, .cuenta-fila { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
 .pago-banco { display: grid; margin: 0 0 .8rem; gap: .35rem; }
 .pago-banco div, .recibo-datos div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .4rem; border-bottom: 1px solid var(--masa-linea); }
 .pago-banco dt, .recibo-datos dt { color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
@@ -528,7 +573,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .canasta-panel { width: 100%; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .canasta-panel, .canasta-fondo { transition: none; }
+  .canasta-panel, .canasta-fondo, .cuenta-panel, .cuenta-fondo { transition: none; }
   .canasta-paso, .canasta-panel.is-open.is-centrado { animation: none; }
   .pago-girando { animation: none; }
   .canasta-volver > span[aria-hidden] { transform: none !important; }
