@@ -175,6 +175,7 @@
   // fade-up de base, máscara para la foto en retrato, eje X para el texto y la franja,
   // y secuencia numerada para los principios.
   const motionMap = [
+    ['.sign-band', 'reveal-band'],
     ['.section-heading', 'reveal'],
     ['.product-card', 'reveal'],
     ['.story-photo', 'reveal-mask'],
