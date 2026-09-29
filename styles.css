@@ -148,10 +148,11 @@ section[id] { scroll-margin-top: 96px; }
 
 .sign-band { position: relative; background: var(--corteza); color: white; }
 .sign-band::after { position: absolute; right: 0; bottom: -26px; left: 0; height: 26px; content: ""; background: var(--corteza); border-radius: 0 0 50% 50% / 0 0 26px 26px; pointer-events: none; }
-.sign-band-inner { display: flex; align-items: center; justify-content: center; min-height: 112px; }
-/* El logo lleva la bajada dibujada en letra menuda: por debajo de unos 70px
-   de alto deja de leerse, asi que la franja crece para darle sitio. */
-.sign-logo { display: block; width: auto; height: 78px; }
+.sign-band-inner { display: flex; align-items: center; justify-content: space-between; min-height: 84px; }
+/* Dos espigas tumbadas, una en cada punta, mirando al centro. Van a medio
+   tono: enmarcan el hueco sin pedir que se las mire. */
+.sign-trigo { display: block; width: 180px; height: 42px; flex: 0 0 auto; color: rgba(255, 255, 255, .55); }
+.sign-trigo.is-derecha { transform: scaleX(-1); }
 
 .section-pad { padding: 6.5rem 0; }
 /* Antes del catalogo hace falta menos aire: la franja coral ya separa del hero,
@@ -292,8 +293,11 @@ section[id] { scroll-margin-top: 96px; }
 .open-label .status-dot { margin-top: 0; }
 /* La corteza oscura del punto se pierde sobre el horno: cerrado toma el mismo tinte claro que su texto. */
 .open-label .status-dot.is-closed { background: var(--aviso-cerrado); box-shadow: 0 0 0 4px rgba(217, 185, 169, .18); }
-.footer-horario { margin: .65rem 0 0; padding-top: .7rem; border-top: 1px solid rgba(255, 255, 255, .15); color: var(--sobre-horno-tenue); font: .85rem/1.5 Arial, sans-serif; }
-.footer-horario div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; margin: .3rem 0; }
+.footer-horario { margin: .9rem 0 0; padding: .7rem .9rem; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .2); border-radius: var(--r-btn); color: var(--sobre-horno-tenue); font: .85rem/1.5 Arial, sans-serif; }
+.footer-horario div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .22rem 0; }
+/* La fila de hoy se marca con un filete ambar a la izquierda, que es lo que
+   hace que el cuadro sirva de algo y no sea solo un recuadro bonito. */
+.footer-horario div.is-today { margin: 0 -.9rem; padding: .22rem .9rem; background: rgba(215, 155, 74, .12); border-left: 2px solid var(--ambar); }
 .footer-horario dt { color: var(--sobre-horno-tenue); }
 .footer-horario dd { margin: 0; color: var(--sobre-horno); font-variant-numeric: tabular-nums; font-weight: 700; }
 /* La fila de hoy la marca el JS con el mismo dia que ya calcula para abierto/cerrado. */
@@ -331,8 +335,10 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .reveal.is-visible { opacity: 1; transform: none; }
 .reveal-stagger > .reveal { transition-delay: var(--reveal-delay, 0ms); }
 
-.reveal-band .sign-logo { opacity: 0; transform: translateY(10px); transition: opacity var(--dur-slow) var(--ease-soft) 120ms, transform var(--dur-slow) var(--ease-soft) 120ms; }
-.reveal-band.is-visible .sign-logo { opacity: 1; transform: none; }
+.reveal-band .sign-trigo { opacity: 0; transform: translateX(-16px); transition: opacity var(--dur-slow) var(--ease-soft) 120ms, transform var(--dur-slow) var(--ease-soft) 120ms; }
+.reveal-band .sign-trigo.is-derecha { transform: scaleX(-1) translateX(-16px); }
+.reveal-band.is-visible .sign-trigo { opacity: 1; transform: none; }
+.reveal-band.is-visible .sign-trigo.is-derecha { transform: scaleX(-1); }
 
 .reveal-x { opacity: 0; transform: translateX(18px); transition: opacity 700ms var(--ease-soft) 140ms, transform 700ms var(--ease-soft) 140ms; }
 .reveal-x.is-visible { opacity: 1; transform: none; }
@@ -409,8 +415,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .product-bottom { margin-top: .9rem; padding-top: .8rem; }
   .product-bottom strong { font-size: 1rem; }
   .card-cantidad button { width: 32px; height: 32px; }
-  .sign-band-inner { min-height: 86px; }
-  .sign-logo { height: 56px; }
+  .sign-band-inner { min-height: 62px; }
+  .sign-trigo { width: 104px; height: 24px; }
   .story { margin-bottom: 3rem; }
   .story-photo { max-width: 420px; margin: auto; }
   .principles { grid-template-columns: 1fr; gap: 1rem; }
@@ -497,7 +503,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; }
   [data-motion], [data-motion].is-visible, .hero-content.is-ready > *, .product-card.catalog-enter { opacity: 1; transform: none; animation: none; transition: none; }
   .reveal-mask img, .reveal-mask.is-visible img { clip-path: none; transform: none; }
-  .reveal-band .sign-logo, .principles.reveal-line > div, .principles.reveal-line .principle-mark, .principles.reveal-line::before { opacity: 1; transform: none; transition: none; }
+  .reveal-band .sign-trigo, .principles.reveal-line > div, .principles.reveal-line .principle-mark, .principles.reveal-line::before { opacity: 1; transform: none; transition: none; }
   .hero-image { transform: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
   .hero-note .status-dot::after { display: none; }
