@@ -182,6 +182,27 @@ section[id] { scroll-margin-top: 96px; }
 .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno output { animation: cantidad-abre var(--dur-fast) var(--ease-out) both; }
 @keyframes cantidad-abre { from { opacity: 0; transform: translateX(10px) scale(.85); } to { opacity: 1; transform: none; } }
 
+/* ---- Lo que se acabo --------------------------------------------------
+   Lo agotado no se esconde: hoy no hay, pero manana si, y la ficha sigue
+   vendiendo para manana. Se apaga en vez de desaparecer: la foto pierde el
+   color, la etiqueta lo dice con palabras y donde estaba el mas queda una
+   frase. Ningun boton que no lleve a ninguna parte. */
+.product-card[data-available="false"] .product-image img { filter: grayscale(1); }
+/* El gris solo no basta: un velo de masa encima la manda al fondo. */
+.product-card[data-available="false"] .product-image::after { position: absolute; inset: 0; content: ""; background: rgba(247, 241, 231, .4); pointer-events: none; }
+/* Dos etiquetas en la misma esquina se pisan: manda la que dice que no hay. */
+.product-card[data-available="false"] .product-tag:not(.agotado) { display: none; }
+/* Corteza oscura: el mismo tono con que el sitio dice "cerrado" en el hero y en el pie. */
+.product-tag.agotado { z-index: 1; background: var(--corteza-oscura); color: white; }
+/* Sin sombra la ficha se hunde un poco en el fondo, y no se levanta al pasar
+   por encima: no hay nada que tocar. */
+.product-card[data-available="false"] { box-shadow: none; }
+.product-card[data-available="false"]:hover { transform: none; }
+.product-card[data-available="false"]:hover::after { opacity: 0; }
+.product-card[data-available="false"]:hover .product-image img { transform: none; }
+.product-card[data-available="false"] h3, .product-card[data-available="false"] .product-bottom strong { color: var(--horno-suave); }
+.card-agotado { margin-left: auto; color: var(--corteza-oscura); font: 700 .78rem Arial, sans-serif; }
+
 /* Banda cerrada por las cuatro esquinas: sin la seccion clara que habia debajo, la historia
    necesita su propio final en curva y una franja de masa que la separe del pie. */
 .story { margin-bottom: 5rem; background: var(--horno); color: white; border-radius: var(--r-band); overflow-x: clip; }
@@ -363,7 +384,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
    Al abrirse crece a lo ancho sin mover nada de sitio. */
 @media (max-width: 420px) {
   .product-bottom { align-items: flex-start; flex-direction: column; gap: .55rem; }
-  .card-cantidad { margin-left: 0; }
+  .card-cantidad, .card-agotado { margin-left: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

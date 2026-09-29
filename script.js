@@ -56,6 +56,7 @@
     const columns = columnCount(productGrid);
     const entering = [];
     let visibleCount = 0;
+    let agotados = 0;
 
     productGrid?.classList.remove('is-filtering');
     products.forEach((product) => {
@@ -66,12 +67,20 @@
         product.classList.toggle('catalog-enter', animate);
         if (animate) entering.push(product);
         visibleCount += 1;
+        if (product.dataset.available === 'false') agotados += 1;
       } else {
         product.classList.remove('catalog-enter');
       }
     });
 
-    if (catalogStatus) catalogStatus.textContent = `${visibleCount} producto${visibleCount === 1 ? '' : 's'} disponible${visibleCount === 1 ? '' : 's'} en esta categoría.`;
+    if (catalogStatus) {
+      const plural = visibleCount === 1 ? '' : 's';
+      // Llamar "disponible" a lo que esta agotado seria mentira: cuando falta algo,
+      // el aviso cuenta cuantos hay y cuantos se acabaron.
+      catalogStatus.textContent = agotados
+        ? `${visibleCount} producto${plural} en esta categoría, ${agotados} agotado${agotados === 1 ? '' : 's'}.`
+        : `${visibleCount} producto${plural} disponible${plural} en esta categoría.`;
+    }
     if (!animate) return;
 
     const run = ++filterRun;
