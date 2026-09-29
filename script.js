@@ -69,14 +69,6 @@
       } else {
         product.classList.remove('catalog-enter');
       }
-      let availability = product.querySelector('.availability');
-      if (!availability) {
-        availability = document.createElement('span');
-        availability.className = 'availability';
-        product.querySelector('.product-bottom')?.prepend(availability);
-      }
-      availability.textContent = product.dataset.available === 'false' ? 'Agotado' : 'Disponible';
-      availability.classList.toggle('is-unavailable', product.dataset.available === 'false');
     });
 
     if (catalogStatus) catalogStatus.textContent = `${visibleCount} producto${visibleCount === 1 ? '' : 's'} disponible${visibleCount === 1 ? '' : 's'} en esta categoría.`;

@@ -161,8 +161,6 @@ section[id] { scroll-margin-top: 96px; }
 .product-info > p { min-height: 50px; margin: 0; color: var(--horno-suave); font-size: .9rem; }
 .product-bottom { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--masa-linea); }
 .product-bottom strong { font-size: 1.1rem; }
-.availability { margin-right: auto; color: var(--horno); font: 700 .65rem Arial, sans-serif; }
-.availability.is-unavailable { color: var(--corteza-oscura); }
 .order-button { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .65rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-chip); font: 700 .78rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
 .order-button:hover, .order-button:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
 
@@ -339,7 +337,16 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .catalog { padding-top: 3rem; }
   .heading-row { display: block; }
   .section-intro { margin-top: 1.5rem; }
-  .product-grid, .story-grid { grid-template-columns: 1fr; }
+  .story-grid { grid-template-columns: 1fr; }
+  /* Dos columnas en pantalla de telefono: la ficha es la mitad de ancha, asi que
+     la foto, el nombre y el precio bajan de tamano a la vez para no apretarse. */
+  .product-grid { gap: .9rem; }
+  .product-tag { width: 52px; height: 52px; padding: .25rem; font-size: .5rem; }
+  .product-info { padding: .9rem; }
+  .product-info h3 { margin-bottom: .35rem; font-size: 1.05rem; }
+  .product-bottom { margin-top: .9rem; padding-top: .8rem; }
+  .product-bottom strong { font-size: 1rem; }
+  .card-cantidad button { width: 32px; height: 32px; }
   .story { margin-bottom: 3rem; }
   .story-photo { max-width: 420px; margin: auto; }
   .principles { grid-template-columns: 1fr; gap: 1rem; }
@@ -350,6 +357,15 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .footer-grid { grid-template-columns: 1fr; gap: 1.3rem; }
   .floating-whatsapp { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
 }
+
+/* Telefono estrecho: el control abierto mide mas que la mitad de la ficha, asi que
+   el precio se queda en su linea y la cantidad pasa debajo, alineada a la izquierda.
+   Al abrirse crece a lo ancho sin mover nada de sitio. */
+@media (max-width: 420px) {
+  .product-bottom { align-items: flex-start; flex-direction: column; gap: .55rem; }
+  .card-cantidad { margin-left: 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; }
