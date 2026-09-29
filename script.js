@@ -489,6 +489,9 @@
   const cuenta = document.createElement('span');
   cuenta.className = 'canasta-cuenta';
   cuenta.hidden = true;
+  // Cada ficha del catalogo deja aqui su manera de repintarse: lo que cambia en
+  // el panel (o al restaurar el pedido guardado) tiene que verse en el catalogo.
+  const refrescos = [];
 
   const pintar = () => {
     lista.textContent = '';
@@ -526,6 +529,7 @@
     // El importe del paso de pago se recalcula aqui: volver atras y cambiar la
     // canasta tiene que verse reflejado al seguir.
     pintarPago();
+    refrescos.forEach((refrescar) => refrescar());
     guardar();
   };
 
@@ -894,23 +898,66 @@
     boton.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
   }
 
-  // Cada boton "Pedir" sigue siendo un enlace valido; aqui se convierte en "Anadir".
+  // Basurero del mismo trazo que el resto de los iconos: tapa, asa, cuerpo que
+  // se estrecha y dos costillas.
+  const BASURERO = '<svg class="card-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+    + 'stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<path d="M4.8 7.1h14.4"/>'
+    + '<path d="M9.7 7.1V5.3a1.4 1.4 0 0 1 1.4-1.4h1.8a1.4 1.4 0 0 1 1.4 1.4v1.8"/>'
+    + '<path d="M6.5 7.1l.8 11.3a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-11.3"/>'
+    + '<path d="M10.3 10.8v5.8"/><path d="M13.7 10.8v5.8"/></svg>';
+
+  // Sin JavaScript cada "Pedir" sigue siendo un enlace a WhatsApp que funciona.
+  // Con JS se cambia por el control de cantidad: mientras no hay nada pedido solo
+  // se ve el signo mas, y al usarlo se abre en quitar, la cuenta y sumar.
   document.querySelectorAll('.product-card .order-button').forEach((enlace) => {
     const ficha = enlace.closest('.product-card');
     const nombre = ficha.querySelector('h3')?.textContent.trim();
     const precio = parseFloat((ficha.querySelector('.product-bottom strong')?.textContent || '').replace(/[^0-9.]/g, ''));
     if (!nombre || Number.isNaN(precio)) return;
     const id = idDe(nombre);
-    enlace.innerHTML = 'Añadir <span aria-hidden="true">+</span>';
-    enlace.setAttribute('aria-label', `Añadir ${nombre} a la canasta`);
-    enlace.addEventListener('click', (e) => {
-      e.preventDefault();
+
+    const grupo = document.createElement('div');
+    grupo.className = 'card-cantidad';
+    grupo.innerHTML = '<button class="card-menos" type="button" hidden></button>'
+      + '<output hidden></output>'
+      + '<button class="card-mas" type="button">+</button>';
+    const menos = grupo.querySelector('.card-menos');
+    const cuentaFicha = grupo.querySelector('output');
+    const mas = grupo.querySelector('.card-mas');
+    const cuantos = () => pedido.get(id)?.cantidad || 0;
+
+    const refrescar = () => {
+      const n = cuantos();
+      grupo.classList.toggle('is-lleno', n > 0);
+      menos.hidden = n === 0;
+      cuentaFicha.hidden = n === 0;
+      cuentaFicha.textContent = n;
+      // Con una sola unidad, quitarla es borrar el producto del pedido: el boton
+      // lo dice con un basurero. Desde dos vuelve a ser un signo de resta.
+      menos.innerHTML = n === 1 ? BASURERO : '<span aria-hidden="true">−</span>';
+      menos.setAttribute('aria-label', n === 1 ? `Quitar ${nombre} de la canasta` : `Quitar uno de ${nombre}`);
+      mas.setAttribute('aria-label', n ? `Añadir otro de ${nombre}` : `Añadir ${nombre} a la canasta`);
+    };
+    refrescos.push(refrescar);
+
+    const cuantosQuedan = () => `${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
+    mas.addEventListener('click', () => {
       const l = pedido.get(id) || { nombre, precio, cantidad: 0 };
       l.cantidad = Math.min(l.cantidad + 1, 99);
       pedido.set(id, l);
       pintar();
-      avisos.textContent = `${nombre} añadido. ${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
+      avisos.textContent = `${nombre} añadido. ${cuantosQuedan()}`;
     });
+    menos.addEventListener('click', () => {
+      const seVa = cuantos() <= 1;
+      cambiar(id, -1);
+      avisos.textContent = seVa ? `${nombre} quitado. ${cuantosQuedan()}` : `Una unidad menos de ${nombre}. ${cuantosQuedan()}`;
+      // El boton recien usado desaparece; el foco pasa al mas para no perderse.
+      if (seVa) mas.focus();
+    });
+
+    enlace.replaceWith(grupo);
   });
 
   leerGuardado();

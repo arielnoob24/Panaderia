@@ -157,15 +157,32 @@ section[id] { scroll-margin-top: 96px; }
 .product-tag.yellow { background: var(--ambar); color: var(--horno); }
 .product-tag.green { background: var(--horno); }
 .product-info { padding: 1.25rem; }
-.product-category { margin: 0 0 .45rem; color: var(--corteza-oscura); font: 700 .65rem Arial, sans-serif; letter-spacing: .1em; text-transform: uppercase; }
 .product-info h3 { margin: 0 0 .5rem; font-size: 1.25rem; }
-.product-info > p:not(.product-category) { min-height: 50px; margin: 0; color: var(--horno-suave); font-size: .9rem; }
+.product-info > p { min-height: 50px; margin: 0; color: var(--horno-suave); font-size: .9rem; }
 .product-bottom { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--masa-linea); }
 .product-bottom strong { font-size: 1.1rem; }
 .availability { margin-right: auto; color: var(--horno); font: 700 .65rem Arial, sans-serif; }
 .availability.is-unavailable { color: var(--corteza-oscura); }
 .order-button { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .65rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-chip); font: 700 .78rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
 .order-button:hover, .order-button:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
+
+/* Pedir desde la ficha se resume en un signo mas. Al usarlo el boton se abre en
+   el control de cantidad: quitar a la izquierda, la cuenta en medio, sumar a la
+   derecha. El mas no se mueve de su sitio; el grupo crece hacia dentro. */
+.card-cantidad { display: inline-flex; align-items: center; gap: .1rem; margin-left: auto; border: 1px solid transparent; border-radius: var(--r-pill); }
+.card-cantidad.is-lleno { padding: .15rem; border-color: var(--masa-linea); }
+.card-cantidad button { display: grid; width: 34px; height: 34px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 700 1.2rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
+.card-cantidad .card-mas { background: var(--ambar); }
+.card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
+/* Ya dentro del grupo el mas no se levanta: sentado en la pastilla solo cambia de tono. */
+.card-cantidad.is-lleno .card-mas:hover, .card-cantidad.is-lleno .card-mas:focus-visible { transform: none; }
+.card-cantidad .card-menos { color: var(--corteza-oscura); }
+.card-cantidad .card-menos:hover, .card-cantidad .card-menos:focus-visible { background: var(--masa); }
+.card-cantidad .card-icono { width: 17px; height: 17px; }
+.card-cantidad output { min-width: 24px; font: 700 .95rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; }
+.card-cantidad button[hidden], .card-cantidad output[hidden] { display: none; }
+.card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno output { animation: cantidad-abre var(--dur-fast) var(--ease-out) both; }
+@keyframes cantidad-abre { from { opacity: 0; transform: translateX(10px) scale(.85); } to { opacity: 1; transform: none; } }
 
 /* Banda cerrada por las cuatro esquinas: sin la seccion clara que habia debajo, la historia
    necesita su propio final en curva y una franja de masa que la separe del pie. */
@@ -344,6 +361,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .hero-note .status-dot::after { display: none; }
   .button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
   .menu-toggle span, .button-yellow:hover, .button-yellow:focus-visible, .order-button:hover, .order-button:focus-visible, .product-card:hover, .product-card:hover .product-image img { transform: none; }
+  .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno output { animation: none; }
+  .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { transform: none; }
   .main-nav a::after { transition: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
   .product-image img { opacity: 1; }
