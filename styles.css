@@ -367,7 +367,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   /* Cinco entradas y el boton de la cuenta no caben con el aire de escritorio:
      entre la tableta y el movil la barra se aprieta en vez de desbordarse. */
   .main-nav { gap: 1.1rem; font-size: .82rem; }
-  .nav-cuenta { padding: .4rem .7rem; font-size: .76rem; }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
   .story-grid { gap: 3rem; }
   /* Tres columnas en dos huecos dejarian la marca sola y estrecha: pasa a toda la fila. */
@@ -389,7 +388,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .nav-submenu::before { display: none; }
   .nav-grupo.is-open .nav-submenu { visibility: visible; max-height: 180px; transform: none; }
   .nav-submenu a { padding: .55rem .7rem; }
-  .nav-cuenta { justify-content: center; margin-top: .4rem; }
+  .nav-cuenta { align-self: center; margin-top: .5rem; }
   .hero { min-height: 650px; }
   .hero-image { width: 100%; background-position: 70% 80%; }
   .hero-overlay { background: linear-gradient(180deg, rgba(247, 241, 231, .96) 0%, rgba(247, 241, 231, .9) 62%, rgba(247, 241, 231, .6)); }
@@ -477,15 +476,17 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .cuenta-salir { display: block; width: 100%; padding: .8rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--corteza-oscura); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
 .cuenta-salir:hover { background: var(--masa); border-color: var(--corteza); }
 
-/* La entrada a la cuenta vive en la navegacion, sobre el horno: pastilla
-   perfilada para que se distinga de los tres enlaces sin gritar mas que ellos. */
-.nav-cuenta { display: inline-flex; align-items: center; gap: .5rem; padding: .45rem .85rem; background: none; border: 1px solid rgba(255, 255, 255, .45); border-radius: var(--r-pill); color: white; cursor: pointer; font: 700 .8rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+/* La entrada a la cuenta vive en la navegacion, sobre el horno. Es solo el
+   dibujo: un circulo perfilado, del tamano de un objetivo tactil, que no compite
+   en ancho con los tres enlaces de al lado. */
+.nav-cuenta { display: grid; width: 38px; height: 38px; flex: 0 0 auto; place-items: center; padding: 0; background: none; border: 1px solid rgba(255, 255, 255, .45); border-radius: 50%; color: white; cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
 .nav-cuenta:hover { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
-.nav-cuenta .nav-cuenta-icono { width: 17px; height: 17px; flex: 0 0 auto; }
-/* Ya dentro, las iniciales sustituyen al icono y el ambar dice que hay sesion. */
-.nav-cuenta.is-dentro { padding-left: .35rem; background: rgba(215, 155, 74, .16); border-color: var(--ambar); }
-.nav-cuenta.is-dentro:hover { background: var(--ambar); }
-.nav-cuenta-iniciales { display: grid; width: 26px; height: 26px; flex: 0 0 auto; place-items: center; background: var(--ambar); border-radius: 50%; color: var(--horno); font: 700 .68rem/1 Arial, sans-serif; }
+.nav-cuenta .nav-cuenta-icono { width: 19px; height: 19px; }
+/* Ya dentro, las iniciales hacen de dibujo y el circulo se llena de ambar: se
+   distingue de un vistazo que hay sesion, sin escribir el nombre al lado. */
+.nav-cuenta.is-dentro { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
+.nav-cuenta.is-dentro:hover { background: var(--ambar-claro); border-color: var(--ambar-claro); }
+.nav-cuenta-iniciales { font: 700 .78rem/1 Arial, sans-serif; letter-spacing: .01em; }
 
 /* Telefono estrecho: el control abierto mide mas que la mitad de la ficha, asi que
    el precio se queda en su linea y la cantidad pasa debajo, alineada a la izquierda.

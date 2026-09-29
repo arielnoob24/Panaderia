@@ -1280,11 +1280,20 @@
   const iniciales = (nombre) => nombre.split(/\s+/).filter(Boolean).slice(0, 2)
     .map((parte) => parte[0].toUpperCase()).join('');
 
+  // El boton de la cuenta no lleva texto: fuera de sesion es la silueta, y dentro
+  // son tus iniciales, que hacen de icono. Sin rotulo a la vista, el nombre va en
+  // aria-label para quien usa lector de pantalla y en title para quien usa raton;
+  // si no, seria un circulo sin explicacion para todos.
+  const nombrarBoton = (texto) => {
+    navCuenta.setAttribute('aria-label', texto);
+    navCuenta.setAttribute('title', texto);
+  };
+
   const pintarSesion = () => {
     if (!sesion.dentro) {
       navCuenta.classList.remove('is-dentro');
-      navCuenta.innerHTML = `${PERSONA}Entrar`;
-      navCuenta.setAttribute('aria-label', 'Entrar o crear una cuenta');
+      navCuenta.innerHTML = PERSONA;
+      nombrarBoton('Entrar o crear una cuenta');
       return;
     }
     navCuenta.classList.add('is-dentro');
@@ -1295,8 +1304,8 @@
     marca.className = 'nav-cuenta-iniciales';
     marca.setAttribute('aria-hidden', 'true');
     marca.textContent = iniciales(sesion.nombre);
-    navCuenta.append(marca, sesion.nombre.split(/\s+/)[0]);
-    navCuenta.setAttribute('aria-label', `Tu cuenta, ${sesion.nombre}`);
+    navCuenta.append(marca);
+    nombrarBoton(`Tu cuenta, ${sesion.nombre}`);
     panelC.querySelector('.cuenta-avatar').textContent = iniciales(sesion.nombre);
     panelC.querySelector('.cuenta-sesion-nombre').textContent = sesion.nombre;
     panelC.querySelector('.cuenta-sesion-correo').textContent = sesion.correo;
