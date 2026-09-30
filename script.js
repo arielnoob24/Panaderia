@@ -1138,7 +1138,10 @@
   const navCuenta = document.createElement('button');
   navCuenta.type = 'button';
   navCuenta.className = 'nav-cuenta';
-  navigation?.append(navCuenta);
+  // Va en el grupo de acciones, no dentro de la navegacion: asi puede quedarse
+  // a la derecha mientras los enlaces se centran, y en el telefono se ve
+  // siempre, sin tener que abrir el menu.
+  document.querySelector('.nav-acciones')?.prepend(navCuenta);
 
   const tituloC = panelC.querySelector('#cuenta-titulo');
   const pasosC = [...panelC.querySelectorAll('.cuenta-paso')];
