@@ -192,10 +192,10 @@ section[id] { scroll-margin-top: 96px; }
 .product-tag.yellow { background: var(--ambar); color: var(--horno); }
 .product-tag.green { background: var(--horno); }
 .product-info { padding: 1.25rem; }
-.product-info h3 { margin: 0 0 .5rem; font-size: 1.25rem; }
-.product-info > p { min-height: 50px; margin: 0; color: var(--horno-suave); font-size: .9rem; }
+.product-info h3 { margin: 0 0 .5rem; font: 700 1.1rem/1.3 Arial, sans-serif; }
+.product-info > p { min-height: 50px; margin: 0; color: var(--horno-suave); font: .85rem/1.5 Arial, sans-serif; }
 .product-bottom { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--masa-linea); }
-.product-bottom strong { font-size: 1.1rem; }
+.product-bottom strong { font: 700 1.05rem Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .order-button { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .65rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-chip); font: 700 .78rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
 .order-button:hover, .order-button:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
 
@@ -411,9 +411,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .product-grid { gap: .9rem; }
   .product-tag { width: 52px; height: 52px; padding: .25rem; font-size: .5rem; }
   .product-info { padding: .9rem; }
-  .product-info h3 { margin-bottom: .35rem; font-size: 1.05rem; }
+  .product-info h3 { margin-bottom: .35rem; font-size: .95rem; }
   .product-bottom { margin-top: .9rem; padding-top: .8rem; }
-  .product-bottom strong { font-size: 1rem; }
+  .product-bottom strong { font-size: .95rem; }
   .card-cantidad button { width: 32px; height: 32px; }
   .sign-band-inner { min-height: 62px; }
   .sign-trigo { width: 104px; height: 24px; }
