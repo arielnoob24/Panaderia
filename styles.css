@@ -124,20 +124,13 @@ section[id] { scroll-margin-top: 96px; }
 .hero-content { position: relative; z-index: 1; padding-top: 92px; }
 .hero-content::before { position: absolute; top: 50px; left: -40px; z-index: -1; width: 190px; height: 190px; content: ""; background: rgba(215, 155, 74, .3); border-radius: var(--r-dough); filter: blur(16px); opacity: .5; pointer-events: none; }
 .hero-content.is-ready > * { animation: rise var(--dur-editorial) var(--ease-out) both; animation-delay: var(--hero-delay, 0ms); }
-/* La fila sube como una sola pieza y el panadero amasa dentro de ella. */
-.hero-content.is-ready .mascot-hero { animation: knead 700ms var(--ease-accent) 180ms both; }
 @keyframes rise { from { opacity: 0; transform: translateY(var(--rise, 8px)); } to { opacity: 1; transform: none; } }
-@keyframes knead { from { opacity: 0; transform: rotate(-3.5deg) scale(.96); } to { opacity: 1; transform: none; } }
 .eyebrow { margin: 0 0 1rem; color: var(--corteza-oscura); font: 700 .7rem/1.4 Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
 .eyebrow.light { color: var(--ambar); }
 /* La corteza clara da 4.26:1 sobre crema: vale para titulares, no para texto de .7rem. */
 .hero .eyebrow { color: var(--corteza-oscura); }
 /* El coral sobre el marrón oscuro da 1.73:1. Cualquier eyebrow en sección oscura usa ámbar. */
 .story .eyebrow, .site-footer .eyebrow { color: var(--ambar); }
-/* El panadero deja de ir encima del nombre y se pone a su izquierda: los dos
-   son la misma presentacion, asi que van en la misma linea. */
-.hero-marca { display: flex; align-items: center; gap: 1.1rem; margin-bottom: 1.1rem; }
-.hero-marca .eyebrow { margin: 0; }
 .hero h1 { max-width: 640px; margin: 0; font: 500 clamp(4rem, 8vw, 7rem)/.92 Georgia, serif; }
 .hero h1 em, h2 em { color: var(--ambar); font-weight: 500; }
 .hero h1 em { color: var(--corteza); }
@@ -297,7 +290,9 @@ section[id] { scroll-margin-top: 96px; }
 /* La mascota acompana en el hero, en la franja y en el pie; en la cabecera manda
    el logo. Por debajo de 40px la ilustracion deja de leerse, asi que el circulo
    de fondo le da forma reconocible en los tamanos pequenos. */
-.mascot-hero { width: 96px; height: 96px; background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
+/* En la cabecera el panadero acompana al logo, asi que va mas pequeno que
+   cuando vivia en el hero: manda el logo, el es la compania. */
+.mascot-brand { width: 50px; height: 50px; flex: 0 0 auto; background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
 .mascot-footer { width: 54px; height: 54px; background: radial-gradient(circle, rgba(215, 155, 74, .18) 62%, transparent 63%); }
 .footer-lema { margin: .9rem 0 0; color: var(--sobre-horno-tenue); font: italic 1.05rem/1.4 Georgia, serif; }
 .footer-visita address { color: var(--sobre-horno); font: .85rem/1.5 Arial, sans-serif; font-style: normal; }

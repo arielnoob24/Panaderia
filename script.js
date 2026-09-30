@@ -197,9 +197,9 @@
   const heroContent = document.querySelector('.hero-content');
   if (heroContent) {
     // La amplitud acompaña al peso tipográfico: el titular recorre más que el eyebrow.
-    // Cuatro hijos desde que el panadero y el nombre van juntos: la fila, el
-    // titular -que recorre mas, porque pesa mas-, el parrafo y los botones.
-    const riseByIndex = [8, 16, 10, 8];
+    // Tres hijos desde que el panadero subio a la cabecera: el titular -que
+    // recorre mas, porque pesa mas-, el parrafo y los botones.
+    const riseByIndex = [16, 10, 8];
     [...heroContent.children].forEach((child, index) => {
       child.style.setProperty('--rise', `${riseByIndex[index] ?? 8}px`);
       child.style.setProperty('--hero-delay', `${Math.min(index * 70, 420)}ms`);
