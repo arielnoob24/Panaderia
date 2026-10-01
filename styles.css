@@ -66,8 +66,20 @@ section[id] { scroll-margin-top: 96px; }
    la historia y el pie, que son marron oscuro, y el texto oscuro se perderia
    sobre ellos. El fondo es claro y no oscuro para no tener que cambiar el
    logo a media pagina. */
-.site-header { position: fixed; top: 0; width: 100%; z-index: 10; color: var(--horno); transition: background-color var(--dur-base) var(--ease-ui), box-shadow var(--dur-base) var(--ease-ui); }
-.site-header.is-pegada { background: rgba(255, 253, 248, .92); box-shadow: 0 6px 20px rgba(58, 40, 34, .08); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.site-header { position: fixed; top: 0; width: 100%; z-index: 10; color: var(--horno); transition: background-color var(--dur-base) var(--ease-ui), box-shadow var(--dur-base) var(--ease-ui), color var(--dur-base) var(--ease-ui); }
+/* Al bajar, la barra se vuelve oscura y todo lo de dentro se invierte. El logo
+   es un dibujo de un solo color, asi que no hace falta un segundo archivo: se
+   apaga a negro y se invierte a blanco, que conserva la transparencia. */
+.site-header.is-pegada { background: rgba(58, 40, 34, .92); color: var(--sobre-horno); box-shadow: 0 6px 22px rgba(58, 40, 34, .26); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.site-header.is-pegada .brand-logo { filter: brightness(0) invert(1); }
+/* El panadero no se invierte: es ilustracion a color y se arruinaria. Solo su
+   halo cambia de tinte, para que se vea sobre el marron en vez de sobre crema. */
+.site-header.is-pegada .mascot-brand { background: radial-gradient(circle, rgba(215, 155, 74, .22) 62%, transparent 63%); }
+/* Sobre el marron el ambar si se lee: 5,8:1. Vuelve a ser el color del puntero. */
+.site-header.is-pegada .main-nav > a:hover, .site-header.is-pegada .nav-grupo-boton:hover { color: var(--ambar); }
+.site-header.is-pegada .nav-cuenta { border-color: rgba(255, 255, 255, .45); color: var(--sobre-horno); }
+.site-header.is-pegada .nav-cuenta:hover { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
+.site-header.is-pegada .nav-cuenta.is-dentro { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
 /* Tres columnas con los lados iguales: asi los enlaces quedan centrados en la
    pagina y no en el hueco que sobra entre el logo y la cuenta, que miden
    cosas distintas. */
@@ -79,7 +91,7 @@ section[id] { scroll-margin-top: 96px; }
 /* El logo trae el nombre y la bajada dibujados, asi que en la cabecera sustituye
    a la mascota con el texto al lado. Manda el alto: en una barra de 86px el logo
    tiene que caber con aire, y el ancho sale solo de su proporcion. */
-.brand-logo { display: block; width: auto; height: 64px; }
+.brand-logo { display: block; width: auto; height: 64px; transition: filter var(--dur-base) var(--ease-ui); }
 .brand small { display: block; margin-top: .15rem; font: 400 .58rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .main-nav { display: flex; align-items: center; gap: 2.5rem; font: 700 1rem Arial, sans-serif; }
 .main-nav > a, .nav-grupo-boton { position: relative; transition: color var(--dur-micro) var(--ease-ui); }
