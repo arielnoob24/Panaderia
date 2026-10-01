@@ -992,7 +992,15 @@
     const nombre = ficha.querySelector('h3')?.textContent.trim();
     const precio = parseFloat((ficha.querySelector('.product-bottom strong')?.textContent || '').replace(/[^0-9.]/g, ''));
     if (!nombre || Number.isNaN(precio)) return;
-    const id = idDe(nombre);
+    // Lo que viene en varios tamanios no tiene un nombre ni un precio fijos: los
+    // dicta el que este elegido. Y como el nombre que se guarda lleva el tamanio
+    // dentro, cada uno es su propia linea de la canasta sin tocar la canasta.
+    const tamanos = [...ficha.querySelectorAll('.tamano-input')];
+    const elegido = () => tamanos.find((t) => t.checked) || tamanos[0];
+    const nombreDe = () => (tamanos.length ? `${nombre} ${elegido().value}` : nombre);
+    const precioDe = () => (tamanos.length ? Number(elegido().dataset.precio) : precio);
+    const idDeAhora = () => idDe(nombreDe());
+    const importe = ficha.querySelector('.product-bottom strong');
 
     const grupo = document.createElement('div');
     grupo.className = 'card-cantidad';
@@ -1002,7 +1010,7 @@
     const menos = grupo.querySelector('.card-menos');
     const cuentaFicha = grupo.querySelector('output');
     const mas = grupo.querySelector('.card-mas');
-    const cuantos = () => pedido.get(id)?.cantidad || 0;
+    const cuantos = () => pedido.get(idDeAhora())?.cantidad || 0;
 
     const refrescar = () => {
       const n = cuantos();
@@ -1013,23 +1021,31 @@
       // Con una sola unidad, quitarla es borrar el producto del pedido: el boton
       // lo dice con un basurero. Desde dos vuelve a ser un signo de resta.
       menos.innerHTML = n === 1 ? BASURERO : '<span aria-hidden="true">−</span>';
-      menos.setAttribute('aria-label', n === 1 ? `Quitar ${nombre} de la canasta` : `Quitar uno de ${nombre}`);
-      mas.setAttribute('aria-label', n ? `Añadir otro de ${nombre}` : `Añadir ${nombre} a la canasta`);
+      const comoSeLlama = nombreDe();
+      menos.setAttribute('aria-label', n === 1 ? `Quitar ${comoSeLlama} de la canasta` : `Quitar uno de ${comoSeLlama}`);
+      mas.setAttribute('aria-label', n ? `Añadir otro de ${comoSeLlama}` : `Añadir ${comoSeLlama} a la canasta`);
+      if (importe) importe.textContent = dinero(precioDe());
     };
     refrescos.push(refrescar);
+    tamanos.forEach((t) => t.addEventListener('change', () => {
+      refrescar();
+      avisos.textContent = `${nombreDe()}, ${dinero(precioDe())}.`;
+    }));
 
     const cuantosQuedan = () => `${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
     mas.addEventListener('click', () => {
-      const l = pedido.get(id) || { nombre, precio, cantidad: 0 };
+      const comoSeLlama = nombreDe();
+      const l = pedido.get(idDeAhora()) || { nombre: comoSeLlama, precio: precioDe(), cantidad: 0 };
       l.cantidad = Math.min(l.cantidad + 1, 99);
-      pedido.set(id, l);
+      pedido.set(idDeAhora(), l);
       pintar();
-      avisos.textContent = `${nombre} añadido. ${cuantosQuedan()}`;
+      avisos.textContent = `${comoSeLlama} añadido. ${cuantosQuedan()}`;
     });
     menos.addEventListener('click', () => {
+      const comoSeLlama = nombreDe();
       const seVa = cuantos() <= 1;
-      cambiar(id, -1);
-      avisos.textContent = seVa ? `${nombre} quitado. ${cuantosQuedan()}` : `Una unidad menos de ${nombre}. ${cuantosQuedan()}`;
+      cambiar(idDeAhora(), -1);
+      avisos.textContent = seVa ? `${comoSeLlama} quitado. ${cuantosQuedan()}` : `Una unidad menos de ${comoSeLlama}. ${cuantosQuedan()}`;
       // El boton recien usado desaparece; el foco pasa al mas para no perderse.
       if (seVa) mas.focus();
     });
