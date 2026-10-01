@@ -98,6 +98,51 @@
     return Math.min((row + column) * step, max);
   };
 
+  // La fila del mostrador se recorre con el dedo o con el teclado -tabulando por
+  // las fichas, que el navegador trae solas a la vista-. Las flechas son el
+  // apaño para el raton, que no tiene como desplazar de lado.
+  const FLECHA = (izq) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+    + 'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" '
+    + 'focusable="false"><path d="M' + (izq ? '14.5 5.5 8 12l6.5 6.5' : '9.5 5.5 16 12l-6.5 6.5') + '"/></svg>';
+  let flechas = [];
+  if (productGrid) {
+    const zona = document.createElement('div');
+    zona.className = 'fila-zona';
+    productGrid.parentElement.insertBefore(zona, productGrid);
+    zona.append(productGrid);
+    flechas = [-1, 1].map((ir) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'fila-flecha';
+      b.dataset.ir = String(ir);
+      b.innerHTML = FLECHA(ir === -1);
+      b.setAttribute('aria-label', ir === -1 ? 'Ver los productos anteriores' : 'Ver más productos');
+      b.addEventListener('click', () => {
+        productGrid.scrollBy({
+          left: ir * Math.max(productGrid.clientWidth * 0.8, 240),
+          behavior: reducedMotion.matches ? 'auto' : 'smooth',
+        });
+      });
+      zona.append(b);
+      return b;
+    });
+    // Al llegar a una punta, la flecha de ese lado se apaga.
+    const mirarPuntas = () => {
+      const sobra = productGrid.scrollWidth - productGrid.clientWidth;
+      const hayFila = productGrid.classList.contains('is-fila');
+      flechas.forEach((b) => {
+        b.hidden = !hayFila || sobra < 24;
+        b.disabled = b.dataset.ir === '-1'
+          ? productGrid.scrollLeft < 8
+          : productGrid.scrollLeft > sobra - 8;
+      });
+    };
+    productGrid.addEventListener('scroll', mirarPuntas, { passive: true });
+    window.addEventListener('resize', mirarPuntas, { passive: true });
+    productGrid.dataset.mirarPuntas = '1';
+    productGrid.mirarPuntas = mirarPuntas;
+  }
+
   let filterRun = 0;
   const applyFilter = (shouldAnimate = false) => {
     const selected = filters.find((filter) => filter.checked);
@@ -108,6 +153,9 @@
     let visibleCount = 0;
     let agotados = 0;
 
+    // Sin categoria elegida el catalogo es el mostrador en fila; al elegir una,
+    // pasa a cuadricula, que es cuando se viene a mirarlo todo.
+    productGrid?.classList.toggle('is-fila', category === 'todos');
     productGrid?.classList.remove('is-filtering');
     products.forEach((product) => {
       const visible = category === 'todos' || product.dataset.category === category;
@@ -127,10 +175,16 @@
       const plural = visibleCount === 1 ? '' : 's';
       // Llamar "disponible" a lo que esta agotado seria mentira: cuando falta algo,
       // el aviso cuenta cuantos hay y cuantos se acabaron.
-      catalogStatus.textContent = agotados
-        ? `${visibleCount} producto${plural} en esta categoría, ${agotados} agotado${agotados === 1 ? '' : 's'}.`
-        : `${visibleCount} producto${plural} disponible${plural} en esta categoría.`;
+      const cuantos = agotados
+        ? `${visibleCount} producto${plural}, ${agotados} agotado${agotados === 1 ? '' : 's'}`
+        : `${visibleCount} producto${plural} disponible${plural}`;
+      // En el mostrador, el aviso dice ademas por donde se ve todo: si no, la
+      // fila parece el catalogo entero y la cuadricula no la encuentra nadie.
+      catalogStatus.textContent = category === 'todos'
+        ? `${cuantos} en el mostrador. Elige una categoría para verlos en cuadrícula.`
+        : `${cuantos} en esta categoría.`;
     }
+    productGrid?.mirarPuntas?.();
     if (!animate) return;
 
     const run = ++filterRun;
@@ -144,6 +198,9 @@
   // La salida es la única del sitio: los productos actuales se atenúan con una curva
   // acelerada y solo después entra la categoría nueva con la curva desacelerada.
   filters.forEach((filter) => filter.addEventListener('change', () => {
+    // Al cambiar de categoria la fila vuelve a su principio: si no, se entraria
+    // a la mitad de lo nuevo sin saber que hay detras.
+    if (productGrid) productGrid.scrollLeft = 0;
     if (reducedMotion.matches) {
       applyFilter(false);
       return;
@@ -231,6 +288,17 @@
         if (!entry.isIntersecting) return;
         entry.target.classList.add('is-visible');
         observer.unobserve(entry.target);
+        // En el mostrador las fichas estan en fila: las de la derecha quedan
+        // fuera de la pantalla y nunca entrarian, asi que se quedarian
+        // invisibles para siempre. La fila es una sola pieza: en cuanto asoma
+        // una ficha, aparecen todas.
+        if (entry.target.classList.contains('product-card')
+          && productGrid?.classList.contains('is-fila')) {
+          products.forEach((otra) => {
+            otra.classList.add('is-visible');
+            observer.unobserve(otra);
+          });
+        }
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
     motionItems.forEach((item) => revealObserver.observe(item));

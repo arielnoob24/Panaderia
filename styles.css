@@ -94,12 +94,11 @@ section[id] { scroll-margin-top: 96px; }
 .brand-logo { display: block; width: auto; height: 64px; transition: filter var(--dur-base) var(--ease-ui); }
 .brand small { display: block; margin-top: .15rem; font: 400 .58rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .main-nav { display: flex; align-items: center; gap: 2.5rem; font: 700 1rem Arial, sans-serif; }
-.main-nav > a, .nav-grupo-boton { position: relative; transition: color var(--dur-micro) var(--ease-ui); }
+/* Al pasar el cursor solo cambia el color. Antes crecia ademas un subrayado
+   desde la izquierda, que hacia la barra mas de menu de escritorio que de
+   panaderia. */
+.main-nav > a, .nav-grupo-boton { transition: color var(--dur-fast) var(--ease-ui); }
 .main-nav > a:hover, .nav-grupo-boton:hover { color: var(--corteza-oscura); }
-.main-nav > a::after, .nav-grupo-boton::after { position: absolute; right: 0; bottom: -4px; left: 0; height: 1px; content: ""; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform var(--dur-micro) var(--ease-ui); }
-.main-nav > a:hover::after, .main-nav > a:focus-visible::after,
-.nav-grupo-boton:hover::after, .nav-grupo-boton:focus-visible::after,
-.nav-grupo.is-open .nav-grupo-boton::after { transform: scaleX(1); }
 /* "Tienda" no es un destino, es una puerta: agrupa las tres categorias del
    catalogo. Es un boton y no un enlace porque no lleva a ningun sitio, solo
    abre y cierra, y asi el teclado y los lectores de pantalla lo entienden.
@@ -125,7 +124,6 @@ section[id] { scroll-margin-top: 96px; }
 @media (hover: hover) and (pointer: fine) and (min-width: 681px) {
   .nav-grupo:hover .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
   .nav-grupo:hover .nav-grupo-flecha { transform: rotate(180deg); }
-  .nav-grupo:hover .nav-grupo-boton::after { transform: scaleX(1); }
 }
 
 .menu-toggle { display: none; padding: 8px; background: none; border: 0; color: inherit; cursor: pointer; }
@@ -203,6 +201,27 @@ section[id] { scroll-margin-top: 96px; }
 .filter-input:focus-visible + .filter { outline: 3px solid var(--horno); outline-offset: 3px; box-shadow: 0 0 0 5px var(--ambar); }
 .catalog-status { min-height: 1.4em; margin: 0 0 1.25rem; color: var(--horno-suave); font: .78rem Arial, sans-serif; }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.3rem; }
+/* Sin categoria elegida el catalogo es una fila que se recorre de lado: un
+   paseo por el mostrador, no el inventario entero de golpe. Al elegir una
+   categoria pasa a cuadricula, que es cuando se viene a mirarlo todo. */
+.fila-zona { position: relative; }
+.product-grid.is-fila { display: flex; gap: 1.3rem; overflow-x: auto; padding-bottom: .4rem; scroll-snap-type: x proximity; scroll-padding: 0 4px; scrollbar-width: thin; scrollbar-color: var(--masa-linea) transparent; }
+.product-grid.is-fila .product-card { width: min(272px, 74vw); flex: 0 0 auto; scroll-snap-align: start; }
+.product-grid.is-fila::-webkit-scrollbar { height: 8px; }
+.product-grid.is-fila::-webkit-scrollbar-thumb { background: var(--masa-linea); border-radius: var(--r-pill); }
+.product-grid.is-fila::-webkit-scrollbar-track { background: transparent; }
+
+/* Las flechas son para el raton: con el dedo se arrastra y con el teclado se
+   tabula por las fichas, que el navegador trae solas a la vista. */
+.fila-flecha { position: absolute; top: 118px; z-index: 3; display: grid; width: 44px; height: 44px; place-items: center; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: 50%; box-shadow: var(--shadow-lift); color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
+.fila-flecha:hover { background: var(--ambar); transform: scale(1.06); }
+.fila-flecha[data-ir="-1"] { left: 4px; }
+.fila-flecha[data-ir="1"] { right: 4px; }
+.fila-flecha svg { width: 19px; height: 19px; }
+/* Al llegar a una punta la flecha de ese lado sobra: se apaga y deja de tocarse. */
+.fila-flecha[disabled] { opacity: 0; pointer-events: none; }
+.fila-flecha[hidden] { display: none; }
+
 .product-card[hidden] { display: none; }
 .product-card { position: relative; background: var(--papel); border-radius: var(--r-card); box-shadow: var(--shadow-contact); transition: transform var(--dur-fast) var(--ease-ui); }
 .product-card::after { position: absolute; inset: 0; content: ""; border-radius: inherit; box-shadow: var(--shadow-lift); opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease-ui); }
@@ -436,7 +455,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .main-nav { color: var(--sobre-horno); }
   .main-nav > a:hover, .nav-grupo-boton:hover { color: var(--ambar); }
   .main-nav a { padding: .6rem .7rem; }
-  .main-nav a::after, .nav-grupo-boton::after { display: none; }
   .nav-grupo { display: flex; flex-direction: column; }
   .nav-grupo-boton { width: 100%; justify-content: space-between; padding: .6rem .7rem; }
   .nav-submenu { position: static; display: grid; visibility: hidden; min-width: 0; max-height: 0; padding: 0 0 0 .8rem; overflow: hidden; opacity: 1; background: none; border: 0; border-radius: 0; box-shadow: none; transform: none; transition: max-height var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
@@ -460,6 +478,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   /* Dos columnas en pantalla de telefono: la ficha es la mitad de ancha, asi que
      la foto, el nombre y el precio bajan de tamano a la vez para no apretarse. */
   .product-grid { gap: .9rem; }
+  .fila-flecha { display: none; }
   .product-tag { width: 52px; height: 52px; padding: .25rem; font-size: .5rem; }
   .product-info { padding: .9rem; }
   .product-info h3 { margin-bottom: .35rem; font-size: .95rem; }
@@ -563,7 +582,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .menu-toggle span, .button-yellow:hover, .button-yellow:focus-visible, .order-button:hover, .order-button:focus-visible, .product-card:hover, .product-card:hover .product-image img { transform: none; }
   .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno output { animation: none; }
   .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { transform: none; }
-  .main-nav a::after { transition: none; }
   .nav-submenu, .nav-grupo-flecha { transition: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
   .product-image img { opacity: 1; }
