@@ -60,9 +60,14 @@ section[id] { scroll-margin-top: 96px; }
 .skip-link { position: absolute; top: -5rem; left: 1rem; z-index: 20; padding: .7rem 1rem; background: var(--ambar); color: var(--horno); border-radius: 0 0 var(--r-btn) var(--r-btn); }
 .skip-link:focus { top: 1rem; }
 
-/* Sin barra: la cabecera flota sobre el hero, que ahi es crema de lado a lado.
-   De ahi que el texto sea oscuro; en blanco daba 1,1:1 y no se veia. */
-.site-header { position: absolute; top: 0; width: 100%; z-index: 10; color: var(--horno); }
+/* Arriba del todo la cabecera flota sin fondo sobre el velo del hero, que ahi
+   es crema de lado a lado; por eso el texto es oscuro -en blanco daba 1,1:1-.
+   Al bajar se queda fija, y entonces si necesita fondo propio: debajo pasan
+   la historia y el pie, que son marron oscuro, y el texto oscuro se perderia
+   sobre ellos. El fondo es claro y no oscuro para no tener que cambiar el
+   logo a media pagina. */
+.site-header { position: fixed; top: 0; width: 100%; z-index: 10; color: var(--horno); transition: background-color var(--dur-base) var(--ease-ui), box-shadow var(--dur-base) var(--ease-ui); }
+.site-header.is-pegada { background: rgba(255, 253, 248, .92); box-shadow: 0 6px 20px rgba(58, 40, 34, .08); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 /* Tres columnas con los lados iguales: asi los enlaces quedan centrados en la
    pagina y no en el hueco que sobra entre el logo y la cuenta, que miden
    cosas distintas. */
@@ -117,6 +122,10 @@ section[id] { scroll-margin-top: 96px; }
 .menu-toggle[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
 .menu-toggle[aria-expanded="true"] span:last-child { transform: translateY(-6px) rotate(-45deg); }
 
+/* Con la cabecera fija, un salto por ancla dejaria el destino escondido
+   detras de ella. Cada destino se guarda su altura. */
+#inicio, #contenido, #catalogo, #historia, #visitanos { scroll-margin-top: 98px; }
+
 .hero { position: relative; display: flex; align-items: center; min-height: 720px; overflow: hidden; color: var(--horno); background: var(--masa); }
 .hero-image { position: absolute; top: 0; right: 0; bottom: 0; width: 52%; background: var(--masa) image-set(url("https://images.unsplash.com/photo-1636378126357-7e5f200771c5?auto=format&fit=crop&w=900&q=80") 1x, url("https://images.unsplash.com/photo-1636378126357-7e5f200771c5?auto=format&fit=crop&w=1600&q=80") 2x) center 55% / cover; opacity: .78; transform: scale(1.035); transition: opacity var(--dur-scene) var(--ease-out), transform 1200ms var(--ease-out); }
 .hero-image.is-loaded { opacity: 1; transform: none; }
@@ -169,7 +178,7 @@ section[id] { scroll-margin-top: 96px; }
 .section-heading h2, .story-copy h2 { margin: 0; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 Georgia, serif; }
 .section-heading h2 em, .story-copy h2 em { color: var(--corteza-oscura); }
 .section-intro { max-width: 330px; margin: 0 0 .5rem; color: var(--horno-suave); }
-.filter-bar { position: sticky; top: 0; z-index: 4; display: flex; gap: .5rem; min-width: 0; margin: 0 0 1rem; padding: 1rem 0; overflow-x: auto; background: linear-gradient(to right, var(--masa) 40%, rgba(247, 241, 231, 0)) left center / 44px 100% no-repeat local, linear-gradient(to left, var(--masa) 40%, rgba(247, 241, 231, 0)) right center / 44px 100% no-repeat local, radial-gradient(farthest-side at 0 50%, rgba(58, 40, 34, .22), rgba(58, 40, 34, 0)) left center / 16px 100% no-repeat scroll, radial-gradient(farthest-side at 100% 50%, rgba(58, 40, 34, .22), rgba(58, 40, 34, 0)) right center / 16px 100% no-repeat scroll, var(--masa); border: 0; border-top: 1px solid var(--masa-linea); border-bottom: 1px solid var(--masa-linea); box-shadow: 0 8px 14px rgba(58, 40, 34, .06); }
+.filter-bar { position: sticky; top: 86px; z-index: 4; display: flex; gap: .5rem; min-width: 0; margin: 0 0 1rem; padding: 1rem 0; overflow-x: auto; background: linear-gradient(to right, var(--masa) 40%, rgba(247, 241, 231, 0)) left center / 44px 100% no-repeat local, linear-gradient(to left, var(--masa) 40%, rgba(247, 241, 231, 0)) right center / 44px 100% no-repeat local, radial-gradient(farthest-side at 0 50%, rgba(58, 40, 34, .22), rgba(58, 40, 34, 0)) left center / 16px 100% no-repeat scroll, radial-gradient(farthest-side at 100% 50%, rgba(58, 40, 34, .22), rgba(58, 40, 34, 0)) right center / 16px 100% no-repeat scroll, var(--masa); border: 0; border-top: 1px solid var(--masa-linea); border-bottom: 1px solid var(--masa-linea); box-shadow: 0 8px 14px rgba(58, 40, 34, .06); }
 .filter { position: relative; z-index: 0; flex: 0 0 auto; padding: .65rem 1rem; background: transparent; color: var(--horno-suave); border: 0; border-radius: var(--r-pill); cursor: pointer; font: .85rem/1.4 Arial, sans-serif; transition: color var(--dur-base) var(--ease-out); }
 /* El fondo entra creciendo desde el centro en vez de encenderse de golpe. */
 .filter::before { position: absolute; inset: 0; z-index: -1; content: ""; background: var(--horno-claro); border-radius: inherit; opacity: 0; transform: scale(.82); transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out); }
@@ -390,6 +399,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 @media (max-width: 680px) {
   .container { width: min(100% - 32px, 540px); }
   .nav-wrap { min-height: 70px; }
+  .filter-bar { top: 70px; }
+  #inicio, #contenido, #catalogo, #historia, #visitanos { scroll-margin-top: 82px; }
   .brand-logo { height: 44px; }
   .menu-toggle { display: block; }
   .main-nav { position: absolute; top: calc(100% + .5rem); right: 16px; left: auto; display: flex; visibility: hidden; width: min(250px, calc(100vw - 32px)); flex-direction: column; align-items: stretch; gap: .15rem; padding: .55rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }

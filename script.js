@@ -2,6 +2,23 @@
   const menuToggle = document.querySelector('.menu-toggle');
   const navigation = document.querySelector('#main-nav');
 
+  // La cabecera se queda arriba al bajar. Sin fondo mientras se esta en lo alto
+  // -ahi la sostiene el velo del hero- y con fondo en cuanto se baja, que es
+  // cuando pasan secciones oscuras por detras.
+  const cabecera = document.querySelector('.site-header');
+  if (cabecera) {
+    let pegada = false;
+    const mirarScroll = () => {
+      const ahora = window.scrollY > 40;
+      // Solo se toca el DOM cuando el estado cambia; si no, seria en cada pixel.
+      if (ahora === pegada) return;
+      pegada = ahora;
+      cabecera.classList.toggle('is-pegada', ahora);
+    };
+    window.addEventListener('scroll', mirarScroll, { passive: true });
+    mirarScroll();
+  }
+
   // "Tienda" agrupa las tres categorias del catalogo. Manda el clic, que es lo
   // que funciona con teclado y con el dedo; en raton, ademas, se abre al pasar
   // por encima, porque ahi si existe eso de pasar por encima.
