@@ -73,18 +73,16 @@ section[id] { scroll-margin-top: 96px; }
    es un dibujo de un solo color, asi que no hace falta un segundo archivo: se
    apaga a negro y se invierte a blanco, que conserva la transparencia. */
 .site-header.is-pegada { color: var(--sobre-horno); }
-/* El fondo no lo pinta la barra sino este pseudo, que baja 44px mas que ella
-   y lleva una mascara que lo apaga hacia abajo: el color y el desenfoque se
-   disuelven en la seccion de atras en vez de acabarse en una raya. Sin sombra,
-   que debajo de un borde desvanecido vuelve a dibujar justo esa raya. */
-.site-header.is-pegada::after { position: absolute; top: 0; right: 0; left: 0; z-index: -1; height: calc(100% + 34px); content: ""; background: rgba(58, 40, 34, .94); pointer-events: none; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 75%, rgba(0, 0, 0, .35) 90%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, #000 75%, rgba(0, 0, 0, .35) 90%, transparent 100%); }
+/* El fondo lo pinta este pseudo, no la barra, para poder darle su propia
+   sombra sin que afecte a lo de dentro. */
+.site-header.is-pegada::after { position: absolute; top: 0; right: 0; left: 0; z-index: -1; height: 100%; content: ""; background: rgba(58, 40, 34, .94); pointer-events: none; box-shadow: 0 6px 22px rgba(58, 40, 34, .26); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .site-header.is-pegada .brand-logo { filter: brightness(0) invert(1); }
 
 /* Sobre la historia y el pie, que son del mismo marron que la barra, esta se da
    la vuelta: clara con todo lo de dentro oscuro. Sin esto se funde con el fondo
    y parece que la barra desaparece. */
 .site-header.is-pegada.is-sobre-oscuro { color: var(--horno); }
-.site-header.is-pegada.is-sobre-oscuro::after { background: rgba(255, 253, 248, .96); }
+.site-header.is-pegada.is-sobre-oscuro::after { background: rgba(255, 253, 248, .96); box-shadow: 0 6px 22px rgba(0, 0, 0, .3); }
 .site-header.is-pegada.is-sobre-oscuro .brand-logo { filter: none; }
 .site-header.is-pegada.is-sobre-oscuro .mascot-brand { background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
 .site-header.is-pegada.is-sobre-oscuro .main-nav > a:hover,
@@ -104,7 +102,7 @@ section[id] { scroll-margin-top: 96px; }
 .nav-wrap { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; min-height: 86px; }
 .brand { grid-column: 1; justify-self: start; }
 .main-nav { grid-column: 2; }
-.nav-acciones { display: flex; grid-column: 3; align-items: center; gap: .55rem; justify-self: end; }
+.nav-acciones { position: relative; display: flex; grid-column: 3; align-items: center; gap: .55rem; justify-self: end; }
 .brand { display: inline-flex; align-items: center; gap: .65rem; font: 600 1.15rem Georgia, serif; }
 /* El logo trae el nombre y la bajada dibujados, asi que en la cabecera sustituye
    a la mascota con el texto al lado. Manda el alto: en una barra de 86px el logo
@@ -538,6 +536,31 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .footer-grid { grid-template-columns: 1fr; gap: 1.3rem; }
   .floating-whatsapp { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
 }
+
+/* El desglose del pedido: lo que cuesta el pan, lo que cuesta llevarlo y la
+   suma. Hasta que no se elige como se recibe no se puede escribir. */
+.canasta-desglose { margin: 0 0 1rem; padding: .85rem .95rem; background: var(--masa); border-radius: var(--r-btn); font: .88rem/1.5 Arial, sans-serif; }
+.canasta-desglose div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .18rem 0; }
+.canasta-desglose dt { color: var(--horno-suave); }
+.canasta-desglose dd { margin: 0; font-variant-numeric: tabular-nums; }
+.canasta-desglose .desglose-suma { margin-top: .35rem; padding-top: .5rem; border-top: 1px solid var(--masa-linea); }
+.canasta-desglose .desglose-suma dt { color: var(--horno); font-weight: 700; }
+.canasta-desglose .desglose-suma dd { font: 700 1.1rem Arial, sans-serif; font-variant-numeric: tabular-nums; }
+
+/* Cada opcion lleva debajo lo que cuesta, que es la mitad de la decision. */
+.canasta-opciones span small { display: block; margin-top: .2rem; color: var(--horno-claro); font: 400 .72rem Arial, sans-serif; }
+.canasta-opciones input:checked + span small { color: var(--corteza-oscura); }
+/* Si se pasa a retirar, lo util es saber donde esta el local. */
+.canasta-local { margin-top: .9rem; padding: .7rem .85rem; background: var(--masa); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; }
+.canasta-local[hidden] { display: none; }
+.canasta-local-titulo { margin: 0; font: 700 .85rem/1.4 Arial, sans-serif; }
+.canasta-local-dato { margin: .15rem 0 0; color: var(--horno-suave); font: .78rem/1.45 Arial, sans-serif; }
+
+/* Las dos puertas de la cuenta, colgando de su circulo. */
+.cuenta-menu { position: absolute; top: calc(100% + .5rem); right: 0; z-index: 11; display: flex; visibility: hidden; min-width: 190px; flex-direction: column; gap: .1rem; padding: .5rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); color: var(--sobre-horno); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }
+.cuenta-menu.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
+.cuenta-menu button { padding: .6rem .75rem; background: none; border: 0; border-radius: var(--r-chip); color: inherit; cursor: pointer; font: 700 .9rem Arial, sans-serif; text-align: left; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+.cuenta-menu button:hover { background: rgba(255, 255, 255, .1); color: var(--ambar); }
 
 /* ---- Cuenta -----------------------------------------------------------
    Maqueta de cuentas: no hay servidor detras. El panel es el mismo objeto que

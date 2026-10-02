@@ -509,6 +509,9 @@
   const tarjeta = { numero: '', vence: '', cvv: '', titular: '' };
   const cobro = { metodo: 'efectivo', numero: '', detalle: '' };
 
+  // Lo que cuesta llevarlo. Vive aqui arriba, con los demas datos, porque el
+  // panel ya lo escribe al nacer para que cada opcion diga lo que vale.
+  const ENVIO = 1.50;
   const dinero = (n) => '$' + n.toFixed(2);
   const idDe = (nombre) => nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
 
@@ -578,27 +581,48 @@
     + '<div class="canasta-cuerpo"><ul class="canasta-lista"></ul>'
     + '<p class="canasta-vacio">Tu canasta está vacía.</p></div>'
     + '<div class="canasta-pie">'
+    + '<div class="canasta-total"><span>Subtotal</span><strong>$0.00</strong></div>'
+    + '<button class="button button-yellow canasta-enviar" type="button">'
+    + 'Confirmar el pedido <span aria-hidden="true">→</span></button>'
+    + '<p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p>'
+    + '</div></section>'
+
+    // Como se recibe el pedido es su propio paso: aqui se elige entre pasar a
+    // retirarlo o que se lo lleven, y recien aqui aparece el desglose, porque
+    // hasta no saberlo no se puede decir cuanto cuesta el pedido entero.
+    + '<section class="canasta-paso" data-paso="entrega" hidden>'
+    + '<div class="canasta-cuerpo">'
+    + '<button class="canasta-volver" data-vuelve="canasta" type="button">'
+    + '<span aria-hidden="true">←</span> Volver a la canasta</button>'
     + '<fieldset class="canasta-entrega"><legend>¿Cómo lo quieres?</legend>'
     + '<div class="canasta-opciones">'
     + '<label><input type="radio" name="canasta-entrega" value="retiro" checked>'
-    + '<span>Paso retirando</span></label>'
+    + '<span>Paso retirando<small>Gratis</small></span></label>'
     + '<label><input type="radio" name="canasta-entrega" value="domicilio">'
-    + '<span>A domicilio</span></label></div>'
+    + '<span>A domicilio<small>' + dinero(ENVIO) + '</small></span></label></div>'
+    + '<div class="canasta-local">'
+    + '<p class="canasta-local-titulo">Esquina de Eloy Alfaro y Gabriel Espinosa</p>'
+    + '<p class="canasta-local-dato">Tena, Napo. Te esperamos en el mostrador.</p></div>'
     + '<div class="canasta-direccion" hidden>'
     + '<label for="canasta-dir">¿A dónde lo llevamos?</label>'
     + '<input id="canasta-dir" type="text" autocomplete="street-address" '
     + 'placeholder="Calle, número y una referencia">'
     + '<p class="canasta-aviso" role="alert" hidden>Escribe la dirección para poder llevarlo.</p>'
-    + '</div></fieldset>'
-    + '<div class="canasta-total"><span>Total</span><strong>$0.00</strong></div>'
-    + '<button class="button button-yellow canasta-enviar" type="button">'
-    + 'Confirmar el pedido <span aria-hidden="true">→</span></button>'
-    + '<p class="canasta-nota">En el siguiente paso eliges cómo pagar.</p>'
+    + '</div></fieldset></div>'
+    + '<div class="canasta-pie">'
+    + '<dl class="canasta-desglose">'
+    + '<div><dt>Subtotal</dt><dd class="desglose-subtotal">$0.00</dd></div>'
+    + '<div><dt>Envío</dt><dd class="desglose-envio">Gratis</dd></div>'
+    + '<div class="desglose-suma"><dt>Total</dt><dd class="desglose-total">$0.00</dd></div>'
+    + '</dl>'
+    + '<button class="button button-yellow canasta-seguir" type="button">'
+    + 'Seguir al pago <span aria-hidden="true">→</span></button>'
     + '</div></section>'
 
     + '<section class="canasta-paso" data-paso="pago" hidden>'
     + '<div class="canasta-cuerpo">'
-    + '<button class="canasta-volver" type="button"><span aria-hidden="true">←</span> Volver a la canasta</button>'
+    + '<button class="canasta-volver" data-vuelve="entrega" type="button">'
+    + '<span aria-hidden="true">←</span> Volver a cómo lo recibes</button>'
     + '<p class="pago-demo"><strong>Esto es una demostración.</strong> Es un proyecto de clase: '
     + 'no se procesa ningún cobro real y los datos de la tarjeta no se guardan ni se envían.</p>'
     + '<div class="canasta-total pago-total"><span>Total a pagar</span><strong>$0.00</strong></div>'
@@ -666,6 +690,8 @@
     + 'no se realizó ningún cobro y la panadería todavía no ha recibido nada.</p>'
     + '<dl class="recibo-datos">'
     + '<div><dt>Número de pedido</dt><dd><span class="recibo-numero">ET-0000</span></dd></div>'
+    + '<div><dt>Subtotal</dt><dd class="recibo-subtotal">$0.00</dd></div>'
+    + '<div><dt>Envío</dt><dd class="recibo-envio">Gratis</dd></div>'
     + '<div><dt>Total</dt><dd class="recibo-total">$0.00</dd></div>'
     + '<div><dt>Pago</dt><dd class="recibo-metodo"></dd></div>'
     + '<div><dt>Entrega</dt><dd class="recibo-modo"></dd></div>'
@@ -696,7 +722,11 @@
   const bloqueDir = panel.querySelector('.canasta-direccion');
   const campoDir = panel.querySelector('#canasta-dir');
   const avisoDir = panel.querySelector('.canasta-direccion .canasta-aviso');
-  const bloqueEntrega = panel.querySelector('[data-paso="canasta"] .canasta-entrega');
+  const seguir = panel.querySelector('.canasta-seguir');
+  const desgloseSub = panel.querySelector('.desglose-subtotal');
+  const desgloseEnvio = panel.querySelector('.desglose-envio');
+  const desgloseTotal = panel.querySelector('.desglose-total');
+  const bloqueLocal = panel.querySelector('.canasta-local');
   const metodos = [...panel.querySelectorAll('input[name="canasta-metodo"]')];
   const detalles = [...panel.querySelectorAll('.pago-detalle')];
   const pagoTotal = panel.querySelector('.pago-total strong');
@@ -704,13 +734,16 @@
   const pagoEfectivo = panel.querySelector('.pago-efectivo');
   const pagar = panel.querySelector('.canasta-pagar');
   const errorPago = panel.querySelector('.pago-error');
-  const volver = panel.querySelector('.canasta-volver');
   const copiar = panel.querySelector('.pago-copiar');
   const copiado = panel.querySelector('.pago-copiado');
   const avisar = panel.querySelector('.canasta-avisar');
   const listo = panel.querySelector('.canasta-listo');
 
-  const total = () => [...pedido.values()].reduce((s, l) => s + l.precio * l.cantidad, 0);
+  // Llevarlo cuesta; pasar a retirarlo, no. De ahi que haya dos sumas: la del
+  // pan y la del pedido. Antes solo habia una y el envio no existia.
+  const subtotal = () => [...pedido.values()].reduce((s, l) => s + l.precio * l.cantidad, 0);
+  const envio = () => (entrega.modo === 'domicilio' ? ENVIO : 0);
+  const total = () => subtotal() + envio();
   const unidades = () => [...pedido.values()].reduce((s, l) => s + l.cantidad, 0);
 
   const mensaje = () => {
@@ -726,7 +759,10 @@
     // ellos el mensaje es el de siempre.
     const cabecera = cobro.numero ? `Hola, confirmo el pedido ${cobro.numero}:` : 'Hola, quiero pedir esto:';
     const pago = cobro.numero ? `\nPago: ${cobro.detalle} (simulado, sin cobro real)` : '';
-    return `${cabecera}\n${lineas.join('\n')}\n\nTotal: ${dinero(total())}\n${comoLoQuiere}${quien}${pago}`;
+    const cuenta = envio()
+      ? `Subtotal: ${dinero(subtotal())}\nEnvío: ${dinero(envio())}\nTotal: ${dinero(total())}`
+      : `Total: ${dinero(total())}`;
+    return `${cabecera}\n${lineas.join('\n')}\n\n${cuenta}\n${comoLoQuiere}${quien}${pago}`;
   };
 
   const boton = document.querySelector('.floating-whatsapp');
@@ -755,17 +791,23 @@
     pintarPie();
   };
 
+  // El desglose solo se puede escribir una vez que se sabe como se recibe: el
+  // envio cambia el total y hasta el paso de entrega no esta decidido.
+  const pintarDesglose = () => {
+    bloqueDir.hidden = entrega.modo !== 'domicilio';
+    if (bloqueLocal) bloqueLocal.hidden = entrega.modo !== 'retiro';
+    if (desgloseSub) desgloseSub.textContent = dinero(subtotal());
+    if (desgloseEnvio) desgloseEnvio.textContent = envio() ? dinero(envio()) : 'Gratis';
+    if (desgloseTotal) desgloseTotal.textContent = dinero(total());
+  };
+
   const pintarPie = () => {
     const hayAlgo = pedido.size > 0;
     vacio.hidden = hayAlgo;
-    bloqueEntrega.hidden = !hayAlgo;
-    bloqueDir.hidden = entrega.modo !== 'domicilio';
-    totalEl.textContent = dinero(total());
-    // El boton nombra lo que va a pasar, no el canal por el que pasa.
-    enviar.innerHTML = (entrega.modo === 'domicilio' ? 'Confirmar el pedido a domicilio' : 'Confirmar el pedido para retirar')
-      + ' <span aria-hidden="true">→</span>';
+    totalEl.textContent = dinero(subtotal());
     enviar.disabled = !hayAlgo;
     enviar.setAttribute('aria-disabled', String(!hayAlgo));
+    pintarDesglose();
     const n = unidades();
     cuenta.hidden = n === 0;
     cuenta.textContent = n;
@@ -940,6 +982,8 @@
 
   const pintarComprobante = () => {
     panel.querySelector('.recibo-numero').textContent = cobro.numero;
+    panel.querySelector('.recibo-subtotal').textContent = dinero(subtotal());
+    panel.querySelector('.recibo-envio').textContent = envio() ? dinero(envio()) : 'Gratis';
     panel.querySelector('.recibo-total').textContent = dinero(total());
     panel.querySelector('.recibo-metodo').textContent = cobro.detalle;
     panel.querySelector('.recibo-modo').textContent = entrega.modo === 'domicilio' ? 'A domicilio' : 'Paso retirando por el local';
@@ -955,7 +999,8 @@
     avisar.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje())}`;
   };
 
-  const TITULOS = { canasta: 'Tu canasta', pago: 'Pago del pedido', comprobante: 'Pedido confirmado' };
+  const TITULOS = { canasta: 'Tu canasta', entrega: 'Cómo lo recibes',
+    pago: 'Pago del pedido', comprobante: 'Pedido confirmado' };
   let pasoActual = 'canasta';
 
   // Al llegar al pago el panel deja de ser una gaveta lateral y se planta en el
@@ -1032,7 +1077,9 @@
     temporizador = window.setTimeout(() => { temporizador = 0; aprobar(metodo); }, 1500);
   });
 
-  volver.addEventListener('click', () => irA('canasta'));
+  // Cada paso vuelve al anterior, no siempre a la canasta.
+  panel.querySelectorAll('.canasta-volver').forEach((b) => b.addEventListener('click',
+    () => irA(b.dataset.vuelve || 'entrega')));
   listo.addEventListener('click', () => cerrar());
 
   // Elegir retiro o domicilio: lo unico que cambia es el pie.
@@ -1041,6 +1088,7 @@
     entrega.modo = radio.value === 'domicilio' ? 'domicilio' : 'retiro';
     avisoDir.hidden = true;
     pintarPie();
+    pintarDesglose();
     if (entrega.modo === 'domicilio') campoDir.focus();
   }));
 
@@ -1050,9 +1098,17 @@
     pintarPie();
   });
 
+  // Confirmar la canasta lleva a decidir como se recibe, no al pago: hasta no
+  // saberlo no se puede decir cuanto cuesta el pedido entero.
+  enviar.addEventListener('click', () => {
+    if (!pedido.size) return;
+    pintarDesglose();
+    irA('entrega');
+  });
+
   // Sin direccion no se puede llevar nada: en vez de pasar al pago, se avisa y
   // se lleva el foco al campo que falta.
-  enviar.addEventListener('click', () => {
+  seguir?.addEventListener('click', () => {
     if (!pedido.size) return;
     if (entrega.modo === 'domicilio' && !entrega.direccion) {
       avisoDir.hidden = false;
@@ -1518,16 +1574,18 @@
 
   let ultimoFocoC = null;
   const abiertoC = () => panelC.classList.contains('is-open');
-  const abrirC = () => {
+  const abrirC = (paso) => {
     ultimoFocoC = document.activeElement;
-    // Con sesion abierta se entra a la ficha; sin ella, a crear la cuenta.
-    verPaso(sesion.dentro ? 'sesion' : 'crear');
+    // Con sesion abierta se entra a la ficha; sin ella, al paso que se pidio.
+    verPaso(sesion.dentro ? 'sesion' : (paso || 'entrar'));
     fondoC.classList.add('is-open');
     panelC.classList.add('is-open');
     document.body.style.overflow = 'hidden';
     tituloC.focus();
   };
   const cerrarC = () => {
+    menuCuenta?.classList.remove('is-open');
+    navCuenta.setAttribute('aria-expanded', 'false');
     fondoC.classList.remove('is-open');
     panelC.classList.remove('is-open');
     document.body.style.overflow = '';
@@ -1538,7 +1596,35 @@
     else ultimoFocoC?.focus();
   };
 
-  navCuenta.addEventListener('click', () => { closeMenu(); abrirC(); });
+  // Pulsar el circulo no lanza al formulario de crear cuenta: despliega las dos
+  // puertas, entrar o registrarse, y cada una abre su paso. Estando dentro no
+  // hay nada que elegir, asi que va directo a la ficha de la sesion.
+  const menuCuenta = document.createElement('div');
+  menuCuenta.className = 'cuenta-menu';
+  menuCuenta.innerHTML = '<button type="button" data-va="entrar">Iniciar sesión</button>'
+    + '<button type="button" data-va="crear">Registrarse</button>';
+  navCuenta.insertAdjacentElement('afterend', menuCuenta);
+
+  const abrirMenuCuenta = (abierto) => {
+    menuCuenta.classList.toggle('is-open', abierto);
+    navCuenta.setAttribute('aria-expanded', String(abierto));
+  };
+  navCuenta.setAttribute('aria-expanded', 'false');
+  navCuenta.setAttribute('aria-haspopup', 'true');
+
+  navCuenta.addEventListener('click', () => {
+    closeMenu();
+    if (sesion.dentro) { abrirC(); return; }
+    abrirMenuCuenta(!menuCuenta.classList.contains('is-open'));
+  });
+  menuCuenta.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+    abrirMenuCuenta(false);
+    abrirC(b.dataset.va);
+  }));
+  document.addEventListener('click', (e) => {
+    if (navCuenta.contains(e.target) || menuCuenta.contains(e.target)) return;
+    abrirMenuCuenta(false);
+  });
   fondoC.addEventListener('click', cerrarC);
   panelC.querySelector('.cuenta-cerrar').addEventListener('click', cerrarC);
   atraparFoco(panelC, abiertoC, cerrarC);
