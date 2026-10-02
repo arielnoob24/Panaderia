@@ -6,24 +6,9 @@ por primera vez, sin saber nada de la panadería y sin ganas de adivinar: qué
 entiende, dónde se traba, y qué conviene cambiar antes de la siguiente semana.
 
 Las cuatro siguen el mismo orden: cómo se veía la página esa semana, qué quedó
-resuelto de la revisión anterior, los puntos por mejorar y las sugerencias.
-
-**Cómo leer las marcas**
-
-Cada punto por mejorar lleva su prioridad, y cada sugerencia, su estado al día
-de hoy. Así se ve de un vistazo qué era urgente y qué sigue abierto.
-
-| Prioridad | Qué significa |
-| --- | --- |
-| **Alta** | Cuesta pedidos o clientes; se arregla esta misma semana |
-| **Media** | Molesta y se nota, pero no impide comprar |
-| **Baja** | Detalle de acabado; puede esperar |
-
-| Estado | Qué significa |
-| --- | --- |
-| **Hecho** | Aplicado y verificado en la página publicada |
-| **A medias** | Se avanzó, pero la solución todavía no es la buena |
-| **Pendiente** | Anotado y sin empezar |
+resuelto de la revisión anterior, los puntos por mejorar, las sugerencias y, al
+final, qué se pierde si no se corrige. Ese último bloque es el que decide las
+prioridades: no todos los problemas cuestan lo mismo.
 
 ---
 
@@ -36,34 +21,38 @@ que esta es de Tena, ni nada que distinga su pan del de la esquina.
 
 **Puntos por mejorar**
 
-- **Alta ·** No se sabe dónde queda el local ni a qué hora abre, que es lo
-  primero que alguien busca cuando entra a la página de un negocio
-- **Alta ·** No hay forma de contactar a la panadería sin salir de la página a
-  buscarla por otro lado
-- **Media ·** La página se presenta, pero no invita a hacer nada: se lee y se
-  cierra
-- **Media ·** Las fotos son de catálogo y no transmiten nada propio; el pan que
-  se ve no es el que se vende
-- **Media ·** Todo el contenido pesa lo mismo: nada guía la vista hacia lo
-  importante
-- **Baja ·** El nombre aparece escrito, pero no hay una imagen de marca que se
-  recuerde después de cerrar la pestaña
+- No se sabe dónde queda el local ni a qué hora abre, que es lo primero que
+  alguien busca cuando entra a la página de un negocio
+- La página se presenta, pero no invita a hacer nada: se lee y se cierra
+- Las fotos son de catálogo y no transmiten nada propio; el pan que se ve no es
+  el que se vende
+- El nombre aparece escrito, pero no hay una imagen de marca que se recuerde
+  después de cerrar la pestaña
+- No hay forma de contactar a la panadería sin salir de la página a buscarla
+  por otro lado
+- Todo el contenido pesa lo mismo: nada guía la vista hacia lo importante
 
 **Sugerencias de mejora**
 
-- **Hecho ·** Poner la dirección y el horario donde se vean sin tener que
-  buscarlos
-- **Hecho ·** Dejar un teléfono o un WhatsApp visible, no escondido al final
-- **Hecho ·** Dejar claro desde las primeras líneas qué se vende y a qué sabe
-- **Hecho ·** Decidir qué es lo más importante de la página y que eso se vea
-  primero
-- **Hecho ·** Darle una cara a la marca para que quede en la memoria
-- **A medias ·** Reemplazar las fotos genéricas por pan de verdad, de cerca,
-  recién salido. Se cambiaron por fotos mejores, pero siguen siendo prestadas:
-  ninguna es del local
+- Poner la dirección y el horario donde se vean sin tener que buscarlos
+- Dejar claro desde las primeras líneas qué se vende y a qué sabe
+- Reemplazar las fotos genéricas por pan de verdad, de cerca, recién salido
+- Darle una cara a la marca para que quede en la memoria
+- Dejar un teléfono o un WhatsApp visible, no escondido al final
+- Decidir qué es lo más importante de la página y que eso se vea primero
 
-*Estado: 5 hechas, 1 a medias. En resumen: la base está, falta que la página
-tenga dueño.*
+**Qué se pierde si no se hace**
+
+- Quien no encuentra el horario no va al local: o llama para preguntar algo que
+  la página debía responder, o se va a la panadería de la esquina
+- Sin fotos propias la página no se distingue de ninguna otra, y el cliente no
+  recuerda cuál era cuando quiere volver
+- Una página que solo se lee y se cierra no trae un solo pedido, por bonita que
+  esté
+- Si el contacto no está a la vista, el que ya decidió comprar se queda sin
+  saber cómo hacerlo
+
+*En resumen: la base está, falta que la página tenga dueño.*
 
 ---
 
@@ -81,34 +70,36 @@ y adornos sin un criterio común, y ahora compiten entre ellos.
 
 **Puntos por mejorar**
 
-- **Alta ·** Hay letras claras sobre fondos claros que cuestan de leer a plena
-  luz, y en Tena la mayoría entra desde el celular en la calle
-- **Alta ·** La página pesa más de lo que debería y en una conexión lenta se
-  nota
-- **Media ·** Demasiados colores a la vez; la vista no sabe dónde parar
-- **Media ·** En el celular hay que bajar mucho para llegar a lo que de verdad
-  interesa
-- **Media ·** Textos que repiten la misma idea con otras palabras, uno debajo
-  del otro
-- **Baja ·** Varias cosas se mueven al mismo tiempo y, en vez de acompañar,
-  distraen
-- **Baja ·** La tarjeta del local tiene más espacio vacío que información
+- Demasiados colores a la vez; la vista no sabe dónde parar
+- Textos que repiten la misma idea con otras palabras, uno debajo del otro
+- En el celular hay que bajar mucho para llegar a lo que de verdad interesa
+- Varias cosas se mueven al mismo tiempo y, en vez de acompañar, distraen
+- Hay letras claras sobre fondos claros que cuestan de leer a plena luz
+- La tarjeta del local tiene más espacio vacío que información
+- La página pesa más de lo que debería y en una conexión lenta se nota
 
 **Sugerencias de mejora**
 
-- **Hecho ·** Revisar que todo texto se lea cómodo, también de día y en pantalla
-  pequeña
-- **Hecho ·** Aligerar las imágenes para que la página abra rápido con datos
-  móviles
-- **Hecho ·** Quedarse con pocos colores y usarlos siempre para lo mismo
-- **Hecho ·** Acortar la página en celular y subir lo que más se busca
-- **Hecho ·** Reservar el movimiento para lo que de verdad merece atención
-- **Hecho ·** Apretar la tarjeta del local y que el horario se lea de un vistazo
-- **A medias ·** Dejar una sola frase por idea y borrar el resto sin pena. Se
-  recortó bastante, pero varios textos siguen sonando a folleto
+- Quedarse con pocos colores y usarlos siempre para lo mismo
+- Dejar una sola frase por idea y borrar el resto sin pena
+- Acortar la página en celular y subir lo que más se busca
+- Reservar el movimiento para lo que de verdad merece atención
+- Revisar que todo texto se lea cómodo, también de día y en pantalla pequeña
+- Apretar la tarjeta del local y que el horario se lea de un vistazo
+- Aligerar las imágenes para que la página abra rápido con datos móviles
 
-*Estado: 6 hechas, 1 a medias. En resumen: hay que quitar más de lo que se
-agrega.*
+**Qué se pierde si no se hace**
+
+- Una página pesada en datos móviles se cierra antes de abrir, y ese cliente ya
+  no vuelve a intentarlo
+- Un texto que no se lee al sol es un texto que no existe: la mayoría entra
+  desde el celular, en la calle
+- Con todo gritando al mismo tiempo, el cliente no sabe qué mirar, se cansa y
+  se va sin haber visto lo que sí le interesaba
+- Repetir la misma idea tres veces hace que la página se sienta larga y que lo
+  importante quede enterrado al final
+
+*En resumen: hay que quitar más de lo que se agrega.*
 
 ---
 
@@ -127,39 +118,43 @@ También se reordenó la parte de arriba, que era donde la gente se perdía.
 
 **Puntos por mejorar**
 
-- **Alta ·** Los productos se describían de forma muy general: una bebida podía
-  ser cualquier cosa, de cualquier tamaño, y no se sabía qué se estaba comprando
-- **Alta ·** Para llegar a una categoría había que buscarla en dos o tres
-  lugares distintos, y cada uno llevaba a un sitio diferente
-- **Alta ·** El botón de la cuenta llevaba directo a registrarse; quien ya tenía
-  una no tenía por dónde entrar
-- **Media ·** Al cargar, la pantalla se veía vacía un momento y parecía que algo
-  falló
-- **Media ·** Al agregar algo a la canasta no quedaba claro que se había
-  agregado
-- **Media ·** Cuando un producto se acababa simplemente desaparecía, y el
-  cliente no sabía si existía y se agotó o si nunca existió
-- **Baja ·** El catálogo completo de golpe abrumaba: muchas tarjetas iguales
-  seguidas
+- Los productos se describían de forma muy general: una bebida podía ser
+  cualquier cosa, de cualquier tamaño, y no se sabía qué se estaba comprando
+- Para llegar a una categoría había que buscarla en dos o tres lugares
+  distintos, y cada uno llevaba a un sitio diferente
+- Al cargar, la pantalla se veía vacía un momento y parecía que algo falló
+- El botón de la cuenta llevaba directo a registrarse; quien ya tenía una no
+  tenía por dónde entrar
+- El catálogo completo de golpe abrumaba: muchas tarjetas iguales seguidas
+- Al agregar algo a la canasta no quedaba claro que se había agregado
+- Cuando un producto se acababa simplemente desaparecía, y el cliente no sabía
+  si existía y se agotó o si nunca existió
 
 **Sugerencias de mejora**
 
-- **Hecho ·** Separar cada producto por tamaño y sabor, para que se elija sin
-  dudar
-- **Hecho ·** Un solo camino claro hacia cada categoría, desde el menú de arriba
-- **Hecho ·** Preguntar primero si la persona ya tiene cuenta o si quiere crear
-  una
-- **Hecho ·** Mostrar que la página está trabajando mientras termina de cargar
-- **Hecho ·** Que el botón de agregar conteste en el momento y muestre la
-  cantidad
-- **Hecho ·** En la portada, mostrar unos pocos productos que se recorran, y
-  dejar el catálogo entero para quien entre a buscarlo
-- **A medias ·** Dejar el producto agotado a la vista pero apagado, en vez de
-  esconderlo. Ya se ve apagado, pero los agotados son de ejemplo: no hay stock
-  real detrás
+- Separar cada producto por tamaño y sabor, para que se elija sin dudar
+- Un solo camino claro hacia cada categoría, desde el menú de arriba
+- Mostrar que la página está trabajando mientras termina de cargar
+- Preguntar primero si la persona ya tiene cuenta o si quiere crear una
+- En la portada, mostrar unos pocos productos que se recorran, y dejar el
+  catálogo entero para quien entre a buscarlo
+- Que el botón de agregar conteste en el momento y muestre la cantidad
+- Dejar el producto agotado a la vista pero apagado, en vez de esconderlo
 
-*Estado: 6 hechas, 1 a medias. En resumen: ya se puede comprar; ahora hay que
-hacerlo fácil.*
+**Qué se pierde si no se hace**
+
+- Nadie compra lo que no entiende: si no se sabe de qué tamaño es la bebida, el
+  cliente prefiere no arriesgarse y no la pide
+- Cada camino distinto hacia la misma categoría es una oportunidad de perderse,
+  y el que se pierde dos veces cierra la página
+- Una pantalla vacía al cargar parece una página rota, y el cliente la cierra
+  antes de que termine de abrir
+- Mandar a registrarse a quien ya tiene cuenta es pedirle que haga dos veces el
+  mismo trabajo; muchos abandonan ahí mismo
+- Un producto que desaparece sin aviso deja al cliente pensando que la
+  panadería es desordenada, no que ese día se vendió todo
+
+*En resumen: ya se puede comprar; ahora hay que hacerlo fácil.*
 
 ---
 
@@ -179,52 +174,55 @@ donde había que detenerse a pensar.
 
 **Puntos por mejorar**
 
-- **Alta ·** Nunca quedaba claro cuánto costaba el envío antes de llegar al
-  pago, y enterarse al final es la mejor forma de perder un pedido
-- **Alta ·** La canasta pedía decidir la entrega demasiado pronto, mezclando dos
+- La canasta pedía decidir la entrega demasiado pronto, mezclando dos
   decisiones distintas en una sola pantalla
-- **Alta ·** Si se pasaba retirando, no se decía a dónde había que ir
-- **Media ·** El pedido mostraba un total suelto, sin explicar de dónde salía
-- **Media ·** Al volver atrás no siempre se llegaba al paso esperado
-- **Baja ·** La separación entre la barra de arriba y el resto se había vuelto
-  confusa: no se distinguía dónde terminaba una cosa y empezaba la otra
+- Nunca quedaba claro cuánto costaba el envío antes de llegar al pago, y
+  enterarse al final es la mejor forma de perder un pedido
+- Si se pasaba retirando, no se decía a dónde había que ir
+- El pedido mostraba un total suelto, sin explicar de dónde salía
+- Al volver atrás no siempre se llegaba al paso esperado
+- La separación entre la barra de arriba y el resto se había vuelto confusa: no
+  se distinguía dónde terminaba una cosa y empezaba la otra
 
 **Sugerencias de mejora**
 
-- **Hecho ·** Mostrar el costo del envío junto a cada opción, antes de decidir
-- **Hecho ·** Separar la canasta del momento de elegir cómo se recibe el pedido:
-  primero qué llevas, después cómo te llega
-- **Hecho ·** Al elegir retiro, enseñar la dirección del local en ese mismo paso
-- **Hecho ·** Presentar subtotal, envío y total por separado, como en las
-  aplicaciones de entrega que la gente ya conoce
-- **Hecho ·** Que cada paso vuelva al anterior y que el botón diga a dónde lleva
-- **Hecho ·** Dejar que la barra de arriba termine en un borde limpio
+- Separar la canasta del momento de elegir cómo se recibe el pedido: primero
+  qué llevas, después cómo te llega
+- Mostrar el costo del envío junto a cada opción, antes de decidir
+- Al elegir retiro, enseñar la dirección del local en ese mismo paso
+- Presentar subtotal, envío y total por separado, como en las aplicaciones de
+  entrega que la gente ya conoce
+- Que cada paso vuelva al anterior y que el botón diga a dónde lleva
+- Dejar que la barra de arriba termine en un borde limpio
 
-*Estado: 6 hechas. En resumen: el pedido se entiende sin sorpresas al final.*
+**Qué se pierde si no se hace**
+
+- Un costo que aparece recién al final se siente como una trampa: el cliente
+  abandona el pedido ahí, con la canasta ya llena
+- Pedir dos decisiones en una sola pantalla hace dudar, y el que duda en el
+  último paso muchas veces no lo termina
+- Si no se dice dónde retirar, el pedido se confirma y el cliente igual tiene
+  que escribir para preguntar: el trabajo que la página ahorró, lo devuelve
+- Un total sin explicación obliga a confiar a ciegas, y en un pedido de comida
+  nadie quiere hacer eso
+- Volver atrás y caer en el paso equivocado hace sentir que la página está mal
+  hecha, aunque todo lo demás funcione
+
+*En resumen: el pedido se entiende sin sorpresas al final.*
 
 ---
 
 ## Pendientes para las próximas semanas
 
-Lo que quedó anotado y todavía no se ha hecho, en el orden en que conviene
-atacarlo:
+Lo que quedó anotado y todavía no se ha hecho:
 
-- **Alta ·** **Fotos propias** del local, del horno y del equipo, en lugar de
-  imágenes prestadas. Es lo que más le falta a la página para sentirse de Tena,
-  y viene arrastrándose desde la primera semana
-- **Alta ·** **Probar el pedido completo con alguien ajeno al proyecto**, sin
-  ayudarlo, y mirar en qué momento duda. Es la prueba que más cosas revela y la
-  única que no se ha hecho
-- **Media ·** **Stock real**: avisar cuándo un producto se agota de verdad, y no
-  solo como ejemplo
-- **Media ·** **Pensar qué pasa después del pedido**: hoy la página termina
-  cuando se confirma, pero el cliente todavía espera su pan
-- **Baja ·** **Revisar los textos en voz alta**: varios siguen sonando a folleto
-  y no a una panadería hablando con sus clientes
-
-**Cómo va el proyecto**
-
-De 26 sugerencias anotadas en cuatro semanas, 23 están hechas y 3 a medias. Las
-tres que quedan a medias son la misma historia de fondo: la página ya funciona
-bien, pero todavía se apoya en material prestado — fotos que no son del local y
-productos que no vienen de un inventario real.
+- **Fotos propias** del local, del horno y del equipo, en lugar de imágenes
+  prestadas. Es lo que más le falta a la página para sentirse de Tena
+- **Stock real**: avisar cuándo un producto se agota de verdad, y no solo como
+  ejemplo
+- **Revisar los textos en voz alta**: varios siguen sonando a folleto y no a una
+  panadería hablando con sus clientes
+- **Probar el pedido completo con alguien ajeno al proyecto**, sin ayudarlo, y
+  mirar en qué momento duda. Es la prueba que más cosas revela
+- **Pensar qué pasa después del pedido**: hoy la página termina cuando se
+  confirma, pero el cliente todavía espera su pan
