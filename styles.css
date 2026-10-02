@@ -248,7 +248,12 @@ section[id] { scroll-margin-top: 96px; }
 .product-card.catalog-enter { animation: rise var(--dur-slow) var(--ease-out) both; animation-delay: var(--catalog-delay, 0ms); }
 .product-grid.is-filtering .product-card { opacity: .35; transform: scale(.985); transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in); }
 .product-image { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--masa-honda); border-radius: var(--r-card) var(--r-card) 0 0; transition: background-color var(--dur-base) var(--ease-ui); }
-.product-image.is-loading { background: var(--masa-carga); }
+/* Mientras la foto llega, su hueco late. Antes era un color plano y quieto,
+   que no distingue "esta cargando" de "esto se colgo". Late solo el hueco:
+   el nombre y el precio ya estan ahi desde el primer momento y taparlos
+   seria esconder algo que ya se puede leer. */
+.product-image.is-loading { background: var(--masa-carga); animation: latir-carga 1.5s var(--ease-ui) infinite; }
+@keyframes latir-carga { 0%, 100% { background-color: var(--masa-carga); } 50% { background-color: var(--masa); } }
 .product-image img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-editorial) var(--ease-out); }
 .product-image img.is-loaded { opacity: 1; }
 .story-photo.is-loading img, .mascot-slot.is-loading img { opacity: 0; }
@@ -439,7 +444,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 
 .reveal { opacity: 0; transform: translateY(18px); transition: opacity var(--dur-editorial) var(--ease-out), transform var(--dur-editorial) var(--ease-out); }
 .reveal.is-visible { opacity: 1; transform: none; }
-.reveal-stagger > .reveal { transition-delay: var(--reveal-delay, 0ms); }
 
 .reveal-band .sign-trigo { opacity: 0; transform: translateX(-16px); transition: opacity var(--dur-slow) var(--ease-soft) 120ms, transform var(--dur-slow) var(--ease-soft) 120ms; }
 .reveal-band .sign-trigo.is-derecha { transform: scaleX(-1) translateX(-16px); }
@@ -626,6 +630,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { transform: none; }
   .nav-submenu, .nav-grupo-flecha { transition: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
+  .product-image.is-loading { animation: none; }
   .product-image img { opacity: 1; }
 }
 

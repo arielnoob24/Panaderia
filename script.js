@@ -352,7 +352,6 @@
   const motionMap = [
     ['.sign-band', 'reveal-band'],
     ['.section-heading', 'reveal'],
-    ['.product-card', 'reveal'],
     ['.story-photo', 'reveal-mask'],
     ['.story-copy', 'reveal-x'],
     ['.principles', 'reveal-line']
@@ -365,9 +364,6 @@
       motionItems.push(item);
     });
   });
-  document.querySelectorAll('.product-grid').forEach((grid) => grid.classList.add('reveal-stagger'));
-  const revealColumns = columnCount(productGrid);
-  products.forEach((product, index) => product.style.setProperty('--reveal-delay', `${diagonalDelay(index, revealColumns, 40, 320)}ms`));
 
   const heroContent = document.querySelector('.hero-content');
   if (heroContent) {
@@ -389,17 +385,6 @@
         if (!entry.isIntersecting) return;
         entry.target.classList.add('is-visible');
         observer.unobserve(entry.target);
-        // En el mostrador las fichas estan en fila: las de la derecha quedan
-        // fuera de la pantalla y nunca entrarian, asi que se quedarian
-        // invisibles para siempre. La fila es una sola pieza: en cuanto asoma
-        // una ficha, aparecen todas.
-        if (entry.target.classList.contains('product-card')
-          && productGrid?.classList.contains('is-fila')) {
-          products.forEach((otra) => {
-            otra.classList.add('is-visible');
-            observer.unobserve(otra);
-          });
-        }
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
     motionItems.forEach((item) => revealObserver.observe(item));
