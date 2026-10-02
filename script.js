@@ -328,6 +328,15 @@
     arrancar();
   }
 
+  // El orden en que vienen escritas es el de la casa, el que recomienda la
+  // panaderia. Se guarda ahora para poder volver a el.
+  products.forEach((p, i) => { p.dataset.orden = String(i); });
+  const precioDeFicha = (p) => parseFloat(
+    (p.querySelector('.product-bottom strong')?.textContent || '').replace(/[^0-9.]/g, '')) || 0;
+  const nombreDeFicha = (p) => (p.querySelector('h3')?.textContent || '').trim();
+  let orden = 'recomendados';
+  let soloDisponibles = false;
+
   let filterRun = 0;
   // Ya no hay barra de filtros: la categoria es un estado de la pagina. 'todos'
   // es el inicio con su mostrador en fila; cualquier otra abre su vista.
@@ -344,8 +353,28 @@
     // pasa a cuadricula, que es cuando se viene a mirarlo todo.
     productGrid?.classList.toggle('is-fila', category === 'todos');
     productGrid?.classList.remove('is-filtering');
+    // Cuantos hay en la categoria antes de filtrar nada: es el "de cuantos".
+    const deLaCategoria = products.filter((p) => category === 'todos' || p.dataset.category === category);
+    const total = deLaCategoria.length;
+
+    // Ordenar se hace con la propiedad order y no moviendo nodos: las fichas
+    // llevan dentro el control de cantidad con su estado, y sacarlas y volverlas
+    // a meter es pedir que algo se pierda por el camino.
+    const porOrden = [...deLaCategoria].sort((a, b) => {
+      if (orden === 'precio-asc') return precioDeFicha(a) - precioDeFicha(b);
+      if (orden === 'precio-desc') return precioDeFicha(b) - precioDeFicha(a);
+      if (orden === 'nombre') return nombreDeFicha(a).localeCompare(nombreDeFicha(b), 'es');
+      return Number(a.dataset.orden) - Number(b.dataset.orden);
+    });
+    porOrden.forEach((p, i) => { p.style.order = String(i); });
+
     products.forEach((product) => {
-      const visible = category === 'todos' || product.dataset.category === category;
+      const deAqui = category === 'todos' || product.dataset.category === category;
+      // El filtro solo manda dentro de una categoria; en el mostrador no hay
+      // barra con que tocarlo, asi que ahi se sale todo como siempre.
+      const pasaFiltro = category === 'todos' || !soloDisponibles
+        || product.dataset.available !== 'false';
+      const visible = deAqui && pasaFiltro;
       product.hidden = !visible;
       if (visible) {
         product.style.setProperty('--catalog-delay', `${diagonalDelay(visibleCount, columns, 40, 320)}ms`);
@@ -358,6 +387,13 @@
       }
     });
 
+    // Dentro de una categoria lo util es saber cuantos se estan viendo de los
+    // que hay: con un filtro puesto, un numero suelto no dice si falta algo.
+    const dice = category === 'todos'
+      ? null
+      : `Mostrando ${visibleCount} de ${total} producto${total === 1 ? '' : 's'}`;
+    if (cuentaVista) cuentaVista.textContent = dice || '';
+
     if (catalogStatus) {
       const plural = visibleCount === 1 ? '' : 's';
       // Llamar "disponible" a lo que esta agotado seria mentira: cuando falta algo,
@@ -369,7 +405,7 @@
       // fila parece el catalogo entero y la cuadricula no la encuentra nadie.
       catalogStatus.textContent = category === 'todos'
         ? `${cuantos} en el mostrador. Entra en Tienda para ver una categoría completa.`
-        : `${cuantos} en esta categoría.`;
+        : `${dice}. ${cuantos} en esta categoría.`;
     }
     productGrid?.mirarPuntas?.();
     if (!animate) return;
@@ -414,10 +450,43 @@
     + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
     + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
     + '<path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver al inicio</button>'
-    + '<h2 class="vista-titulo" tabindex="-1"></h2>';
+    + '<h2 class="vista-titulo" tabindex="-1"></h2>'
+    // Ordenar y filtrar viven aqui y no en el mostrador: la fila de la portada
+    // es un escaparate de seis, y ordenar seis no le hace falta a nadie.
+    + '<div class="vista-barra">'
+    + '<div class="vista-mandos">'
+    + '<label class="vista-mando"><span>Ordenar por</span>'
+    + '<select class="vista-orden">'
+    + '<option value="recomendados">Recomendados</option>'
+    + '<option value="precio-asc">Precio: de menor a mayor</option>'
+    + '<option value="precio-desc">Precio: de mayor a menor</option>'
+    + '<option value="nombre">Nombre: de la A a la Z</option>'
+    + '</select></label>'
+    + '<label class="vista-mando"><span>Mostrar</span>'
+    + '<select class="vista-filtro">'
+    + '<option value="todos">Todos</option>'
+    + '<option value="disponibles">Solo los disponibles</option>'
+    + '</select></label>'
+    + '</div>'
+    // Lo que se ve de lo que hay. Mudo para el lector de pantalla, que ya tiene
+    // el aviso de mas abajo y oirlo dos veces es peor que no oirlo.
+    + '<p class="vista-cuenta" aria-hidden="true"></p>'
+    + '</div>';
   const encabezado = document.querySelector('.catalog .section-heading');
   encabezado?.parentElement.insertBefore(cabeza, encabezado);
   const tituloVista = cabeza.querySelector('.vista-titulo');
+  const selOrden = cabeza.querySelector('.vista-orden');
+  const selFiltro = cabeza.querySelector('.vista-filtro');
+  const cuentaVista = cabeza.querySelector('.vista-cuenta');
+
+  selOrden?.addEventListener('change', () => {
+    orden = selOrden.value;
+    applyFilter(true);
+  });
+  selFiltro?.addEventListener('change', () => {
+    soloDisponibles = selFiltro.value === 'disponibles';
+    applyFilter(true);
+  });
 
   const pintarVista = (cat) => {
     const enVista = cat !== 'todos';
@@ -431,6 +500,12 @@
   };
 
   const abrirCategoria = (cat, conHistorial = true) => {
+    // Cada categoria se entra limpia: lo elegido en panes no tiene por que
+    // seguir puesto al pasar a bebidas.
+    orden = 'recomendados';
+    soloDisponibles = false;
+    if (selOrden) selOrden.value = 'recomendados';
+    if (selFiltro) selFiltro.value = 'todos';
     cambiarCategoria(cat);
     pintarVista(cat);
     if (conHistorial) {
@@ -654,7 +729,7 @@
   const WHATSAPP = '593990000000';
   const CLAVE = 'eltradicional-pedido';
   const pedido = new Map();
-  const entrega = { modo: 'retiro', direccion: '' };
+  const entrega = { modo: 'retiro', direccion: '', punto: null };
   // La cuenta es una maqueta sin servidor; se rellena en la seccion de mas abajo.
   const sesion = { nombre: '', correo: '', telefono: '', direccion: '', dentro: false };
   // Los datos de la tarjeta viven aqui y solo aqui: no se guardan ni se envian
@@ -664,7 +739,34 @@
 
   // Lo que cuesta llevarlo. Vive aqui arriba, con los demas datos, porque el
   // panel ya lo escribe al nacer para que cada opcion diga lo que vale.
+  // Mientras no se senala a donde, se cobra la tarifa de salida; al marcar el
+  // punto en el mapa se cobra por lo lejos que queda, como en las apps.
+  // Cien panes es un pedido de fiesta; mas que eso se habla por telefono, no se
+  // teclea. El tope vive aqui, con los demas datos, porque lo usan el boton, el
+  // campo y lo que se recupera de lo guardado, y eso ultimo corre antes.
+  const MAX_UNIDADES = 100;
   const ENVIO = 1.50;
+  const ENVIO_BASE = 1.00;
+  const ENVIO_POR_KM = 0.35;
+  const ENVIO_TECHO = 6.00;
+  // La panaderia, en la esquina de Eloy Alfaro y Gabriel Espinosa, Tena.
+  const LOCAL = { lat: -0.9938, lng: -77.8128 };
+
+  // Distancia en linea recta entre dos puntos de la Tierra. No es lo que anda
+  // la moto, pero para una maqueta de clase sobra y no necesita ningun servicio.
+  const kmEntre = (a, b) => {
+    const R = 6371;
+    const rad = (g) => (g * Math.PI) / 180;
+    const dLat = rad(b.lat - a.lat);
+    const dLng = rad(b.lng - a.lng);
+    const h = Math.sin(dLat / 2) ** 2
+      + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.sqrt(h));
+  };
+
+  // Al 0,05 mas cercano: cobrar $2,3718 no lo hace nadie.
+  const tarifaPara = (km) => Math.min(
+    Math.round((ENVIO_BASE + km * ENVIO_POR_KM) * 20) / 20, ENVIO_TECHO);
   const dinero = (n) => '$' + n.toFixed(2);
   const idDe = (nombre) => nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
 
@@ -676,11 +778,18 @@
       const dato = JSON.parse(crudo);
       const lineas = Array.isArray(dato) ? dato : (dato.lineas || []);
       lineas.forEach((l) => {
-        if (l && l.id && l.nombre && l.cantidad > 0) pedido.set(l.id, { nombre: l.nombre, precio: Number(l.precio) || 0, cantidad: Math.min(l.cantidad, 99) });
+        if (l && l.id && l.nombre && l.cantidad > 0) pedido.set(l.id, { nombre: l.nombre, precio: Number(l.precio) || 0, cantidad: Math.min(l.cantidad, MAX_UNIDADES) });
       });
       if (!Array.isArray(dato)) {
         if (dato.modo === 'domicilio') entrega.modo = 'domicilio';
         if (typeof dato.direccion === 'string') entrega.direccion = dato.direccion.slice(0, 200);
+        // El punto del mapa viene de lo que haya en este navegador: se mira que
+        // sean dos numeros de verdad antes de cobrar una distancia con ellos.
+        const p = dato.punto;
+        if (p && Number.isFinite(p.lat) && Number.isFinite(p.lng)
+          && Math.abs(p.lat) <= 90 && Math.abs(p.lng) <= 180) {
+          entrega.punto = { lat: p.lat, lng: p.lng };
+        }
       }
     } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza vacio */ }
   };
@@ -690,6 +799,7 @@
         lineas: [...pedido].map(([id, l]) => ({ id, ...l })),
         modo: entrega.modo,
         direccion: entrega.direccion,
+        punto: entrega.punto,
       }));
     } catch (e) { /* en ventana privada no se puede guardar; el pedido sigue vivo en memoria */ }
   };
@@ -752,11 +862,23 @@
     + '<label><input type="radio" name="canasta-entrega" value="retiro" checked>'
     + '<span>Paso retirando<small>Gratis</small></span></label>'
     + '<label><input type="radio" name="canasta-entrega" value="domicilio">'
-    + '<span>A domicilio<small>' + dinero(ENVIO) + '</small></span></label></div>'
+    + '<span>A domicilio<small>Desde ' + dinero(ENVIO_BASE) + '</small></span></label></div>'
     + '<div class="canasta-local">'
     + '<p class="canasta-local-titulo">Esquina de Eloy Alfaro y Gabriel Espinosa</p>'
     + '<p class="canasta-local-dato">Tena, Napo. Te esperamos en el mostrador.</p></div>'
     + '<div class="canasta-direccion" hidden>'
+    + '<div class="mapa-zona">'
+    + '<div class="mapa-caja"><div class="mapa-lienzo"></div>'
+    + '<p class="mapa-fallo" hidden>No se pudo cargar el mapa. '
+    + 'Escribe la dirección y cobramos la tarifa de salida</p></div>'
+    + '<div class="mapa-pie">'
+    + '<button class="mapa-aqui" type="button">'
+    + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+    + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<circle cx="12" cy="12" r="3.3"/><path d="M12 2v3.2M12 18.8V22M22 12h-3.2M5.2 12H2"/>'
+    + '<circle cx="12" cy="12" r="8"/></svg>Usar mi ubicación</button>'
+    + '<p class="mapa-dato">Toca el mapa para marcar a dónde va el pedido</p>'
+    + '</div></div>'
     + '<label for="canasta-dir">¿A dónde lo llevamos?</label>'
     + '<input id="canasta-dir" type="text" autocomplete="street-address" '
     + 'placeholder="Calle, número y una referencia">'
@@ -880,6 +1002,11 @@
   const desgloseEnvio = panel.querySelector('.desglose-envio');
   const desgloseTotal = panel.querySelector('.desglose-total');
   const bloqueLocal = panel.querySelector('.canasta-local');
+  const mapaCaja = panel.querySelector('.mapa-zona');
+  const mapaLienzo = panel.querySelector('.mapa-lienzo');
+  const mapaFallo = panel.querySelector('.mapa-fallo');
+  const mapaDato = panel.querySelector('.mapa-dato');
+  const mapaAqui = panel.querySelector('.mapa-aqui');
   const metodos = [...panel.querySelectorAll('input[name="canasta-metodo"]')];
   const detalles = [...panel.querySelectorAll('.pago-detalle')];
   const pagoTotal = panel.querySelector('.pago-total strong');
@@ -895,7 +1022,10 @@
   // Llevarlo cuesta; pasar a retirarlo, no. De ahi que haya dos sumas: la del
   // pan y la del pedido. Antes solo habia una y el envio no existia.
   const subtotal = () => [...pedido.values()].reduce((s, l) => s + l.precio * l.cantidad, 0);
-  const envio = () => (entrega.modo === 'domicilio' ? ENVIO : 0);
+  const envio = () => {
+    if (entrega.modo !== 'domicilio') return 0;
+    return entrega.punto ? tarifaPara(kmEntre(LOCAL, entrega.punto)) : ENVIO;
+  };
   const total = () => subtotal() + envio();
   const unidades = () => [...pedido.values()].reduce((s, l) => s + l.cantidad, 0);
 
@@ -944,6 +1074,99 @@
     }
     pintarPie();
   };
+
+  // ---- El mapa del reparto ---------------------------------------------
+  // Leaflet se trae recien cuando alguien elige que se lo lleven: quien pasa a
+  // retirar no tiene por que descargar un mapa que no va a mirar. Si no llega
+  // -sin red, o con el CDN caido- no se rompe nada: queda la direccion escrita
+  // y se cobra la tarifa de salida, que es como funcionaba hasta ahora.
+  const LEAFLET_JS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+  const LEAFLET_CSS = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
+  let mapa = null;
+  let aguja = null;
+  let pidiendoMapa = null;
+
+  const traerLeaflet = () => {
+    if (window.L) return Promise.resolve(window.L);
+    if (pidiendoMapa) return pidiendoMapa;
+    pidiendoMapa = new Promise((listo, falla) => {
+      const hoja = document.createElement('link');
+      hoja.rel = 'stylesheet';
+      hoja.href = LEAFLET_CSS;
+      document.head.append(hoja);
+      const guion = document.createElement('script');
+      guion.src = LEAFLET_JS;
+      guion.onload = () => (window.L ? listo(window.L) : falla(new Error('sin L')));
+      guion.onerror = () => falla(new Error('no cargo'));
+      document.head.append(guion);
+    });
+    return pidiendoMapa;
+  };
+
+  const contarDistancia = () => {
+    if (!mapaDato) return;
+    if (!entrega.punto) {
+      mapaDato.textContent = 'Toca el mapa para marcar a dónde va el pedido';
+      return;
+    }
+    const km = kmEntre(LOCAL, entrega.punto);
+    mapaDato.textContent = `A ${km.toFixed(1)} km del local · envío ${dinero(tarifaPara(km))}`;
+  };
+
+  const ponerAguja = (donde) => {
+    entrega.punto = { lat: donde.lat, lng: donde.lng };
+    if (aguja) aguja.setLatLng(donde);
+    contarDistancia();
+    pintarDesglose();
+    guardar();
+  };
+
+  const armarMapa = () => {
+    if (mapa || !mapaLienzo) return;
+    traerLeaflet().then((L) => {
+      mapa = L.map(mapaLienzo, { attributionControl: true })
+        .setView([LOCAL.lat, LOCAL.lng], 14);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OpenStreetMap',
+      }).addTo(mapa);
+      // El local, fijo, para que se vea desde donde sale el pan.
+      L.circleMarker([LOCAL.lat, LOCAL.lng], {
+        radius: 7, color: '#a85f45', fillColor: '#d79b4a', fillOpacity: 1, weight: 2,
+      }).addTo(mapa).bindTooltip('El Tradicional');
+      aguja = L.marker([LOCAL.lat, LOCAL.lng], { draggable: true });
+      aguja.on('dragend', () => ponerAguja(aguja.getLatLng()));
+      mapa.on('click', (e) => {
+        if (!aguja._map) aguja.addTo(mapa);
+        ponerAguja(e.latlng);
+      });
+      if (entrega.punto) { aguja.setLatLng(entrega.punto).addTo(mapa); contarDistancia(); }
+      // Nace con el panel cerrado y sin medidas; hay que decirle que se mire.
+      setTimeout(() => mapa.invalidateSize(), 60);
+    }).catch(() => {
+      if (mapaFallo) mapaFallo.hidden = false;
+      if (mapaLienzo) mapaLienzo.hidden = true;
+      if (mapaAqui) mapaAqui.hidden = true;
+    });
+  };
+
+  mapaAqui?.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+      mapaDato.textContent = 'Este navegador no sabe decir dónde estás; marca el punto a mano';
+      return;
+    }
+    mapaDato.textContent = 'Buscando dónde estás…';
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const donde = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      if (mapa && aguja) {
+        if (!aguja._map) aguja.addTo(mapa);
+        mapa.setView([donde.lat, donde.lng], 16);
+      }
+      ponerAguja(donde);
+    }, () => {
+      mapaDato.textContent = 'No se pudo saber dónde estás; marca el punto en el mapa';
+    }, { enableHighAccuracy: true, timeout: 8000 });
+  });
 
   // El desglose solo se puede escribir una vez que se sabe como se recibe: el
   // envio cambia el total y hasta el paso de entrega no esta decidido.
@@ -1243,7 +1466,7 @@
     avisoDir.hidden = true;
     pintarPie();
     pintarDesglose();
-    if (entrega.modo === 'domicilio') campoDir.focus();
+    if (entrega.modo === 'domicilio') { armarMapa(); campoDir.focus(); }
   }));
 
   campoDir.addEventListener('input', () => {
@@ -1272,10 +1495,6 @@
     pintarPago();
     irA('pago');
   });
-
-  // Cien panes es un pedido de fiesta; mas que eso se habla por telefono, no se
-  // teclea. El tope vive aqui para que el boton y el campo cuenten lo mismo.
-  const MAX_UNIDADES = 100;
 
   const cambiar = (id, delta) => {
     const l = pedido.get(id);
