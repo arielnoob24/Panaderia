@@ -72,6 +72,16 @@ section[id] { scroll-margin-top: 96px; }
    apaga a negro y se invierte a blanco, que conserva la transparencia. */
 .site-header.is-pegada { background: rgba(58, 40, 34, .92); color: var(--sobre-horno); box-shadow: 0 6px 22px rgba(58, 40, 34, .26); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .site-header.is-pegada .brand-logo { filter: brightness(0) invert(1); }
+
+/* Sobre la historia y el pie, que son del mismo marron que la barra, esta se da
+   la vuelta: clara con todo lo de dentro oscuro. Sin esto se funde con el fondo
+   y parece que la barra desaparece. */
+.site-header.is-pegada.is-sobre-oscuro { background: rgba(255, 253, 248, .94); color: var(--horno); box-shadow: 0 6px 22px rgba(0, 0, 0, .3); }
+.site-header.is-pegada.is-sobre-oscuro .brand-logo { filter: none; }
+.site-header.is-pegada.is-sobre-oscuro .mascot-brand { background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
+.site-header.is-pegada.is-sobre-oscuro .main-nav > a:hover,
+.site-header.is-pegada.is-sobre-oscuro .nav-grupo-boton:hover { color: var(--corteza-oscura); }
+.site-header.is-pegada.is-sobre-oscuro .nav-cuenta { border-color: rgba(58, 40, 34, .32); color: var(--horno); }
 /* El panadero no se invierte: es ilustracion a color y se arruinaria. Solo su
    halo cambia de tinte, para que se vea sobre el marron en vez de sobre crema. */
 .site-header.is-pegada .mascot-brand { background: radial-gradient(circle, rgba(215, 155, 74, .22) 62%, transparent 63%); }
@@ -330,8 +340,12 @@ body.is-vista .catalog .section-heading { display: none; }
 /* El ambar es del titular. El lead se distingue por cursiva y tamano, no por color,
    para que el color de marca no ocupe cinco lineas seguidas. */
 .story-copy > p.lead { max-width: none; color: var(--sobre-horno); font: italic 1.5rem/1.35 Georgia, serif; }
-.principles { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin: 3rem 0; padding-top: 1.5rem; }
-.principles::before { position: absolute; top: 0; right: 0; left: 0; height: 1px; content: ""; background: rgba(255, 255, 255, .25); transform-origin: left; }
+/* Los tres sueltos sobre el marron se leian como un parrafo partido en tres:
+   no se veia donde acababa uno y empezaba el siguiente. Cada uno en su
+   cuadro, con el filete de arriba hecho borde. */
+.principles { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2.6rem 0; }
+.principles > div { padding: 1.1rem 1.15rem 1.25rem; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .16); border-radius: var(--r-card); transition: background-color var(--dur-base) var(--ease-ui), border-color var(--dur-base) var(--ease-ui); }
+.principles > div:hover { background: rgba(255, 255, 255, .08); border-color: rgba(215, 155, 74, .45); }
 .principles h3 { margin: .5rem 0; font: 500 1.2rem/1.25 Georgia, serif; }
 .principles p { margin: 0; color: var(--sobre-horno-tenue); font: .85rem/1.45 Arial, sans-serif; }
 /* El icono y el numero forman una sola marca. Los iconos son SVG en linea:
@@ -431,8 +445,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .reveal-mask.is-visible img { clip-path: inset(0); transform: none; }
 
 
-.principles.reveal-line::before { transform: scaleX(0); transition: transform var(--dur-editorial) var(--ease-soft); }
-.principles.reveal-line.is-visible::before { transform: scaleX(1); }
 .principles.reveal-line > div { opacity: 0; transform: translateY(10px); transition: opacity var(--dur-slow) var(--ease-soft), transform var(--dur-slow) var(--ease-soft); }
 .principles.reveal-line > div:nth-child(1) { transition-delay: 120ms; }
 .principles.reveal-line > div:nth-child(2) { transition-delay: 230ms; }
@@ -584,8 +596,11 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
    el precio se queda en su linea y la cantidad pasa debajo, alineada a la izquierda.
    Al abrirse crece a lo ancho sin mover nada de sitio. */
 @media (max-width: 420px) {
-  .product-bottom { align-items: flex-start; flex-direction: column; gap: .55rem; }
-  .card-cantidad, .card-agotado { margin-left: 0; }
+  /* El precio a la izquierda y el mas a su derecha, en la misma linea. Abierto,
+     el control no cabe al lado del precio en una ficha de media pantalla, asi
+     que baja de linea; pero sigue pegado a la derecha. */
+  .product-bottom { align-items: center; flex-wrap: wrap; gap: .45rem; }
+  .card-cantidad, .card-agotado { margin-left: auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -593,7 +608,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; }
   [data-motion], [data-motion].is-visible, .hero-content.is-ready > *, .product-card.catalog-enter { opacity: 1; transform: none; animation: none; transition: none; }
   .reveal-mask img, .reveal-mask.is-visible img { clip-path: none; transform: none; }
-  .reveal-band .sign-trigo, .principles.reveal-line > div, .principles.reveal-line .principle-mark, .principles.reveal-line::before { opacity: 1; transform: none; transition: none; }
+  .reveal-band .sign-trigo, .principles.reveal-line > div, .principles.reveal-line .principle-mark { opacity: 1; transform: none; transition: none; }
   .hero-image { transform: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
   .hero-note .status-dot::after { display: none; }

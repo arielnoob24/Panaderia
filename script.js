@@ -8,12 +8,26 @@
   const cabecera = document.querySelector('.site-header');
   if (cabecera) {
     let pegada = false;
+    let sobreOscuro = false;
+    // La historia y el pie son del mismo marron que la barra pegada: cuando
+    // alguno pasa por detras de ella, la barra se da la vuelta para no fundirse.
+    const oscuras = [...document.querySelectorAll('.story, .site-footer')];
     const mirarScroll = () => {
       const ahora = window.scrollY > 40;
-      // Solo se toca el DOM cuando el estado cambia; si no, seria en cada pixel.
-      if (ahora === pegada) return;
-      pegada = ahora;
-      cabecera.classList.toggle('is-pegada', ahora);
+      const alto = cabecera.getBoundingClientRect().height;
+      const tapando = oscuras.some((s) => {
+        const r = s.getBoundingClientRect();
+        return r.top < alto && r.bottom > 0;
+      });
+      // Solo se toca el DOM cuando algo cambia; si no, seria en cada pixel.
+      if (ahora !== pegada) {
+        pegada = ahora;
+        cabecera.classList.toggle('is-pegada', ahora);
+      }
+      if (tapando !== sobreOscuro) {
+        sobreOscuro = tapando;
+        cabecera.classList.toggle('is-sobre-oscuro', tapando);
+      }
     };
     window.addEventListener('scroll', mirarScroll, { passive: true });
     mirarScroll();
@@ -56,23 +70,37 @@
     // Si lo abierto era la tienda, el foco vuelve a su boton y no al de menu,
     // que en pantalla grande ni siquiera se ve.
     const tiendaAbierta = grupo?.classList.contains('is-open');
+    grupo?.dispatchEvent(new CustomEvent('soltar'));
     closeMenu(true);
     if (tiendaAbierta) grupoBoton?.focus();
   });
 
   if (grupo && grupoBoton) {
-    grupoBoton.addEventListener('click', () => abrirGrupo(!grupo.classList.contains('is-open')));
+    // El cursor solo la asoma: al apartarlo se cierra. El clic la deja fijada,
+    // y entonces se queda aunque el cursor se vaya, hasta que se vuelve a
+    // pulsar o se toca otra cosa.
+    let fijada = false;
+    grupoBoton.addEventListener('click', () => {
+      fijada = !fijada;
+      abrirGrupo(fijada);
+    });
     if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
       grupo.addEventListener('mouseenter', () => abrirGrupo(true));
-      grupo.addEventListener('mouseleave', () => abrirGrupo(false));
+      grupo.addEventListener('mouseleave', () => { if (!fijada) abrirGrupo(false); });
     }
     // Si el clic o el foco se van a otra parte, el desplegable ya no pinta nada.
     document.addEventListener('click', (event) => {
-      if (!grupo.contains(event.target)) abrirGrupo(false);
+      if (grupo.contains(event.target)) return;
+      fijada = false;
+      abrirGrupo(false);
     });
     document.addEventListener('focusin', (event) => {
-      if (!grupo.contains(event.target)) abrirGrupo(false);
+      if (grupo.contains(event.target)) return;
+      fijada = false;
+      abrirGrupo(false);
     });
+    // Escape la suelta tambien, no solo la cierra.
+    grupo.addEventListener('soltar', () => { fijada = false; });
   }
   window.addEventListener('resize', () => {
     if (window.innerWidth > 680) closeMenu();
@@ -117,8 +145,13 @@
       b.innerHTML = FLECHA(ir === -1);
       b.setAttribute('aria-label', ir === -1 ? 'Ver los productos anteriores' : 'Ver más productos');
       b.addEventListener('click', () => {
+        // Una ficha por pulsacion: el salto de casi una pantalla se pasaba de
+        // largo y habia que buscar donde se habia quedado uno.
+        const ficha = productGrid.querySelector('.product-card:not([hidden])');
+        const hueco = parseFloat(getComputedStyle(productGrid).columnGap) || 0;
+        const paso = ficha ? ficha.getBoundingClientRect().width + hueco : 280;
         productGrid.scrollBy({
-          left: ir * Math.max(productGrid.clientWidth * 0.8, 240),
+          left: ir * paso,
           behavior: reducedMotion.matches ? 'auto' : 'smooth',
         });
       });
@@ -252,11 +285,13 @@
       history.pushState({ cat }, '', destino);
     }
     window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
-    if (cat !== 'todos') tituloVista.focus();
+    if (cat !== 'todos') tituloVista.focus({ preventScroll: true });
   };
 
   enlacesTienda.forEach((a) => a.addEventListener('click', (e) => {
     e.preventDefault();
+    grupo?.dispatchEvent(new CustomEvent('soltar'));
+    abrirGrupo(false);
     abrirCategoria(a.dataset.filtro);
   }));
   cabeza.querySelector('.vista-volver').addEventListener('click', () => abrirCategoria('todos'));
