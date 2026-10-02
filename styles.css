@@ -331,12 +331,18 @@ section[id] { scroll-margin-top: 96px; }
 body.is-vista .hero, body.is-vista .sign-band, body.is-vista .story { display: none; }
 body.is-vista .catalog { padding-top: 150px; }
 body.is-vista .catalog .section-heading { display: none; }
+/* Teniendo la categoria entera delante, contar cuantos hay sobra; para quien
+   escucha la pagina no, asi que el aviso sigue sonando aunque no se vea. */
+body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min-height: 0; margin: 0; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .vista-cabeza { display: flex; flex-direction: column; align-items: flex-start; gap: .9rem; margin-bottom: 2rem; }
 .vista-cabeza[hidden] { display: none; }
 .vista-volver { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem .5rem .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
 .vista-volver:hover { background: var(--masa); border-color: var(--corteza); }
 .vista-volver svg { width: 16px; height: 16px; }
-.vista-titulo { margin: 0; font: 500 clamp(2.4rem, 5vw, 3.6rem)/1 Georgia, serif; }
+/* El nombre de la categoria va centrado, que es lo unico que manda en esta
+   pantalla. El boton de volver se queda a la izquierda, a plomo con la
+   primera columna de la cuadricula. */
+.vista-titulo { align-self: stretch; margin: 0; font: 500 clamp(2.4rem, 5vw, 3.6rem)/1 Georgia, serif; text-align: center; }
 .vista-titulo:focus { outline: none; }
 .vista-titulo:focus-visible { outline: 2px solid var(--ambar); outline-offset: 6px; border-radius: 3px; }
 
