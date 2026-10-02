@@ -155,7 +155,7 @@ section[id] { scroll-margin-top: 96px; }
 .hero h1 em { color: var(--corteza); }
 .hero-copy { max-width: 420px; margin: 2rem 0; font-size: 1.1rem; }
 .hero-actions { display: flex; align-items: center; gap: 1.6rem; }
-.button { display: inline-flex; gap: .8rem; align-items: center; padding: 1rem 1.25rem; border: 1px solid transparent; border-radius: var(--r-btn); font-weight: 700; }
+.button { display: inline-flex; gap: .8rem; align-items: center; cursor: pointer; padding: 1rem 1.25rem; border: 1px solid transparent; border-radius: var(--r-btn); font-weight: 700; }
 .button-yellow { background: var(--ambar); color: var(--horno); }
 .text-link { display: inline-flex; gap: .65rem; align-items: center; padding-bottom: .3rem; border-bottom: 1px solid currentColor; border-radius: 4px 4px 0 0; color: var(--horno); font: 700 .9rem Arial, sans-serif; }
 .text-link.light { color: white; }
@@ -388,7 +388,7 @@ body.is-vista .catalog .section-heading { display: none; }
 .contacto-icono { display: block; width: 26px; height: 26px; flex: 0 0 auto; }
 /* Solo el copyright a la izquierda: la esquina derecha la ocupa el boton de la canasta. */
 .footer-note { grid-column: 1 / -1; margin: .6rem 0 0; padding-top: .8rem; border-top: 1px solid rgba(255, 255, 255, .15); color: var(--sobre-horno-tenue); font: .68rem Arial, sans-serif; }
-.floating-whatsapp { position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
+.floating-whatsapp { cursor: pointer; position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 /* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
 .button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
@@ -666,7 +666,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-paso[hidden] { display: none; }
 @keyframes paso-entra { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 .canasta-panel button.button { font: 700 1rem/1.55 Georgia, "Times New Roman", serif; cursor: pointer; }
-.canasta-panel button.button:disabled { cursor: progress; }
+.canasta-panel button.button:disabled { cursor: not-allowed; }
+.canasta-panel.is-procesando button.button:disabled { cursor: progress; }
 .canasta-volver { display: inline-flex; align-items: center; gap: .45rem; margin-bottom: 1rem; padding: .3rem 0; background: none; border: 0; color: var(--horno-suave); cursor: pointer; font: 700 .82rem/1.3 Arial, sans-serif; transition: color var(--dur-fast) var(--ease-ui); }
 .canasta-volver:hover { color: var(--horno); }
 .canasta-volver > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
