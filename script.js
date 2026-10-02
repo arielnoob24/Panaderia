@@ -415,9 +415,9 @@
     return hours * 60 + minutes;
   };
   const updateOpeningStatus = () => {
-    const location = document.querySelector('.footer-visita');
-    const label = location?.querySelector('.open-label');
-    if (!location || !label) return;
+    const visita = document.querySelector('.footer-visita');
+    const label = visita?.querySelector('.open-label');
+    if (!visita || !label) return;
     const now = new Date();
     const day = now.getDay();
     const holiday = holidayKeys(now.getFullYear()).has(dateKey(now));
@@ -429,7 +429,9 @@
     label.querySelector('.status-dot')?.classList.toggle('is-closed', !isOpen);
 
     // Senalar que fila del horario es la de hoy, reutilizando el dia ya calculado.
-    location.querySelectorAll('dl div[data-dias]').forEach((fila) => {
+    // Se busca por el cuadro del horario y no por la columna de al lado: el
+    // cuadro se mudo de columna una vez y esto dejo de funcionar en silencio.
+    document.querySelectorAll('.footer-horario div[data-dias]').forEach((fila) => {
       const esHoy = fila.dataset.dias.split(',').includes(String(day));
       fila.classList.toggle('is-today', esHoy);
       let marca = fila.querySelector('.dia-hoy');
