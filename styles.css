@@ -66,17 +66,25 @@ section[id] { scroll-margin-top: 96px; }
    la historia y el pie, que son marron oscuro, y el texto oscuro se perderia
    sobre ellos. El fondo es claro y no oscuro para no tener que cambiar el
    logo a media pagina. */
-.site-header { position: fixed; top: 0; width: 100%; z-index: 10; color: var(--horno); transition: background-color var(--dur-base) var(--ease-ui), box-shadow var(--dur-base) var(--ease-ui), color var(--dur-base) var(--ease-ui); }
+.site-header { position: fixed; top: 0; width: 100%; z-index: 10; color: var(--horno); transition: color var(--dur-base) var(--ease-ui); }
+.site-header::after { opacity: 0; transition: opacity var(--dur-base) var(--ease-ui), background-color var(--dur-base) var(--ease-ui); }
+.site-header.is-pegada::after { opacity: 1; }
 /* Al bajar, la barra se vuelve oscura y todo lo de dentro se invierte. El logo
    es un dibujo de un solo color, asi que no hace falta un segundo archivo: se
    apaga a negro y se invierte a blanco, que conserva la transparencia. */
-.site-header.is-pegada { background: rgba(58, 40, 34, .92); color: var(--sobre-horno); box-shadow: 0 6px 22px rgba(58, 40, 34, .26); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.site-header.is-pegada { color: var(--sobre-horno); }
+/* El fondo no lo pinta la barra sino este pseudo, que baja 44px mas que ella
+   y lleva una mascara que lo apaga hacia abajo: el color y el desenfoque se
+   disuelven en la seccion de atras en vez de acabarse en una raya. Sin sombra,
+   que debajo de un borde desvanecido vuelve a dibujar justo esa raya. */
+.site-header.is-pegada::after { position: absolute; top: 0; right: 0; left: 0; z-index: -1; height: calc(100% + 44px); content: ""; background: rgba(58, 40, 34, .94); pointer-events: none; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 56%, rgba(0, 0, 0, .45) 80%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, #000 56%, rgba(0, 0, 0, .45) 80%, transparent 100%); }
 .site-header.is-pegada .brand-logo { filter: brightness(0) invert(1); }
 
 /* Sobre la historia y el pie, que son del mismo marron que la barra, esta se da
    la vuelta: clara con todo lo de dentro oscuro. Sin esto se funde con el fondo
    y parece que la barra desaparece. */
-.site-header.is-pegada.is-sobre-oscuro { background: rgba(255, 253, 248, .94); color: var(--horno); box-shadow: 0 6px 22px rgba(0, 0, 0, .3); }
+.site-header.is-pegada.is-sobre-oscuro { color: var(--horno); }
+.site-header.is-pegada.is-sobre-oscuro::after { background: rgba(255, 253, 248, .96); }
 .site-header.is-pegada.is-sobre-oscuro .brand-logo { filter: none; }
 .site-header.is-pegada.is-sobre-oscuro .mascot-brand { background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
 .site-header.is-pegada.is-sobre-oscuro .main-nav > a:hover,
