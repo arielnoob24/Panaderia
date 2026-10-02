@@ -78,7 +78,6 @@
     if (window.innerWidth > 680) closeMenu();
   });
 
-  const filters = [...document.querySelectorAll('.filter-input')];
   const products = [...document.querySelectorAll('.product-card')];
   const catalogStatus = document.querySelector('.catalog-status');
   const productGrid = document.querySelector('.product-grid');
@@ -144,9 +143,11 @@
   }
 
   let filterRun = 0;
+  // Ya no hay barra de filtros: la categoria es un estado de la pagina. 'todos'
+  // es el inicio con su mostrador en fila; cualquier otra abre su vista.
+  let categoria = 'todos';
   const applyFilter = (shouldAnimate = false) => {
-    const selected = filters.find((filter) => filter.checked);
-    const category = selected?.id.replace('filter-', '') || 'todos';
+    const category = categoria;
     const animate = shouldAnimate && !reducedMotion.matches;
     const columns = columnCount(productGrid);
     const entering = [];
@@ -181,7 +182,7 @@
       // En el mostrador, el aviso dice ademas por donde se ve todo: si no, la
       // fila parece el catalogo entero y la cuadricula no la encuentra nadie.
       catalogStatus.textContent = category === 'todos'
-        ? `${cuantos} en el mostrador. Elige una categoría para verlos en cuadrícula.`
+        ? `${cuantos} en el mostrador. Entra en Tienda para ver una categoría completa.`
         : `${cuantos} en esta categoría.`;
     }
     productGrid?.mirarPuntas?.();
@@ -197,9 +198,11 @@
   };
   // La salida es la única del sitio: los productos actuales se atenúan con una curva
   // acelerada y solo después entra la categoría nueva con la curva desacelerada.
-  filters.forEach((filter) => filter.addEventListener('change', () => {
-    // Al cambiar de categoria la fila vuelve a su principio: si no, se entraria
-    // a la mitad de lo nuevo sin saber que hay detras.
+  const cambiarCategoria = (cat) => {
+    if (cat === categoria) return;
+    categoria = cat;
+    // Al cambiar, la fila vuelve a su principio: si no, se entraria a la mitad
+    // de lo nuevo sin saber que hay detras.
     if (productGrid) productGrid.scrollLeft = 0;
     if (reducedMotion.matches) {
       applyFilter(false);
@@ -207,7 +210,70 @@
     }
     productGrid?.classList.add('is-filtering');
     window.setTimeout(() => applyFilter(true), 160);
+  };
+
+  // ---- La vista de categoria -------------------------------------------
+  // A una categoria se entra desde Tienda, y lo que se abre no es el inicio con
+  // un filtro puesto: es otra vista. Se arma desde aqui porque sin JavaScript no
+  // habria vista que abrir; ahi los enlaces bajan al catalogo, que sin la fila
+  // sale como cuadricula entera, y eso ya es una respuesta valida.
+  const enlacesTienda = [...document.querySelectorAll('.main-nav a[data-filtro]')];
+  const NOMBRES = {};
+  enlacesTienda.forEach((a) => { NOMBRES[a.dataset.filtro] = a.textContent.trim(); });
+
+  const cabeza = document.createElement('div');
+  cabeza.className = 'vista-cabeza';
+  cabeza.hidden = true;
+  cabeza.innerHTML = '<button class="vista-volver" type="button">'
+    + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
+    + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver al inicio</button>'
+    + '<h2 class="vista-titulo" tabindex="-1"></h2>';
+  const encabezado = document.querySelector('.catalog .section-heading');
+  encabezado?.parentElement.insertBefore(cabeza, encabezado);
+  const tituloVista = cabeza.querySelector('.vista-titulo');
+
+  const pintarVista = (cat) => {
+    const enVista = cat !== 'todos';
+    document.body.classList.toggle('is-vista', enVista);
+    cabeza.hidden = !enVista;
+    if (encabezado) encabezado.hidden = enVista;
+    if (enVista) tituloVista.textContent = NOMBRES[cat] || 'Catálogo';
+    document.title = enVista
+      ? `${NOMBRES[cat] || 'Catálogo'} | El Tradicional`
+      : 'El Tradicional | Panadería & Pastelería';
+  };
+
+  const abrirCategoria = (cat, conHistorial = true) => {
+    cambiarCategoria(cat);
+    pintarVista(cat);
+    if (conHistorial) {
+      const destino = cat === 'todos' ? location.pathname + location.search : '#tienda-' + cat;
+      history.pushState({ cat }, '', destino);
+    }
+    window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    if (cat !== 'todos') tituloVista.focus();
+  };
+
+  enlacesTienda.forEach((a) => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    abrirCategoria(a.dataset.filtro);
   }));
+  cabeza.querySelector('.vista-volver').addEventListener('click', () => abrirCategoria('todos'));
+
+  // El boton de atras del navegador tiene que funcionar: la vista es un sitio.
+  const deLaDireccion = () => {
+    const m = location.hash.match(/^#tienda-(.+)$/);
+    return m && NOMBRES[m[1]] ? m[1] : 'todos';
+  };
+  window.addEventListener('popstate', () => {
+    const cat = deLaDireccion();
+    cambiarCategoria(cat);
+    pintarVista(cat);
+  });
+
+  categoria = deLaDireccion();
+  pintarVista(categoria);
   applyFilter();
 
   // Tres entradas de la barra nombran una categoria. Sin JavaScript son enlaces

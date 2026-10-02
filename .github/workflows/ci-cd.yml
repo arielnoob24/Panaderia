@@ -27,20 +27,23 @@ jobs:
           # El catalogo crece y encoge: un numero exacto obliga a acordarse de
           # tocar el CI cada vez que entra un producto, y cuando no te acuerdas
           # el sitio deja de publicarse sin que nadie lo note. Se comprueba que
-          # el archivo no venga truncado y que filtros y categorias cuadren,
+          # el archivo no venga truncado y que a cada categoria se pueda llegar,
           # que es lo que de verdad puede romperse.
           test "$(grep -o '<article class="product-card"' index.html | wc -l)" -ge 8
+          # La unica puerta al catalogo es el menu Tienda: si una categoria no
+          # esta ahi, sus productos quedan inalcanzables, y al reves, una entrada
+          # del menu sin productos detras lleva a una vista vacia.
           categorias=$(grep -o 'data-category="[^"]*"' index.html | sed 's/.*="//;s/"$//' | sort -u)
-          filtros=$(grep -o 'id="filter-[^"]*"' index.html | sed 's/.*id="filter-//;s/"$//' | sort -u)
+          entradas=$(grep -o 'data-filtro="[^"]*"' index.html | sed 's/.*="//;s/"$//' | sort -u)
           for c in $categorias; do
-            if ! echo "$filtros" | grep -qx "$c"; then
-              echo "La categoria '$c' no tiene filtro en la barra."
+            if ! echo "$entradas" | grep -qx "$c"; then
+              echo "La categoria '$c' no se puede abrir desde el menu Tienda."
               exit 1
             fi
           done
-          for f in $filtros; do
-            if [ "$f" != "todos" ] && ! echo "$categorias" | grep -qx "$f"; then
-              echo "El filtro '$f' no tiene ningun producto detras."
+          for e in $entradas; do
+            if ! echo "$categorias" | grep -qx "$e"; then
+              echo "La entrada '$e' del menu Tienda no tiene ningun producto detras."
               exit 1
             fi
           done

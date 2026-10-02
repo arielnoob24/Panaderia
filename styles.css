@@ -188,17 +188,8 @@ section[id] { scroll-margin-top: 96px; }
 .section-heading h2, .story-copy h2 { margin: 0; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 Georgia, serif; }
 .section-heading h2 em, .story-copy h2 em { color: var(--corteza-oscura); }
 .section-intro { max-width: 330px; margin: 0 0 .5rem; color: var(--horno-suave); }
-.filter-bar { position: sticky; top: 86px; z-index: 4; display: flex; gap: .5rem; min-width: 0; margin: 0 0 1rem; padding: 1rem 0; overflow-x: auto; background: linear-gradient(to right, var(--masa) 40%, rgba(247, 241, 231, 0)) left center / 44px 100% no-repeat local, linear-gradient(to left, var(--masa) 40%, rgba(247, 241, 231, 0)) right center / 44px 100% no-repeat local, radial-gradient(farthest-side at 0 50%, rgba(58, 40, 34, .22), rgba(58, 40, 34, 0)) left center / 16px 100% no-repeat scroll, radial-gradient(farthest-side at 100% 50%, rgba(58, 40, 34, .22), rgba(58, 40, 34, 0)) right center / 16px 100% no-repeat scroll, var(--masa); border: 0; border-top: 1px solid var(--masa-linea); border-bottom: 1px solid var(--masa-linea); box-shadow: 0 8px 14px rgba(58, 40, 34, .06); }
-.filter { position: relative; z-index: 0; flex: 0 0 auto; padding: .65rem 1rem; background: transparent; color: var(--horno-suave); border: 0; border-radius: var(--r-pill); cursor: pointer; font: .85rem/1.4 Arial, sans-serif; transition: color var(--dur-base) var(--ease-out); }
 /* El fondo entra creciendo desde el centro en vez de encenderse de golpe. */
-.filter::before { position: absolute; inset: 0; z-index: -1; content: ""; background: var(--horno-claro); border-radius: inherit; opacity: 0; transform: scale(.82); transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out); }
-.filter:hover::before { opacity: 1; transform: none; }
 /* El puntero muestra el tono claro; lo seleccionado, el oscuro. */
-.filter:hover { color: white; }
-.filter-input:checked + .filter { background: var(--horno); color: white; }
-.filter-input:checked + .filter { transition-duration: var(--dur-base); }
-.filter-input { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; pointer-events: none; }
-.filter-input:focus-visible + .filter { outline: 3px solid var(--horno); outline-offset: 3px; box-shadow: 0 0 0 5px var(--ambar); }
 .catalog-status { min-height: 1.4em; margin: 0 0 1.25rem; color: var(--horno-suave); font: .78rem Arial, sans-serif; }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.3rem; }
 /* Sin categoria elegida el catalogo es una fila que se recorre de lado: un
@@ -300,6 +291,23 @@ section[id] { scroll-margin-top: 96px; }
 
 /* Banda cerrada por las cuatro esquinas: sin la seccion clara que habia debajo, la historia
    necesita su propio final en curva y una franja de masa que la separe del pie. */
+/* ---- Vista de categoria ------------------------------------------------
+   A una categoria se entra desde Tienda, y lo que se abre no es el inicio con
+   un filtro puesto: es otra vista. Se apartan el hero, la franja y la historia,
+   y queda el catalogo solo, con el nombre de la categoria y por donde volver.
+   La cabecera y el pie se quedan, que son de toda la pagina. */
+body.is-vista .hero, body.is-vista .sign-band, body.is-vista .story { display: none; }
+body.is-vista .catalog { padding-top: 150px; }
+body.is-vista .catalog .section-heading { display: none; }
+.vista-cabeza { display: flex; flex-direction: column; align-items: flex-start; gap: .9rem; margin-bottom: 2rem; }
+.vista-cabeza[hidden] { display: none; }
+.vista-volver { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem .5rem .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.vista-volver:hover { background: var(--masa); border-color: var(--corteza); }
+.vista-volver svg { width: 16px; height: 16px; }
+.vista-titulo { margin: 0; font: 500 clamp(2.4rem, 5vw, 3.6rem)/1 Georgia, serif; }
+.vista-titulo:focus { outline: none; }
+.vista-titulo:focus-visible { outline: 2px solid var(--ambar); outline-offset: 6px; border-radius: 3px; }
+
 .story { margin-bottom: 5rem; background: var(--horno); color: white; border-radius: var(--r-band); overflow-x: clip; }
 .story-grid { display: grid; grid-template-columns: minmax(300px, .8fr) 1.2fr; gap: clamp(3rem, 8vw, 8rem); align-items: center; }
 .story-photo { position: relative; }
@@ -444,7 +452,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 @media (max-width: 680px) {
   .container { width: min(100% - 32px, 540px); }
   .nav-wrap { min-height: 70px; }
-  .filter-bar { top: 70px; }
   #inicio, #contenido, #catalogo, #historia, #visitanos { scroll-margin-top: 82px; }
   .brand-logo { height: 44px; }
   .menu-toggle { display: block; }
@@ -472,6 +479,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .hero-content { padding-bottom: 6.5rem; }
   .section-pad { padding: 4.5rem 0; }
   .catalog { padding-top: 3rem; }
+  body.is-vista .catalog { padding-top: 110px; }
   .heading-row { display: block; }
   .section-intro { margin-top: 1.5rem; }
   .story-grid { grid-template-columns: 1fr; }
