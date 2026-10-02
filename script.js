@@ -106,6 +106,106 @@
     if (window.innerWidth > 680) closeMenu();
   });
 
+  // ---- El cuadrito que sale al dejar el cursor quieto -------------------
+  // Hay botones que son solo un dibujo y no dicen en voz alta lo que hacen. El
+  // cuadrito lo cuenta, pero sin estorbar: solo si el cursor se queda, y se va
+  // en cuanto se mueve. Es uno solo para toda la pagina; ponerle uno a cada
+  // boton seria llenar el DOM de cajas que casi nunca se ven.
+  const ESPERA_TIP = 500;
+  const globo = document.createElement('div');
+  globo.className = 'globo';
+  globo.setAttribute('role', 'tooltip');
+  globo.id = 'globo-ayuda';
+  globo.hidden = true;
+  document.body.append(globo);
+
+  let relojTip = null;
+  let conTip = null;
+
+  const esconderTip = () => {
+    clearTimeout(relojTip);
+    relojTip = null;
+    if (!conTip) return;
+    conTip.removeAttribute('aria-describedby');
+    conTip = null;
+    globo.classList.remove('is-open');
+    // Se oculta del todo recien al acabar el desvanecido, que si no reaparece
+    // un instante en la esquina la proxima vez que se abre.
+    setTimeout(() => { if (!conTip) globo.hidden = true; }, 160);
+  };
+
+  const colocarTip = (quien) => {
+    const c = quien.getBoundingClientRect();
+    globo.hidden = false;
+    const g = globo.getBoundingClientRect();
+    const margen = 8;
+    // Encima de lo que se señala, y si no cabe arriba, debajo.
+    const arriba = c.top - g.height - 10;
+    const cabeArriba = arriba > margen;
+    globo.style.top = `${(cabeArriba ? arriba : c.bottom + 10) + window.scrollY}px`;
+    globo.classList.toggle('is-abajo', !cabeArriba);
+    // Centrado, pero sin salirse por los lados de la ventana.
+    const x = c.left + c.width / 2 - g.width / 2;
+    globo.style.left = `${Math.max(margen, Math.min(x, window.innerWidth - g.width - margen)) + window.scrollX}px`;
+  };
+
+  const mostrarTip = (quien, yaMismo) => {
+    const texto = quien.dataset.tip;
+    if (!texto) return;
+    clearTimeout(relojTip);
+    const abrir = () => {
+      conTip = quien;
+      globo.textContent = texto;
+      quien.setAttribute('aria-describedby', globo.id);
+      colocarTip(quien);
+      globo.classList.add('is-open');
+    };
+    // Con el teclado no se espera: quien tabula ya decidio mirar ese boton.
+    if (yaMismo) abrir(); else relojTip = setTimeout(abrir, ESPERA_TIP);
+  };
+
+  // Si el cuadrito lo pidio el teclado, el raton no manda sobre el: al
+  // desplazarse la pagina bajo un cursor quieto saltan mouseover y mouseout
+  // solos, y se lo llevaban por delante en el mismo instante en que salia.
+  const mandaElTeclado = () => Boolean(conTip) && document.activeElement === conTip;
+
+  document.addEventListener('mouseover', (e) => {
+    const quien = e.target.closest?.('[data-tip]');
+    if (quien === conTip || mandaElTeclado()) return;
+    esconderTip();
+    if (quien) mostrarTip(quien, false);
+  });
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest?.('[data-tip]') && !mandaElTeclado()) esconderTip();
+  });
+  // Al tabular si sale; al pulsar con el raton no, que ahi ya se vio el efecto.
+  // Un campo de texto casa con :focus-visible siempre, lo enfoque el raton o el
+  // teclado, asi que para distinguirlos hay que recordar como se llego.
+  let llegoConRaton = false;
+  document.addEventListener('pointerdown', () => { llegoConRaton = true; }, true);
+  document.addEventListener('keydown', () => { llegoConRaton = false; }, true);
+
+  document.addEventListener('focusin', (e) => {
+    const quien = e.target.closest?.('[data-tip]');
+    if (!quien) return;
+    // Quien tabula hasta aqui si quiere saber que es esto. Quien lo pulso con
+    // el raton ya lo esta usando: el cuadrito solo le taparia lo que escribe.
+    if (llegoConRaton) esconderTip();
+    else mostrarTip(quien, true);
+  });
+  document.addEventListener('focusout', esconderTip);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') esconderTip(); });
+  // Si la pagina se mueve debajo, el cuadrito se queda apuntando al vacio. Pero
+  // tabular hasta un boton ya desplaza la pagina: ahi no hay que esconderlo
+  // -se iria en el mismo instante en que sale- sino seguirlo.
+  const seguirOEsconder = () => {
+    if (!conTip) return;
+    if (document.activeElement === conTip) colocarTip(conTip);
+    else esconderTip();
+  };
+  window.addEventListener('scroll', seguirOEsconder, { passive: true });
+  window.addEventListener('resize', seguirOEsconder, { passive: true });
+
   const products = [...document.querySelectorAll('.product-card')];
   const catalogStatus = document.querySelector('.catalog-status');
   const productGrid = document.querySelector('.product-grid');
@@ -131,11 +231,25 @@
   const FLECHA = (izq) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
     + 'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" '
     + 'focusable="false"><path d="M' + (izq ? '14.5 5.5 8 12l6.5 6.5' : '9.5 5.5 16 12l-6.5 6.5') + '"/></svg>';
+  // Una ficha por salto: el salto de casi una pantalla se pasaba de largo y
+  // habia que buscar donde se habia quedado uno. Lo usan la flecha y el reloj.
+  const pasoFila = () => {
+    const ficha = productGrid?.querySelector('.product-card:not([hidden])');
+    const hueco = parseFloat(getComputedStyle(productGrid).columnGap) || 0;
+    return ficha ? ficha.getBoundingClientRect().width + hueco : 280;
+  };
   let flechas = [];
   if (productGrid) {
     const zona = document.createElement('div');
     zona.className = 'fila-zona';
     productGrid.parentElement.insertBefore(zona, productGrid);
+    // La fila necesita decir que es: sin nombre parecia el catalogo entero
+    // puesto de lado. Va fuera de la zona para no pasar por debajo de las
+    // flechas, que estan pegadas a los bordes.
+    const rotulo = document.createElement('h3');
+    rotulo.className = 'fila-rotulo';
+    rotulo.textContent = 'Los más pedidos';
+    zona.before(rotulo);
     zona.append(productGrid);
     flechas = [-1, 1].map((ir) => {
       const b = document.createElement('button');
@@ -144,14 +258,10 @@
       b.dataset.ir = String(ir);
       b.innerHTML = FLECHA(ir === -1);
       b.setAttribute('aria-label', ir === -1 ? 'Ver los productos anteriores' : 'Ver más productos');
+      b.dataset.tip = ir === -1 ? 'Anterior' : 'Siguiente';
       b.addEventListener('click', () => {
-        // Una ficha por pulsacion: el salto de casi una pantalla se pasaba de
-        // largo y habia que buscar donde se habia quedado uno.
-        const ficha = productGrid.querySelector('.product-card:not([hidden])');
-        const hueco = parseFloat(getComputedStyle(productGrid).columnGap) || 0;
-        const paso = ficha ? ficha.getBoundingClientRect().width + hueco : 280;
         productGrid.scrollBy({
-          left: ir * paso,
+          left: ir * pasoFila(),
           behavior: reducedMotion.matches ? 'auto' : 'smooth',
         });
       });
@@ -173,6 +283,49 @@
     window.addEventListener('resize', mirarPuntas, { passive: true });
     productGrid.dataset.mirarPuntas = '1';
     productGrid.mirarPuntas = mirarPuntas;
+
+    // La fila se adelanta sola una ficha cada tanto, que si no hay que adivinar
+    // que se puede mover. Al llegar al final vuelve al principio, para que no
+    // se quede parada en seco dando la impresion de que se rompio.
+    const CADA = 4200;
+    let reloj = null;
+    let quieta = false;
+    const puedeAndar = () => productGrid.classList.contains('is-fila')
+      && !reducedMotion.matches
+      && !document.hidden
+      && productGrid.scrollWidth - productGrid.clientWidth > 24;
+
+    const avanzar = () => {
+      if (quieta || !puedeAndar()) return;
+      const sobra = productGrid.scrollWidth - productGrid.clientWidth;
+      if (productGrid.scrollLeft > sobra - 8) {
+        productGrid.scrollTo({ left: 0, behavior: 'smooth' });
+        return;
+      }
+      productGrid.scrollBy({ left: pasoFila(), behavior: 'smooth' });
+    };
+
+    const arrancar = () => { if (!reloj) reloj = setInterval(avanzar, CADA); };
+    const parar = () => { clearInterval(reloj); reloj = null; };
+    // Tras tocarla a mano se le da un respiro largo: seguir empujando mientras
+    // alguien decide que lleva es la forma mas rapida de molestar.
+    const respiro = () => { parar(); setTimeout(arrancar, CADA * 2); };
+
+    // Mientras se la mira de cerca no se mueve: el raton encima, un dedo, o el
+    // foco en alguna ficha son todas senales de que hay alguien eligiendo.
+    const vigilar = (entra, sale) => {
+      zona.addEventListener(entra, () => { quieta = true; });
+      zona.addEventListener(sale, () => { quieta = false; });
+    };
+    vigilar('mouseenter', 'mouseleave');
+    vigilar('focusin', 'focusout');
+    vigilar('touchstart', 'touchend');
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) parar(); else arrancar();
+    });
+    flechas.forEach((b) => b.addEventListener('click', respiro));
+    productGrid.andarSola = { arrancar, parar };
+    arrancar();
   }
 
   let filterRun = 0;
@@ -766,6 +919,7 @@
   };
 
   const boton = document.querySelector('.floating-whatsapp');
+  if (boton) boton.dataset.tip = 'Tu canasta';
   const cuenta = document.createElement('span');
   cuenta.className = 'canasta-cuenta';
   cuenta.hidden = true;
@@ -1119,6 +1273,10 @@
     irA('pago');
   });
 
+  // Cien panes es un pedido de fiesta; mas que eso se habla por telefono, no se
+  // teclea. El tope vive aqui para que el boton y el campo cuenten lo mismo.
+  const MAX_UNIDADES = 100;
+
   const cambiar = (id, delta) => {
     const l = pedido.get(id);
     if (!l) return;
@@ -1216,11 +1374,15 @@
 
     const grupo = document.createElement('div');
     grupo.className = 'card-cantidad';
+    // La cuenta es un campo, no un letrero: para llevarse veinte panes nadie
+    // quiere pulsar veinte veces. Sigue siendo texto y no un number porque el
+    // de tipo numero trae sus propias flechitas y acepta signos y comas.
     grupo.innerHTML = '<button class="card-menos" type="button" hidden></button>'
-      + '<output hidden></output>'
+      + '<input class="card-numero" type="text" inputmode="numeric" autocomplete="off" '
+      + 'maxlength="3" value="0" hidden>'
       + '<button class="card-mas" type="button">+</button>';
     const menos = grupo.querySelector('.card-menos');
-    const cuentaFicha = grupo.querySelector('output');
+    const cuentaFicha = grupo.querySelector('.card-numero');
     const mas = grupo.querySelector('.card-mas');
     const cuantos = () => pedido.get(idDeAhora())?.cantidad || 0;
 
@@ -1229,13 +1391,18 @@
       grupo.classList.toggle('is-lleno', n > 0);
       menos.hidden = n === 0;
       cuentaFicha.hidden = n === 0;
-      cuentaFicha.textContent = n;
+      // Si lo esta escribiendo ahora mismo, no se le pisa lo tecleado.
+      if (document.activeElement !== cuentaFicha) cuentaFicha.value = n;
       // Con una sola unidad, quitarla es borrar el producto del pedido: el boton
       // lo dice con un basurero. Desde dos vuelve a ser un signo de resta.
       menos.innerHTML = n === 1 ? BASURERO : '<span aria-hidden="true">−</span>';
       const comoSeLlama = nombreDe();
       menos.setAttribute('aria-label', n === 1 ? `Quitar ${comoSeLlama} de la canasta` : `Quitar uno de ${comoSeLlama}`);
+      menos.dataset.tip = n === 1 ? 'Quitar de la canasta' : 'Uno menos';
       mas.setAttribute('aria-label', n ? `Añadir otro de ${comoSeLlama}` : `Añadir ${comoSeLlama} a la canasta`);
+      cuentaFicha.setAttribute('aria-label', `Cantidad de ${comoSeLlama}`);
+      mas.dataset.tip = n ? 'Uno más' : 'Añadir a la canasta';
+      cuentaFicha.dataset.tip = `Escribe cuántos quieres, hasta ${MAX_UNIDADES}`;
       if (importe) importe.textContent = dinero(precioDe());
     };
     refrescos.push(refrescar);
@@ -1248,11 +1415,44 @@
     mas.addEventListener('click', () => {
       const comoSeLlama = nombreDe();
       const l = pedido.get(idDeAhora()) || { nombre: comoSeLlama, precio: precioDe(), cantidad: 0 };
-      l.cantidad = Math.min(l.cantidad + 1, 99);
+      l.cantidad = Math.min(l.cantidad + 1, MAX_UNIDADES);
       pedido.set(idDeAhora(), l);
       pintar();
       avisos.textContent = `${comoSeLlama} añadido. ${cuantosQuedan()}`;
     });
+    // Mientras teclea solo se limpia lo que no son cifras; el numero no se
+    // corrige hasta que termina, que corregirlo al vuelo impide escribir un 12
+    // (al pasar por el 1 ya seria valido y saltaria solo).
+    cuentaFicha.addEventListener('input', () => {
+      const limpio = cuentaFicha.value.replace(/[^0-9]/g, '').slice(0, 3);
+      if (limpio !== cuentaFicha.value) cuentaFicha.value = limpio;
+    });
+    cuentaFicha.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); cuentaFicha.blur(); }
+      if (e.key === 'Escape') { cuentaFicha.value = cuantos(); cuentaFicha.blur(); }
+    });
+    // Al salir del campo se asienta: se recorta al tope y, si quedo en cero o
+    // en blanco, el producto sale de la canasta, que es lo que un cero dice.
+    cuentaFicha.addEventListener('blur', () => {
+      const comoSeLlama = nombreDe();
+      const id = idDeAhora();
+      const pedida = Math.min(parseInt(cuentaFicha.value, 10) || 0, MAX_UNIDADES);
+      const antes = cuantos();
+      if (pedida === antes) { cuentaFicha.value = antes; return; }
+      if (pedida <= 0) {
+        pedido.delete(id);
+        pintar();
+        avisos.textContent = `${comoSeLlama} quitado. ${cuantosQuedan()}`;
+        mas.focus();
+        return;
+      }
+      const l = pedido.get(id) || { nombre: comoSeLlama, precio: precioDe(), cantidad: 0 };
+      l.cantidad = pedida;
+      pedido.set(id, l);
+      pintar();
+      avisos.textContent = `${pedida} de ${comoSeLlama}. ${cuantosQuedan()}`;
+    });
+
     menos.addEventListener('click', () => {
       const comoSeLlama = nombreDe();
       const seVa = cuantos() <= 1;
@@ -1611,6 +1811,7 @@
   };
   navCuenta.setAttribute('aria-expanded', 'false');
   navCuenta.setAttribute('aria-haspopup', 'true');
+  navCuenta.dataset.tip = 'Tu cuenta';
 
   navCuenta.addEventListener('click', () => {
     closeMenu();

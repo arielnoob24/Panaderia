@@ -222,6 +222,11 @@ section[id] { scroll-margin-top: 96px; }
 /* Sin categoria elegida el catalogo es una fila que se recorre de lado: un
    paseo por el mostrador, no el inventario entero de golpe. Al elegir una
    categoria pasa a cuadricula, que es cuando se viene a mirarlo todo. */
+/* El rotulo de la fila. En la vista de una categoria no pinta nada: ahi el
+   titulo es el nombre de la categoria y esto seria un segundo titulo peleando. */
+.fila-rotulo { margin: 0 0 .9rem; color: var(--horno); font: 500 1.45rem/1.2 Georgia, serif; }
+body.is-vista .fila-rotulo { display: none; }
+
 .fila-zona { position: relative; }
 .product-grid.is-fila { display: flex; gap: 1.3rem; overflow-x: auto; padding-bottom: .4rem; scroll-snap-type: x proximity; scroll-padding: 0 4px; scrollbar-width: thin; scrollbar-color: var(--masa-linea) transparent; }
 .product-grid.is-fila .product-card { width: min(272px, 74vw); flex: 0 0 auto; scroll-snap-align: start; }
@@ -295,9 +300,15 @@ section[id] { scroll-margin-top: 96px; }
 .card-cantidad .card-menos { color: var(--corteza-oscura); }
 .card-cantidad .card-menos:hover, .card-cantidad .card-menos:focus-visible { background: var(--masa); }
 .card-cantidad .card-icono { width: 17px; height: 17px; }
-.card-cantidad output { min-width: 24px; font: 700 .95rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; }
-.card-cantidad button[hidden], .card-cantidad output[hidden] { display: none; }
-.card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno output { animation: cantidad-abre var(--dur-fast) var(--ease-out) both; }
+/* El numero es un campo, pero no tiene que parecerlo mientras no se use: sin
+   marco ni fondo hasta que se toca, para que el control siga siendo un control
+   de cantidad y no un formulario metido en la ficha. */
+.card-cantidad .card-numero { width: 2.6ch; min-width: 24px; padding: .15rem 0; background: none; border: 1px solid transparent; border-radius: var(--r-chip); color: var(--horno); font: 700 .95rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.card-cantidad .card-numero:hover { border-color: var(--masa-linea); }
+.card-cantidad .card-numero:focus { background: var(--papel); border-color: var(--ambar); outline: none; }
+.card-cantidad .card-numero:focus-visible { box-shadow: 0 0 0 2px rgba(215, 155, 74, .3); }
+.card-cantidad button[hidden], .card-cantidad .card-numero[hidden] { display: none; }
+.card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno .card-numero { animation: cantidad-abre var(--dur-fast) var(--ease-out) both; }
 @keyframes cantidad-abre { from { opacity: 0; transform: translateX(10px) scale(.85); } to { opacity: 1; transform: none; } }
 
 /* ---- Lo que se acabo --------------------------------------------------
@@ -567,6 +578,19 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .cuenta-menu.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
 .cuenta-menu button { padding: .6rem .75rem; background: none; border: 0; border-radius: var(--r-chip); color: inherit; cursor: pointer; font: 700 .9rem Arial, sans-serif; text-align: left; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
 .cuenta-menu button:hover { background: rgba(255, 255, 255, .1); color: var(--ambar); }
+
+/* El cuadrito que sale al dejar el cursor quieto sobre algo. Va en el cuerpo y
+   se coloca por JS, para que ninguna tarjeta con overflow lo recorte. */
+.globo { position: absolute; z-index: 60; max-width: 220px; padding: .42rem .6rem; background: var(--horno); border-radius: var(--r-chip); box-shadow: var(--shadow-float); color: var(--sobre-horno); font: 400 .78rem/1.35 Arial, sans-serif; opacity: 0; pointer-events: none; text-align: center; transform: translateY(4px); transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in); }
+.globo.is-open { opacity: 1; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
+.globo[hidden] { display: none; }
+/* La puntita que lo amarra a lo que señala, arriba o abajo segun donde quepa. */
+.globo::after { position: absolute; left: 50%; width: 8px; height: 8px; background: var(--horno); content: ""; transform: translateX(-50%) rotate(45deg); }
+.globo:not(.is-abajo)::after { bottom: -4px; }
+.globo.is-abajo::after { top: -4px; }
+@media (prefers-reduced-motion: reduce) {
+  .globo, .globo.is-open { transform: none; transition-duration: 1ms; }
+}
 
 /* ---- Cuenta -----------------------------------------------------------
    Maqueta de cuentas: no hay servidor detras. El panel es el mismo objeto que
