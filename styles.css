@@ -55,6 +55,10 @@ img { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
 section[id] { scroll-margin-top: 96px; }
+/* Lo mismo para lo que recibe el foco. Sin esto, tabular hacia atras deja el
+   elemento enfocado debajo de la cabecera fija: esta ahi, responde, y no se ve. */
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
+textarea:focus-visible, [tabindex]:focus-visible { scroll-margin-top: 110px; scroll-margin-bottom: 24px; }
 .container { width: min(1180px, calc(100% - 48px)); margin: auto; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .skip-link { position: absolute; top: -5rem; left: 1rem; z-index: 20; padding: .7rem 1rem; background: var(--ambar); color: var(--horno); border-radius: 0 0 var(--r-btn) var(--r-btn); }
@@ -224,8 +228,21 @@ section[id] { scroll-margin-top: 96px; }
    categoria pasa a cuadricula, que es cuando se viene a mirarlo todo. */
 /* El rotulo de la fila. En la vista de una categoria no pinta nada: ahi el
    titulo es el nombre de la categoria y esto seria un segundo titulo peleando. */
-.fila-rotulo { margin: 0 0 .9rem; color: var(--horno); font: 500 1.45rem/1.2 Georgia, serif; }
-body.is-vista .fila-rotulo { display: none; }
+.fila-cabeza { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; margin: 0 0 .9rem; }
+body.is-vista .fila-cabeza { display: none; }
+.fila-rotulo { margin: 0; margin-right: auto; color: var(--horno); font: 500 1.45rem/1.2 Georgia, serif; }
+/* La puerta al catalogo entero. Es un boton y no un enlace porque abre una
+   vista que monta el JavaScript; sin JavaScript la cuadricula ya sale entera. */
+.fila-vertodo { display: inline-flex; align-items: center; gap: .2rem; padding: .4rem .5rem .4rem .7rem; background: none; border: 0; border-radius: var(--r-pill); color: var(--corteza-oscura); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+.fila-vertodo:hover { background: var(--masa-honda); color: var(--horno); }
+.fila-vertodo svg { width: 17px; height: 17px; transition: transform var(--dur-fast) var(--ease-ui); }
+.fila-vertodo:hover svg, .fila-vertodo:focus-visible svg { transform: translateX(3px); }
+/* El boton de pausa del mostrador. Cuadrado de 44 px: es un objetivo tactil y
+   tiene que cumplir el minimo sin depender del icono, que es pequeno. */
+.fila-pausa { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: 50%; color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.fila-pausa:hover { background: var(--masa-honda); border-color: var(--corteza); }
+.fila-pausa svg { width: 17px; height: 17px; }
+body.is-vista .fila-pausa { display: none; }
 
 .fila-zona { position: relative; }
 .product-grid.is-fila { display: flex; gap: 1.3rem; overflow-x: auto; padding-bottom: .4rem; scroll-snap-type: x proximity; scroll-padding: 0 4px; scrollbar-width: thin; scrollbar-color: var(--masa-linea) transparent; }
@@ -581,6 +598,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .reveal-x { transform: translateY(18px); }
   .footer-grid { grid-template-columns: 1fr; gap: 1.3rem; }
   .floating-whatsapp { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
+  .deshacer-barra { bottom: calc(74px + env(safe-area-inset-bottom)); }
 }
 
 /* El desglose del pedido: lo que cuesta el pan, lo que cuesta llevarlo y la
@@ -594,7 +612,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-desglose .desglose-suma dd { font: 700 1.1rem Arial, sans-serif; font-variant-numeric: tabular-nums; }
 
 /* Cada opcion lleva debajo lo que cuesta, que es la mitad de la decision. */
-.canasta-opciones span small { display: block; margin-top: .2rem; color: var(--horno-claro); font: 400 .72rem Arial, sans-serif; }
+.canasta-opciones span small { display: block; margin-top: .2rem; color: var(--horno-suave); font: 400 .72rem Arial, sans-serif; }
 .canasta-opciones input:checked + span small { color: var(--corteza-oscura); }
 /* Si se pasa a retirar, lo util es saber donde esta el local. */
 .canasta-local { margin-top: .9rem; padding: .7rem .85rem; background: var(--masa); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; }
@@ -735,6 +753,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
   .product-image.is-loading { animation: none; }
   .product-image img { opacity: 1; }
+  .deshacer-barra { animation: none; }
+  .fila-vertodo:hover svg, .fila-vertodo:focus-visible svg { transform: none; }
 }
 
 /* ---- Canasta ----------------------------------------------------------
@@ -851,6 +871,25 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .recibo-sello span { display: grid; width: 30px; height: 30px; flex: none; place-items: center; background: var(--ambar); border-radius: 50%; color: var(--horno); font: 700 .95rem/1 Arial, sans-serif; }
 .recibo-datos { display: grid; margin: 0 0 1.3rem; gap: .4rem; }
 .recibo-datos div[hidden] { display: none; }
+.recibo-datos dd { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
+.recibo-copiar { padding: .2rem .55rem; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .72rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.recibo-copiar:hover { background: var(--papel); border-color: var(--corteza); }
+.recibo-copiado { margin: 0 0 .5rem; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
+.recibo-copiado[hidden] { display: none; }
+
+/* La barra de deshacer. Por encima del panel -z-index 22 contra 21- porque se
+   quita desde la ficha del catalogo y tambien desde la lista de la canasta, y
+   en el segundo caso tiene que verse sobre la gaveta. */
+.deshacer-barra { position: fixed; bottom: calc(20px + env(safe-area-inset-bottom)); left: 50%; z-index: 22; display: flex; align-items: center; gap: .9rem; width: min(420px, calc(100vw - 32px)); padding: .7rem .8rem .7rem 1rem; background: var(--horno); border-radius: var(--r-btn); box-shadow: var(--shadow-float); color: var(--sobre-horno); transform: translateX(-50%); animation: deshacer-entra var(--dur-base) var(--ease-out) both; }
+.deshacer-barra[hidden] { display: none; }
+.deshacer-texto { margin: 0; margin-right: auto; font: .85rem/1.35 Arial, sans-serif; }
+.deshacer-boton { flex: 0 0 auto; padding: .45rem .9rem; background: var(--ambar); border: 0; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
+.deshacer-boton:hover { background: var(--ambar-claro); }
+@keyframes deshacer-entra { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* El telefono y las redes son de ejemplo y el pie lo dice, igual que ya se
+   declaran el QR de adorno y los datos bancarios. */
+.contacto-ficticio { margin: .9rem 0 0; color: var(--sobre-horno-tenue); font: .74rem/1.45 Arial, sans-serif; }
 .recibo-titulo { margin: 0 0 .5rem; color: var(--horno-suave); font: 700 .78rem/1.3 Arial, sans-serif; }
 .recibo-lista { margin: 0; padding: 0; list-style: none; }
 .recibo-lista li { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--masa-linea); font: .85rem/1.4 Arial, sans-serif; font-variant-numeric: tabular-nums; }

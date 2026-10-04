@@ -74,6 +74,8 @@ Resumen de cuál sostiene mejor cada heurística, para que sepas dónde apoyarte
 
 ## 4. Las violaciones. Dieciséis, verificadas sobre el código
 
+> **Leélo con la §11 al lado.** Este inventario es el del 2026-10-04 *antes* de arreglar nada, que es como tiene que ir en el informe: primero el hallazgo, después el arreglo. La §11 dice cuáles están cerradas y cómo. Y **V7 quedó retirada**: era un error mío, no una violación.
+
 Esto es lo que le faltaba al cuaderno. Cada una la comprobé en el código o en el HTML; donde no pude, lo digo.
 
 ### Severidad 3 — mayores
@@ -125,12 +127,17 @@ El rótulo de la fila dice *"Los más pedidos"* ([script.js:331](script.js#L331)
 
 Lo que lo convierte en violación de H4 además de H1: el horario del pie **sí** se calcula contra la hora real. Dos indicadores con la misma pinta, uno verdadero y otro decorativo. El usuario no tiene cómo saber cuál es cuál.
 
-#### V7 · El grupo de tamaños no dice que es un grupo de tamaños
-**Heurística: H6 · WCAG 1.3.1 (nivel A)**
+#### ~~V7 · El grupo de tamaños no dice que es un grupo de tamaños~~ — **RETIRADA, error mío**
+
+**No es una violación.** Los seis grupos llevan `role="group"` y un `aria-label` propio (`aria-label="Tamaño de Coca-Cola"`), así que con lector de pantalla se oye el nombre del grupo antes de las opciones. Lo di por ausente porque mi `grep` buscaba un patrón demasiado estrecho y no encontró nada; leí la falta de coincidencia como falta de rótulo. Es el tercer error del mismo tipo (ver §8) y por eso todo lo demás de esta lista lo volví a comprobar leyendo el código, no grepeando nombres adivinados.
+
+<details><summary>Lo que decía, para registro</summary>
 
 Los tamaños viven en un `<div class="card-tamanos">` ([styles.css:275](styles.css#L275)) sin `fieldset`, sin `legend`, sin `role="radiogroup"` y sin `aria-label`. Con lector de pantalla se oye *"500 ml, botón de radio, 1 de 3"* y nada dice que eso sea un tamaño.
 
 - Interesante para el informe: los grupos **del panel de la canasta** sí llevan `fieldset` + `legend` ("¿Cómo lo quieres?", "¿Cómo quieres pagar?"). El patrón correcto está en el proyecto y no se aplicó en las fichas. Eso es una violación de H4 también.
+
+</details>
 
 #### V8 · Quitar un producto no se puede deshacer
 **Heurística: H3**
@@ -209,7 +216,7 @@ Esta tabla es el centro del entregable. Ordénala por severidad, que es como se 
 | V4 | Teléfono y WhatsApp son marcadores | H1, H2 | — | 3 ó 1 | ✅ HTML |
 | V5 | "Los más pedidos" rotula los 18 productos | H2 | — | 2 | ✅ código |
 | V6 | La nota del hero finge ser dato en vivo | H1, H4 | — | 2 | ✅ HTML |
-| V7 | El grupo de tamaños no está rotulado | H6, H4 | 1.3.1 (A) | 2 | ✅ HTML |
+| ~~V7~~ | ~~El grupo de tamaños no está rotulado~~ | — | — | **retirada** | ❌ era error mío |
 | V8 | Quitar un producto no se puede deshacer | H3 | — | 2 | ✅ código |
 | V9 | El campo de contraseña no comprueba nada | H5, H8 | — | 2 | ✅ código |
 | V10 | No hay vista de todo el catálogo ordenable | H7, H6 | — | 2 | ✅ código |
@@ -220,11 +227,11 @@ Esta tabla es el centro del entregable. Ordénala por severidad, que es como se 
 | V15 | Una instrucción tapa un problema de descubribilidad | H10, H8 | — | 1 | ✅ HTML |
 | V16 | Objetivos táctiles | — | 2.5.8 (AA) | ? | ❌ sin medir |
 
-Las diez heurísticas tienen al menos una violación, lo que es buena señal de que el recorrido se hizo de verdad:
+Quince violaciones vivas tras retirar V7. Las diez heurísticas tienen al menos una, lo que es buena señal de que el recorrido se hizo de verdad:
 
 | H1 | H2 | H3 | H4 | H5 | H6 | H7 | H8 | H9 | H10 |
 |---|---|---|---|---|---|---|---|---|---|
-| V1 V3 V4 V6 V11 | V4 V5 | V1 V2 V8 V12 | V6 V7 | V9 V13 | V2 V7 V10 | V10 | V9 V15 | V13 | V15 |
+| V1 V3 V4 V6 V11 | V4 V5 | V1 V2 V8 V12 | V6 | V9 V13 | V2 V10 | V10 | V9 V15 | V13 | V15 |
 
 > **DECIDE TÚ:** ¿aceptas mis severidades? Cambia las que quieras, pero justifica cada una con frecuencia, impacto y persistencia (§2).
 >
@@ -234,7 +241,7 @@ Las diez heurísticas tienen al menos una violación, lo que es buena señal de 
 
 ## 6. La tabla cruzada: heurísticas × WCAG
 
-Esto no lo pide el enunciado y es lo que más te puede distinguir. Seis de las dieciséis violaciones son **a la vez** problema de usabilidad y de accesibilidad: V1, V3, V7, V11, V14 y V16.
+Esto no lo pide el enunciado y es lo que más te puede distinguir. Cinco de las quince violaciones son **a la vez** problema de usabilidad y de accesibilidad: V1, V3, V11, V14 y V16.
 
 El argumento que sostiene: usabilidad y accesibilidad no son dos trabajos sobre el mismo sitio. V1 es la misma decisión mirada dos veces — un carrusel sin pausa molesta a cualquiera (H3) y excluye a quien necesita más tiempo (WCAG 2.2.2).
 
@@ -269,6 +276,12 @@ Dos avisos sobre el punto 1, porque es donde se cae la gente:
 ## 8. Correcciones a datos que te di antes
 
 Dos errores míos, encontrados verificando para este archivo. Los dos estaban en documentos que podrías haber citado.
+
+### 8.0 El grupo de tamaños **sí** está rotulado. Retira V7
+
+Los seis `.card-tamanos` llevan `role="group"` y `aria-label="Tamaño de ‹producto›"`. Mi `grep` buscaba `<div class="[a-z-]*"><input class="tamano-input"` — un patrón que no admite atributos entre medias — y al no encontrar nada concluí que no había rótulo.
+
+**El patrón de mis tres errores es el mismo: inferir una ausencia de un `grep` que no encontró nada.** Un `grep` vacío significa que mi patrón no coincidió, no que la cosa no exista. Por eso, antes de tocar el código, volví a comprobar V1, V2, V5, V8 y V10 leyendo las regiones completas: las cinco son reales.
 
 ### 8.1 La Powerade **no** es un callejón sin salida. Retira ese hallazgo
 
@@ -465,3 +478,69 @@ Con esas cinco, H3 pasa de "no cumple" a "cumple parcialmente", H2 queda limpia,
 **Arreglar sin documentar no da ningún punto.** El orden que paga dos veces: documentas la violación con su severidad y su justificación, *después* la arreglas, y documentas el antes y el después. El mismo trabajo cuenta en el criterio de heurísticas y en el de accesibilidad.
 
 Las secciones 9 y 10 son mi lectura del código, no tu informe: la explicación está aquí para que decidas y escribas, no para viajar tal cual.
+
+---
+
+## 11. Lo que se cambió, el 2026-10-04
+
+Catorce de las quince violaciones vivas quedan cerradas. La que falta, V16, no se puede cerrar sin un navegador.
+
+**Cómo llevarlo al informe:** este apartado es el "después". Presenta primero el inventario de §4 con sus severidades (el "antes"), y esta tabla como el resultado. Un hallazgo documentado y arreglado vale en el criterio de heurísticas *y* en el de accesibilidad; arreglado sin documentar no vale en ninguno.
+
+| # | Violación | Qué se hizo | Estado |
+|---|---|---|---|
+| V1 | La fila se mueve sola sin control de pausa | Botón de pausa/reanudar de 44×44 junto al rótulo, con `aria-pressed` y rótulo que cambia. Parado a mano, no lo reanudan ni el reloj ni las flechas | ✅ cerrada |
+| V2 | El comprobante no se puede guardar | Botón "Copiar" junto al número de pedido, con el mismo respaldo que el número de cuenta. Y la nota del pie ahora avisa: *"Apunta o copia el número antes de cerrar"* | ✅ cerrada |
+| V3 | El foco puede quedar tapado por la cabecera fija | `scroll-margin-top: 110px` en todo lo que recibe `:focus-visible` | ⚠️ aplicado, **confirma tú en el navegador** |
+| V4 | Teléfono y WhatsApp de relleno | Declarados en el pie: *"Teléfono y redes de ejemplo: es un proyecto de clase"*. Severidad 3 → 1 | ✅ cerrada |
+| V5 | "Los más pedidos" rotulaba los 18 | Pasa a "Nuestro mostrador", que es lo que hay | ✅ cerrada |
+| V6 | La nota del hero fingía ser dato en vivo | Sale del mismo cálculo que el horario del pie. Cinco estados probados: abierto, antes de abrir, ya cerró, sábado con horario distinto y festivo. El punto deja de latir en ámbar cuando está cerrado, que es para lo que existía su CSS | ✅ cerrada |
+| ~~V7~~ | ~~Grupo de tamaños sin rotular~~ | No hacía falta: ya estaba rotulado | ❌ retirada |
+| V8 | Quitar un producto no se puede deshacer | Barra de deshacer con 12 segundos de gracia, que repone la cantidad exacta. Cubre los dos caminos: la papelera y escribir 0 | ✅ cerrada |
+| V9 | El campo de contraseña no comprueba nada | Fuera del paso "entrar". En "crear cuenta" se queda, porque ahí sí se comprueba | ✅ cerrada |
+| V10 | No había vista de todo el catálogo ordenable | "Todo el catálogo" es una vista más, con sus mandos de ordenar y filtrar y su URL propia | ✅ cerrada |
+| V11 | Cuatro enlaces abrían pestaña nueva sin avisarlo | `sr-only` en los cuatro | ✅ cerrada |
+| V12 | Salir de la cuenta llevaba a "Crear cuenta" | Lleva a "Entrar" | ✅ cerrada |
+| V13 | El tope de 100 recortaba en silencio | *"El máximo es 100 por producto, así que quedaron 100 de Pan redondo"* | ✅ cerrada |
+| V14 | Contraste 4,49 sobre 4,5 | `--horno-claro` → `--horno-suave`: 4,49 → 6,79 | ✅ cerrada |
+| V15 | Una instrucción tapaba la descubribilidad | Botón "Ver todo el catálogo →" junto al rótulo, y fuera la frase *"Entra en Tienda para…"* | ✅ cerrada |
+| V16 | Objetivos táctiles sin medir | Nada: hay que medirlo en navegador (§4, V16) | ⚠️ pendiente |
+
+### Veredictos: antes y ahora
+
+| # | Heurística | Antes | Ahora |
+|---|---|---|---|
+| H1 | Visibilidad del estado del sistema | cumple parcialmente | **cumple** |
+| H2 | Correspondencia con el mundo real | cumple con una excepción | **cumple** |
+| H3 | Control y libertad del usuario | **no cumple** | **cumple** |
+| H4 | Consistencia y estándares | cumple fuera, falla dentro | **cumple** |
+| H5 | Prevención de errores | cumple | cumple |
+| H6 | Reconocimiento antes que recuerdo | cumple parcialmente | **cumple** |
+| H7 | Flexibilidad y eficiencia de uso | cumple con una falta | **cumple** |
+| H8 | Diseño estético y minimalista | cumple con dos excesos | **cumple** |
+| H9 | Recuperarse de los errores | cumple | cumple |
+| H10 | Ayuda y documentación | cumple con una alarma | **cumple** |
+
+**Las diez cumplen**, con una reserva honesta que conviene escribir tal cual en el informe: H1 depende de que confirmes V3 en el navegador, y la accesibilidad completa depende de V16. Decirlo es mejor que afirmar diez limpias y que te encuentren la undécima.
+
+### Lo que se tocó
+
+| Archivo | Qué |
+|---|---|
+| [index.html](index.html) | Nota del hero con piezas nombradas; `sr-only` en 3 enlaces; nota del teléfono ficticio; entrada "Todo el catálogo" en Tienda |
+| [script.js](script.js) | Botón de pausa; botón "Ver todo"; rótulo de la fila; vista `catalogo`; barra de deshacer; copiar el número de pedido; nota del hero desde el horario; salir → "Entrar"; fuera el campo de contraseña de entrar; aviso del recorte; `sr-only` del enlace de WhatsApp; el cerco de foco admite anexos |
+| [styles.css](styles.css) | `.fila-cabeza`, `.fila-vertodo`, `.fila-pausa`, `.recibo-copiar`, `.recibo-copiado`, `.deshacer-barra`, `.contacto-ficticio`; `scroll-margin-top` del foco; contraste del `small`; movimiento reducido para lo nuevo |
+
+### Dos detalles que valen para el informe
+
+**El cerco de foco tuvo que crecer.** La barra de deshacer vive fuera del panel —hace falta así, porque se quita un producto tanto desde la ficha del catálogo como desde la lista de la canasta— pero el cerco de `Tab` solo recorría el panel. Sin tocarlo, la barra habría sido inalcanzable con teclado justo cuando más falta: al quitar una línea estando dentro de la canasta. Así que el cerco pasó a admitir "anexos". Es un buen ejemplo para el informe de que **un arreglo de usabilidad puede abrir un agujero de accesibilidad** si no se mira de los dos lados a la vez.
+
+**Deshacer en vez de confirmar.** Para V8 había dos caminos: preguntar antes ("¿seguro que quieres quitarlo?") o permitir deshacer después. Nielsen prefiere el segundo y la razón es de coste: la confirmación molesta **siempre**, incluso cuando acertaste, mientras que el deshacer solo se usa cuando te equivocaste. Es un argumento que puedes defender y que demuestra que entendiste la heurística, no solo que la citaste.
+
+### Comprobado
+
+**38 comprobaciones** sobre `index.html` + `script.js` cargados de verdad en jsdom, en dos tandas: 31 de resultado inmediato y 7 que esperan, porque entrar en una categoría aplica el filtro 160 ms después (la transición de salida). Las 38 pasan y no hay errores de ejecución. Cubren cada arreglo y además lo que ya funcionaba — el teclado, el mapa, el cerco de foco, los desplegables — porque `script.js` es un único IIFE y un error en ejecución se lleva la página entera.
+
+La nota del hero se probó aparte con el reloj falseado en cinco momentos: martes a las 10:00 (*"Horneando ahora mismo / Abierto hasta las 20:00"*), martes a las 03:00 (*"El horno se está calentando / Abrimos a las 08:00"*), martes a las 22:00 (*"Ya cerramos por hoy"*), sábado a las 20:30 — que tiene horario distinto, hasta las 21:00 — y el 25 de diciembre (*"Hoy no horneamos / Día festivo"*). En los tres casos de cerrado el punto deja de latir en ámbar.
+
+Lo que las pruebas **no** pueden ver, y por eso te toca a ti: nada de lo que dependa de medidas en pantalla. V3 (el foco bajo la cabecera), V16 (los objetivos táctiles) y que la barra de deshacer no se pise con el botón flotante en el teléfono.

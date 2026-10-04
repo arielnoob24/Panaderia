@@ -47,7 +47,12 @@ Este es el orden real de tabulación en escritorio, medido sobre la página, no 
 | 40–43 | Pie: logo, Ver en el mapa, Instagram, teléfono |
 | 44 | **Botón flotante de la canasta** |
 
-**Cuidado con ese 44.** Es el número de *controles*, no de paradas. Un grupo de radios con el mismo `name` es **una sola parada**: `Tab` entra en el que está marcado y las flechas se mueven por dentro. Hay 11 radios de tamaño repartidos en 5 grupos, así que las paradas reales son 40 − 11 + 5 + 2 flechas = **36**. Si lo citas en un informe, cita 36.
+**Cuidado con ese 44, y la tabla ya no está al día.** Dos avisos:
+
+1. **44 era el número de *controles*, no de paradas.** Un grupo de radios con el mismo `name` es **una sola parada**: `Tab` entra en el que está marcado y las flechas se mueven por dentro.
+2. **El 2026-10-04 se añadieron dos controles** en la cabeza del mostrador, "Ver todo el catálogo" y el botón de pausa, que entran después de "Encuentra tu local".
+
+Medido hoy: 42 controles alcanzables, de los que 11 son radios en 5 grupos, más las 2 flechas de la fila → **38 paradas**. Si lo citas en un informe, cita 38.
 
 Dos cosas a notar:
 

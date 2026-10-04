@@ -16,6 +16,11 @@
   // cerco de Tab ya lo impedia, pero solo para quien tabula; esto lo cierra
   // para todos. Se lleva en un conjunto para que abrir dos veces no descuadre
   // la cuenta y el ultimo en cerrarse sea el que vuelve a encenderla.
+  // Cajas de fuera del panel que el cerco tiene que incluir mientras el panel
+  // este abierto. Sin esto, la barra de deshacer seria inalcanzable con teclado
+  // justo cuando mas falta: al quitar una linea desde dentro de la canasta.
+  const anexosDeFoco = new Set();
+
   const panelesAbiertos = new Set();
   const detras = () => [
     document.querySelector('.site-header'),
@@ -326,10 +331,26 @@
     // La fila necesita decir que es: sin nombre parecia el catalogo entero
     // puesto de lado. Va fuera de la zona para no pasar por debajo de las
     // flechas, que estan pegadas a los bordes.
+    const cabezaFila = document.createElement('div');
+    cabezaFila.className = 'fila-cabeza';
     const rotulo = document.createElement('h3');
     rotulo.className = 'fila-rotulo';
-    rotulo.textContent = 'Los más pedidos';
-    zona.before(rotulo);
+    // Decia "Los mas pedidos" y debajo estaban los dieciocho productos, sin
+    // ningun dato de ventas detras: un rotulo afirmando lo que el sitio no
+    // sabe. Ahora nombra lo que hay.
+    rotulo.textContent = 'Nuestro mostrador';
+    // La puerta al catalogo entero. Antes esto era una frase en el aviso de
+    // abajo -"Entra en Tienda para ver una categoria completa"-, es decir una
+    // instruccion tapando que no habia por donde entrar.
+    const verTodo = document.createElement('button');
+    verTodo.type = 'button';
+    verTodo.className = 'fila-vertodo';
+    verTodo.innerHTML = 'Ver todo el catálogo<svg viewBox="0 0 24 24" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.9" stroke-linecap="round" '
+      + 'stroke-linejoin="round" aria-hidden="true" focusable="false">'
+      + '<path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>';
+    cabezaFila.append(rotulo, verTodo);
+    zona.before(cabezaFila);
     zona.append(productGrid);
     flechas = [-1, 1].map((ir) => {
       const b = document.createElement('button');
@@ -373,6 +394,7 @@
     const puedeAndar = () => productGrid.classList.contains('is-fila')
       && !reducedMotion.matches
       && !document.hidden
+      && !productGrid.estaParada?.()
       && productGrid.scrollWidth - productGrid.clientWidth > 24;
 
     const avanzar = () => {
@@ -385,7 +407,10 @@
       productGrid.scrollBy({ left: pasoFila(), behavior: 'smooth' });
     };
 
-    const arrancar = () => { if (!reloj) reloj = setInterval(avanzar, CADA); };
+    const arrancar = () => {
+      if (productGrid.estaParada?.()) return;
+      if (!reloj) reloj = setInterval(avanzar, CADA);
+    };
     const parar = () => { clearInterval(reloj); reloj = null; };
     // Tras tocarla a mano se le da un respiro largo: seguir empujando mientras
     // alguien decide que lleva es la forma mas rapida de molestar.
@@ -403,7 +428,47 @@
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) parar(); else arrancar();
     });
+    // El boton de pausa queda fuera de la vigilancia del foco: si entrar en el
+    // lo marcase como "hay alguien eligiendo", pulsarlo no se distinguiria de
+    // pasar por encima.
     flechas.forEach((b) => b.addEventListener('click', respiro));
+
+    // La fila se adelanta sola, y eso necesita un boton que la pare: no vale
+    // que se detenga al pasar el raton o al entrar el foco, porque eso es un
+    // efecto secundario de hacer otra cosa, no una manera de pedirlo. Quien la
+    // para, la para hasta que diga lo contrario.
+    let parada = false;
+    const botonPausa = document.createElement('button');
+    botonPausa.type = 'button';
+    botonPausa.className = 'fila-pausa';
+    const PAUSA_ICONO = (quieta) => '<svg viewBox="0 0 24 24" fill="currentColor" '
+      + 'aria-hidden="true" focusable="false">'
+      + (quieta ? '<path d="M8 5.5l11 6.5-11 6.5z"/>'
+                : '<rect x="7" y="5.5" width="3.4" height="13" rx="1"/>'
+                  + '<rect x="13.6" y="5.5" width="3.4" height="13" rx="1"/>')
+      + '</svg>';
+    const pintarPausa = () => {
+      botonPausa.innerHTML = PAUSA_ICONO(parada);
+      botonPausa.setAttribute('aria-pressed', String(parada));
+      const dice = parada ? 'Reanudar el avance del mostrador' : 'Detener el avance del mostrador';
+      botonPausa.setAttribute('aria-label', dice);
+      botonPausa.dataset.tip = parada ? 'Reanudar' : 'Pausar';
+    };
+    botonPausa.addEventListener('click', () => {
+      parada = !parada;
+      pintarPausa();
+      if (parada) parar(); else arrancar();
+      avisos.textContent = parada
+        ? 'Mostrador detenido. No se moverá hasta que lo reanudes.'
+        : 'Mostrador en marcha otra vez.';
+    });
+    pintarPausa();
+    cabezaFila.append(botonPausa);
+    // abrirCategoria se declara mas abajo en este mismo ambito; al pulsar ya
+    // existe, igual que 'avisos', que tambien se usa aqui y nace despues.
+    verTodo.addEventListener('click', () => abrirCategoria('catalogo'));
+    // Mientras este parado a mano, ni el reloj ni las flechas lo reanudan.
+    productGrid.estaParada = () => parada;
     productGrid.andarSola = { arrancar, parar };
     arrancar();
   }
@@ -434,7 +499,8 @@
     productGrid?.classList.toggle('is-fila', category === 'todos');
     productGrid?.classList.remove('is-filtering');
     // Cuantos hay en la categoria antes de filtrar nada: es el "de cuantos".
-    const deLaCategoria = products.filter((p) => category === 'todos' || p.dataset.category === category);
+    const todoJunto = category === 'todos' || category === 'catalogo';
+    const deLaCategoria = products.filter((p) => todoJunto || p.dataset.category === category);
     const total = deLaCategoria.length;
 
     // Ordenar se hace con la propiedad order y no moviendo nodos: las fichas
@@ -449,7 +515,7 @@
     porOrden.forEach((p, i) => { p.style.order = String(i); });
 
     products.forEach((product) => {
-      const deAqui = category === 'todos' || product.dataset.category === category;
+      const deAqui = todoJunto || product.dataset.category === category;
       // El filtro solo manda dentro de una categoria; en el mostrador no hay
       // barra con que tocarlo, asi que ahi se sale todo como siempre.
       const pasaFiltro = category === 'todos' || !soloDisponibles
@@ -484,7 +550,7 @@
       // En el mostrador, el aviso dice ademas por donde se ve todo: si no, la
       // fila parece el catalogo entero y la cuadricula no la encuentra nadie.
       catalogStatus.textContent = category === 'todos'
-        ? `${cuantos} en el mostrador. Entra en Tienda para ver una categoría completa.`
+        ? `${cuantos} en el mostrador.`
         : `${dice}. ${cuantos} en esta categoría.`;
     }
     productGrid?.mirarPuntas?.();
@@ -780,6 +846,30 @@
     else if (currentMinutes < toMinutes(opening)) estado = `Cerrado · abre ${opening}`;
     else estado = 'Cerrado · abre mañana';
     label.lastChild.textContent = ` ${estado}`;
+
+    // La nota del hero decia "Recien salido del horno · Sale a las 17:00" en
+    // texto fijo, con un punto de estado al lado que latia en ambar a cualquier
+    // hora: el CSS de "cerrado" existia para ese punto y nada lo activaba. Era
+    // el sitio afirmando un dato que no tenia, al lado de un horario que si se
+    // calcula. Ahora las dos cosas salen del mismo calculo.
+    const nota = document.querySelector('.hero-note');
+    const notaTitulo = nota?.querySelector('.hero-note-titulo');
+    const notaDato = nota?.querySelector('.hero-note-dato');
+    if (!notaTitulo || !notaDato) return;
+    nota.querySelector('.status-dot')?.classList.toggle('is-closed', !isOpen);
+    if (isOpen) {
+      notaTitulo.textContent = 'Horneando ahora mismo';
+      notaDato.textContent = `Abierto hasta las ${closing}`;
+    } else if (holiday) {
+      notaTitulo.textContent = 'Hoy no horneamos';
+      notaDato.textContent = 'Día festivo · volvemos mañana';
+    } else if (currentMinutes < toMinutes(opening)) {
+      notaTitulo.textContent = 'El horno se está calentando';
+      notaDato.textContent = `Abrimos a las ${opening}`;
+    } else {
+      notaTitulo.textContent = 'Ya cerramos por hoy';
+      notaDato.textContent = `Mañana abrimos a las ${opening}`;
+    }
   };
 
   // Mientras un panel esta abierto el foco no puede escaparse a la pagina de
@@ -790,13 +880,16 @@
       if (!abierto()) return;
       if (e.key === 'Escape') { cerrar(); return; }
       if (e.key !== 'Tab') return;
-      const focos = focosDe(panel);
+      // El panel primero y los anexos despues: el recorrido tiene que acabar
+      // en la barra de deshacer, que es lo ultimo que aparece en pantalla.
+      const focos = [panel, ...anexosDeFoco].flatMap((caja) => focosDe(caja));
       if (!focos.length) return;
       const primero = focos[0], ultimo = focos[focos.length - 1];
       // Si el foco acabo fuera -en el body, por ejemplo, porque se escondio el
       // boton que lo tenia al cambiar de paso-, la siguiente tecla lo devuelve
       // dentro en vez de echarlo a pasear por la pagina de detras.
-      if (!panel.contains(document.activeElement)) {
+      const dentro = [panel, ...anexosDeFoco].some((caja) => caja.contains(document.activeElement));
+      if (!dentro) {
         e.preventDefault();
         (e.shiftKey ? ultimo : primero).focus();
         return;
@@ -1061,7 +1154,8 @@
     + '<p class="recibo-simulado">Pedido simulado. Es una demostración académica: '
     + 'no se realizó ningún cobro y la panadería todavía no ha recibido nada.</p>'
     + '<dl class="recibo-datos">'
-    + '<div><dt>Número de pedido</dt><dd><span class="recibo-numero">ET-0000</span></dd></div>'
+    + '<div><dt>Número de pedido</dt><dd><span class="recibo-numero">ET-0000</span>'
+    + '<button class="recibo-copiar" type="button">Copiar</button></dd></div>'
     + '<div><dt>Subtotal</dt><dd class="recibo-subtotal">$0.00</dd></div>'
     + '<div><dt>Envío</dt><dd class="recibo-envio">Gratis</dd></div>'
     + '<div><dt>Total</dt><dd class="recibo-total">$0.00</dd></div>'
@@ -1072,9 +1166,12 @@
     + '<h3 class="recibo-titulo">Lo que pediste</h3><ul class="recibo-lista"></ul></div>'
     + '<div class="canasta-pie">'
     + '<a class="button button-yellow canasta-avisar" href="#" target="_blank" rel="noopener">'
-    + 'Avisar a la panadería por WhatsApp <span aria-hidden="true">↗</span></a>'
+    + 'Avisar a la panadería por WhatsApp <span aria-hidden="true">↗</span>'
+    + '<span class="sr-only"> (abre en una pestaña nueva)</span></a>'
+    + '<p class="recibo-copiado" role="status" hidden></p>'
     + '<button class="canasta-listo" type="button">Cerrar</button>'
-    + '<p class="canasta-nota">Al avisar por WhatsApp confirmamos la hora y el pago de verdad.</p>'
+    + '<p class="canasta-nota">Apunta o copia el número antes de cerrar: al cerrar, '
+    + 'el pedido queda cumplido y la canasta se vacía.</p>'
     + '</div></section>'
 
     + '</div>';
@@ -1082,7 +1179,21 @@
   avisos.className = 'sr-only';
   avisos.setAttribute('role', 'status');
   avisos.setAttribute('aria-live', 'polite');
-  document.body.append(fondo, panel, avisos);
+
+  // La barra de deshacer. Vive en el body y no dentro del panel porque se
+  // quita desde los dos sitios: desde la ficha del catalogo y desde la lista de
+  // la canasta. Va por encima del panel para que se vea en ambos casos, y se
+  // apunta en los anexos del cerco para que el tabulador la alcance.
+  const barraDeshacer = document.createElement('div');
+  barraDeshacer.className = 'deshacer-barra';
+  barraDeshacer.hidden = true;
+  barraDeshacer.innerHTML = '<p class="deshacer-texto"></p>'
+    + '<button class="deshacer-boton" type="button">Deshacer</button>';
+  const deshacerTexto = barraDeshacer.querySelector('.deshacer-texto');
+  const deshacerBoton = barraDeshacer.querySelector('.deshacer-boton');
+  anexosDeFoco.add(barraDeshacer);
+
+  document.body.append(fondo, panel, avisos, barraDeshacer);
 
   const titulo = panel.querySelector('#canasta-titulo');
   const pasos = [...panel.querySelectorAll('.canasta-paso')];
@@ -1116,6 +1227,8 @@
   const copiado = panel.querySelector('.pago-copiado');
   const avisar = panel.querySelector('.canasta-avisar');
   const listo = panel.querySelector('.canasta-listo');
+  const reciboCopiar = panel.querySelector('.recibo-copiar');
+  const reciboCopiado = panel.querySelector('.recibo-copiado');
 
   // Llevarlo cuesta; pasar a retirarlo, no. De ahi que haya dos sumas: la del
   // pan y la del pedido. Antes solo habia una y el envio no existia.
@@ -1459,6 +1572,22 @@
     temporal.remove();
     return hecho;
   };
+  reciboCopiar.addEventListener('click', async () => {
+    const texto = panel.querySelector('.recibo-numero').textContent.trim();
+    let hecho = false;
+    try {
+      if (!navigator.clipboard) throw new Error('sin portapapeles');
+      await navigator.clipboard.writeText(texto);
+      hecho = true;
+    } catch (e) {
+      hecho = respaldoCopiar(texto);
+    }
+    reciboCopiado.hidden = false;
+    reciboCopiado.textContent = hecho
+      ? `Número ${texto} copiado.`
+      : `No se pudo copiar; apunta el ${texto} a mano.`;
+  });
+
   copiar.addEventListener('click', async () => {
     const texto = panel.querySelector('.pago-cuenta').textContent.trim();
     let hecho = false;
@@ -1623,11 +1752,50 @@
     irA('pago');
   });
 
+  // Lo ultimo que se quito, por si hay que reponerlo. Se guarda una copia: la
+  // linea original se borra del pedido y no se puede confiar en la referencia.
+  const ESPERA_DESHACER = 12000;
+  let borrado = null;
+  let relojDeshacer = 0;
+
+  const olvidarBorrado = () => {
+    window.clearTimeout(relojDeshacer);
+    relojDeshacer = 0;
+    borrado = null;
+    barraDeshacer.hidden = true;
+  };
+
+  const anotarBorrado = (id, linea) => {
+    borrado = { id, linea: { ...linea } };
+    deshacerTexto.textContent = linea.cantidad === 1
+      ? `Quitaste ${linea.nombre}.`
+      : `Quitaste ${linea.nombre} (${linea.cantidad} unidades).`;
+    barraDeshacer.hidden = false;
+    window.clearTimeout(relojDeshacer);
+    relojDeshacer = window.setTimeout(olvidarBorrado, ESPERA_DESHACER);
+  };
+
+  const deshacerBorrado = () => {
+    if (!borrado) return;
+    const { id, linea } = borrado;
+    pedido.set(id, { ...linea });
+    olvidarBorrado();
+    pintar();
+    avisos.textContent = `${linea.nombre} vuelve a la canasta. ${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
+  };
+
+  deshacerBoton.addEventListener('click', deshacerBorrado);
+
   const cambiar = (id, delta) => {
     const l = pedido.get(id);
     if (!l) return;
     l.cantidad += delta;
-    if (l.cantidad < 1) pedido.delete(id); else pedido.set(id, l);
+    if (l.cantidad < 1) {
+      anotarBorrado(id, { ...l, cantidad: 1 });
+      pedido.delete(id);
+    } else {
+      pedido.set(id, l);
+    }
     pintar();
   };
 
@@ -1654,8 +1822,10 @@
     restablecerPagar();
     olvidarTarjeta();
     copiado.hidden = true;
+    reciboCopiado.hidden = true;
     if (pasoActual === 'comprobante') {
       cobro.numero = '';
+      olvidarBorrado();
       pedido.clear();
       // Pedido cumplido: el proximo empieza de cero, tambien en la forma de
       // pago. Cerrar a medio pago si conserva lo elegido, que no se ha gastado.
@@ -1797,6 +1967,8 @@
       const antes = cuantos();
       if (pedida === antes) { cuentaFicha.value = antes; return; }
       if (pedida <= 0) {
+        const antesDeBorrar = pedido.get(id);
+        if (antesDeBorrar) anotarBorrado(id, antesDeBorrar);
         pedido.delete(id);
         pintar();
         avisos.textContent = `${comoSeLlama} quitado. ${cuantosQuedan()}`;
@@ -1804,10 +1976,13 @@
         return;
       }
       const l = pedido.get(id) || { nombre: comoSeLlama, precio: precioDe(), cantidad: 0 };
+      const recortado = (parseInt(cuentaFicha.value, 10) || 0) > MAX_UNIDADES;
       l.cantidad = pedida;
       pedido.set(id, l);
       pintar();
-      avisos.textContent = `${pedida} de ${comoSeLlama}. ${cuantosQuedan()}`;
+      avisos.textContent = recortado
+        ? `El máximo es ${MAX_UNIDADES} por producto, así que quedaron ${MAX_UNIDADES} de ${comoSeLlama}. ${cuantosQuedan()}`
+        : `${pedida} de ${comoSeLlama}. ${cuantosQuedan()}`;
     });
 
     menos.addEventListener('click', () => {
@@ -1905,10 +2080,9 @@
     + '<section class="cuenta-paso" data-paso="entrar" hidden>'
     + '<div class="cuenta-cuerpo">'
     + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor no hay '
-    + 'contraseña que comprobar: entra cualquiera. Solo se busca el correo de la cuenta '
-    + 'que creaste en este navegador.</p>'
+    + 'contraseña que comprobar, así que no se pide: basta el correo de la cuenta que '
+    + 'creaste en este navegador. Pedirla para luego tirarla sería fingir.</p>'
     + campoHtml('entrar-correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
-    + campoHtml('entrar-clave', 'Contraseña', 'type="password" autocomplete="current-password" maxlength="40"')
     + '</div>'
     + '<div class="cuenta-pie">'
     + '<p class="cuenta-aviso" role="alert" hidden></p>'
@@ -1952,7 +2126,7 @@
   const avisoCrear = panelC.querySelector('[data-paso="crear"] .cuenta-aviso');
   const avisoEntrar = panelC.querySelector('[data-paso="entrar"] .cuenta-aviso');
   const correoEntrar = panelC.querySelector('#cuenta-entrar-correo');
-  const claveEntrar = panelC.querySelector('#cuenta-entrar-clave');
+  // En "entrar" ya no hay campo de contrasena: ver el parrafo de la maqueta.
   const errorEntrarCorreo = panelC.querySelector('#cuenta-entrar-correo-error');
 
   const TITULOS_CUENTA = { crear: 'Crear cuenta', entrar: 'Entrar', sesion: 'Tu cuenta' };
@@ -2050,7 +2224,6 @@
     avisoCrear.hidden = true;
     avisoEntrar.hidden = true;
     correoEntrar.value = '';
-    claveEntrar.value = '';
     errorEntrarCorreo.hidden = true;
     correoEntrar.classList.remove('is-mal');
   };
@@ -2285,7 +2458,7 @@
     sesion.dentro = false;
     try { window.localStorage.removeItem(CLAVE_CUENTA); } catch (e) { /* no habia nada guardado */ }
     pintarSesion();
-    verPaso('crear');
+    verPaso('entrar');
     tituloC.focus();
     avisos.textContent = `Saliste de la cuenta de ${nombre}.`;
   });

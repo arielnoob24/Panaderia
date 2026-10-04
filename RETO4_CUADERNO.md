@@ -301,7 +301,7 @@ Esta la tienes completamente cubierta y documentada aparte: **[ACCESIBILIDAD_TEC
 
 | Evidencia | Dato |
 |---|---|
-| Todo alcanzable con teclado | 36 paradas de tabulación en la portada, orden medido, ninguna trampa |
+| Todo alcanzable con teclado | 38 paradas de tabulación en la portada, orden medido, ninguna trampa |
 | Foco visible | anillo doble 3 px + halo 5 px, un solo estilo en todo el sitio |
 | Enlace para saltar al contenido | sí, `.skip-link`, visible al recibir foco |
 | Paneles modales con el foco contenido y `Esc` | 2 diálogos, los 2 con `aria-modal="true"` + `aria-labelledby` |
@@ -494,7 +494,7 @@ Medido el **2026-10-04** sobre el sitio actual, cargando `index.html` + `script.
 | `aria-expanded` / `aria-controls` / `aria-describedby` | — | 3 / 3 / 12 |
 | SVG decorativos bien ocultos | — | **19 de 19** |
 | Fichas de producto | 18 (3 agotadas, 6 con tamaños) | igual |
-| Paradas de tabulación en la portada | — | **36** (40 controles, pero los 11 radios forman 5 grupos de una parada cada uno, más 2 flechas) |
+| Paradas de tabulación en la portada | — | **38** (42 controles, los 11 radios forman 5 grupos de una parada cada uno, más 2 flechas). Eran 36 antes de los arreglos del 2026-10-04 |
 
 ### 7.2 Contraste de color
 
