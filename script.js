@@ -1267,6 +1267,10 @@
   // Cada ficha del catalogo deja aqui su manera de repintarse: lo que cambia en
   // el panel (o al restaurar el pedido guardado) tiene que verse en el catalogo.
   const refrescos = [];
+  // Y donde vive el boton "mas" de cada producto, para poder devolverle el
+  // foco. Es una funcion y no un id fijo porque lo que viene en varios tamanios
+  // cambia de identificador al cambiar el tamanio elegido.
+  const botonesMas = [];
 
   const pintar = () => {
     lista.textContent = '';
@@ -1782,6 +1786,23 @@
     olvidarBorrado();
     pintar();
     avisos.textContent = `${linea.nombre} vuelve a la canasta. ${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
+    // La barra acaba de esconderse con el foco dentro, asi que hay que
+    // recogerlo: si no, se va al body y quien usa teclado pierde el sitio.
+    // Va al "mas" del producto repuesto, que es a donde manda tambien quitar
+    // la ultima unidad desde la ficha. Pero el destino depende de desde donde
+    // se quito: con el panel abierto el catalogo esta inert, y a lo inerte no
+    // se le puede dar el foco -lo intenta y se queda en el body-, asi que ahi
+    // el sitio es el "mas" de la linea recien repuesta dentro del panel.
+    // Si el panel esta abierto el destino vive dentro de el; si no, en la ficha
+    // del catalogo. No vale mirar si el elemento "se ve": el panel cerrado sigue
+    // teniendo medidas y solo esta en visibility hidden, asi que parece valido
+    // y al darle el foco no pasa nada.
+    const destino = abierto()
+      ? ([...lista.querySelectorAll('.canasta-linea')]
+          .find((li) => li.querySelector('h3')?.textContent === linea.nombre)
+          ?.querySelector('[data-mas]') || panel.querySelector('.canasta-cerrar'))
+      : botonesMas.find(({ coincide }) => coincide(id))?.boton;
+    destino?.focus();
   };
 
   deshacerBoton.addEventListener('click', deshacerBorrado);
@@ -1925,6 +1946,7 @@
       if (importe) importe.textContent = dinero(precioDe());
     };
     refrescos.push(refrescar);
+    botonesMas.push({ coincide: (id) => idDeAhora() === id, boton: mas });
     tamanos.forEach((t) => t.addEventListener('change', () => {
       refrescar();
       avisos.textContent = `${nombreDe()}, ${dinero(precioDe())}.`;

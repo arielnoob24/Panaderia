@@ -33,14 +33,14 @@ Tres decisiones que explican lo demás:
 
 - **Sin framework ni compilación.** `index.html` se abre con doble clic y funciona. No hay `package.json`, ni `node_modules`, ni paso de build.
 - **Mejora progresiva.** Sin JavaScript el sitio no se rompe, **cambia**: los contadores de cantidad vuelven a ser enlaces de WhatsApp, la fila horizontal sale como cuadrícula entera y los enlaces de categoría bajan al catálogo.
-- **`script.js` es un único IIFE** de 2.473 líneas. Un error en ejecución se lleva la página entera, y `node --check` no lo detecta.
+- **`script.js` es un único IIFE** de 2.495 líneas. Un error en ejecución se lleva la página entera, y `node --check` no lo detecta.
 
 ### Tamaño real
 
 | Archivo | Líneas | Qué contiene |
 |---|---|---|
 | [index.html](index.html) | 123 | Estructura, 18 fichas de producto, JSON-LD, metadatos sociales |
-| [script.js](script.js) | 2.473 | Todo el comportamiento, en un IIFE |
+| [script.js](script.js) | 2.495 | Todo el comportamiento, en un IIFE |
 | [styles.css](styles.css) | 916 | Estilos, con `:root` de variables |
 
 ### Factor de forma
