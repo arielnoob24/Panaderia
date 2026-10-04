@@ -62,7 +62,7 @@ Los cuatro criterios son alcanzables al máximo con lo que ya hay reunido, pero 
 
 ## 3. Los cinco defectos que te pueden costar −2 cada uno
 
-Reordenados por **probabilidad de que los encuentre**, no por gravedad técnica. Y el orden cambió cuando me dijiste que el profesor va a probar la página solo con el teclado: eso sube a lo más alto dos cosas que de otro modo serían improbables.
+Reordenados por **probabilidad de que los encuentre**, no por gravedad técnica. El inventario completo y verificado —16 violaciones con severidad— está en [RETO4_01_HEURISTICAS.md](RETO4_01_HEURISTICAS.md) §4; esta sección se queda como el resumen de los que más riesgo tienen. Y el orden cambió cuando me dijiste que el profesor va a probar la página solo con el teclado: eso sube a lo más alto dos cosas que de otro modo serían improbables.
 
 ### 3.1 🔴 La fila del mostrador se mueve sola y no hay cómo pararla
 
@@ -84,13 +84,15 @@ La cabecera es `position: fixed` ([styles.css:69](styles.css#L69)) y mide unos 9
 - **No lo puedo confirmar yo**: hace falta un navegador. Te toma 30 segundos: baja media página, `Shift+Tab` varias veces y mira si algún elemento enfocado se mete debajo de la barra.
 - **Probabilidad: alta**, porque es exactamente lo que pasa tabulando, y es el método anunciado del profesor.
 
-### 3.3 🟠 La Powerade agotada tiene controles que no llevan a ninguna parte
+### 3.3 ~~La Powerade agotada tiene controles que no llevan a ninguna parte~~ — **RETIRADO, era un error mío**
 
-Tres fichas están agotadas. Dos de ellas no tienen nada tabulable, correcto. Pero la **Powerade** está agotada *y* tiene tamaños: sus dos radios siguen en el recorrido del tabulador (paradas 38 y 39 de la portada) y después **no hay botón `+`**. Tabulas, eliges un tamaño, y no hay nada que hacer con él.
+Escribí que la Powerade agotada dejaba tabular sus dos tamaños sin ofrecer botón. **Es falso.** Sus dos radios llevan `disabled` en el HTML, así que el tabulador no las toca; las tres fichas agotadas tienen **cero** controles alcanzables.
 
-- Es un callejón sin salida en el recorrido del teclado, y se encuentra tabulando.
-- **Probabilidad: alta** con el método del profesor. Invisible con ratón.
-- Esto es un error de diseño de interacción (−2), no de accesibilidad: el teclado funciona, lo que no tiene sentido es el estado.
+El error era de mi medición: el volcado del orden de tabulación no excluía los elementos deshabilitados y los contaba. Verificado y corregido el 2026-10-04 al preparar [RETO4_01_HEURISTICAS.md](RETO4_01_HEURISTICAS.md).
+
+**No lo lleves al informe.** Y el número de paradas de tabulación que te di, 44, también estaba mal por lo mismo más otra cosa: son **36**. Ver §8.2 de RETO4_01_HEURISTICAS.md.
+
+En su lugar, el tercer defecto más probable es **V2 del inventario de heurísticas**: el comprobante no se puede guardar ni copiar, y cerrar el panel vacía la canasta. Severidad 3, verificado en el código.
 
 ### 3.4 🟠 El teléfono y el WhatsApp son marcadores de posición
 

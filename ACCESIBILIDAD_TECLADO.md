@@ -47,10 +47,12 @@ Este es el orden real de tabulación en escritorio, medido sobre la página, no 
 | 40–43 | Pie: logo, Ver en el mapa, Instagram, teléfono |
 | 44 | **Botón flotante de la canasta** |
 
+**Cuidado con ese 44.** Es el número de *controles*, no de paradas. Un grupo de radios con el mismo `name` es **una sola parada**: `Tab` entra en el que está marcado y las flechas se mueven por dentro. Hay 11 radios de tamaño repartidos en 5 grupos, así que las paradas reales son 40 − 11 + 5 + 2 flechas = **36**. Si lo citas en un informe, cita 36.
+
 Dos cosas a notar:
 
 - El **botón de menú hamburguesa** (posición 12 en el documento) no aparece en escritorio porque está en `display: none`, y lo que no se muestra no se tabula. En móvil sí sale, y ahí desaparecen en cambio los enlaces de la barra hasta que se abre el menú.
-- Los productos **agotados** no tienen botón `+`, así que el tabulador se los salta. La Powerade, por ejemplo, deja tabular sus tamaños pero no tiene con qué pedirse. Correcto: no hay nada que activar.
+- Los productos **agotados** no tienen botón `+`, así que el tabulador se los salta por completo. La Powerade, además de no tener botón, lleva sus dos radios de tamaño con `disabled`, así que tampoco esas se tabulan. Las tres fichas agotadas tienen **cero** controles alcanzables: correcto, no hay nada que activar.
 
 ### Para la demostración
 
