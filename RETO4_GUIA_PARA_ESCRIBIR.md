@@ -6,14 +6,18 @@ Hecha el 2026-10-04. **Yo no escribo el informe: esta guía te dice qué escribi
 
 ## Parte 0. ¿Está listo? Qué sí y qué no
 
-| Criterio | Puntos | ¿Puedes escribirlo ya? |
-|---|---|---|
-| 1. Las 10 heurísticas de Nielsen | 5 | ✅ **Sí, del todo.** Material completo en [RETO4_01_HEURISTICAS.md](RETO4_01_HEURISTICAS.md) |
-| 2. Principios de accesibilidad | 5 | ⚠️ **Casi.** Los datos están, pero faltan 3 mediciones que solo puedes hacer tú (Parte 1, punto D) |
-| 3. Diseño de interacción | 5 | ⚠️ **Casi.** Las máquinas de estados están, pero el **diagrama hay que dibujarlo** |
-| 4. Las cinco conclusiones | 5 | ✅ **Sí.** Siete ángulos propuestos; elegir y escribir es tuyo |
+| Criterio | Puntos | ¿Puedes escribirlo ya? | Su archivo |
+|---|---|---|---|
+| 1. Las 10 heurísticas de Nielsen | 5 | ✅ **Sí, del todo** | [RETO4_01_HEURISTICAS.md](RETO4_01_HEURISTICAS.md) |
+| 2. Principios de accesibilidad | 5 | ✅ **Sí, del todo.** Las tres mediciones que faltaban están hechas | [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) |
+| 3. Diseño de interacción | 5 | ✅ **Sí**, con una cosa manual: el diagrama. Los clics ya están contados | [RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md) |
+| 4. Las cinco conclusiones | 5 | ✅ **Sí.** Siete ángulos propuestos; elegir y escribir es tuyo | [RETO4_CUADERNO.md](RETO4_CUADERNO.md) §6 |
 
-**Empieza por el criterio 1.** Es el único que no depende de nada más, y es el más largo. Cuando lo tengas, pídeme que organice el criterio 2 en su propio archivo como hice con las heurísticas.
+**Los cuatro criterios están listos para escribir.** Actualizado el 2026-10-04, después de medir en Chrome lo que faltaba.
+
+Lo único que queda sin hacer y que no es escribir: **dibujar el diagrama de estados** ([RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md) §2) y preguntarle al profesor lo del prototipo de baja fidelidad (Parte 1A).
+
+**Empieza por el criterio 1**, que es el más largo.
 
 ### Lo de las heurísticas, en concreto
 
@@ -55,19 +59,28 @@ Revisa al menos las cuatro de severidad 3 y decide si estás de acuerdo. Si camb
 
 > **Cambios que haces:** `__________`
 
-### D. Las tres mediciones que faltan
+### D. Las mediciones: tres hechas, dos te quedan
 
-**Hazlas antes de escribir el criterio 2**, porque sin ellas ese apartado queda con agujeros.
+Las tres que te había dejado pendientes **ya están medidas**, en el Chrome que tienes instalado, en siete escenarios y dos tamaños de pantalla. Resultados en [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) §1 y §7.
 
-| # | Qué medir | Cómo | Tiempo |
+| Qué | Resultado |
+|---|---|
+| Objetivos táctiles de 24×24 (2.5.8) | **Cumple** en los 7 escenarios: 6 controles pequeños, todos exentos por la excepción de espaciado |
+| Contraste del `h1` sobre la foto | **11,13** el titular, **3,82** el `<em>`. Los dos pasan |
+| Foco tapado por la cabecera (2.4.11) | **Cumple**, y también a nivel AAA — pero hubo que arreglar dos cosas que no sabía que estaban mal |
+
+Lo mismo con los clics del pedido: **contados**, 5 / 13 / 7 según el camino ([RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md) §3.1).
+
+**Lo que sí te queda**, y son doce minutos:
+
+| # | Qué | Cómo | Tiempo |
 |---|---|---|---|
-| 1 | Objetivos táctiles de 24×24 px | El snippet de [RETO4_CUADERNO.md](RETO4_CUADERNO.md) §8.1, en la consola del navegador (`F12`). Tres veces: a 1440 px, a 390 px y con la canasta abierta | 5 min |
-| 2 | Contraste del `h1` sobre la foto | DevTools: inspecciona el `h1`, pasa el ratón por el valor de `color`, te da el ratio | 2 min |
-| 3 | Si la cabecera fija tapa el foco | Baja media página y pulsa `Shift+Tab` seis o siete veces. Mira si algún elemento enfocado queda bajo la barra | 1 min |
+| 1 | **Zoom al 200 %** (WCAG 1.4.4) | Amplía hasta el 200 % y comprueba que no se pierde contenido ni aparece desplazamiento horizontal | 2 min |
+| 2 | **Lector de pantalla** | Narrador (`Ctrl + Win + Enter`) o NVDA. Diez minutos recorriendo el sitio, anotando qué sonó raro | 10 min |
 
-> **Resultados:** 1) `______` 2) `______` 3) `______`
+> **Resultados:** 1) `______` 2) `______`
 
-Y una cuarta que no es obligatoria pero vale mucho si te preguntan: **probar con lector de pantalla**. Windows trae Narrador (`Ctrl + Win + Enter`). Diez minutos recorriendo el sitio, y anota qué sonó raro.
+La segunda no es obligatoria, pero si te preguntan "¿lo probaste con lector de pantalla?", la respuesta tiene que ser sí.
 
 ---
 
@@ -257,11 +270,12 @@ Eso no es casualidad y da para un párrafo tuyo sobre consistencia interna. Preg
 
 Esa cuarta columna convierte una tabla de definiciones en una matriz de **cumplimiento**. Ejemplos de qué poner ahí: *"tabular desde el inicio sin tocar el ratón"*, *"con el cuentagotas de DevTools"*, *"con el snippet de la consola"*.
 
-**Cuántas filas:** de 12 a 16, tres o cuatro por principio. Los criterios que puedes citar están listados por principio en [RETO4_CUADERNO.md](RETO4_CUADERNO.md) §4.
+**La matriz ya está construida**, con 25 filas y las cuatro columnas rellenas: [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) §2. Cubre los cuatro principios e incluye los cuatro criterios nuevos de WCAG 2.2 (2.4.11, 2.5.8, 2.5.7 y 3.3.8). Lo que escribes tú es el párrafo de entrada —sobre qué versión, con qué herramienta, en qué escenarios— y el de cierre con lo que no se midió.
 
-**Datos:** [RETO4_CUESTIONARIO_TECNICO.md](RETO4_CUESTIONARIO_TECNICO.md) §4 (todo medido y verificado) y [ACCESIBILIDAD_TECLADO.md](ACCESIBILIDAD_TECLADO.md) para la operabilidad.
+**Tus dos mejores materiales aquí**, los dos en [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md):
 
-**Tu mejor material aquí:** el mapa de reparto. Era imposible de usar sin ratón y eso bloqueaba el pedido a domicilio entero. **No se arregló añadiendo un atributo: hubo que inventar una interacción que no existía** (marcar el centro del mapa). Es un fallo encontrado, diagnosticado y arreglado, no una casilla marcada.
+1. **El mapa de reparto** (§4). Era imposible de usar sin ratón y eso bloqueaba el pedido a domicilio entero. No se arregló añadiendo un atributo: hubo que **inventar una interacción que no existía**. Y esa interacción también sirve a quien usa el teléfono.
+2. **El arreglo que no servía de nada** (§3). Había puesto `scroll-margin-top` bajo `:focus-visible` para que la cabecera fija no tapara el foco. Al medirlo, no funcionaba: el navegador calcula el desplazamiento cuando la pseudoclase todavía no casa. Y al arreglarlo apareció un segundo tapador que no había visto, el botón flotante. **Una regla CSS que parece correcta puede no hacer nada, y solo medir el resultado lo dice.**
 
 **Cuánto:** dos o tres páginas.
 
@@ -273,33 +287,35 @@ Esa cuarta columna convierte una tabla de definiciones en una matriz de **cumpli
 
 Tres partes, y el enunciado las nombra una por una.
 
+Todo el material está en **[RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md)**.
+
 #### 8.1 Flujo de navegación — **el diagrama de estados**
 
-**Esto hay que dibujarlo.** Es lo único del informe que no se puede escribir.
+**Es lo único del informe que no se escribe: se dibuja.**
 
-Tienes tres máquinas de estados reales, con sus estados y transiciones, en [RETO4_CUADERNO.md](RETO4_CUADERNO.md) §5.1. Dibújalas con lo que sepas usar: draw.io, Figma, PowerPoint, o a mano y escaneado.
+Ya no partes de cero. En §2.1 están las tres máquinas con **cada transición verificada contra el código**, y en §2.2 el código en Mermaid, que se convierte en diagrama pegándolo en mermaid.live.
 
-Lo que **no** debe faltar en el diagrama:
-- Los estados como cajas, con su nombre
-- Las transiciones como flechas, **con el nombre del botón que las dispara**
-- La **guarda** entre entrega y pago (sin dirección no pasa): se dibuja como un rombo o una flecha etiquetada
-- Los puntos de vuelta atrás
+**Mi recomendación: redibújalo tú**, usando §2.1 como especificación y el Mermaid solo para comprobar que no te falta ninguna flecha. No es por la regla del 5 % —un diagrama no es texto—, es porque el criterio se llama "claridad del flujo": un diagrama que colocaste tú se lee mejor que uno autogenerado, y si te preguntan por una flecha, la sabrás. La lista de lo que no debe faltar está en §2.3.
 
 #### 8.2 Secuencia de tareas
 
-**Qué escribir:** los pasos del pedido completo, y **el número de clics mínimos, contado de verdad**.
+**Los clics ya están contados**, conduciendo la interfaz de verdad en Chrome: **5** el camino de retiro con efectivo, **13 + 76 teclas** el de domicilio con tarjeta, **7** el de transferencia. Los tres llegan al comprobante con su número. Desglose en §3.1.
 
-Los 12 pasos están en [RETO4_CUESTIONARIO_TECNICO.md](RETO4_CUESTIONARIO_TECNICO.md) §2. **Los clics los cuentas tú** recorriéndolo: una vez el camino corto (retiro + efectivo) y una vez el largo (domicilio + tarjeta).
+Lo que escribes tú es el párrafo de eficiencia: **por qué son 5 clics y no 8** (§3.2). La respuesta corta es que retiro y efectivo vienen marcados por defecto porque son el caso frecuente, y eso ahorra dos clics que nadie da.
 
-> **Clics:** retiro+efectivo `___` · domicilio+tarjeta `___`
+Un detalle de método que conviene declarar: conté como clic **enfocar un campo de texto**. Sin contarlo, el camino B son 8 clics. Di qué criterio usaste.
 
 #### 8.3 Respuesta del sistema (microinteracciones)
 
-**Qué escribir:** la tabla de [RETO4_CUESTIONARIO_TECNICO.md](RETO4_CUESTIONARIO_TECNICO.md) §3, que ya está por acción y por canal (visual, foco, anunciado).
+La tabla de 18 filas, por acción y por canal, está en [RETO4_CUESTIONARIO_TECNICO.md](RETO4_CUESTIONARIO_TECNICO.md) §3. El argumento que la acompaña está en [RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md) §4: el feedback va por **tres canales a la vez** y cada uno sirve a alguien distinto.
 
-Y un párrafo tuyo sobre **una** microinteracción, la que más te interese defender. Mi sugerencia: en el paso de pago el panel deja de ser una gaveta lateral y se planta en el centro con el resto desenfocado. Pregúntate qué comunica un cambio de **forma** del contenedor que no comunicaría un cambio de contenido dentro de la misma gaveta.
+Y un párrafo tuyo sobre **una** de las tres microinteracciones de §4, con su pregunta ya planteada.
 
-**Cuánto:** tres páginas con el diagrama.
+#### 8.4 Coherencia funcional
+
+Es el tercer trozo del criterio y el que más se olvida. §5 de [RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md), con el argumento fuerte: dos de las violaciones de la evaluación heurística eran **fallos de coherencia interna** — el proyecto ya hacía lo correcto en un sitio y no lo había aplicado en otro.
+
+**Cuánto:** de 4 a 5 páginas con el diagrama a página completa.
 
 ---
 
@@ -380,9 +396,9 @@ No escribas de arriba abajo. Este orden:
 | Paso | Qué | Tiempo |
 |---|---|---|
 | 1 | **Pregúntale al profesor** lo del prototipo de baja fidelidad (Parte 1A) | 1 día de espera |
-| 2 | **Haz las tres mediciones** (Parte 1D) | 10 min |
+| 2 | **Haz las dos mediciones que quedan**: zoom al 200 % y lector de pantalla (Parte 1D) | 12 min |
 | 3 | **Dibuja el diagrama de estados** (Sección 8.1). Hazlo pronto: dibujarlo te obliga a entender el flujo, y eso te ayuda a escribir todo lo demás | 1–2 h |
-| 4 | **Cuenta los clics** del pedido, los dos caminos | 10 min |
+| 4 | ~~Contar los clics~~ — ya están contados (§3.1 del entregable 3) | — |
 | 5 | **Escribe las secciones 3 y 4** (el cuadro y el inventario). Son tablas: es lo más mecánico y te mete en materia | 2–3 h |
 | 6 | **Escribe las secciones 5 y 6** (las mayores en detalle y lo corregido) | 2 h |
 | 7 | **Monta la matriz de accesibilidad** (sección 7) | 2 h |
@@ -414,9 +430,10 @@ Marca cada casilla. Si alguna queda vacía, no entregues todavía.
 
 - ⬜ Declaré que soy un solo evaluador y que evalué mi propio diseño
 - ⬜ Dije qué quedó sin arreglar (V16) y por qué
-- ⬜ Confirmé o descarté V3 en el navegador, y lo escribí
-- ⬜ Hice las tres mediciones
+- ⬜ Dije que V3 (el foco tapado) quedó **medido y corregido**, no solo "aplicado"
+- ⬜ Hice las dos mediciones que faltaban: zoom al 200 % y lector de pantalla
 - ⬜ Resolví lo del prototipo de baja fidelidad
+- ⬜ Declaré en el método del criterio 2 con qué se midió: Chrome, 7 escenarios, 2 tamaños de pantalla
 
 **Lo del 5 %**
 
@@ -437,8 +454,9 @@ Marca cada casilla. Si alguna queda vacía, no entregues todavía.
 ## Parte 7. Cuándo pedirme algo
 
 **Pídeme:**
-- Que organice el criterio 2, 3 o 4 en su archivo, como hice con las heurísticas
+- Que organice el criterio 4 (las conclusiones) en su propio archivo, si lo quieres aparte
 - Datos que no tengas: un recuento, una línea de código, un ratio
+- Que mida cualquier cosa en el navegador: ya está montado y puedo conducir tu Chrome
 - Que **revise** lo que escribiste: te digo si contradice al código, si está flojo o si suena a IA
 - Que arregle V16 si la medición te sale mal
 - Que te haga el guion de la demostración en vivo con teclado, con las preguntas probables

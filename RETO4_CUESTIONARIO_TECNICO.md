@@ -41,7 +41,7 @@ Tres decisiones que explican lo demás:
 |---|---|---|
 | [index.html](index.html) | 123 | Estructura, 18 fichas de producto, JSON-LD, metadatos sociales |
 | [script.js](script.js) | 2.473 | Todo el comportamiento, en un IIFE |
-| [styles.css](styles.css) | 908 | Estilos, con `:root` de variables |
+| [styles.css](styles.css) | 916 | Estilos, con `:root` de variables |
 
 ### Factor de forma
 
@@ -336,7 +336,14 @@ const anotarBorrado = (id, linea) => {
 
 Dos notas: el **halo ámbar** del anillo de foco da 2.15 por sí solo, pero el anillo es doble y la línea marrón de 3 px es la que cumple. Y el `small` de "Gratis" daba 4.49 (fallaba por 0,01) hasta el arreglo del 2026-10-04: ahora usa `#5e514a` y da 6.79.
 
-Pendiente: el `h1` va sobre una fotografía con velo, y eso no se puede medir sobre color plano.
+**El `h1` sobre la fotografía, medido en Chrome.** Los números de arriba son sobre color plano y ahí no valían, así que se escondió el texto, se capturó el fondo real y se muestrearon los píxeles:
+
+| Zona | Color del texto | Peor contraste del área | Exige | Resultado |
+|---|---|---|---|---|
+| Todo el `h1` (112 px, peso 500 → texto grande) | `rgb(58,40,34)` | **11,13** sobre 33.280 píxeles | 3 | pasa con holgura |
+| Solo el `<em>` *"de siempre"* | `rgb(168,95,69)` | **3,82** sobre 17.536 píxeles | 3 | pasa |
+
+Dato curioso para el informe: el contraste contra el píxel *mediano* del área del `<em>` sale **4,26**, exactamente el mismo número que da el cálculo sobre color plano (`--corteza` sobre `--masa`). El velo del hero deja el fondo prácticamente en el crema de la paleta, así que la foto no empeora el contraste.
 
 **Iconos e imágenes:**
 
@@ -382,8 +389,15 @@ a:focus-visible, button:focus-visible {
   box-shadow: 0 0 0 5px var(--ambar);
 }
 /* Para que la cabecera fija no tape lo que acaba de recibir el foco */
-a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible,
-textarea:focus-visible, [tabindex]:focus-visible { scroll-margin-top: 110px; }
+/* Y NO colgado de :focus-visible. El navegador calcula el desplazamiento en el
+   mismo instante en que mueve el foco, cuando la pseudoclase todavia no casa,
+   asi que ahi no servia de nada: medido con elementFromPoint, el elemento
+   seguia acabando debajo de la barra. El margen de abajo libra al boton
+   flotante de la canasta, que tambien tapaba. */
+a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
+  scroll-margin-top: 110px;
+  scroll-margin-bottom: 92px;
+}
 ```
 
 **El cerco de foco de los modales**, con dos detalles que no son habituales — recupera el foco si acabó fuera, y admite "anexos" (cajas de fuera del panel, como la barra de deshacer, que el tabulador tiene que alcanzar):
@@ -415,7 +429,14 @@ const apagarDetras = (panel, apagado) => {
 };
 ```
 
-**Otros criterios de 2.2:** la fila que avanza sola tiene botón de pausa (2.2.2, nivel A). Pendiente de medir: objetivos táctiles de 24×24 (2.5.8).
+**Los tres criterios nuevos de WCAG 2.2, medidos en Chrome el 2026-10-04:**
+
+| Criterio | Resultado |
+|---|---|
+| **2.2.2** Pausar, detener, ocultar (A) | **Cumple.** La fila que avanza sola tiene botón de pausa con `aria-pressed`, y parada a mano no la reanudan ni el reloj ni las flechas |
+| **2.5.8** Tamaño del objetivo, mínimo (AA) | **Cumple en los 7 escenarios medidos.** Hay 6 controles por debajo de 24×24 px, pero todos quedan exentos por la **excepción de espaciado**: un círculo de 24 px centrado en cada uno no toca ningún otro objetivo |
+| **2.4.11** Foco no oscurecido, mínimo (AA) | **Cumple** en escritorio y teléfono, tabulando hacia delante y hacia atrás. Y cumple también **2.4.12 (AAA)**: ni un elemento queda tapado ni en parte |
+| **3.3.8** Autenticación accesible, mínimo (AA) | **Cumple.** No hay prueba cognitiva: el paso de entrar solo pide el correo, con `autocomplete="email"` |
 
 ### Comprensibilidad
 
@@ -531,10 +552,9 @@ Están implementadas de verdad, no dibujadas sobre el diseño. El esqueleto para
 
 ## Lo que falta y no lo puedo responder yo
 
+De las cinco que había, **tres quedaron medidas** en Chrome el 2026-10-04 (objetivos táctiles, contraste del `h1` sobre la foto y foco no oscurecido). Quedan dos:
+
 | Pregunta | Por qué |
 |---|---|
-| Objetivos táctiles por debajo de 24×24 (WCAG 2.5.8) | Hace falta un navegador que calcule layout. Snippet listo en [RETO4_CUADERNO.md](RETO4_CUADERNO.md) §8.1 |
-| Contraste del `h1` sobre la fotografía | Hay que medirlo con el cuentagotas de DevTools |
-| Si la cabecera fija llega a tapar el foco | El arreglo está aplicado; hay que confirmarlo tabulando hacia atrás |
 | Qué suena raro con lector de pantalla | Narrador (`Ctrl+Win+Enter`) o NVDA, diez minutos |
 | Clics mínimos del pedido completo | Cuéntalos recorriéndolo, no los estimes |
