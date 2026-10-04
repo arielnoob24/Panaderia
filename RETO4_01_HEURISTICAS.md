@@ -286,3 +286,182 @@ Dos fallos acumulados en el mismo número:
 Hay 11 radios en 5 grupos, así que 40 controles − 11 + 5 = 34, más las dos flechas de la fila que aparecen cuando hay algo que desplazar = **36**.
 
 Si llegaste a citar el 44, cámbialo. Ya está corregido en los dos documentos.
+
+---
+
+## 9. Resumen: cómo se cumple cada heurística
+
+Veredicto de las diez, con el motivo. Cruza los cumplimientos de §3 con las violaciones de §4, así que cada veredicto sale de evidencia verificada, no de impresión.
+
+Tres grados: **cumple** (ninguna violación relevante), **cumple parcialmente** (la mecánica está, falla en casos concretos), **no cumple del todo** (las violaciones son el patrón, no la excepción).
+
+### H1 · Visibilidad del estado del sistema → **cumple parcialmente**
+
+**Por qué se cumple:** el sistema habla casi todo el tiempo. El horario no es un texto escrito a mano: se calcula contra la hora real y dice *"Abierto"*, *"Cerrado · abre 08:00"* o *"Cerrado · abre mañana"*. Hay siete regiones que anuncian cambios, dos de ellas para lector de pantalla, así que añadir un producto suena como *"Pan redondo añadido. 3 productos en la canasta"*. El botón flotante lleva el número encima. Entrar en una categoría escribe *"Mostrando 5 de 7 productos"*. Y la cabecera cambia de fondo al desplazarse, que es una forma de decir "ya no estás arriba".
+
+**Por qué solo parcialmente:** en dos sitios el sistema **muestra un estado que no tiene**. La nota del hero (V6) dice *"Recién salido del horno · Sale a las 17:00"* con un punto de estado al lado, y es texto fijo: a las nueve de la mañana afirma lo mismo. Y cuatro enlaces abren una pestaña nueva sin anunciarlo (V11), que es un cambio de contexto del que no se avisa. Si además se confirma V3, hay un tercer caso: el elemento que recibe el foco puede quedar invisible bajo la cabecera.
+
+### H2 · Correspondencia entre el sistema y el mundo real → **cumple, con una excepción**
+
+**Por qué se cumple:** el vocabulario entero es de panadería y no de software. "Tu canasta" y no "carrito". "El mostrador" y "la vitrina" y no "productos destacados". "Paso retirando" y no "recogida en tienda". "Vuelve mañana" y no "sin stock". Y la mejor prueba no es una palabra sino un icono que cambia: el botón de quitar es un signo `−` mientras hay varias unidades y **se convierte en papelera** cuando queda una, porque ahí la acción ya no es restar, es borrar el producto. La metáfora sigue al significado.
+
+**La excepción:** el rótulo de la fila dice *"Los más pedidos"* y debajo están los 18 productos del catálogo (V5). No hay ningún dato de ventas detrás. Es un rótulo que afirma algo que el sistema no sabe, y eso es exactamente lo contrario de esta heurística. A eso se suma el teléfono de relleno (V4) si no lo declaras.
+
+### H3 · Control y libertad del usuario → **no cumple del todo. Es la más débil de las diez**
+
+**Lo que sí hace:** cada paso del panel vuelve **al anterior**, no siempre al principio: "Volver a la canasta", "Volver a cómo lo recibes". `Esc` cierra cualquier panel y devuelve el foco a donde estaba. El botón "atrás" del navegador funciona en las vistas de categoría, porque cada una tiene su URL (`#tienda-panes`). `Esc` dentro del campo de cantidad recupera el valor anterior. Y cerrar a mitad del pago no deja nada atascado: se corta el temporizador, se borran los datos de la tarjeta y el pedido sigue entero.
+
+**Por qué falla:** cuatro violaciones, y entre ellas la única del sitio que deja al usuario sin salida. **No hay deshacer en ninguna parte** (V8): la papelera borra la línea al instante, y si tenías 30 unidades se van las 30 sin confirmación. El comprobante desaparece al cerrar y no se puede guardar (V2), así que el final de la compra es irreversible y además no deja rastro. La fila se mueve sola y no hay cómo pararla (V1). Y salir de la cuenta te deja en "Crear cuenta" (V12).
+
+Nielsen es explícito en esta heurística: las acciones destructivas necesitan una salida de emergencia. Aquí no hay ninguna. **Esta es la heurística que conviene reconocer como incumplida en el informe**: reconocer una bien argumentada vale más que afirmar diez a medias.
+
+### H4 · Consistencia y estándares → **cumple hacia fuera, falla hacia dentro**
+
+**Por qué se cumple:** los estándares externos se siguen. Los dos paneles usan el patrón modal de WAI-ARIA completo: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, foco contenido y devuelto. Hay **un solo** anillo de foco en todo el sitio. Todo el diseño sale de variables en `:root`: ocho colores con nombre, radios, duraciones y curvas, sin valores sueltos. Los dos desplegables de la barra se comportan igual entre sí. Y los campos de la tarjeta y los de la cuenta siguen la misma regla: no se marcan en rojo hasta que los tocaste.
+
+**Por qué falla hacia dentro:** las dos violaciones son casos donde **el proyecto hace lo correcto en un sitio y no en otro**. Los grupos de radio del panel llevan `fieldset` + `legend` ("¿Cómo lo quieres?", "¿Cómo quieres pagar?"), pero los grupos de tamaño de las fichas no llevan nada (V7). Y el horario del pie es un estado calculado mientras la nota del hero es decoración con la misma pinta (V6): dos indicadores idénticos a la vista, uno verdadero y otro no.
+
+### H5 · Prevención de errores → **cumple**
+
+**Por qué se cumple:** es de las mejor resueltas, y lo interesante es que hay dos tipos de prevención trabajando. Los que **impiden** el error: tope de 100 unidades, "Confirmar" deshabilitado con la canasta vacía, guarda que no deja pasar al pago sin dirección. Y los que lo **hacen difícil de cometer**: el `+593` fijo delante del campo, que se come el cero de quien escribe `09…` de memoria; la tarjeta de prueba escrita en pantalla; el número de pedido generado sin caracteres que se confundan al dictarlo por teléfono.
+
+Hay dos decisiones especialmente finas. El campo de cantidad es `type="text"` con `inputmode="numeric"` **a propósito**, porque un `type="number"` trae sus flechitas y acepta signos y comas. Y el número **no se corrige mientras escribes**, porque corregirlo al vuelo impide teclear un 12: al pasar por el 1 ya sería válido y saltaría solo. Eso es prevenir un error que la propia prevención habría creado.
+
+**La mancha:** el campo de contraseña que no comprueba nada (V9) invita a escribir una contraseña real en un campo que la descarta.
+
+### H6 · Reconocimiento antes que recuerdo → **cumple parcialmente**
+
+**Por qué se cumple:** la lista de requisitos de la contraseña está debajo del campo y **se repinta en cada tecla**, así que no hay que recordar qué pedía ni adivinar qué falta. El precio va junto al botón de pedir, no en una lista aparte. El desglose subtotal / envío / total se escribe cuando ya se sabe cómo se recibe el pedido. El título de la pestaña cambia con la vista. Y la mejor: con sesión abierta la dirección se precarga **solo si el campo está vacío**, así que lo que tú escribiste manda sobre lo guardado — precargar sin pisar.
+
+**Por qué solo parcialmente:** tres violaciones piden memoria. El número de pedido hay que **apuntarlo a mano** porque no se puede copiar ni guardar (V2), que es el caso de libro de esta heurística. El grupo de tamaños no dice que sea un grupo de tamaños, así que con lector de pantalla hay que deducirlo (V7). Y como no existe una vista de todo el catálogo ordenable, comparar precios entre categorías obliga a recordar lo que viste en la anterior (V10).
+
+### H7 · Flexibilidad y eficiencia de uso → **cumple**
+
+**Por qué se cumple:** casi cada tarea tiene camino largo para el que llega por primera vez y atajo para el que ya sabe. Veinte panes se piden escribiendo "20" o con `↑` repetido, no con veinte clics. El punto de entrega se marca moviendo el mapa o de golpe con "Usar mi ubicación". A una categoría se llega bajando o por el menú, y esa vista tiene URL propia, así que se puede guardar. El pedido sobrevive al cierre del navegador. La cuenta precarga la dirección. Y la fila se recorre con las flechas si usas ratón o tabulando si no, porque el navegador trae a la vista la ficha que recibe el foco.
+
+Un detalle que cuenta aquí: Leaflet **solo se descarga si eliges domicilio**. Quien pasa a retirar no baja un mapa que no va a mirar.
+
+**Lo que falta:** no se puede ordenar el catálogo completo (V10). Ordenar existe dentro de panes, dentro de dulces y dentro de bebidas, nunca sobre los 18.
+
+### H8 · Diseño estético y minimalista → **cumple, con dos excesos**
+
+**Por qué se cumple:** hay una regla detrás, y no es gusto: **lo que no hace falta todavía, no está**. El contador de cantidad nace solo con el `+`; el `−` y el número aparecen cuando ya hay algo pedido. Las flechas de la fila se esconden si no hay nada que desplazar y se deshabilitan al llegar a una punta. Ordenar y filtrar no existen en la portada, porque ordenar un escaparate de seis no le hace falta a nadie. No hay barra de filtros: la categoría es un estado de la página. Y una animación dominante por zona, no una por elemento.
+
+**Los dos excesos:** un campo de contraseña que no comprueba nada es interfaz que no hace nada (V9). Y la frase *"Entra en Tienda para ver una categoría completa"* es texto que existe para tapar un problema (V15): si hay que explicarlo, no se explica solo.
+
+### H9 · Ayudar a reconocer, diagnosticar y recuperarse de los errores → **cumple**
+
+**Por qué se cumple:** los mensajes dicen **qué falta**, no que algo esté mal. *"Revisa el correo, algo le falta"* en vez de "formato inválido". *"Escribe la dirección para poder llevarlo"*, que da la consecuencia y no la regla. Hay cuatro regiones `role="alert"` y doce elementos con `aria-describedby` uniendo cada campo con su mensaje. Tras un error, **el foco va al primer campo que falta**, no a un resumen arriba.
+
+Y dos casos de recuperación que van más allá del formulario: si el mapa no carga —sin red o con el CDN caído— no se rompe nada, queda la dirección escrita y se cobra la tarifa de salida, y la pantalla lo explica. Y el panel de entrar **admite que no puede comprobar ninguna contraseña** en vez de inventar un "correo o contraseña incorrectos", que sería diagnosticar un error que no ocurrió.
+
+**La mancha:** escribe 500 en el campo de cantidad y se queda en 100 sin decir que se recortó ni por qué (V13).
+
+### H10 · Ayuda y documentación → **cumple, pero con una señal de alarma**
+
+**Por qué se cumple:** la ayuda llega sin estorbar. Los botones que son solo un dibujo explican lo que hacen en un cuadrito: medio segundo de espera con el ratón e **inmediato con teclado**, porque quien tabula hasta un botón ya decidió mirarlo. Hay instrucciones donde hacen falta (*"Marca a dónde va el pedido: toca el mapa, o muévelo con las flechas y pulsa Enter"*) y notas que anticipan el paso siguiente (*"Después eliges cómo lo recibes y cómo pagas"*). La naturaleza académica se declara **tres veces** a lo largo del pago, no en una letra pequeña.
+
+**La señal de alarma:** Nielsen dice que lo ideal es que el sistema no necesite documentación. Dos de tus ayudas existen porque algo no se explica solo: la instrucción del catálogo (V15) y el `aria-label` que dicta las teclas del mapa. La segunda es inevitable —un mapa no puede anunciar sus teclas de otra forma—; la primera no.
+
+### Cuadro de veredictos
+
+| # | Heurística | Veredicto | Violaciones |
+|---|---|---|---|
+| H1 | Visibilidad del estado del sistema | cumple parcialmente | V6, V11, (V3) |
+| H2 | Correspondencia con el mundo real | cumple, con una excepción | V5, V4 |
+| H3 | Control y libertad del usuario | **no cumple del todo** | V1, V2, V8, V12 |
+| H4 | Consistencia y estándares | cumple fuera, falla dentro | V6, V7 |
+| H5 | Prevención de errores | cumple | V9 |
+| H6 | Reconocimiento antes que recuerdo | cumple parcialmente | V2, V7, V10 |
+| H7 | Flexibilidad y eficiencia de uso | cumple | V10 |
+| H8 | Diseño estético y minimalista | cumple, con dos excesos | V9, V15 |
+| H9 | Recuperarse de los errores | cumple | V13 |
+| H10 | Ayuda y documentación | cumple, con una alarma | V15 |
+
+Cuatro cumplen limpio (H5, H7, H9, H10), cinco cumplen con reservas, y una no cumple (H3).
+
+---
+
+## 10. Para cumplir las heurísticas que se quedan cortas
+
+Dieciséis acciones. La columna que importa es la de "resuelve": **varias arreglan más de una heurística a la vez**, y por ahí conviene empezar.
+
+### Para cumplir H3 (control y libertad del usuario) — la que más falta
+
+| | Acción | Resuelve | Esfuerzo |
+|---|---|---|---|
+| A1 | **Botón visible de pausa en la fila.** `productGrid.andarSola = { arrancar, parar }` ya existe en [script.js:407](script.js#L407): falta el botón que lo llame y que alterne entre pausar y reanudar | H3, H1, WCAG 2.2.2 (A) | bajo |
+| A2 | **Botón de copiar el número de pedido** en el comprobante. El patrón ya está construido: `.pago-copiar` copia el número de cuenta bancaria tres pasos antes | H3, H6 | bajo |
+| A3 | **Deshacer al quitar.** Lo más barato: la región de avisos ya anuncia *"Pan redondo quitado"* — añadir ahí un "Deshacer" que reponga la cantidad anterior | H3 | medio |
+| A4 | **Salir de la cuenta debe llevar a "Entrar"**, no a "Crear cuenta". Es cambiar `verPaso('crear')` por `verPaso('entrar')` | H3 | trivial |
+
+A1 y A2 son las dos mejores de toda la lista: esfuerzo bajo, y las dos aprovechan código que ya existe. Eso además es un buen argumento para el informe — el arreglo no fue inventar nada, fue aplicar en un sitio lo que ya funcionaba en otro.
+
+### Para cumplir H1 (visibilidad del estado del sistema)
+
+| | Acción | Resuelve | Esfuerzo |
+|---|---|---|---|
+| A5 | **La nota del hero: o la haces real o le quitas el disfraz.** O calcula la próxima hornada como ya calculas el horario, o quítale el punto de estado y redáctala como lo que es (*"Horneamos a lo largo del día"*) | H1, H4 | bajo o trivial |
+| A6 | **Avisar la pestaña nueva** en los 4 enlaces. Un `<span class="sr-only"> (abre en una pestaña nueva)</span>`; la clase ya existe | H1, WCAG 3.2.5 | trivial |
+| A14 | **`scroll-margin-top` para el foco.** Si confirmas V3 en el navegador: una regla que dé al elemento enfocado el margen de la cabecera | H1, WCAG 2.4.11 (AA) | bajo |
+
+A5 es una decisión, no una tarea: **la versión trivial (reescribir el texto) cumple igual que la versión completa.** Un texto honesto vale lo mismo que un dato real, y aquí es lo que la heurística pide.
+
+### Para cumplir H6 (reconocimiento antes que recuerdo)
+
+| | Acción | Resuelve | Esfuerzo |
+|---|---|---|---|
+| A2 | Copiar el número de pedido (arriba) | H3, H6 | bajo |
+| A7 | **Rotular el grupo de tamaños.** `role="radiogroup"` + `aria-label="Tamaño"` en `.card-tamanos`, o un `fieldset` con `legend` visualmente oculto. El patrón correcto ya está en los grupos del panel | H6, H4, WCAG 1.3.1 (A) | bajo |
+| A10 | **Vista de todo el catálogo ordenable**, o los mandos de orden en la portada | H6, H7 | medio |
+
+### Para cumplir H4 (consistencia)
+
+A7 y A5, las dos ya listadas. No hace falta nada más: las dos violaciones de H4 son las mismas que las de H6 y H1 mirándolas desde otro ángulo. **Eso es lo que hay que decir en el informe**, en vez de tratarlas como cuatro problemas distintos.
+
+### Para cumplir H2 (correspondencia con el mundo real)
+
+| | Acción | Resuelve | Esfuerzo |
+|---|---|---|---|
+| A8 | **Que el rótulo de la fila diga la verdad.** Dos salidas: renombrarlo (*"Nuestro mostrador"*, *"Todo lo que horneamos"*) o hacer que sea verdad limitando la fila a seis y marcando cuáles | H2 | trivial o medio |
+| A9 | **Declarar el teléfono como ficticio**, igual que ya declaras el QR y los datos bancarios. O poner uno real | H2, H1 | trivial |
+
+A8 por la vía del renombrado es el mejor cambio por esfuerzo de toda la lista: una cadena de texto, y una violación de severidad 2 desaparece.
+
+### Para cumplir H8 (minimalista) y H5 (prevención)
+
+| | Acción | Resuelve | Esfuerzo |
+|---|---|---|---|
+| A11 | **Decidir el campo de contraseña.** Tres salidas: quitarlo del paso de entrar y dejar solo el correo (coherente con que no se comprueba nada); dejarlo y explicar junto al campo por qué se pide; o convertirlo en texto informativo sin campo | H8, H5 | bajo |
+| A13 | **Resolver la descubribilidad en vez de instruirla.** Si la fila no deja claro que hay más detrás, lo que falta es un afordance —un "ver todo" al final de la fila, por ejemplo— no una frase que lo explique | H8, H10, H6 | medio |
+
+A11 es la más interesante del informe porque **no tiene respuesta correcta**. Quitar el campo es más honesto y más minimalista; dejarlo es más fiel a cómo se ve un inicio de sesión real, que es lo que un prototipo debería enseñar. Elige y defiende: esa defensa es justo lo que valen los 5 puntos de conclusiones.
+
+### Para cumplir H9 (recuperarse de los errores)
+
+| | Acción | Resuelve | Esfuerzo |
+|---|---|---|---|
+| A12 | **Explicar el recorte.** Cuando el tope muerda, que el aviso lo diga: *"El máximo es 100 por producto; se ajustó a 100"* en vez de *"100 de Pan redondo"* | H9 | trivial |
+
+### Para cumplir H7 (flexibilidad)
+
+A10, ya listada.
+
+### Lo que no es de ninguna heurística pero está pendiente
+
+| | Acción | Resuelve | Esfuerzo |
+|---|---|---|---|
+| A15 | Cambiar `--horno-claro` por `--horno-suave` en el `small` de las opciones de entrega: 4,49 → 6,79 | WCAG 1.4.3 (AA) | trivial |
+| A16 | **Medir** los objetivos táctiles (§4, V16) | WCAG 2.5.8 (AA) | 2 minutos |
+
+### Si solo vas a hacer cinco
+
+Por puntos ganados contra esfuerzo: **A4** (trivial, cierra V12), **A8** (una cadena de texto, cierra V5), **A6** (cierra V11 y un criterio WCAG), **A2** (cierra V2, que es severidad 3, reutilizando código existente) y **A1** (cierra V1, el único nivel A de la lista).
+
+Con esas cinco, H3 pasa de "no cumple" a "cumple parcialmente", H2 queda limpia, y desaparecen las dos violaciones de severidad 3 que se arreglan con código.
+
+### Y el recordatorio de siempre
+
+**Arreglar sin documentar no da ningún punto.** El orden que paga dos veces: documentas la violación con su severidad y su justificación, *después* la arreglas, y documentas el antes y el después. El mismo trabajo cuenta en el criterio de heurísticas y en el de accesibilidad.
+
+Las secciones 9 y 10 son mi lectura del código, no tu informe: la explicación está aquí para que decidas y escribas, no para viajar tal cual.
