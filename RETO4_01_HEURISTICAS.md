@@ -6,26 +6,27 @@ Materia prima, no texto para entregar. Los bloques `> ESCRIBE TÚ` son tuyos; m�
 
 ---
 
-## 1. El enunciado te da a elegir, y conviene saber qué eliges
+## 1. Qué pide el enunciado exactamente
 
-Literal: *"Análisis de las 10 Heurísticas de Nielsen **o** Presentar un cuadro donde explique cómo su prototipo aplica las heurísticas."*
+> ⚠️ **Corrección del 2026-10-04.** Antes escribí aquí que el enunciado te daba a elegir entre "análisis" **o** "cuadro". **Era un error mío de lectura.** En el PDF esa "o" no es la conjunción: es el símbolo de viñeta del segundo nivel. Lo que dice de verdad es:
+>
+> - Análisis de las 10 Heurísticas de Nielsen
+>   - Presentar un cuadro donde explique cómo su prototipo aplica las heurísticas.
+>
+> Es decir: **el análisis es el entregable, y el cuadro es la forma en que lo quiere ver.** No hay elección, hay que hacer las dos cosas. Si hubieras entregado solo el cuadro confiando en mi lectura, te habría faltado el análisis.
 
-Son dos cosas distintas y la "o" es una trampa de esfuerzo:
+Así que el apartado tiene dos piezas obligatorias:
 
-| Opción | Qué es | Qué arriesga |
+| Pieza | Qué es | Dónde está el material |
 |---|---|---|
-| **Cuadro de aplicación** | Diez filas: heurística → cómo la cumple mi prototipo | Más barato. Pero un cuadro donde las diez filas dicen "lo cumplo" se lee como un cuadro que no se verificó |
-| **Análisis heurístico** | El método de Nielsen: recorrer la interfaz buscando **violaciones**, clasificarlas por severidad y proponer arreglo | Más trabajo. Pero es lo que la palabra "análisis" significa, y encaja con cómo te califican |
+| **El cuadro de aplicación** | Diez filas: heurística → cómo la cumple mi prototipo → dónde se ve | §3 de este archivo |
+| **El análisis** | El método de Nielsen: recorrer la interfaz buscando **violaciones**, clasificarlas por severidad y proponer arreglo | §4, §5 y §11 |
 
-**Mi recomendación: las dos, en ese orden.** El cuadro cumple la letra del enunciado; el inventario de violaciones es lo que convence. Y hay una razón de nota, no de pureza metodológica:
+Y hay una razón de nota para que el análisis sea serio, no de adorno:
 
 > *"Por cada error de usabilidad encontrado son 2 puntos menos."*
 
-Si el profesor encuentra un problema que tú ya documentaste con su severidad y su arreglo, deja de ser un error suyo y pasa a ser un hallazgo tuyo. **Encontrarlos primero es la jugada.** De eso va la §4 de este archivo: tengo 16 para ti.
-
-> **DECIDE TÚ:** ¿cuadro, análisis, o los dos?
->
-> `<!-- -->`
+Si el profesor encuentra un problema que tú ya documentaste con su severidad y su arreglo, deja de ser un error suyo y pasa a ser un hallazgo tuyo. **Encontrarlos primero es la jugada.**
 
 ---
 

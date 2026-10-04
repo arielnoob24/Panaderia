@@ -36,7 +36,8 @@ Todo medido el 2026-10-04 sobre `index.html` + `script.js` + `styles.css` del re
 | **1.4.3** Contraste mínimo (AA) | 16 de los 17 pares de la paleta pasan; muchos con AAA. El que fallaba (`--horno-claro` sobre `--masa`, 4,49) se corrigió a `--horno-suave` (6,79) | Fórmula de WCAG sobre los tokens de `:root`; tabla completa en [RETO4_CUADERNO.md](RETO4_CUADERNO.md) §7.2 | ✅ 17 de 17 |
 | **1.4.3** (texto sobre foto) | El `h1` va sobre una fotografía con velo. Medido en píxeles: peor contraste **11,13** el titular, **3,82** el `<em>` | Esconder el texto, capturar el fondo y muestrear. 33.280 y 17.536 píxeles | ✅ exige 3 (texto grande de 112 px) |
 | **1.4.11** Contraste no textual (AA) | El anillo de foco es doble: línea marrón de 3 px (**12,41**) y halo ámbar de 5 px | Inspeccionar `a:focus-visible` en DevTools | ✅ la línea cumple; el halo es refuerzo |
-| **1.4.4** Redimensionar texto (AA) | Todo en `rem` y `clamp()`; ningún `px` fijo en tamaños de letra | Zoom del navegador al 200 % | ⬜ **compruébalo tú** |
+| **1.4.4** Redimensionar texto (AA) | Todo en `rem` y `clamp()`; ningún `px` fijo en tamaños de letra | Zoom al 200 %: lienzo de 720×450 px CSS | ✅ medido, §5 |
+| **1.4.10** Reflujo (AA) | Una sola columna desde 680 px | Lienzo de 320 px CSS (zoom 400 %) | ✅ sin scroll horizontal |
 
 ### Operabilidad
 
@@ -137,16 +138,39 @@ Ya está contado en [ACCESIBILIDAD_TECLADO.md](ACCESIBILIDAD_TECLADO.md) §3, pe
 
 ---
 
-## 5. Lo que queda sin medir, y hay que decirlo
+## 5. El zoom, medido
+
+Medido en Chrome el 2026-10-04 a cuatro niveles. Un zoom del 200 % sobre una ventana de 1440×900 equivale a un lienzo de 720×450 px CSS, y así se simula.
+
+| Zoom | Lienzo CSS | Desplazamiento horizontal | La cabecera se come | Resultado |
+|---|---|---|---|---|
+| 100 % | 1440×900 | no | 10 % del alto | ✅ |
+| **200 %** | 720×450 | **no** | 19 % del alto | ✅ **1.4.4 cumple** |
+| 300 % | 480×300 | no | 23 % del alto | ✅ |
+| 400 % | 320×512 | **no** | 14 % del alto | ✅ **1.4.10 cumple** (320 px es el mínimo que exige el criterio) |
+
+**Lo importante:** no aparece desplazamiento horizontal en ningún nivel, ni siquiera a 320 px CSS, que es el ancho mínimo que exige WCAG 1.4.10 (Reflujo). Y al 200 % el titular del hero queda entero por debajo de la cabecera (`top` 214, la cabecera acaba en 86), así que no se pierde contenido.
+
+**Una cosa que sí se nota y conviene explicar antes de que te la señalen:** al 200 %, si desplazas la página, la cabecera fija pasa por delante del contenido. Eso es el comportamiento normal de una cabecera fija y **no incumple nada** —el contenido sigue siendo alcanzable desplazando— pero a mucho zoom se come una quinta parte de la pantalla. Si quieres curarte en salud, dilo tú como limitación conocida.
+
+| Criterio WCAG | Qué hace el sitio | Cómo lo compruebas | Resultado |
+|---|---|---|---|
+| **1.4.4** Redimensionar texto (AA) | Tamaños en `rem` y `clamp()`; ningún `px` fijo en tipografía | Zoom al 200 %, comprobar que no se pierde contenido | ✅ |
+| **1.4.10** Reflujo (AA) | Una sola columna desde 680 px; la cuadrícula se reorganiza | Lienzo de 320 px CSS, comprobar que no hay scroll horizontal | ✅ |
+
+*(Añade estas dos filas a la matriz de §2, en Perceptibilidad.)*
+
+---
+
+## 5 bis. Lo único que queda sin medir
 
 **Dilo en el informe.** Un apartado sin ninguna laguna suena a inventado.
 
 | Qué | Por qué | Tiempo |
 |---|---|---|
-| **Zoom al 200 %** (WCAG 1.4.4) | No lo medí. `Ctrl` + `+` hasta el 200 % y comprobar que no se pierde contenido ni aparece desplazamiento horizontal | 2 min |
-| **Lector de pantalla** | Nada sustituye a oírlo. Narrador (`Ctrl + Win + Enter`) o NVDA | 10 min |
+| **Lector de pantalla** | Nada sustituye a oírlo, y el enunciado nombra expresamente los lectores de pantalla en el principio de Robustez. Narrador (`Ctrl + Win + Enter`) o NVDA | 10 min |
 
-> **MIDE TÚ:** zoom 200 % `<!-- -->` · lector de pantalla, qué sonó raro `<!-- -->`
+> **MIDE TÚ:** qué sonó raro `<!-- -->`
 
 ---
 

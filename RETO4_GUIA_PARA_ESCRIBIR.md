@@ -4,12 +4,79 @@ Hecha el 2026-10-04. **Yo no escribo el informe: esta guía te dice qué escribi
 
 ---
 
-## Parte 0. ¿Está listo? Qué sí y qué no
+## Parte 0. Lo que el enunciado pide, línea por línea
+
+Esta es la tabla que hay que tener al lado mientras escribes. La columna de la izquierda es **literal del enunciado**; la de la derecha, dónde tienes el material.
+
+> ⚠️ **Corrección importante del 2026-10-04.** Antes te dije que el enunciado te daba a elegir entre "análisis de las heurísticas" **o** "un cuadro". **Era un error mío:** esa "o" del PDF no es la conjunción, es el símbolo de viñeta del segundo nivel. Hay que hacer **las dos cosas**. Lo mismo pasa con los cuatro principios WCAG y con las tres partes del modelo mental: son sub-puntos obligatorios, no alternativas.
+
+### Entregable 1 — Las 10 heurísticas de Nielsen *(criterio: 5 pts)*
+
+| Lo que pide, literal | Dónde está | Estado |
+|---|---|---|
+| "Análisis de las 10 Heurísticas de Nielsen" | [RETO4_01_HEURISTICAS.md](RETO4_01_HEURISTICAS.md) §4, §5 y §11: 15 violaciones con severidad, 14 cerradas | ✅ |
+| "Presentar un cuadro donde explique cómo su prototipo aplica las heurísticas" | [RETO4_01_HEURISTICAS.md](RETO4_01_HEURISTICAS.md) §3 y §9 | ✅ |
+
+### Entregable 2 — Los cuatro principios WCAG 2.2 *(criterio: 5 pts)*
+
+El enunciado no dice solo "los cuatro principios": para cada uno dice **qué quiere ver**. Asegúrate de que tu apartado contesta esas palabras exactas.
+
+| Principio | Lo que pide, literal | Lo que tienes que enseñar | Dónde |
+|---|---|---|---|
+| **Perceptibilidad** | *"Alternativas textuales para iconos y contrastes conceptuales"* | Los 21 SVG con `aria-hidden` + `focusable="false"`; los botones-dibujo con `aria-label`; el QR con su texto equivalente. Y los 17 pares de contraste medidos, más el `h1` sobre la foto | [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) §2 |
+| **Operabilidad** | *"El diseño debe ser navegable mediante teclado (foco visible)"* | El recorrido completo del pedido sin ratón, las 38 paradas, y el anillo doble de foco. **Enseña el foco visible con una captura** | [ACCESIBILIDAD_TECLADO.md](ACCESIBILIDAD_TECLADO.md) entero |
+| **Comprensibilidad** | *"Mensajes de ayuda claros y lenguaje sencillo"* | La tabla de "en el sitio / lo que diría un sitio genérico". Los mensajes que dicen qué falta, no "formato inválido" | [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) §2 y [RETO4_CUESTIONARIO_TECNICO.md](RETO4_CUESTIONARIO_TECNICO.md) §4 |
+| **Robustez** | *"Estructura que permita la interpretación correcta por tecnologías asistidas (Ej. lectores de pantalla en imágenes)"* | Los landmarks, los 30 encabezados sin saltos, los 2 diálogos ARIA. **Y el ejemplo que el profesor nombra: las imágenes.** 22 con `alt`, 0 sin él, con textos descriptivos | [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) §2 |
+
+**Ojo al paréntesis de Robustez:** el profesor pone como ejemplo *"lectores de pantalla en imágenes"*. Eso es una pista de lo que va a mirar. Dedícale una fila propia a los textos alternativos, con un ejemplo real del tuyo, y **pruébalo con Narrador** (Parte 1D).
+
+### Entregable 3 — El modelo mental *(criterio: 5 pts)*
+
+| Lo que pide, literal | Lo que tienes que entregar | Dónde |
+|---|---|---|
+| *"Flujo de navegación: Diagrama de estados que muestre el camino del usuario"* | **Un diagrama dibujado.** Tres máquinas con cada transición verificada | [RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md) §2 |
+| *"Secuencia de tareas: Pasos lógicos para completar un objetivo (ej. una compra o un registro)"* | Los 12 pasos del pedido, más los clics contados: 5 / 13 / 7 | [RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md) §3 |
+| *"Respuesta del sistema: Qué feedback recibe el usuario tras cada interacción (microinteracciones)"* | La tabla de 18 microinteracciones por acción y por canal | [RETO4_CUESTIONARIO_TECNICO.md](RETO4_CUESTIONARIO_TECNICO.md) §3 |
+
+El enunciado dice *"ej. una compra o un registro"*: tú tienes **la compra completa**, que es la más larga. Úsala.
+
+### Entregable 4 — Las conclusiones *(criterio: 5 pts)*
+
+| Lo que pide, literal | Dónde |
+|---|---|
+| *"Al menos cinco, sobre el uso coherente de los principios de usabilidad, arquitecturas cognitivas, diseño de la interacción"* | Siete ángulos en [RETO4_CUADERNO.md](RETO4_CUADERNO.md) §6. **Elige cinco y escríbelas tú** |
+
+Fíjate en los tres temas que nombra: **usabilidad**, **arquitecturas cognitivas** y **diseño de la interacción**. Lo más seguro es que tus cinco conclusiones cubran los tres, no cinco variaciones del mismo.
+
+### Y el prototipo de baja fidelidad
+
+| Lo que pide, literal | Estado |
+|---|---|
+| *"El estudiante diseñará el prototipo de baja fidelidad de un sistema informático, integrando obligatoriamente un análisis heurístico previo y una matriz de cumplimiento de accesibilidad"* | ⚠️ **Sin resolver.** Tu prototipo es de alta fidelidad. Parte 1A |
+
+---
+
+## Parte 0 bis. Cómo sacar los 5 puntos de cada criterio
+
+Los criterios de evaluación no son los mismos que los entregables. Esto es lo que cada uno premia:
+
+| Criterio | 5 puntos se dan por | Lo que lo sube | Lo que lo hunde |
+|---|---|---|---|
+| **Heurísticas de Nielsen**: *"Aplicación documentada de las 10 heurísticas con ejemplos del prototipo"* | Que cada heurística tenga un **ejemplo concreto y verificable**, no una definición | Las violaciones con severidad justificada. Una evaluación que no encuentra nada parece no hecha | Celdas que valen para cualquier web ("el sistema es intuitivo") |
+| **Accesibilidad**: *"Cumplimiento de los principios: percepción, operabilidad, comprensión y robustez"* | Que esté **evidenciado funcionalmente**, con la columna "cómo lo compruebas" | Los números medidos y los dos casos en detalle (el mapa y el arreglo que no servía) | Definir los principios en vez de demostrarlos |
+| **Diseño de interacción**: *"Claridad del flujo de tareas, eficiencia en la navegación y coherencia funcional"* | Las **tres** cosas: flujo claro (el diagrama), eficiencia (los clics) y coherencia (§5 del entregable 3) | Contar los clics de verdad. La coherencia es la que todos olvidan | Entregar el diagrama y dar por hecho lo demás |
+| **Conclusiones** | Cinco, cada una con afirmación + evidencia + consecuencia | Que se note que son sobre **tu** proyecto | Una sola mal escrita penaliza **los 5 puntos** |
+
+Y las restas: **−2 por cada error** de usabilidad, de interfaz o de interacción que encuentre. Por eso el inventario de violaciones de [RETO4_01_HEURISTICAS.md](RETO4_01_HEURISTICAS.md) §5 es tu mejor defensa: lo que documentaste tú ya no es un error suyo.
+
+---
+
+## Parte 0 ter. ¿Está listo?
 
 | Criterio | Puntos | ¿Puedes escribirlo ya? | Su archivo |
 |---|---|---|---|
 | 1. Las 10 heurísticas de Nielsen | 5 | ✅ **Sí, del todo** | [RETO4_01_HEURISTICAS.md](RETO4_01_HEURISTICAS.md) |
-| 2. Principios de accesibilidad | 5 | ✅ **Sí, del todo.** Las tres mediciones que faltaban están hechas | [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) |
+| 2. Principios de accesibilidad | 5 | ✅ **Sí, del todo.** Las cuatro mediciones que faltaban están hechas | [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) |
 | 3. Diseño de interacción | 5 | ✅ **Sí**, con una cosa manual: el diagrama. Los clics ya están contados | [RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md) |
 | 4. Las cinco conclusiones | 5 | ✅ **Sí.** Siete ángulos propuestos; elegir y escribir es tuyo | [RETO4_CUADERNO.md](RETO4_CUADERNO.md) §6 |
 
@@ -59,7 +126,7 @@ Revisa al menos las cuatro de severidad 3 y decide si estás de acuerdo. Si camb
 
 > **Cambios que haces:** `__________`
 
-### D. Las mediciones: tres hechas, dos te quedan
+### D. Las mediciones: cuatro hechas, una te queda
 
 Las tres que te había dejado pendientes **ya están medidas**, en el Chrome que tienes instalado, en siete escenarios y dos tamaños de pantalla. Resultados en [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) §1 y §7.
 
@@ -69,18 +136,21 @@ Las tres que te había dejado pendientes **ya están medidas**, en el Chrome que
 | Contraste del `h1` sobre la foto | **11,13** el titular, **3,82** el `<em>`. Los dos pasan |
 | Foco tapado por la cabecera (2.4.11) | **Cumple**, y también a nivel AAA — pero hubo que arreglar dos cosas que no sabía que estaban mal |
 
+| **Zoom al 200 %** (1.4.4) y reflujo (1.4.10) | **Cumple.** Sin desplazamiento horizontal a ningún nivel, ni siquiera a 320 px CSS. Detalle en [RETO4_02_ACCESIBILIDAD.md](RETO4_02_ACCESIBILIDAD.md) §5 |
+
 Lo mismo con los clics del pedido: **contados**, 5 / 13 / 7 según el camino ([RETO4_03_INTERACCION.md](RETO4_03_INTERACCION.md) §3.1).
 
-**Lo que sí te queda**, y son doce minutos:
+**Sobre tu captura del zoom al 200 %:** lo que viste —la cabecera tapando el texto del hero— es el comportamiento normal de una cabecera fija al desplazar la página, no un incumplimiento: el contenido sigue siendo alcanzable. Y la nota que aparecía decía *"Pan redondo · Sale a las 17:00"*, que es el **texto viejo**: estabas viendo una versión cacheada. Fuerza la recarga con `Ctrl + F5`.
+
+**Lo único que te queda**, y son diez minutos:
 
 | # | Qué | Cómo | Tiempo |
 |---|---|---|---|
-| 1 | **Zoom al 200 %** (WCAG 1.4.4) | Amplía hasta el 200 % y comprueba que no se pierde contenido ni aparece desplazamiento horizontal | 2 min |
-| 2 | **Lector de pantalla** | Narrador (`Ctrl + Win + Enter`) o NVDA. Diez minutos recorriendo el sitio, anotando qué sonó raro | 10 min |
+| 1 | **Lector de pantalla** | Narrador (`Ctrl + Win + Enter`) o NVDA. Diez minutos recorriendo el sitio, anotando qué sonó raro | 10 min |
 
-> **Resultados:** 1) `______` 2) `______`
+> **Resultado:** `______`
 
-La segunda no es obligatoria, pero si te preguntan "¿lo probaste con lector de pantalla?", la respuesta tiene que ser sí.
+**No te la saltes.** El enunciado nombra expresamente los lectores de pantalla en el principio de Robustez (*"Ej. lectores de pantalla en imágenes"*), así que es lo que más probabilidades tiene de que te pregunten.
 
 ---
 
@@ -396,7 +466,7 @@ No escribas de arriba abajo. Este orden:
 | Paso | Qué | Tiempo |
 |---|---|---|
 | 1 | **Pregúntale al profesor** lo del prototipo de baja fidelidad (Parte 1A) | 1 día de espera |
-| 2 | **Haz las dos mediciones que quedan**: zoom al 200 % y lector de pantalla (Parte 1D) | 12 min |
+| 2 | **Prueba con lector de pantalla** (Parte 1D). Es la única medición que queda, y el enunciado la nombra en Robustez | 10 min |
 | 3 | **Dibuja el diagrama de estados** (Sección 8.1). Hazlo pronto: dibujarlo te obliga a entender el flujo, y eso te ayuda a escribir todo lo demás | 1–2 h |
 | 4 | ~~Contar los clics~~ — ya están contados (§3.1 del entregable 3) | — |
 | 5 | **Escribe las secciones 3 y 4** (el cuadro y el inventario). Son tablas: es lo más mecánico y te mete en materia | 2–3 h |
@@ -416,22 +486,33 @@ No escribas de arriba abajo. Este orden:
 
 Marca cada casilla. Si alguna queda vacía, no entregues todavía.
 
-**Contenido obligatorio**
+**Contenido obligatorio — contrastado con el enunciado, línea por línea**
 
-- ⬜ Las 10 heurísticas, cada una con un ejemplo concreto y verificable
-- ⬜ Inventario de violaciones con severidad **justificada**
-- ⬜ Matriz de accesibilidad con los 4 principios
-- ⬜ Diagrama de estados **dibujado**
-- ⬜ Secuencia de tareas con los clics contados
-- ⬜ Tabla de microinteracciones
+Entregable 1:
+- ⬜ **Análisis** de las 10 heurísticas (el inventario de violaciones con severidad justificada)
+- ⬜ **Cuadro** donde explico cómo mi prototipo aplica las heurísticas — *son las dos cosas, no una*
+
+Entregable 2, y cada principio con lo que el enunciado pide de él:
+- ⬜ **Perceptibilidad**: alternativas textuales para iconos **y** contrastes
+- ⬜ **Operabilidad**: navegable con teclado, **con el foco visible enseñado en una captura**
+- ⬜ **Comprensibilidad**: mensajes de ayuda claros y lenguaje sencillo
+- ⬜ **Robustez**: estructura para tecnologías asistidas, **con el ejemplo de las imágenes que nombra el profesor**
+
+Entregable 3:
+- ⬜ **Diagrama de estados** dibujado, con el camino del usuario
+- ⬜ **Secuencia de tareas** de un objetivo completo (la compra), con los clics
+- ⬜ **Respuesta del sistema**: la tabla de microinteracciones
+
+Entregable 4:
 - ⬜ **Cinco** conclusiones, cada una con afirmación + evidencia + consecuencia
+- ⬜ Entre las cinco se tocan los tres temas que nombra: usabilidad, arquitecturas cognitivas y diseño de la interacción
 
 **Lo que te quita puntos si falta**
 
 - ⬜ Declaré que soy un solo evaluador y que evalué mi propio diseño
 - ⬜ Dije qué quedó sin arreglar (V16) y por qué
 - ⬜ Dije que V3 (el foco tapado) quedó **medido y corregido**, no solo "aplicado"
-- ⬜ Hice las dos mediciones que faltaban: zoom al 200 % y lector de pantalla
+- ⬜ Probé con lector de pantalla y lo escribí (el enunciado lo nombra en Robustez)
 - ⬜ Resolví lo del prototipo de baja fidelidad
 - ⬜ Declaré en el método del criterio 2 con qué se midió: Chrome, 7 escenarios, 2 tamaños de pantalla
 
