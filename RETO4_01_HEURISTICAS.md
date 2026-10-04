@@ -303,7 +303,17 @@ Si llegaste a citar el 44, cámbialo. Ya está corregido en los dos documentos.
 
 ---
 
-## 9. Resumen: cómo se cumple cada heurística
+## 9. Resumen: cómo se cumplía cada heurística — **ESTE ES EL "ANTES"**
+
+> 🔴 **Lee esto primero.** Los veredictos de esta sección son los del **2026-10-04 antes de arreglar nada**. **Ya no son el estado actual.** Después de los arreglos de §11, **las diez cumplen**.
+>
+> Esta sección se queda tal cual, y a propósito: el informe necesita el antes para que el después signifique algo. Un apartado que solo dice "las diez cumplen" no demuestra que hubo una evaluación. El recorrido que vale puntos es: **así estaba → esto encontré → esto arreglé → así está ahora.**
+>
+> | Si buscas… | Ve a |
+> |---|---|
+> | Cómo estaba antes de evaluar | **esta sección** |
+> | Qué se arregló y cómo | §11 |
+> | **Cómo está ahora** | §11, cuadro "antes y ahora" |
 
 Veredicto de las diez, con el motivo. Cruza los cumplimientos de §3 con las violaciones de §4, así que cada veredicto sale de evidencia verificada, no de impresión.
 
@@ -333,7 +343,7 @@ Nielsen es explícito en esta heurística: las acciones destructivas necesitan u
 
 **Por qué se cumple:** los estándares externos se siguen. Los dos paneles usan el patrón modal de WAI-ARIA completo: `role="dialog"`, `aria-modal="true"`, `aria-labelledby`, foco contenido y devuelto. Hay **un solo** anillo de foco en todo el sitio. Todo el diseño sale de variables en `:root`: ocho colores con nombre, radios, duraciones y curvas, sin valores sueltos. Los dos desplegables de la barra se comportan igual entre sí. Y los campos de la tarjeta y los de la cuenta siguen la misma regla: no se marcan en rojo hasta que los tocaste.
 
-**Por qué falla hacia dentro:** las dos violaciones son casos donde **el proyecto hace lo correcto en un sitio y no en otro**. Los grupos de radio del panel llevan `fieldset` + `legend` ("¿Cómo lo quieres?", "¿Cómo quieres pagar?"), pero los grupos de tamaño de las fichas no llevan nada (V7). Y el horario del pie es un estado calculado mientras la nota del hero es decoración con la misma pinta (V6): dos indicadores idénticos a la vista, uno verdadero y otro no.
+**Por qué falla hacia dentro:** la violación es un caso donde **el proyecto hace lo correcto en un sitio y no en otro**. El horario del pie es un estado calculado contra la hora real, mientras la nota del hero era decoración con la misma pinta (V6): dos indicadores idénticos a la vista, uno verdadero y otro no. *(Aquí había una segunda, V7, sobre los grupos de tamaño sin rotular. Quedó retirada: sí estaban rotulados. Ver §8.0.)*
 
 ### H5 · Prevención de errores → **cumple**
 
@@ -347,7 +357,7 @@ Hay dos decisiones especialmente finas. El campo de cantidad es `type="text"` co
 
 **Por qué se cumple:** la lista de requisitos de la contraseña está debajo del campo y **se repinta en cada tecla**, así que no hay que recordar qué pedía ni adivinar qué falta. El precio va junto al botón de pedir, no en una lista aparte. El desglose subtotal / envío / total se escribe cuando ya se sabe cómo se recibe el pedido. El título de la pestaña cambia con la vista. Y la mejor: con sesión abierta la dirección se precarga **solo si el campo está vacío**, así que lo que tú escribiste manda sobre lo guardado — precargar sin pisar.
 
-**Por qué solo parcialmente:** tres violaciones piden memoria. El número de pedido hay que **apuntarlo a mano** porque no se puede copiar ni guardar (V2), que es el caso de libro de esta heurística. El grupo de tamaños no dice que sea un grupo de tamaños, así que con lector de pantalla hay que deducirlo (V7). Y como no existe una vista de todo el catálogo ordenable, comparar precios entre categorías obliga a recordar lo que viste en la anterior (V10).
+**Por qué solo parcialmente:** dos violaciones piden memoria. El número de pedido hay que **apuntarlo a mano** porque no se puede copiar ni guardar (V2), que es el caso de libro de esta heurística. Y como no existe una vista de todo el catálogo ordenable, comparar precios entre categorías obliga a recordar lo que viste en la anterior (V10).
 
 ### H7 · Flexibilidad y eficiencia de uso → **cumple**
 
@@ -379,20 +389,22 @@ Y dos casos de recuperación que van más allá del formulario: si el mapa no ca
 
 ### Cuadro de veredictos
 
-| # | Heurística | Veredicto | Violaciones |
-|---|---|---|---|
-| H1 | Visibilidad del estado del sistema | cumple parcialmente | V6, V11, (V3) |
-| H2 | Correspondencia con el mundo real | cumple, con una excepción | V5, V4 |
-| H3 | Control y libertad del usuario | **no cumple del todo** | V1, V2, V8, V12 |
-| H4 | Consistencia y estándares | cumple fuera, falla dentro | V6, V7 |
-| H5 | Prevención de errores | cumple | V9 |
-| H6 | Reconocimiento antes que recuerdo | cumple parcialmente | V2, V7, V10 |
-| H7 | Flexibilidad y eficiencia de uso | cumple | V10 |
-| H8 | Diseño estético y minimalista | cumple, con dos excesos | V9, V15 |
-| H9 | Recuperarse de los errores | cumple | V13 |
-| H10 | Ayuda y documentación | cumple, con una alarma | V15 |
+| # | Heurística | **Antes** (lo que dice esta sección) | Violaciones de entonces | **Ahora** (tras §11) |
+|---|---|---|---|---|
+| H1 | Visibilidad del estado del sistema | cumple parcialmente | V6, V11, (V3) | ✅ **cumple** |
+| H2 | Correspondencia con el mundo real | cumple, con una excepción | V5, V4 | ✅ **cumple** |
+| H3 | Control y libertad del usuario | **no cumple del todo** | V1, V2, V8, V12 | ✅ **cumple** |
+| H4 | Consistencia y estándares | cumple fuera, falla dentro | V6 | ✅ **cumple** |
+| H5 | Prevención de errores | cumple | V9 | ✅ cumple |
+| H6 | Reconocimiento antes que recuerdo | cumple parcialmente | V2, V10 | ✅ **cumple** |
+| H7 | Flexibilidad y eficiencia de uso | cumple, con una falta | V10 | ✅ **cumple** |
+| H8 | Diseño estético y minimalista | cumple, con dos excesos | V9, V15 | ✅ **cumple** |
+| H9 | Recuperarse de los errores | cumple | V13 | ✅ cumple |
+| H10 | Ayuda y documentación | cumple, con una alarma | V15 | ✅ **cumple** |
 
-Cuatro cumplen limpio (H5, H7, H9, H10), cinco cumplen con reservas, y una no cumple (H3).
+**Antes:** cuatro cumplían limpio (H5, H7, H9, H10), cinco con reservas, y una no cumplía (H3).
+
+**Ahora: las diez cumplen.** Con una reserva honesta que conviene escribir tal cual en el informe: la accesibilidad completa depende de que pruebes con lector de pantalla, que es lo único que queda sin medir.
 
 ---
 
