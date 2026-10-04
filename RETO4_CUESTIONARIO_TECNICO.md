@@ -26,14 +26,14 @@ Respondido el 2026-10-04 sobre el código del repositorio, después de aplicar l
 | Única dependencia externa | **Leaflet 1.9.4** desde cdnjs, y solo se descarga si el usuario elige domicilio |
 | Persistencia | `localStorage` del navegador: el pedido y los datos de la cuenta |
 | Tipografías | Georgia y Arial, del sistema. Sin Google Fonts |
-| Imágenes | Unsplash con `srcset` por ancho, más 5 archivos locales (logo, mascota, foto de la historia, favicons) |
+| Imágenes | Unsplash con `srcset` por ancho, más **8 archivos locales**: 4 de contenido (`logo.png`, `mascota.png`, `historia-amasado-430.jpg` y `-760.jpg`) y 4 de icono (`favicon.ico`, `favicon-32.png`, `favicon-192.png`, `apple-touch-icon.png`) |
 | Datos estructurados | JSON-LD, `@type: Bakery` |
 
 Tres decisiones que explican lo demás:
 
 - **Sin framework ni compilación.** `index.html` se abre con doble clic y funciona. No hay `package.json`, ni `node_modules`, ni paso de build.
 - **Mejora progresiva.** Sin JavaScript el sitio no se rompe, **cambia**: los contadores de cantidad vuelven a ser enlaces de WhatsApp, la fila horizontal sale como cuadrícula entera y los enlaces de categoría bajan al catálogo.
-- **`script.js` es un único IIFE** de 2.400 líneas. Un error en ejecución se lleva la página entera, y `node --check` no lo detecta.
+- **`script.js` es un único IIFE** de 2.473 líneas. Un error en ejecución se lleva la página entera, y `node --check` no lo detecta.
 
 ### Tamaño real
 
@@ -180,6 +180,10 @@ let pasoActual = 'canasta';
 
 // Cada ficha del catálogo deja aquí su manera de repintarse
 const refrescos = [];
+
+// Lo último que se quitó, por si hay que reponerlo. Se guarda una copia: la
+// línea original se borra del pedido y no se puede confiar en la referencia.
+let borrado = null;   // { id, linea: { nombre, precio, cantidad } }
 ```
 
 El equivalente a `loading` / `error` / `success` son tres clases y un paso:
@@ -422,7 +426,7 @@ const apagarDetras = (panel, apagado) => {
 | Agrupaciones | `fieldset` + `legend`: *"¿Cómo lo quieres?"*, *"¿Cómo quieres pagar?"* |
 | `placeholder` | Como **ejemplo**, nunca como etiqueta: `"Calle, número y una referencia"`, `"4242 4242 4242 4242"`, `"MM/AA"` |
 | Ayuda bajo el campo | La lista de requisitos de la contraseña, que se repinta en cada tecla |
-| Validación en línea | Bajo el campo, unida con `aria-describedby` (12 elementos) |
+| Validación en línea | Bajo el campo, unida con `aria-describedby` (11 elementos) |
 | **Cuándo se marca** | Solo si ya tocaste el campo o ya intentaste enviar. El correo y el teléfono al salir de ellos: corregir el correo en la tercera letra no ayuda |
 
 **La terminología es de panadería, no de desarrollador.** Esa fue una decisión, no una casualidad:
@@ -495,7 +499,7 @@ No aparece en ninguna parte de la interfaz la palabra *error*, *inválido*, *cam
 | "Paso retirando" / "A domicilio" | Lo que se dice por teléfono al pedir |
 | "Vuelve mañana" sobre lo agotado | El cartelito de la bandeja vacía |
 | El `−` que **se vuelve papelera** con una unidad | Devolver una pieza a la bandeja vs. dejar de llevar el producto |
-| "Recién salido del horno" + punto que late | El cartel de la puerta, y ahora dice la verdad: sale del horario real |
+| La nota del hero con su punto que late | **El cartel de la puerta.** Y ahora dice la verdad, porque sale del horario real: *"Horneando ahora mismo / Abierto hasta las 20:00"*, *"El horno se está calentando / Abrimos a las 08:00"*, *"Ya cerramos por hoy"* o *"Hoy no horneamos / Día festivo"*. El punto deja de latir en ámbar cuando está cerrado |
 | El horario con "hoy" marcado | El horario pegado en el cristal |
 | El comprobante con sello ✓ y número | El tiquete de papel que te dan en el mostrador |
 | Cerrar el comprobante vacía la canasta | Sales de la tienda con el pedido hecho |
