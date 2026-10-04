@@ -2,6 +2,68 @@
   const menuToggle = document.querySelector('.menu-toggle');
   const navigation = document.querySelector('#main-nav');
 
+  // ---- Lo que el tabulador puede alcanzar -------------------------------
+  // La misma lista la usan el cerco de los paneles y los desplegables de la
+  // barra, asi que vive una sola vez y aqui arriba. Un elemento escondido no
+  // cuenta: 'offsetParent' nulo es como se nota que no esta en pantalla, y asi
+  // los pasos ocultos del panel no se cuelan en el recorrido.
+  const FOCOS = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  const focosDe = (caja) => [...caja.querySelectorAll(FOCOS)]
+    .filter((el) => el.offsetParent !== null && !el.disabled && el.getAttribute('aria-disabled') !== 'true');
+
+  // Mientras un panel esta abierto, la pagina de detras se apaga del todo con
+  // 'inert': ni el tabulador la recorre ni el lector de pantalla la lee. El
+  // cerco de Tab ya lo impedia, pero solo para quien tabula; esto lo cierra
+  // para todos. Se lleva en un conjunto para que abrir dos veces no descuadre
+  // la cuenta y el ultimo en cerrarse sea el que vuelve a encenderla.
+  const panelesAbiertos = new Set();
+  const detras = () => [
+    document.querySelector('.site-header'),
+    document.querySelector('#contenido'),
+    document.querySelector('.site-footer'),
+    document.querySelector('.floating-whatsapp'),
+  ].filter(Boolean);
+  const apagarDetras = (panel, apagado) => {
+    if (apagado) panelesAbiertos.add(panel); else panelesAbiertos.delete(panel);
+    const hayPanel = panelesAbiertos.size > 0;
+    detras().forEach((zona) => { zona.inert = hayPanel; });
+  };
+
+  // Un desplegable de la barra se recorre con las flechas, que es lo que espera
+  // quien no usa raton: abajo entra y baja, arriba sube, Inicio y Fin van a las
+  // puntas y Escape lo cierra devolviendo el foco al boton que lo abrio.
+  const flechasEnMenu = (boton, caja, abrir, estaAbierto) => {
+    const opciones = () => focosDe(caja);
+    const irA = (i) => {
+      const lista = opciones();
+      if (!lista.length) return;
+      lista[(i + lista.length) % lista.length].focus();
+    };
+    const mover = (paso) => {
+      const lista = opciones();
+      const donde = lista.indexOf(document.activeElement);
+      irA(donde === -1 ? (paso > 0 ? 0 : lista.length - 1) : donde + paso);
+    };
+    boton.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+      e.preventDefault();
+      if (!estaAbierto()) abrir(true);
+      // El desplegable aparece con una transicion; hasta que no es visible no
+      // se le puede dar el foco, de ahi el salto al siguiente cuadro.
+      requestAnimationFrame(() => irA(e.key === 'ArrowDown' ? 0 : -1));
+    });
+    caja.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') { e.preventDefault(); mover(1); return; }
+      if (e.key === 'ArrowUp') { e.preventDefault(); mover(-1); return; }
+      if (e.key === 'Home') { e.preventDefault(); irA(0); return; }
+      if (e.key === 'End') { e.preventDefault(); irA(-1); return; }
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      abrir(false);
+      boton.focus();
+    });
+  };
+
   // La cabecera se queda arriba al bajar. Sin fondo mientras se esta en lo alto
   // -ahi la sostiene el velo del hero- y con fondo en cuanto se baja, que es
   // cuando pasan secciones oscuras por detras.
@@ -59,6 +121,14 @@
     menuToggle.setAttribute('aria-expanded', String(!isOpen));
     menuToggle.setAttribute('aria-label', isOpen ? 'Abrir menú' : 'Cerrar menú');
     navigation.classList.toggle('is-open', !isOpen);
+    // La navegacion va antes del boton en el documento, asi que al abrirla con
+    // el teclado el siguiente tabulador se la salta por detras y hay que
+    // retroceder para encontrarla. Abriendola, el foco entra en el primer
+    // enlace; cerrandola, vuelve al boton, que es de donde salio.
+    if (isOpen) { menuToggle.focus(); return; }
+    // El menu aparece con una transicion: hasta el cuadro siguiente sigue
+    // escondido, y a lo escondido no se le puede dar el foco.
+    requestAnimationFrame(() => focosDe(navigation)[0]?.focus());
   });
 
   navigation?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
@@ -101,6 +171,16 @@
     });
     // Escape la suelta tambien, no solo la cierra.
     grupo.addEventListener('soltar', () => { fijada = false; });
+    // Con las flechas se entra y se recorre. Quien abre con el teclado la deja
+    // fijada: si no, el primer movimiento del raton se la cerraria en la cara.
+    const submenu = grupo.querySelector('.nav-submenu');
+    if (submenu) {
+      grupoBoton.setAttribute('aria-haspopup', 'true');
+      flechasEnMenu(grupoBoton, submenu, (abierto) => {
+        fijada = abierto;
+        abrirGrupo(abierto);
+      }, () => grupo.classList.contains('is-open'));
+    }
   }
   window.addEventListener('resize', () => {
     if (window.innerWidth > 680) closeMenu();
@@ -710,10 +790,17 @@
       if (!abierto()) return;
       if (e.key === 'Escape') { cerrar(); return; }
       if (e.key !== 'Tab') return;
-      const focos = [...panel.querySelectorAll('button, a[href], input, [tabindex]:not([tabindex="-1"])')]
-        .filter((el) => el.offsetParent !== null && !el.disabled && el.getAttribute('aria-disabled') !== 'true');
+      const focos = focosDe(panel);
       if (!focos.length) return;
       const primero = focos[0], ultimo = focos[focos.length - 1];
+      // Si el foco acabo fuera -en el body, por ejemplo, porque se escondio el
+      // boton que lo tenia al cambiar de paso-, la siguiente tecla lo devuelve
+      // dentro en vez de echarlo a pasear por la pagina de detras.
+      if (!panel.contains(document.activeElement)) {
+        e.preventDefault();
+        (e.shiftKey ? ultimo : primero).focus();
+        return;
+      }
       if (e.shiftKey && document.activeElement === primero) { e.preventDefault(); ultimo.focus(); }
       else if (!e.shiftKey && document.activeElement === ultimo) { e.preventDefault(); primero.focus(); }
     });
@@ -877,7 +964,17 @@
     + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
     + '<circle cx="12" cy="12" r="3.3"/><path d="M12 2v3.2M12 18.8V22M22 12h-3.2M5.2 12H2"/>'
     + '<circle cx="12" cy="12" r="8"/></svg>Usar mi ubicación</button>'
-    + '<p class="mapa-dato">Toca el mapa para marcar a dónde va el pedido</p>'
+    // Marcar el punto no puede depender de acertarle con el raton: este boton
+    // deja la aguja en el centro de lo que se esta mirando, y el mapa se mueve
+    // con las flechas. Es el camino de quien va solo con teclado, y de paso el
+    // de quien en el telefono no quiere pelearse con el pulgar.
+    + '<button class="mapa-centro" type="button">'
+    + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
+    + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<path d="M12 21.4c0 0-6.6-5.3-6.6-10.1a6.6 6.6 0 0 1 13.2 0c0 4.8-6.6 10.1-6.6 10.1Z"/>'
+    + '<circle cx="12" cy="11" r="2.4"/></svg>Marcar el centro del mapa</button>'
+    + '<p class="mapa-dato">Marca a dónde va el pedido: toca el mapa, o muévelo '
+    + 'con las flechas y pulsa Enter</p>'
     + '</div></div>'
     + '<label for="canasta-dir">¿A dónde lo llevamos?</label>'
     + '<input id="canasta-dir" type="text" autocomplete="street-address" '
@@ -1007,6 +1104,7 @@
   const mapaFallo = panel.querySelector('.mapa-fallo');
   const mapaDato = panel.querySelector('.mapa-dato');
   const mapaAqui = panel.querySelector('.mapa-aqui');
+  const mapaCentro = panel.querySelector('.mapa-centro');
   const metodos = [...panel.querySelectorAll('input[name="canasta-metodo"]')];
   const detalles = [...panel.querySelectorAll('.pago-detalle')];
   const pagoTotal = panel.querySelector('.pago-total strong');
@@ -1106,7 +1204,8 @@
   const contarDistancia = () => {
     if (!mapaDato) return;
     if (!entrega.punto) {
-      mapaDato.textContent = 'Toca el mapa para marcar a dónde va el pedido';
+      mapaDato.textContent = 'Marca a dónde va el pedido: toca el mapa, o muévelo '
+        + 'con las flechas y pulsa Enter';
       return;
     }
     const km = kmEntre(LOCAL, entrega.punto);
@@ -1119,6 +1218,18 @@
     contarDistancia();
     pintarDesglose();
     guardar();
+  };
+
+  // El centro de lo que se esta mirando es el punto. Lo usan el boton del pie y
+  // la tecla Enter sobre el mapa, que son las dos maneras de marcarlo sin raton.
+  const marcarCentro = () => {
+    if (!mapa || !aguja) {
+      if (mapaDato) mapaDato.textContent = 'El mapa todavía se está cargando; espera un momento';
+      return;
+    }
+    if (!aguja._map) aguja.addTo(mapa);
+    const centro = mapa.getCenter();
+    ponerAguja({ lat: centro.lat, lng: centro.lng });
   };
 
   const armarMapa = () => {
@@ -1140,6 +1251,19 @@
         if (!aguja._map) aguja.addTo(mapa);
         ponerAguja(e.latlng);
       });
+      // Leaflet le pone tabindex="0" al lienzo y ya mueve con las flechas y
+      // acerca con + y −. Lo que no trae es manera de soltar la aguja sin
+      // raton, asi que Enter hace eso. Sin rotulo, al tabular hasta aqui no se
+      // oye mas que "mapa" y no hay como saber que se puede hacer.
+      mapaLienzo.setAttribute('role', 'application');
+      mapaLienzo.setAttribute('aria-label', 'Mapa del reparto. Muévelo con las flechas, '
+        + 'acerca y aleja con las teclas más y menos, y pulsa Enter para marcar el centro '
+        + 'como punto de entrega.');
+      mapaLienzo.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        marcarCentro();
+      });
       if (entrega.punto) { aguja.setLatLng(entrega.punto).addTo(mapa); contarDistancia(); }
       // Nace con el panel cerrado y sin medidas; hay que decirle que se mire.
       setTimeout(() => mapa.invalidateSize(), 60);
@@ -1147,8 +1271,11 @@
       if (mapaFallo) mapaFallo.hidden = false;
       if (mapaLienzo) mapaLienzo.hidden = true;
       if (mapaAqui) mapaAqui.hidden = true;
+      if (mapaCentro) mapaCentro.hidden = true;
     });
   };
+
+  mapaCentro?.addEventListener('click', marcarCentro);
 
   mapaAqui?.addEventListener('click', () => {
     if (!navigator.geolocation) {
@@ -1511,12 +1638,15 @@
     fondo.classList.add('is-open');
     panel.classList.add('is-open');
     document.body.style.overflow = 'hidden';
+    apagarDetras(panel, true);
     panel.querySelector('.canasta-cerrar').focus();
   };
   const cerrar = () => {
     fondo.classList.remove('is-open');
     panel.classList.remove('is-open');
     document.body.style.overflow = '';
+    // Se enciende antes de devolver el foco: a lo apagado no se le puede dar.
+    apagarDetras(panel, false);
     // Cerrar a media compra no puede dejar el panel atascado en "procesando":
     // se corta el temporizador y se vuelve siempre a la canasta. Si ya habia
     // comprobante, el pedido esta cumplido y la canasta se vacia.
@@ -1649,6 +1779,14 @@
     cuentaFicha.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') { e.preventDefault(); cuentaFicha.blur(); }
       if (e.key === 'Escape') { cuentaFicha.value = cuantos(); cuentaFicha.blur(); }
+      // Es un campo de texto y no un number justamente para no heredar sus
+      // flechitas, pero las teclas de flecha si se esperan en algo que cuenta:
+      // suben y bajan de uno sin tener que borrar y reescribir el numero.
+      if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
+      e.preventDefault();
+      const ahora = Math.min(parseInt(cuentaFicha.value, 10) || 0, MAX_UNIDADES);
+      const paso = e.key === 'ArrowUp' ? 1 : -1;
+      cuentaFicha.value = Math.max(0, Math.min(ahora + paso, MAX_UNIDADES));
     });
     // Al salir del campo se asienta: se recorta al tope y, si quedo en cero o
     // en blanco, el producto sale de la canasta, que es lo que un cero dice.
@@ -2000,6 +2138,7 @@
     fondoC.classList.add('is-open');
     panelC.classList.add('is-open');
     document.body.style.overflow = 'hidden';
+    apagarDetras(panelC, true);
     tituloC.focus();
   };
   const cerrarC = () => {
@@ -2008,6 +2147,8 @@
     fondoC.classList.remove('is-open');
     panelC.classList.remove('is-open');
     document.body.style.overflow = '';
+    // Igual que en la canasta: primero se enciende, despues se devuelve el foco.
+    apagarDetras(panelC, false);
     olvidarFormulario();
     // En el telefono el menu se cerro al abrir el panel, asi que el boton al que
     // habria que volver esta escondido: el foco va al de abrir el menu, que si se ve.
@@ -2020,6 +2161,7 @@
   // hay nada que elegir, asi que va directo a la ficha de la sesion.
   const menuCuenta = document.createElement('div');
   menuCuenta.className = 'cuenta-menu';
+  menuCuenta.id = 'cuenta-menu';
   menuCuenta.innerHTML = '<button type="button" data-va="entrar">Iniciar sesión</button>'
     + '<button type="button" data-va="crear">Registrarse</button>';
   navCuenta.insertAdjacentElement('afterend', menuCuenta);
@@ -2030,7 +2172,11 @@
   };
   navCuenta.setAttribute('aria-expanded', 'false');
   navCuenta.setAttribute('aria-haspopup', 'true');
+  navCuenta.setAttribute('aria-controls', menuCuenta.id);
   navCuenta.dataset.tip = 'Tu cuenta';
+  // Las dos puertas se recorren con las flechas, como el desplegable de Tienda.
+  flechasEnMenu(navCuenta, menuCuenta, abrirMenuCuenta,
+    () => menuCuenta.classList.contains('is-open'));
 
   navCuenta.addEventListener('click', () => {
     closeMenu();
@@ -2041,9 +2187,23 @@
     abrirMenuCuenta(false);
     abrirC(b.dataset.va);
   }));
+  const fueraDeCuenta = (destino) => !navCuenta.contains(destino) && !menuCuenta.contains(destino);
   document.addEventListener('click', (e) => {
-    if (navCuenta.contains(e.target) || menuCuenta.contains(e.target)) return;
+    if (!fueraDeCuenta(e.target)) return;
     abrirMenuCuenta(false);
+  });
+  // Tabular fuera lo cierra: dejarlo desplegado detras del foco es ensenar un
+  // menu que ya no responde a nada.
+  document.addEventListener('focusin', (e) => {
+    if (!fueraDeCuenta(e.target)) return;
+    abrirMenuCuenta(false);
+  });
+  // Escape lo cierra desde donde sea y devuelve el foco al circulo, que si no
+  // se queda colgando en un boton que acaba de desaparecer.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !menuCuenta.classList.contains('is-open')) return;
+    abrirMenuCuenta(false);
+    navCuenta.focus();
   });
   fondoC.addEventListener('click', cerrarC);
   panelC.querySelector('.cuenta-cerrar').addEventListener('click', cerrarC);

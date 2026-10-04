@@ -15,6 +15,10 @@
 
 El orden no es arbitrario. Va de lo que se ve a lo que se mide, y cada área depende un poco de la anterior: no tiene sentido optimizar el rendimiento de unas imágenes que todavía van a cambiar, ni el SEO de unos textos que no están cerrados.
 
+## Guías de uso
+
+- [ACCESIBILIDAD_TECLADO.md](ACCESIBILIDAD_TECLADO.md): el recorrido completo del sitio sin ratón, tecla por tecla, con lo que se arregló para que fuera posible y lo que queda pendiente. Sale del área 2, pero es una guía de uso y no una auditoría: no busca hallazgos, explica cómo se maneja.
+
 ## Documentos anteriores
 
 - [AUDITORIA_COMPLETA.md](AUDITORIA_COMPLETA.md): el mapa general del que salieron estas seis. Sigue siendo útil como panorámica, pero cada área está tratada con más profundidad y con datos medidos en su archivo propio.

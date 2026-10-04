@@ -306,7 +306,7 @@ body.is-vista .fila-rotulo { display: none; }
 .card-cantidad .card-numero { width: 2.6ch; min-width: 24px; padding: .15rem 0; background: none; border: 1px solid transparent; border-radius: var(--r-chip); color: var(--horno); font: 700 .95rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
 .card-cantidad .card-numero:hover { border-color: var(--masa-linea); }
 .card-cantidad .card-numero:focus { background: var(--papel); border-color: var(--ambar); outline: none; }
-.card-cantidad .card-numero:focus-visible { box-shadow: 0 0 0 2px rgba(215, 155, 74, .3); }
+.card-cantidad .card-numero:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .card-cantidad button[hidden], .card-cantidad .card-numero[hidden] { display: none; }
 .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno .card-numero { animation: cantidad-abre var(--dur-fast) var(--ease-out) both; }
 @keyframes cantidad-abre { from { opacity: 0; transform: translateX(10px) scale(.85); } to { opacity: 1; transform: none; } }
@@ -630,11 +630,15 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .mapa-fallo { display: grid; height: 100%; margin: 0; padding: 1.2rem; place-items: center; color: var(--horno-suave); font: .82rem/1.5 Arial, sans-serif; text-align: center; }
 .mapa-fallo[hidden] { display: none; }
 .mapa-pie { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem .9rem; margin-top: .6rem; }
-.mapa-aqui { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .78rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.mapa-aqui:hover { background: var(--masa); border-color: var(--corteza); }
-.mapa-aqui[hidden] { display: none; }
-.mapa-aqui svg { width: 15px; height: 15px; }
-.mapa-dato { margin: 0; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
+.mapa-aqui, .mapa-centro { display: inline-flex; align-items: center; gap: .4rem; padding: .4rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .78rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.mapa-aqui:hover, .mapa-centro:hover { background: var(--masa); border-color: var(--corteza); }
+.mapa-aqui[hidden], .mapa-centro[hidden] { display: none; }
+.mapa-aqui svg, .mapa-centro svg { width: 15px; height: 15px; }
+.mapa-dato { flex: 1 0 100%; margin: 0; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
+/* Al tabular hasta el mapa hay que verlo: Leaflet no marca su lienzo, y sin
+   marca no se sabe que las flechas y Enter ya van a parar ahi. */
+.mapa-caja:has(.leaflet-container:focus-visible) { border-color: var(--ambar); outline: 3px solid var(--horno); outline-offset: 3px; box-shadow: 0 0 0 5px var(--ambar); }
+.mapa-caja .leaflet-container:focus-visible { outline: none; }
 /* Leaflet trae su propia tipografia y su z-index alto; aqui dentro no manda. */
 .mapa-caja .leaflet-container { z-index: 1; font: .75rem Arial, sans-serif; }
 
