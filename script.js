@@ -1800,7 +1800,11 @@
   pideCuentaBoton.addEventListener('click', () => {
     pideCuenta.hidden = true;
     cerrar();
-    abrirC();
+    // Quien llega aqui casi nunca tiene cuenta: el aviso sale justo porque no
+    // la hay. Aterrizar en "Entrar" le costaria un clic de mas para llegar a
+    // "Registrarse". Si en este navegador ya hay una cuenta guardada, lo
+    // probable es lo contrario y entonces si abre en "Entrar".
+    abrirC(correoGuardado() ? 'entrar' : 'crear');
   });
 
   // Sin direccion no se puede llevar nada: en vez de pasar al pago, se avisa y
@@ -2598,10 +2602,16 @@
     avisos.textContent = `Te enviamos un código al ${telefonoLargo(sesion.telefono || datos.telefono)}.`;
   };
 
+  // El error va por dos sitios: debajo del campo, unido con aria-describedby
+  // para quien lo lee al enfocarlo, y en la region con role="alert" del pie,
+  // que el lector canta al momento. Un codigo equivocado merece interrumpir:
+  // quien lo escribio esta esperando una respuesta ahora, no despues.
   const marcarCodigo = (texto) => {
     errorCodigo.hidden = !texto;
     errorCodigo.textContent = texto;
     campoCodigo.classList.toggle('is-mal', Boolean(texto));
+    avisoVerificar.hidden = !texto;
+    avisoVerificar.textContent = texto;
   };
 
   // Mientras escribe solo se limpia lo que no son cifras. El codigo no se
