@@ -877,7 +877,16 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .pago-prueba { margin: 0 0 .9rem; padding: .6rem .8rem; background: var(--masa); border: 1px dashed var(--masa-linea); border-radius: var(--r-chip); color: var(--horno-suave); font: .78rem/1.5 Arial, sans-serif; }
 .pago-prueba strong { color: var(--horno); font-variant-numeric: tabular-nums; }
 .pago-campo, .cuenta-campo { margin-bottom: .7rem; }
-.pago-campo label, .cuenta-campo label { display: block; margin-bottom: .3rem; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
+/* El nombre del campo iba en el mismo gris que el ejemplo de dentro y con el
+   mismo peso, asi que de un vistazo parecian lo mismo y no se sabia cual era
+   el que manda. Ahora el nombre va en el color del texto principal y en
+   negrita, y el ejemplo se aclara a proposito: primero se lee lo que hay que
+   escribir y despues la sugerencia de como. La separacion tambien crece, para
+   que el nombre se lea como titulo del campo y no como parte de el. */
+.pago-campo label, .cuenta-campo label { display: block; margin-bottom: .4rem; color: var(--horno); font: 700 .8rem/1.3 Arial, sans-serif; }
+/* opacity a 1 porque Firefox aclara los ejemplos por su cuenta, y entonces el
+   color de aqui no seria el que se ve. */
+.pago-campo input::placeholder, .cuenta-campo input::placeholder { color: var(--horno-claro); opacity: 1; }
 .pago-campo input, .cuenta-campo input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .95rem/1.3 Arial, sans-serif; font-variant-numeric: tabular-nums; transition: border-color var(--dur-fast) var(--ease-ui); }
 .pago-campo input:focus-visible, .cuenta-campo input:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
 .pago-campo input.is-mal, .cuenta-campo input.is-mal { border-color: var(--corteza); }
@@ -927,7 +936,11 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
    foco al borrar. Con autocomplete="one-time-code" el propio telefono lo
    rellena. El espaciado entre cifras es cosmetico, no estructural. */
 .campo-codigo { font: 700 1.3rem/1 "Courier New", monospace !important; letter-spacing: .4em; text-align: center; }
-.campo-codigo::placeholder { letter-spacing: .4em; opacity: .35; }
+/* El 000000 del codigo si tiene que quedarse tenue: el campo es grande y
+   monoespaciado, y un ejemplo con el mismo peso que los demas se leeria como
+   un codigo ya escrito. Va con el selector largo para ganarle en especificidad
+   a la regla de los ejemplos de arriba, que si no lo aclararia de menos. */
+.cuenta-campo input.campo-codigo::placeholder { color: var(--horno); letter-spacing: .4em; opacity: .35; }
 .codigo-reenviar { margin-top: .2rem; padding: .35rem 0; background: none; border: 0; color: var(--corteza-oscura); cursor: pointer; font: 700 .82rem Arial, sans-serif; text-decoration: underline; text-underline-offset: 3px; }
 .codigo-reenviar:disabled { color: var(--horno-claro); cursor: default; text-decoration: none; }
 

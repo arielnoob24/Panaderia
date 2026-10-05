@@ -670,6 +670,16 @@
   }));
   cabeza.querySelector('.vista-volver').addEventListener('click', () => abrirCategoria('todos'));
 
+  // "Ver el menu" de la portada abre el catalogo entero, la misma vista que
+  // "Ver todo el catalogo" de la fila y que la entrada del menu Tienda. Antes
+  // solo bajaba a la seccion y dejaba el mostrador en fila, que es un resumen:
+  // quien pulsa "ver el menu" quiere verlo todo, no una muestra. Sin
+  // JavaScript sigue siendo el enlace de siempre, que baja ahi mismo.
+  document.querySelector('.hero-actions a[href="#catalogo"]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    abrirCategoria('catalogo');
+  });
+
   // El boton de atras del navegador tiene que funcionar: la vista es un sitio.
   const deLaDireccion = () => {
     const m = location.hash.match(/^#tienda-(.+)$/);
