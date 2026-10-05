@@ -917,7 +917,7 @@
   // Como rellenarlas: CORREO_REAL.md.
   const BUZON = {
     servicio: 'service_u77o0ad',
-    plantilla: '',
+    plantilla: 'template_76qhpup',
     clave: '-ftq8owbv8TlMmxV8',
   };
   const buzonListo = () => Boolean(BUZON.servicio && BUZON.plantilla && BUZON.clave);
