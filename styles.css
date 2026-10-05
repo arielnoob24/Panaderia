@@ -585,7 +585,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .tamano { padding: .24rem .5rem; font-size: .68rem; }
   .product-bottom { margin-top: .9rem; padding-top: .8rem; }
   .product-bottom strong { font-size: .95rem; }
-  .card-cantidad button { width: 32px; height: 32px; }
+  .card-cantidad button, .canasta-cantidad button { width: 32px; height: 32px; }
   .sign-band-inner { min-height: 62px; }
   .sign-trigo { width: 104px; height: 24px; }
   .story { margin-bottom: 3rem; }
@@ -796,10 +796,17 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-linea h3 { margin: 0; font: 500 1.05rem/1.25 Georgia, serif; }
 .canasta-precio { color: var(--horno-suave); font: .8rem/1.4 Arial, sans-serif; }
 .canasta-subtotal { align-self: center; font: 700 .95rem/1.3 Arial, sans-serif; font-variant-numeric: tabular-nums; }
-.canasta-cantidad { display: inline-flex; align-items: center; gap: .1rem; margin-top: .45rem; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); }
-.canasta-cantidad button { display: grid; width: 30px; height: 30px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 700 1rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.canasta-cantidad button:hover { background: var(--masa); }
-.canasta-cantidad output { min-width: 26px; font: 700 .9rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; }
+/* El mismo control que en la ficha del catalogo, al detalle: el "mas" en ambar
+   relleno, el basurero en corteza y la pastilla con su pizca de aire. Es el
+   mismo gesto sobre el mismo producto, y cambiarle el aspecto segun desde donde
+   se toque obliga a reconocerlo dos veces. */
+.canasta-cantidad { display: inline-flex; align-items: center; gap: .1rem; margin-top: .45rem; padding: .15rem; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); }
+.canasta-cantidad button { display: grid; width: 34px; height: 34px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 700 1.2rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
+.canasta-cantidad [data-mas] { background: var(--ambar); }
+.canasta-cantidad [data-mas]:hover, .canasta-cantidad [data-mas]:focus-visible { background: var(--ambar-claro); }
+.canasta-cantidad [data-menos] { color: var(--corteza-oscura); }
+.canasta-cantidad [data-menos]:hover, .canasta-cantidad [data-menos]:focus-visible { background: var(--masa); }
+.canasta-cantidad output { width: 2.6ch; min-width: 24px; font: 700 .95rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; }
 /* El basurero de la ultima unidad, al mismo tamanio que en la ficha. */
 .canasta-cantidad .card-icono { width: 17px; height: 17px; }
 
