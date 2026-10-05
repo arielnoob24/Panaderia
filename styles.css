@@ -879,6 +879,40 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .recibo-sello span { display: grid; width: 30px; height: 30px; flex: none; place-items: center; background: var(--ambar); border-radius: 50%; color: var(--horno); font: 700 .95rem/1 Arial, sans-serif; }
 .recibo-datos { display: grid; margin: 0 0 1.3rem; gap: .4rem; }
 .recibo-datos div[hidden] { display: none; }
+
+/* ---- Verificacion del telefono -------------------------------------------
+   El recuadro que imita la notificacion del movil. Es la pieza que hace
+   utilizable la simulacion: sin servidor el codigo no puede llegar a ningun
+   sitio, asi que se ensena aqui, con pinta de mensaje recibido y con el texto
+   de al lado declarando que no se envio nada. */
+.codigo-falso { margin: 0 0 .9rem; padding: .75rem .9rem; background: var(--masa); border: 1px solid var(--masa-linea); border-left: 3px solid var(--ambar); border-radius: var(--r-btn); }
+.codigo-falso-de { margin: 0 0 .25rem; color: var(--horno-suave); font: 700 .72rem Arial, sans-serif; letter-spacing: .02em; text-transform: uppercase; }
+.codigo-falso-texto { margin: 0; color: var(--horno); font: .88rem/1.45 Arial, sans-serif; }
+.codigo-falso-texto b { font: 700 1.15rem/1 "Courier New", monospace; letter-spacing: .18em; }
+.codigo-dicho { margin: 0 0 .7rem; color: var(--horno-suave); font: .85rem/1.5 Arial, sans-serif; }
+.codigo-dicho strong { color: var(--horno); white-space: nowrap; }
+
+/* Un solo campo y no seis cajitas: seis cajitas suenan a "edicion, en blanco"
+   seis veces, no dejan pegar el codigo de un tiron y obligan a perseguir el
+   foco al borrar. Con autocomplete="one-time-code" el propio telefono lo
+   rellena. El espaciado entre cifras es cosmetico, no estructural. */
+.campo-codigo { font: 700 1.3rem/1 "Courier New", monospace !important; letter-spacing: .4em; text-align: center; }
+.campo-codigo::placeholder { letter-spacing: .4em; opacity: .35; }
+.codigo-reenviar { margin-top: .2rem; padding: .35rem 0; background: none; border: 0; color: var(--corteza-oscura); cursor: pointer; font: 700 .82rem Arial, sans-serif; text-decoration: underline; text-underline-offset: 3px; }
+.codigo-reenviar:disabled { color: var(--horno-claro); cursor: default; text-decoration: none; }
+
+/* ---- "Para pedir hace falta cuenta" --------------------------------------
+   Vive dentro de la canasta y no echa a nadie a otra parte sin explicar por
+   que: el comprobante va al telefono de la cuenta. */
+.pide-cuenta { display: grid; gap: .6rem; justify-items: start; }
+.pide-cuenta-boton { padding: .45rem .9rem; background: var(--horno); border: 0; border-radius: var(--r-pill); color: var(--sobre-horno); cursor: pointer; font: 700 .85rem Arial, sans-serif; }
+.pide-cuenta-boton:hover { background: var(--corteza-oscura); }
+
+/* ---- Canal del comprobante ---------------------------------------------- */
+.pago-canal { margin-top: .9rem; }
+.pago-canal-dato { margin: .6rem 0 0; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
+.pago-canal-dato strong { color: var(--horno); white-space: nowrap; }
+.recibo-enviado { margin: 1rem 0 .6rem; }
 .recibo-datos dd { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
 .recibo-copiar { padding: .2rem .55rem; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .72rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
 .recibo-copiar:hover { background: var(--papel); border-color: var(--corteza); }

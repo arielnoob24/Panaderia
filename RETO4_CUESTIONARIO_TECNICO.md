@@ -13,7 +13,7 @@ Respondido el 2026-10-04 sobre el código del repositorio, después de aplicar l
 | | |
 |---|---|
 | **Nombre** | El Tradicional — panadería y pastelería |
-| **Propósito** | Catálogo de panadería con pedido completo: elegir productos, decidir retiro o domicilio, simular el pago y obtener un comprobante. El pedido real se cierra por WhatsApp |
+| **Propósito** | Catálogo de panadería con pedido completo: **crear cuenta y verificar el teléfono con un código**, elegir productos, decidir retiro o domicilio, simular el pago y recibir el comprobante por mensaje de texto o WhatsApp al número verificado |
 | **Ubicación ficticia** | Esquina de Eloy Alfaro y Gabriel Espinosa, Tena, Napo, Ecuador |
 
 **Stack:** no hay stack. Es **HTML, CSS y JavaScript sin dependencias ni compilación**, servido como sitio estático en GitHub Pages.
@@ -33,15 +33,15 @@ Tres decisiones que explican lo demás:
 
 - **Sin framework ni compilación.** `index.html` se abre con doble clic y funciona. No hay `package.json`, ni `node_modules`, ni paso de build.
 - **Mejora progresiva.** Sin JavaScript el sitio no se rompe, **cambia**: los contadores de cantidad vuelven a ser enlaces de WhatsApp, la fila horizontal sale como cuadrícula entera y los enlaces de categoría bajan al catálogo.
-- **`script.js` es un único IIFE** de 2.495 líneas. Un error en ejecución se lleva la página entera, y `node --check` no lo detecta.
+- **`script.js` es un único IIFE** de 2.703 líneas. Un error en ejecución se lleva la página entera, y `node --check` no lo detecta.
 
 ### Tamaño real
 
 | Archivo | Líneas | Qué contiene |
 |---|---|---|
 | [index.html](index.html) | 123 | Estructura, 18 fichas de producto, JSON-LD, metadatos sociales |
-| [script.js](script.js) | 2.495 | Todo el comportamiento, en un IIFE |
-| [styles.css](styles.css) | 916 | Estilos, con `:root` de variables |
+| [script.js](script.js) | 2.703 | Todo el comportamiento, en un IIFE |
+| [styles.css](styles.css) | 950 | Estilos, con `:root` de variables |
 
 ### Factor de forma
 
@@ -118,7 +118,7 @@ Es la más larga del sistema, cruza los cuatro pasos del panel, incluye un mapa,
 | 9 | | Escribir la tarjeta | Se formatea en grupos de 4 manteniendo la posición del cursor |
 | 10 | | "Confirmar el pedido" | Valida Luhn + vencimiento + CVV + titular. Pasa a "procesando" |
 | 11 | Paso **comprobante** | — | Número `ET-####`, desglose, lista. Botón "Copiar" |
-| 12 | | "Avisar por WhatsApp" o "Cerrar" | Cerrar vacía la canasta: el pedido queda cumplido |
+| 12 | | "Listo, cerrar" | El comprobante se "envía" al teléfono verificado por el canal elegido. Cerrar vacía la canasta: el pedido queda cumplido |
 
 **Estado inicial:** canasta vacía, `entrega.modo = 'retiro'`, `metodo = 'efectivo'`.
 **Estado final de éxito:** `pasoActual = 'comprobante'` con `cobro.numero` asignado.
@@ -443,11 +443,11 @@ const apagarDetras = (panel, apagado) => {
 | | Cómo |
 |---|---|
 | Idioma | `lang="es"` |
-| 48 campos | **0 sin rótulo asociado** (`<label for>`, `aria-label` o `<label>` envolvente). Eran 49 antes de quitar la contraseña de "entrar" |
+| 51 campos | **0 sin rótulo asociado**: 26 con `<label for>`, 10 con etiqueta envolvente y 15 con `aria-label` en los contadores de cantidad |
 | Agrupaciones | `fieldset` + `legend`: *"¿Cómo lo quieres?"*, *"¿Cómo quieres pagar?"* |
 | `placeholder` | Como **ejemplo**, nunca como etiqueta: `"Calle, número y una referencia"`, `"4242 4242 4242 4242"`, `"MM/AA"` |
 | Ayuda bajo el campo | La lista de requisitos de la contraseña, que se repinta en cada tecla |
-| Validación en línea | Bajo el campo, unida con `aria-describedby` (11 elementos) |
+| Validación en línea | Bajo el campo, unida con `aria-describedby` (12 elementos) |
 | **Cuándo se marca** | Solo si ya tocaste el campo o ya intentaste enviar. El correo y el teléfono al salir de ellos: corregir el correo en la tercera letra no ayuda |
 
 **La terminología es de panadería, no de desarrollador.** Esa fue una decisión, no una casualidad:
@@ -476,11 +476,11 @@ No aparece en ninguna parte de la interfaz la palabra *error*, *inválido*, *cam
 | `<footer>` | 1 | `id="visitanos"` |
 | `<section>` | 4 en el HTML, 11 con los paneles montados | hero, franja, catálogo, historia, y un `section` por paso de panel |
 | `<article>` | 18 | Una por producto |
-| `<fieldset>` + `<legend>` | 2 | *¿Cómo lo quieres?* y *¿Cómo quieres pagar?*. Los grupos de tamaño usan `role="group"` en su lugar, porque un `fieldset` dentro de la ficha rompe el diseño |
+| `<fieldset>` + `<legend>` | 3 | *¿Cómo lo quieres?* y *¿Cómo quieres pagar?*. Los grupos de tamaño usan `role="group"` en su lugar, porque un `fieldset` dentro de la ficha rompe el diseño |
 | `<dl>` / `<dt>` / `<dd>` | 5 | Desglose, datos bancarios, comprobante, horario, datos de la cuenta |
 | `<address>` | 1 | Dirección del local |
 | `<output>` | 1 por línea de la canasta | Creado al pintar la lista, así que con la canasta vacía hay 0 |
-| `<button type="button">` | 58 | Ningún `<div>` haciendo de botón: **0 elementos con `onclick`** |
+| `<button type="button">` | 62 | Ningún `<div>` haciendo de botón: **0 elementos con `onclick`** |
 
 **Jerarquía de encabezados:** 30 encabezados, **0 saltos de nivel**.
 
@@ -491,12 +491,12 @@ No aparece en ninguna parte de la interfaz la palabra *error*, *inválido*, *cam
 | `role="dialog"` + `aria-modal="true"` | 2 | Canasta y cuenta, las dos con `aria-labelledby` |
 | `role="status"` | 4 | Catálogo, canasta, copiado de cuenta, copiado del número de pedido |
 | `aria-live="polite"` | 2 | Las dos regiones que anuncian |
-| `role="alert"` | 4 | Errores de formulario |
+| `role="alert"` | 6 | Errores de formulario |
 | `aria-expanded` | 3 | Hamburguesa, "Tienda", círculo de cuenta |
 | `aria-controls` | 3 | Los mismos tres |
-| `aria-describedby` | 11 | Campo ↔ mensaje, y botón ↔ cuadrito |
+| `aria-describedby` | 12 | Campo ↔ mensaje, y botón ↔ cuadrito |
 | `aria-pressed` | 1 | Pausa del mostrador |
-| `aria-hidden="true"` | 47 | 21 SVG, 24 `span` de adorno (flechas ↗ ↓ ← →, el signo −, el sello ✓), la franja decorativa y el recuento de la vista |
+| `aria-hidden="true"` | 46 | 21 SVG, 24 `span` de adorno (flechas ↗ ↓ ← →, el signo −, el sello ✓), la franja decorativa y el recuento de la vista |
 | `aria-disabled` | 1 | "Confirmar", junto a `disabled` |
 | `role="group"` | 6 | Grupos de tamaño |
 | `role="img"` | 1 | Fondo del hero |

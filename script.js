@@ -911,7 +911,12 @@
   const pedido = new Map();
   const entrega = { modo: 'retiro', direccion: '', punto: null };
   // La cuenta es una maqueta sin servidor; se rellena en la seccion de mas abajo.
-  const sesion = { nombre: '', correo: '', telefono: '', direccion: '', dentro: false };
+  const sesion = { nombre: '', correo: '', telefono: '', direccion: '',
+    dentro: false, verificado: false };
+  // El numero con el prefijo delante, tal como lo veria quien lo marca. Vive
+  // aqui arriba porque lo usan la canasta y la cuenta, y la canasta lo escribe
+  // al pintar el pie, que corre nada mas cargar la pagina.
+  const telefonoLargo = (n) => `+593 ${String(n || '').replace(/(\d{2})(\d{3})(\d{4})/, '$1 $2 $3')}`;
   // Los datos de la tarjeta viven aqui y solo aqui: no se guardan ni se envian
   // a ningun lado, y se borran al salir del paso de pago.
   const tarjeta = { numero: '', vence: '', cvv: '', titular: '' };
@@ -1024,6 +1029,9 @@
     + '<div class="canasta-cuerpo"><ul class="canasta-lista"></ul>'
     + '<p class="canasta-vacio">Tu canasta está vacía.</p></div>'
     + '<div class="canasta-pie">'
+    + '<p class="canasta-aviso pide-cuenta" role="alert" hidden>'
+    + 'Para pedir necesitas una cuenta con el teléfono verificado: ahí te llega el comprobante.'
+    + '<button class="pide-cuenta-boton" type="button">Crear cuenta o entrar</button></p>'
     + '<div class="canasta-total"><span>Subtotal</span><strong>$0.00</strong></div>'
     + '<button class="button button-yellow canasta-enviar" type="button">'
     + 'Confirmar el pedido <span aria-hidden="true">→</span></button>'
@@ -1142,6 +1150,15 @@
     + '<p class="pago-qr-alt">Código QR de adorno: tiene la forma de un QR de DeUna '
     + 'para El Tradicional, pero no codifica nada y no abre ningún cobro.</p></div></div>'
 
+    + '<fieldset class="canasta-entrega pago-canal"><legend>¿Dónde te enviamos el comprobante?</legend>'
+    + '<div class="canasta-opciones">'
+    + '<label><input type="radio" name="canasta-canal" value="sms" checked>'
+    + '<span>Mensaje de texto</span></label>'
+    + '<label><input type="radio" name="canasta-canal" value="whatsapp">'
+    + '<span>WhatsApp</span></label>'
+    + '</div>'
+    + '<p class="pago-canal-dato">Al <strong class="pago-canal-numero"></strong>, '
+    + 'el teléfono verificado de tu cuenta.</p></fieldset>'
     + '</div><div class="canasta-pie">'
     + '<p class="canasta-aviso pago-error" role="alert" hidden></p>'
     + '<button class="button button-yellow canasta-pagar" type="button">Confirmar el pedido</button>'
@@ -1164,12 +1181,14 @@
     + '<div class="recibo-linea-dir" hidden><dt>Dirección</dt><dd class="recibo-direccion"></dd></div>'
     + '</dl>'
     + '<h3 class="recibo-titulo">Lo que pediste</h3><ul class="recibo-lista"></ul></div>'
+    + '<div class="codigo-falso recibo-enviado">'
+    + '<p class="codigo-falso-de recibo-enviado-de"></p>'
+    + '<p class="codigo-falso-texto recibo-enviado-texto"></p></div>'
+    + '<p class="recibo-simulado">Mensaje simulado: no se envió nada a ningún teléfono de '
+    + 'verdad. Con un servidor detrás, aquí saldría el comprobante al número verificado.</p>'
     + '<div class="canasta-pie">'
-    + '<a class="button button-yellow canasta-avisar" href="#" target="_blank" rel="noopener">'
-    + 'Avisar a la panadería por WhatsApp <span aria-hidden="true">↗</span>'
-    + '<span class="sr-only"> (abre en una pestaña nueva)</span></a>'
     + '<p class="recibo-copiado" role="status" hidden></p>'
-    + '<button class="canasta-listo" type="button">Cerrar</button>'
+    + '<button class="button button-yellow canasta-listo" type="button">Listo, cerrar</button>'
     + '<p class="canasta-nota">Apunta o copia el número antes de cerrar: al cerrar, '
     + 'el pedido queda cumplido y la canasta se vacía.</p>'
     + '</div></section>'
@@ -1225,7 +1244,12 @@
   const errorPago = panel.querySelector('.pago-error');
   const copiar = panel.querySelector('.pago-copiar');
   const copiado = panel.querySelector('.pago-copiado');
-  const avisar = panel.querySelector('.canasta-avisar');
+  const pideCuenta = panel.querySelector('.pide-cuenta');
+  const pideCuentaBoton = panel.querySelector('.pide-cuenta-boton');
+  const canales = [...panel.querySelectorAll('input[name="canasta-canal"]')];
+  const canalNumero = panel.querySelector('.pago-canal-numero');
+  const reciboEnviadoDe = panel.querySelector('.recibo-enviado-de');
+  const reciboEnviadoTexto = panel.querySelector('.recibo-enviado-texto');
   const listo = panel.querySelector('.canasta-listo');
   const reciboCopiar = panel.querySelector('.recibo-copiar');
   const reciboCopiado = panel.querySelector('.recibo-copiado');
@@ -1433,6 +1457,8 @@
     cuenta.hidden = n === 0;
     cuenta.textContent = n;
     if (boton) boton.setAttribute('aria-label', n ? `Ver la canasta, ${n} producto${n === 1 ? '' : 's'}` : 'Ver la canasta, vacía');
+    if (canalNumero) canalNumero.textContent = telefonoLargo(sesion.telefono);
+    if (pideCuenta && sesion.dentro && sesion.verificado) pideCuenta.hidden = true;
     // El importe del paso de pago se recalcula aqui: volver atras y cambiar la
     // canasta tiene que verse reflejado al seguir.
     pintarPago();
@@ -1556,6 +1582,13 @@
     errorPago.hidden = true;
   };
 
+  canales.forEach((c) => c.addEventListener('change', () => {
+    if (!c.checked) return;
+    avisos.textContent = c.value === 'whatsapp'
+      ? 'El comprobante llegará por WhatsApp.'
+      : 'El comprobante llegará por mensaje de texto.';
+  }));
+
   metodos.forEach((m) => m.addEventListener('change', () => {
     if (!m.checked) return;
     errorPago.hidden = true;
@@ -1633,7 +1666,13 @@
       li.innerHTML = `<span>${l.cantidad} × ${l.nombre}</span><span>${dinero(l.precio * l.cantidad)}</span>`;
       recibo.append(li);
     }
-    avisar.href = `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(mensaje())}`;
+    const porDonde = canales.find((c) => c.checked)?.value === 'whatsapp'
+      ? 'WhatsApp' : 'Mensaje de texto';
+    reciboEnviadoDe.textContent = `${porDonde} de El Tradicional · ${telefonoLargo(sesion.telefono)}`;
+    reciboEnviadoTexto.textContent = `Hola ${sesion.nombre.split(' ')[0]}: tu pedido `
+      + `${cobro.numero} quedó registrado por ${dinero(total())}. `
+      + `${entrega.modo === 'domicilio' ? 'Te lo llevamos a ' + entrega.direccion : 'Pasa a retirarlo por el local'}. `
+      + 'Gracias por comprar en El Tradicional.';
   };
 
   const TITULOS = { canasta: 'Tu canasta', entrega: 'Cómo lo recibes',
@@ -1737,10 +1776,31 @@
 
   // Confirmar la canasta lleva a decidir como se recibe, no al pago: hasta no
   // saberlo no se puede decir cuanto cuesta el pedido entero.
+  const puedePedir = () => sesion.dentro && sesion.verificado;
+
   enviar.addEventListener('click', () => {
     if (!pedido.size) return;
+    // El comprobante va al telefono de la cuenta, asi que hay que saber cual
+    // es y que sea suyo. El aviso se queda dentro de la canasta y no echa al
+    // usuario a otra parte sin explicar por que.
+    if (!puedePedir()) {
+      pideCuenta.hidden = false;
+      pideCuentaBoton.focus();
+      avisos.textContent = 'Para pedir hace falta una cuenta con el teléfono verificado.';
+      return;
+    }
+    pideCuenta.hidden = true;
     pintarDesglose();
     irA('entrega');
+  });
+
+  // Saltar a la cuenta no pierde el pedido: la canasta se queda como esta y al
+  // volver se sigue donde se estaba. abrirC se declara mas abajo, igual que
+  // 'avisos'; al pulsar ya existe.
+  pideCuentaBoton.addEventListener('click', () => {
+    pideCuenta.hidden = true;
+    cerrar();
+    abrirC();
   });
 
   // Sin direccion no se puede llevar nada: en vez de pasar al pago, se avisa y
@@ -1843,6 +1903,7 @@
     restablecerPagar();
     olvidarTarjeta();
     copiado.hidden = true;
+    pideCuenta.hidden = true;
     reciboCopiado.hidden = true;
     if (pasoActual === 'comprobante') {
       cobro.numero = '';
@@ -2099,6 +2160,30 @@
     + '<button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button>'
     + '</div></section>'
 
+    + '<section class="cuenta-paso" data-paso="verificar" hidden>'
+    + '<div class="cuenta-cuerpo">'
+    + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> No hay servidor que '
+    + 'mande mensajes, así que el código no sale de este navegador: se muestra aquí '
+    + 'abajo, en el recuadro que imita la notificación del teléfono.</p>'
+    + '<p class="codigo-dicho">Escribe el código de 6 cifras que enviamos al '
+    + '<strong class="codigo-numero"></strong>.</p>'
+    + '<div class="codigo-falso">'
+    + '<p class="codigo-falso-de">Mensaje de El Tradicional</p>'
+    + '<p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. '
+    + 'No lo compartas con nadie.</p></div>'
+    + '<div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label>'
+    + '<input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" '
+    + 'autocomplete="one-time-code" maxlength="6" placeholder="000000" '
+    + 'aria-describedby="cuenta-codigo-error">'
+    + '<p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div>'
+    + '<button class="codigo-reenviar" type="button">Enviar otro código</button>'
+    + '</div>'
+    + '<div class="cuenta-pie">'
+    + '<p class="cuenta-aviso" role="alert" hidden></p>'
+    + '<button class="button button-yellow cuenta-verificar" type="button">Verificar el teléfono</button>'
+    + '<button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el número</button>'
+    + '</div></section>'
+
     + '<section class="cuenta-paso" data-paso="entrar" hidden>'
     + '<div class="cuenta-cuerpo">'
     + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor no hay '
@@ -2147,11 +2232,62 @@
   const pasosC = [...panelC.querySelectorAll('.cuenta-paso')];
   const avisoCrear = panelC.querySelector('[data-paso="crear"] .cuenta-aviso');
   const avisoEntrar = panelC.querySelector('[data-paso="entrar"] .cuenta-aviso');
+  const campoCodigo = panelC.querySelector('#cuenta-codigo');
+  const errorCodigo = panelC.querySelector('#cuenta-codigo-error');
+  const avisoVerificar = panelC.querySelector('[data-paso="verificar"] .cuenta-aviso');
+  const codigoNumero = panelC.querySelector('.codigo-numero');
+  const codigoValor = panelC.querySelector('.codigo-valor');
+  const codigoReenviar = panelC.querySelector('.codigo-reenviar');
   const correoEntrar = panelC.querySelector('#cuenta-entrar-correo');
   // En "entrar" ya no hay campo de contrasena: ver el parrafo de la maqueta.
   const errorEntrarCorreo = panelC.querySelector('#cuenta-entrar-correo-error');
 
-  const TITULOS_CUENTA = { crear: 'Crear cuenta', entrar: 'Entrar', sesion: 'Tu cuenta' };
+  const TITULOS_CUENTA = { crear: 'Crear cuenta', verificar: 'Verificar tu teléfono',
+    entrar: 'Entrar', sesion: 'Tu cuenta' };
+
+  // El numero con el prefijo delante, tal como lo veria quien lo marca.
+  // Sin servidor el codigo no viaja a ninguna parte: nace aqui y se ensena en
+  // el recuadro que imita la notificacion, declarado como simulacion. Es la
+  // misma honestidad que ya se usa con el cobro.
+  let codigoEsperado = '';
+  let relojReenvio = 0;
+  const REENVIO = 45;
+
+  const nuevoCodigo = () => {
+    codigoEsperado = String(Math.floor(100000 + Math.random() * 900000));
+    if (codigoValor) codigoValor.textContent = codigoEsperado;
+    if (codigoNumero) codigoNumero.textContent = telefonoLargo(datos.telefono || sesion.telefono);
+  };
+
+  // La espera para reenviar: sin ella, pulsar "Enviar otro codigo" en bucle no
+  // tendria coste, y en un sistema de verdad cada mensaje cuesta dinero.
+  const cuentaAtras = () => {
+    window.clearInterval(relojReenvio);
+    let quedan = REENVIO;
+    const pintar = () => {
+      if (quedan <= 0) {
+        window.clearInterval(relojReenvio);
+        relojReenvio = 0;
+        codigoReenviar.disabled = false;
+        codigoReenviar.textContent = 'Enviar otro código';
+        return;
+      }
+      codigoReenviar.disabled = true;
+      codigoReenviar.textContent = `Enviar otro código en ${quedan}s`;
+      quedan -= 1;
+    };
+    pintar();
+    relojReenvio = window.setInterval(pintar, 1000);
+  };
+
+  const pararCuentaAtras = () => {
+    window.clearInterval(relojReenvio);
+    relojReenvio = 0;
+    if (codigoReenviar) {
+      codigoReenviar.disabled = false;
+      codigoReenviar.textContent = 'Enviar otro código';
+    }
+  };
   const verPaso = (nombre) => {
     pasosC.forEach((paso) => { paso.hidden = paso.dataset.paso !== nombre; });
     tituloC.textContent = TITULOS_CUENTA[nombre];
@@ -2256,6 +2392,7 @@
       window.localStorage.setItem(CLAVE_CUENTA, JSON.stringify({
         nombre: sesion.nombre, correo: sesion.correo,
         telefono: sesion.telefono, direccion: sesion.direccion,
+        verificado: sesion.verificado,
       }));
     } catch (e) { /* en ventana privada no se puede guardar; la sesion sigue viva en memoria */ }
   };
@@ -2275,6 +2412,7 @@
       sesion.correo = String(dato.correo).slice(0, 80);
       sesion.telefono = soloNueve(String(dato.telefono || ''));
       sesion.direccion = String(dato.direccion || '').slice(0, 200);
+      sesion.verificado = dato.verificado === true;
       sesion.dentro = true;
     } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza fuera */ }
   };
@@ -2440,8 +2578,74 @@
     sesion.correo = datos.correo;
     sesion.telefono = datos.telefono;
     sesion.direccion = datos.direccion;
+    // La cuenta todavia no esta dentro: falta probar que el telefono es suyo.
+    // Si entrara aqui, el numero podria ser inventado y el comprobante no
+    // llegaria a ninguna parte.
+    sesion.verificado = false;
+    irAVerificar();
+  });
+
+  // --- Verificar el telefono ---------------------------------------------
+  const irAVerificar = () => {
+    nuevoCodigo();
+    campoCodigo.value = '';
+    errorCodigo.hidden = true;
+    campoCodigo.classList.remove('is-mal');
+    avisoVerificar.hidden = true;
+    verPaso('verificar');
+    cuentaAtras();
+    tituloC.focus();
+    avisos.textContent = `Te enviamos un código al ${telefonoLargo(sesion.telefono || datos.telefono)}.`;
+  };
+
+  const marcarCodigo = (texto) => {
+    errorCodigo.hidden = !texto;
+    errorCodigo.textContent = texto;
+    campoCodigo.classList.toggle('is-mal', Boolean(texto));
+  };
+
+  // Mientras escribe solo se limpia lo que no son cifras. El codigo no se
+  // comprueba al vuelo: nadie quiere que le digan que va mal a la tercera.
+  campoCodigo.addEventListener('input', () => {
+    const limpio = campoCodigo.value.replace(/[^0-9]/g, '').slice(0, 6);
+    if (limpio !== campoCodigo.value) campoCodigo.value = limpio;
+    if (!errorCodigo.hidden) marcarCodigo('');
+  });
+
+  const comprobarCodigo = () => {
+    const escrito = campoCodigo.value.trim();
+    if (escrito.length !== 6) {
+      marcarCodigo('El código tiene 6 cifras.');
+      campoCodigo.focus();
+      return;
+    }
+    if (escrito !== codigoEsperado) {
+      marcarCodigo('Ese código no es el que enviamos. Míralo otra vez.');
+      campoCodigo.focus();
+      return;
+    }
+    marcarCodigo('');
+    pararCuentaAtras();
+    codigoEsperado = '';
+    sesion.verificado = true;
     sesion.dentro = true;
-    entrarEnSesion(`Cuenta creada. Entraste como ${sesion.nombre}.`);
+    entrarEnSesion(`Teléfono verificado. Entraste como ${sesion.nombre}.`);
+  };
+
+  panelC.querySelector('.cuenta-verificar').addEventListener('click', comprobarCodigo);
+  campoCodigo.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    comprobarCodigo();
+  });
+
+  codigoReenviar.addEventListener('click', () => {
+    nuevoCodigo();
+    campoCodigo.value = '';
+    marcarCodigo('');
+    cuentaAtras();
+    campoCodigo.focus();
+    avisos.textContent = 'Te enviamos un código nuevo.';
   });
 
   panelC.querySelector('.cuenta-entrar').addEventListener('click', () => {
@@ -2468,6 +2672,9 @@
       return;
     }
     leerCuenta();
+    // Una cuenta de antes de la verificacion entra igual, pero pasa por el
+    // codigo: el pedido se confirma al telefono y hay que saber que es suyo.
+    if (!sesion.verificado) { sesion.dentro = false; irAVerificar(); return; }
     entrarEnSesion(`Entraste como ${sesion.nombre}.`);
   });
 
@@ -2478,6 +2685,7 @@
     sesion.telefono = '';
     sesion.direccion = '';
     sesion.dentro = false;
+    sesion.verificado = false;
     try { window.localStorage.removeItem(CLAVE_CUENTA); } catch (e) { /* no habia nada guardado */ }
     pintarSesion();
     verPaso('entrar');
