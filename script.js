@@ -916,9 +916,9 @@
   // notificacion sigue siendo la unica prueba, declarado como simulacion.
   // Como rellenarlas: CORREO_REAL.md.
   const BUZON = {
-    servicio: 'service_k57jq25',
-    plantilla: 'template_uwk7o1f',
-    clave: '3QujvL0rzX_tjKDrK',
+    servicio: 'service_u77o0ad',
+    plantilla: '',
+    clave: '-ftq8owbv8TlMmxV8',
   };
   const buzonListo = () => Boolean(BUZON.servicio && BUZON.plantilla && BUZON.clave);
 
