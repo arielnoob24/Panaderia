@@ -32,17 +32,20 @@ const qrDecorativo = () => {
 };
 
 
-// El HTML de los dos pasos de este modulo. La canasta los pega en su panel al
-// armarlo: el panel es uno solo y los pasos son cuatro, dos de cada lado.
-const pasoPagoHtml = () => ''
-  + '<section class="canasta-paso" data-paso="pago" hidden>'
-  + '<div class="canasta-cuerpo">'
-  + '<button class="canasta-volver" data-vuelve="entrega" type="button">'
-  + '<span aria-hidden="true">←</span> Volver a cómo lo recibes</button>'
+// Las piezas que pone este modulo dentro de la pantalla de confirmar el pedido.
+// No son un paso propio: la canasta las intercala entre la entrega y el
+// resumen, porque todo se decide en la misma pantalla. Vienen separadas para
+// que sea la canasta la que decida el orden en que se leen.
+//
+// Ya no hay "Total a pagar" ni una linea con la modalidad: en una sola pantalla
+// el total esta en el desglose y en el boton, y como se recibe el pedido se ve
+// unos centimetros mas arriba. Repetirlos era decir tres veces lo mismo.
+const piezasDePago = () => ({
+  aviso: ''
   + '<p class="pago-demo"><strong>Esto es una demostración.</strong> Es un proyecto de clase: '
-  + 'no se procesa ningún cobro real y los datos de la tarjeta no se guardan ni se envían.</p>'
-  + '<div class="canasta-total pago-total"><span>Total a pagar</span><strong>$0.00</strong></div>'
-  + '<p class="pago-modalidad"></p>'
+  + 'no se procesa ningún cobro real y los datos de la tarjeta no se guardan ni se envían.</p>',
+
+  metodos: ''
   + '<fieldset class="canasta-entrega pago-metodos"><legend>¿Cómo quieres pagar?</legend>'
   + '<div class="canasta-opciones">'
   + '<label><input type="radio" name="canasta-metodo" value="efectivo" checked><span>Efectivo</span></label>'
@@ -91,16 +94,20 @@ const pasoPagoHtml = () => ''
   + '<p class="pago-dato">Abre DeUna en la app de tu banco y escanea el código.</p>'
   + '<div class="pago-qr-caja">' + qrDecorativo()
   + '<p class="pago-qr-alt">Código QR de adorno: tiene la forma de un QR de DeUna '
-  + 'para El Tradicional, pero no codifica nada y no abre ningún cobro.</p></div></div>'
+  + 'para El Tradicional, pero no codifica nada y no abre ningún cobro.</p></div></div>',
 
+  canal: ''
   + '<div class="pago-canal"><h3 class="pago-canal-titulo">Dónde te llega el comprobante</h3>'
   + '<p class="pago-canal-dato">A <strong class="pago-canal-correo"></strong>, '
-  + 'el correo verificado de tu cuenta.</p></div>'
-  + '</div><div class="canasta-pie">'
+  + 'el correo verificado de tu cuenta.</p></div>',
+
+  pie: ''
+  + '<div class="canasta-pie">'
   + '<p class="canasta-aviso pago-error" role="alert" hidden></p>'
   + '<button class="button button-yellow canasta-pagar" type="button">Confirmar el pedido</button>'
   + '<p class="canasta-nota">Simulación académica: no se cobra ni un centavo.</p>'
-  + '</div></section>';
+  + '</div>',
+});
 
 const pasoComprobanteHtml = () => ''
   + '<section class="canasta-paso" data-paso="comprobante" hidden>'
@@ -136,8 +143,6 @@ let panel = null;
 let metodos = [];
 let detalles = [];
 let camposTarjeta = [];
-let pagoTotal = null;
-let pagoModalidad = null;
 let pagoEfectivo = null;
 let pagar = null;
 let errorPago = null;
@@ -161,10 +166,6 @@ let temporizador = 0;
 
 const pintarPago = () => {
   const metodo = metodoActual();
-  pagoTotal.textContent = dinero(total());
-  pagoModalidad.textContent = entrega.modo === 'domicilio'
-    ? `A domicilio · ${entrega.direccion}`
-    : 'Paso retirando por el local';
   pagoEfectivo.textContent = entrega.modo === 'domicilio'
     ? 'Pagas en efectivo al recibir el pedido en tu puerta.'
     : 'Pagas en efectivo al retirar el pedido en el local.';
@@ -172,8 +173,13 @@ const pintarPago = () => {
   if (canalCorreo) canalCorreo.textContent = sesion.correo;
   // Mientras procesa, el boton dice otra cosa y no se le puede pisar el texto.
   if (procesando) return;
-  // En efectivo no hay nada que cobrar ahora, asi que el boton no promete un pago.
-  pagar.textContent = metodo === 'efectivo' ? 'Confirmar el pedido' : `Pagar ${dinero(total())}`;
+  // El importe va escrito en el boton: es lo ultimo que se mira antes de
+  // pulsarlo, y teniendo el pedido entero en una pantalla que se desplaza, el
+  // desglose puede haberse quedado arriba fuera de la vista. En efectivo no se
+  // cobra nada ahora, asi que ahi el boton no promete un pago.
+  pagar.textContent = metodo === 'efectivo'
+    ? `Confirmar el pedido · ${dinero(total())}`
+    : `Pagar ${dinero(total())}`;
 };
 
 // Luhn: es la comprobacion que hace cualquier pasarela antes de mandar nada,
@@ -408,8 +414,6 @@ const montarPago = (elPanel) => {
   panel = elPanel;
   metodos = [...panel.querySelectorAll('input[name="canasta-metodo"]')];
   detalles = [...panel.querySelectorAll('.pago-detalle')];
-  pagoTotal = panel.querySelector('.pago-total strong');
-  pagoModalidad = panel.querySelector('.pago-modalidad');
   pagoEfectivo = panel.querySelector('.pago-efectivo');
   pagar = panel.querySelector('.canasta-pagar');
   errorPago = panel.querySelector('.pago-error');
@@ -481,6 +485,8 @@ const montarPago = (elPanel) => {
 
   pagar.addEventListener('click', () => {
     if (procesando || !pedido.size) return;
+    // El aviso y el foco los pone la canasta, que es de quien es el campo.
+    if (puente.faltaDireccion()) return;
     const metodo = metodoActual();
     if (metodo === 'tarjeta') {
       intentado = true;
@@ -508,7 +514,7 @@ const montarPago = (elPanel) => {
 };
 
 export {
-  montarPago, pasoPagoHtml, pasoComprobanteHtml,
+  montarPago, piezasDePago, pasoComprobanteHtml,
   pintarPago, pintarComprobante, olvidarTarjeta, restablecerPagar,
   cancelarProceso, limpiarCopiados, reiniciarMetodo,
 };

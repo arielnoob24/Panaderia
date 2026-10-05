@@ -3,7 +3,7 @@
 // barra de deshacer y el control de cantidad que llevan las fichas. Los dos
 // ultimos pasos del panel -pago y comprobante- los pone checkout.js, y el mapa
 // del reparto, map.js; aqui se arma el panel entero y se reparte.
-import { avisos, anexosDeFoco, atraparFoco, apagarDetras } from './ui.js';
+import { avisos, anexosDeFoco, atraparFoco, apagarDetras, horarioDeHoy } from './ui.js';
 import {
   CLAVE, pedido, entrega, sesion, cobro, puente,
   MAX_UNIDADES, ENVIO_BASE, dinero, idDe,
@@ -11,7 +11,7 @@ import {
 } from './state.js';
 import { montarMapa, armarMapa } from './map.js';
 import {
-  montarPago, pasoPagoHtml, pasoComprobanteHtml, pintarPago,
+  montarPago, piezasDePago, pasoComprobanteHtml, pintarPago,
   olvidarTarjeta, restablecerPagar, cancelarProceso, limpiarCopiados, reiniciarMetodo,
 } from './checkout.js';
 
@@ -60,6 +60,7 @@ panel.className = 'canasta-panel';
 panel.setAttribute('role', 'dialog');
 panel.setAttribute('aria-modal', 'true');
 panel.setAttribute('aria-labelledby', 'canasta-titulo');
+const piezas = piezasDePago();
 panel.innerHTML =
   '<div class="canasta-cabecera"><h2 id="canasta-titulo" tabindex="-1">Tu canasta</h2>'
   + '<button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div>'
@@ -74,17 +75,20 @@ panel.innerHTML =
   + '<button class="pide-cuenta-boton" type="button">Crear cuenta o entrar</button></p>'
   + '<div class="canasta-total"><span>Subtotal</span><strong>$0.00</strong></div>'
   + '<button class="button button-yellow canasta-enviar" type="button">'
-  + 'Confirmar el pedido <span aria-hidden="true">→</span></button>'
+  + 'Ir a pagar <span aria-hidden="true">→</span></button>'
   + '<p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p>'
   + '</div></section>'
 
-  // Como se recibe el pedido es su propio paso: aqui se elige entre pasar a
-  // retirarlo o que se lo lleven, y recien aqui aparece el desglose, porque
-  // hasta no saberlo no se puede decir cuanto cuesta el pedido entero.
-  + '<section class="canasta-paso" data-paso="entrega" hidden>'
+  // Confirmar el pedido es una sola pantalla que se desplaza: como lo recibes,
+  // como pagas, lo que llevas y cuanto cuesta, con el total escrito en el boton
+  // de abajo. Antes eran dos pasos, y en el de pago no habia manera de ver que
+  // panes eran: solo el importe. El pie no se desplaza con el cuerpo, asi que
+  // el boton de confirmar se queda siempre a la vista.
+  + '<section class="canasta-paso" data-paso="pedido" hidden>'
   + '<div class="canasta-cuerpo">'
   + '<button class="canasta-volver" data-vuelve="canasta" type="button">'
   + '<span aria-hidden="true">←</span> Volver a la canasta</button>'
+  + piezas.aviso
   + '<fieldset class="canasta-entrega"><legend>¿Cómo lo quieres?</legend>'
   + '<div class="canasta-opciones">'
   + '<label><input type="radio" name="canasta-entrega" value="retiro" checked>'
@@ -93,7 +97,8 @@ panel.innerHTML =
   + '<span>A domicilio<small>Desde ' + dinero(ENVIO_BASE) + '</small></span></label></div>'
   + '<div class="canasta-local">'
   + '<p class="canasta-local-titulo">Esquina de Eloy Alfaro y Gabriel Espinosa</p>'
-  + '<p class="canasta-local-dato">Tena, Napo. Te esperamos en el mostrador.</p></div>'
+  + '<p class="canasta-local-dato">Tena, Napo. Te esperamos en el mostrador.</p>'
+  + '<p class="canasta-local-hora"></p></div>'
   + '<div class="canasta-direccion" hidden>'
   + '<div class="mapa-zona">'
   + '<div class="mapa-caja"><div class="mapa-lienzo"></div>'
@@ -121,21 +126,35 @@ panel.innerHTML =
   + '<input id="canasta-dir" type="text" autocomplete="street-address" '
   + 'placeholder="Calle, número y una referencia">'
   + '<p class="canasta-aviso" role="alert" hidden>Escribe la dirección para poder llevarlo.</p>'
-  + '</div></fieldset></div>'
-  + '<div class="canasta-pie">'
+  + '</div></fieldset>'
+
+  // Como se paga, puesto por checkout.js.
+  + piezas.metodos
+
+  // Lo que llevas, de solo lectura: editar se hace en la canasta. Si se pudiera
+  // cambiar la cantidad aqui, el total cambiaria por debajo mientras alguien
+  // escribe los datos de la tarjeta. De ahi el boton de al lado, que es la
+  // salida: ver el error y poder arreglarlo sin buscar la flecha de arriba.
+  + '<div class="pedido-resumen">'
+  + '<div class="resumen-cabeza"><h3 class="recibo-titulo">Tu pedido</h3>'
+  + '<p class="resumen-cuenta"></p></div>'
+  + '<ul class="recibo-lista resumen-lista"></ul>'
+  + '<button class="resumen-editar" type="button">Editar la canasta</button>'
+  + '</div>'
+
+  // El desglose solo se puede escribir sabiendo como se recibe, y eso se decide
+  // unos centimetros mas arriba en esta misma pantalla.
   + '<dl class="canasta-desglose">'
   + '<div><dt>Subtotal</dt><dd class="desglose-subtotal">$0.00</dd></div>'
   + '<div><dt>Envío</dt><dd class="desglose-envio">Gratis</dd></div>'
   + '<div class="desglose-suma"><dt>Total</dt><dd class="desglose-total">$0.00</dd></div>'
   + '</dl>'
-  + '<button class="button button-yellow canasta-seguir" type="button">'
-  + 'Seguir al pago <span aria-hidden="true">→</span></button>'
-  + '</div></section>'
+  + piezas.canal
+  + '</div>'
+  + piezas.pie
+  + '</section>'
 
-    // Los dos pasos del cobro los escribe checkout.js, que es quien los maneja.
-    + pasoPagoHtml()
-    + pasoComprobanteHtml()
-
+  + pasoComprobanteHtml()
   + '</div>';
 
 // La barra de deshacer. Vive en el body y no dentro del panel porque se
@@ -163,7 +182,10 @@ const radios = [...panel.querySelectorAll('input[name="canasta-entrega"]')];
 const bloqueDir = panel.querySelector('.canasta-direccion');
 const campoDir = panel.querySelector('#canasta-dir');
 const avisoDir = panel.querySelector('.canasta-direccion .canasta-aviso');
-const seguir = panel.querySelector('.canasta-seguir');
+const resumenLista = panel.querySelector('.resumen-lista');
+const resumenCuenta = panel.querySelector('.resumen-cuenta');
+const resumenEditar = panel.querySelector('.resumen-editar');
+const localHora = panel.querySelector('.canasta-local-hora');
 const desgloseSub = panel.querySelector('.desglose-subtotal');
 const desgloseEnvio = panel.querySelector('.desglose-envio');
 const desgloseTotal = panel.querySelector('.desglose-total');
@@ -300,9 +322,42 @@ const confirmarQuitar = (id) => {
 const pintarDesglose = () => {
   bloqueDir.hidden = entrega.modo !== 'domicilio';
   if (bloqueLocal) bloqueLocal.hidden = entrega.modo !== 'retiro';
+  pintarHoraRetiro();
   if (desgloseSub) desgloseSub.textContent = dinero(subtotal());
   if (desgloseEnvio) desgloseEnvio.textContent = envio() ? dinero(envio()) : 'Gratis';
   if (desgloseTotal) desgloseTotal.textContent = dinero(total());
+};
+
+// Lo que llevas, escrito en la pantalla de confirmar. Va con createElement y
+// textContent y no con innerHTML: el nombre sale de un archivo de datos y no
+// tiene por que acabar interpretandose como etiquetas.
+const pintarResumen = () => {
+  if (!resumenLista) return;
+  resumenLista.textContent = '';
+  for (const l of pedido.values()) {
+    const li = document.createElement('li');
+    const que = document.createElement('span');
+    que.textContent = `${l.cantidad} × ${l.nombre}`;
+    const cuanto = document.createElement('span');
+    cuanto.textContent = dinero(l.precio * l.cantidad);
+    li.append(que, cuanto);
+    resumenLista.append(li);
+  }
+  const n = unidades();
+  if (resumenCuenta) resumenCuenta.textContent = `${n} producto${n === 1 ? '' : 's'}`;
+};
+
+// Hasta que hora se puede pasar a retirar. Sale del horario de verdad, el mismo
+// que calcula el estado del pie: es lo unico con forma de tiempo que este sitio
+// puede afirmar, porque no tiene cola de horno ni reparto que consultar. Un
+// "listo en 20 minutos" seria inventado.
+const pintarHoraRetiro = () => {
+  if (!localHora) return;
+  const h = horarioDeHoy();
+  if (h.festivo) localHora.textContent = 'Hoy no horneamos: es día festivo.';
+  else if (h.abierto) localHora.textContent = `Puedes retirarlo hoy hasta las ${h.cierra}.`;
+  else if (h.antesDeAbrir) localHora.textContent = `Hoy abrimos a las ${h.abre}.`;
+  else localHora.textContent = 'Hoy ya cerramos.';
 };
 
 const pintarPie = () => {
@@ -317,25 +372,24 @@ const pintarPie = () => {
   cuenta.textContent = n;
   if (boton) boton.setAttribute('aria-label', n ? `Ver la canasta, ${n} producto${n === 1 ? '' : 's'}` : 'Ver la canasta, vacía');
   if (pideCuenta && sesion.dentro && sesion.verificado) pideCuenta.hidden = true;
-  // El importe del paso de pago se recalcula aqui: volver atras y cambiar la
-  // canasta tiene que verse reflejado al seguir.
+  // El importe y el resumen de la pantalla de confirmar se recalculan aqui:
+  // volver atras y cambiar la canasta tiene que verse reflejado al seguir.
+  pintarResumen();
   pintarPago();
   refrescos.forEach((refrescar) => refrescar());
   guardar();
 };
 
-const TITULOS = { canasta: 'Tu canasta', entrega: 'Cómo lo recibes',
-  pago: 'Pago del pedido', comprobante: 'Pedido confirmado' };
+const TITULOS = { canasta: 'Tu canasta', pedido: 'Confirmar el pedido',
+  comprobante: 'Pedido confirmado' };
 let pasoActual = 'canasta';
 
-// Al llegar al pago el panel deja de ser una gaveta lateral y se planta en el
-// centro, con el resto desenfocado: pagar merece toda la pantalla, no un
-// costado. La forma solo se recalcula con el panel abierto, asi que al cerrar
-// la tarjeta se desvanece donde estaba en vez de saltar al borde.
+// Al pasar a confirmar, el fondo se desenfoca: lo que queda detras ya no pinta
+// nada y pagar merece la pantalla. El panel se queda de alto completo, que es
+// lo que hace falta para una pantalla que se desplaza. La forma solo se
+// recalcula con el panel abierto, asi que al cerrar se desvanece donde estaba.
 const pintarForma = () => {
-  const centrado = pasoActual !== 'canasta';
-  panel.classList.toggle('is-centrado', centrado);
-  fondo.classList.toggle('is-difuminado', centrado);
+  fondo.classList.toggle('is-difuminado', pasoActual !== 'canasta');
 };
 
 const irA = (nombre, mover = true, forma = true) => {
@@ -349,9 +403,10 @@ const irA = (nombre, mover = true, forma = true) => {
   if (mover) titulo.focus();
 };
 
-// Cada paso vuelve al anterior, no siempre a la canasta.
+// Ahora solo hay un sitio del que volver, y es la canasta: entrega y pago son
+// la misma pantalla.
 panel.querySelectorAll('.canasta-volver').forEach((b) => b.addEventListener('click',
-  () => irA(b.dataset.vuelve || 'entrega')));
+  () => irA(b.dataset.vuelve || 'canasta')));
 listo.addEventListener('click', () => cerrar());
 
 // Elegir retiro o domicilio: lo unico que cambia es el pie.
@@ -389,7 +444,7 @@ enviar.addEventListener('click', () => {
   }
   pideCuenta.hidden = true;
   pintarDesglose();
-  irA('entrega');
+  irA('pedido');
 });
 
 // Saltar a la cuenta no pierde el pedido: la canasta se queda como esta y al
@@ -405,18 +460,19 @@ pideCuentaBoton.addEventListener('click', () => {
   puente.abrirC(puente.correoGuardado() ? 'entrar' : 'crear');
 });
 
-// Sin direccion no se puede llevar nada: en vez de pasar al pago, se avisa y
-// se lleva el foco al campo que falta.
-seguir?.addEventListener('click', () => {
-  if (!pedido.size) return;
-  if (entrega.modo === 'domicilio' && !entrega.direccion) {
-    avisoDir.hidden = false;
-    campoDir.focus();
-    return;
-  }
-  pintarPago();
-  irA('pago');
-});
+// El resumen es de solo lectura, asi que necesita una puerta de vuelta a donde
+// si se puede cambiar la cantidad.
+resumenEditar?.addEventListener('click', () => irA('canasta'));
+
+// Sin direccion no se puede llevar nada. Antes esto cortaba el paso de "seguir
+// al pago"; ahora que todo esta en una pantalla, corta la confirmacion, y lo
+// llama checkout.js por el puente porque el campo es de aqui.
+puente.faltaDireccion = () => {
+  if (entrega.modo !== 'domicilio' || entrega.direccion) return false;
+  avisoDir.hidden = false;
+  campoDir.focus();
+  return true;
+};
 
 // Lo ultimo que se quito, por si hay que reponerlo. Se guarda una copia: la
 // linea original se borra del pedido y no se puede confiar en la referencia.

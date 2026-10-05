@@ -340,17 +340,35 @@ const toMinutes = (value) => {
   const [hours, minutes] = value.split(':').map(Number);
   return hours * 60 + minutes;
 };
+// El horario de hoy, en un solo sitio. Antes se calculaba dentro de
+// updateOpeningStatus y no habia manera de preguntarselo desde fuera; la
+// canasta lo necesita para decir hasta que hora se puede pasar a retirar, que
+// es lo unico con forma de tiempo que este sitio puede afirmar sin inventarlo.
+const horarioDeHoy = () => {
+  const now = new Date();
+  const day = now.getDay();
+  const festivo = holidayKeys(now.getFullYear()).has(dateKey(now));
+  const hours = day >= 1 && day <= 5 ? '08:00-20:00' : '09:00-21:00';
+  const [abre, cierra] = hours.split('-');
+  const ahora = now.getHours() * 60 + now.getMinutes();
+  return {
+    day,
+    festivo,
+    abre,
+    cierra,
+    abierto: !festivo && ahora >= toMinutes(abre) && ahora < toMinutes(cierra),
+    antesDeAbrir: ahora < toMinutes(abre),
+  };
+};
+
 const updateOpeningStatus = () => {
   const visita = document.querySelector('.footer-visita');
   const label = visita?.querySelector('.open-label');
   if (!visita || !label) return;
-  const now = new Date();
-  const day = now.getDay();
-  const holiday = holidayKeys(now.getFullYear()).has(dateKey(now));
-  const hours = day >= 1 && day <= 5 ? '08:00-20:00' : '09:00-21:00';
-  const [opening, closing] = hours.split('-');
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const isOpen = !holiday && currentMinutes >= toMinutes(opening) && currentMinutes < toMinutes(closing);
+  const {
+    day, festivo: holiday, abre: opening, cierra: closing,
+    abierto: isOpen, antesDeAbrir,
+  } = horarioDeHoy();
   label.classList.toggle('is-closed', !isOpen);
   label.querySelector('.status-dot')?.classList.toggle('is-closed', !isOpen);
 
@@ -375,7 +393,7 @@ const updateOpeningStatus = () => {
   let estado;
   if (holiday) estado = 'Cerrado · día festivo';
   else if (isOpen) estado = `Abierto · cierra ${closing}`;
-  else if (currentMinutes < toMinutes(opening)) estado = `Cerrado · abre ${opening}`;
+  else if (antesDeAbrir) estado = `Cerrado · abre ${opening}`;
   else estado = 'Cerrado · abre mañana';
   label.lastChild.textContent = ` ${estado}`;
 
@@ -395,7 +413,7 @@ const updateOpeningStatus = () => {
   } else if (holiday) {
     notaTitulo.textContent = 'Hoy no horneamos';
     notaDato.textContent = 'Día festivo · volvemos mañana';
-  } else if (currentMinutes < toMinutes(opening)) {
+  } else if (antesDeAbrir) {
     notaTitulo.textContent = 'El horno se está calentando';
     notaDato.textContent = `Abrimos a las ${opening}`;
   } else {
@@ -516,5 +534,5 @@ export {
   menuToggle, navigation, reducedMotion, avisos,
   focosDe, anexosDeFoco, apagarDetras, atraparFoco,
   flechasEnMenu, closeMenu, grupo, grupoBoton, abrirGrupo,
-  updateOpeningStatus, vigilarImagenes,
+  updateOpeningStatus, horarioDeHoy, vigilarImagenes,
 };
