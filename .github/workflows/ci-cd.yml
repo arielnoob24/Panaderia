@@ -41,7 +41,11 @@ jobs:
               exit 1
             fi
           done
+          # "Todo el catalogo" y "todos" no son categorias: son la puerta a
+          # todas a la vez, y el script las trata aparte. Exigirles productos
+          # propios tumbaba el despliegue por algo que esta bien.
           for e in $entradas; do
+            case "$e" in catalogo|todos) continue ;; esac
             if ! echo "$categorias" | grep -qx "$e"; then
               echo "La entrada '$e' del menu Tienda no tiene ningun producto detras."
               exit 1
