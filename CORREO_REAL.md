@@ -21,13 +21,35 @@ que verifiques tú mismo, así que no sirven para usuarios cualesquiera. WhatsAp
 pide la Business API con empresa verificada. Por eso el canal de aviso es el
 correo y el teléfono se quedó como dato de contacto.
 
+## Estado
+
+| Paso | Quién | Estado |
+|---|---|---|
+| 1. Cuenta y servicio de Gmail | tú | en marcha |
+| 2. Service ID en el código | ya puesto | ✅ `service_k57jq25` |
+| 3. Plantilla | tú | pendiente |
+| 4. Template ID en el código | pégalo y te lo pongo | pendiente |
+| 5. Public Key en el código | pégala y te la pongo | pendiente |
+| 6. Autorizar el dominio | tú | pendiente |
+
+Hasta que estén los tres valores, `buzonListo()` devuelve `false` y el sitio
+sigue en modo respaldo. Tener solo el Service ID puesto no envía nada ni rompe
+nada — está probado.
+
 ## Pasos
 
 ### 1. Cuenta y servicio
 
 1. Entra en <https://www.emailjs.com> y crea una cuenta.
-2. **Email Services** → **Add New Service** → **Gmail** → conecta tu Gmail.
-3. Apunta el **Service ID** (algo como `service_a1b2c3d`).
+2. **Email Services** → **Add New Service** → **Gmail**.
+3. En el cuadro **Config Service**:
+   - **Name**: `Gmail` — es solo una etiqueta interna, da igual.
+   - **Service ID**: déjalo como viene. El que salió es `service_k57jq25` y ya
+     está escrito en el código; si lo cambias, avísame.
+   - **Connect Account** → elige tu cuenta de Google → acepta **"Send email on
+     your behalf"**. Sin ese permiso no manda nada.
+   - Deja marcado **Send test email to verify configuration**.
+   - **Create Service**.
 
 ### 2. La plantilla
 
@@ -56,11 +78,12 @@ no se gastan las dos que da el plan gratuito.
 
 ### 4. Pegarlas en el código
 
-En [script.js](script.js), busca `const BUZON` y rellena las tres:
+Pásame el **Template ID** y la **Public Key** y las pongo yo. Si prefieres
+hacerlo a mano, en [script.js](script.js) busca `const BUZON`:
 
 ```js
 const BUZON = {
-  servicio: 'service_a1b2c3d',
+  servicio: 'service_k57jq25',
   plantilla: 'template_x9y8z7w',
   clave: 'TuClavePublica',
 };

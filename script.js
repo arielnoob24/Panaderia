@@ -915,7 +915,7 @@
   // Mientras esten vacias no se manda nada y el recuadro que imita la
   // notificacion sigue siendo la unica prueba, declarado como simulacion.
   // Como rellenarlas: CORREO_REAL.md.
-  const BUZON = { servicio: '', plantilla: '', clave: '' };
+  const BUZON = { servicio: 'service_k57jq25', plantilla: '', clave: '' };
   const buzonListo = () => Boolean(BUZON.servicio && BUZON.plantilla && BUZON.clave);
 
   // Una sola plantilla sirve para los dos mensajes, el codigo y el comprobante:
