@@ -66,7 +66,7 @@ panelC.innerHTML =
   + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Este sitio no tiene '
   + 'servidor: la cuenta se guarda solo en este navegador y la contraseña no se guarda '
   + 'en ninguna parte. No escribas una contraseña de verdad.</p>'
-  + campoHtml('nombre', 'Nombre y apellido', 'type="text" autocomplete="name" maxlength="60" placeholder="Ariel Escobar"')
+  + campoHtml('nombre', 'Nombre y apellido', 'type="text" autocomplete="name" maxlength="60" placeholder="María Pérez"')
   + campoHtml('correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
   + campoHtml('telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel" '
     + 'maxlength="9" placeholder="990001122"', { prefijo: '+593' })
@@ -129,9 +129,10 @@ panelC.innerHTML =
   + '<p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p>'
   + '</div>'
   + '<div class="cuenta-pie">'
-  + '<button class="cuenta-salir" type="button">Salir de la cuenta</button>'
-  + '<p class="cuenta-nota">Salir solo borra la cuenta de este navegador. '
-  + 'No hay ningún otro lugar donde estuviera guardada.</p>'
+  + '<button class="cuenta-salir" type="button">Cerrar sesión</button>'
+  + '<p class="cuenta-nota">La cuenta se queda guardada en este navegador: '
+  + 'puedes volver a entrar con tu correo. No hay ningún otro lugar donde '
+  + 'estuviera guardada.</p>'
   + '</div></section>';
 document.body.append(fondoC, panelC);
 
@@ -272,13 +273,18 @@ const datos = { nombre: '', correo: '', telefono: '', direccion: '', clave: '', 
 // salir de ellos: corregir a alguien el correo en la tercera letra no ayuda.
 // La contrasena no se marca nunca en rojo mientras escribes, porque la lista
 // de abajo ya va diciendo lo que falta; solo al intentar crear la cuenta.
+// La repeticion es el caso contrario, y por eso lleva 'alEscribir': ahi no hay
+// nada que adivinar -o es la misma o no lo es-, y enterarse al salir del campo
+// significa haber escrito cuarenta caracteres para nada. Se queda callada
+// mientras este vacia, que un "no son iguales" sin haber escrito nada seria
+// reganar por adelantado.
 const campos = [
   { clave: 'nombre' },
   { clave: 'correo' },
   { clave: 'telefono' },
   { clave: 'direccion' },
   { clave: 'clave', soloAlIntentar: true },
-  { clave: 'repite' },
+  { clave: 'repite', alEscribir: true },
 ].map((campo) => Object.assign(campo, {
   input: panelC.querySelector(`#cuenta-${campo.clave}`),
   error: panelC.querySelector(`#cuenta-${campo.clave}-error`),
@@ -323,8 +329,10 @@ const pintarReglas = () => {
 const pintarCampos = () => {
   const fallos = fallosCuenta();
   pintarReglas();
-  campos.forEach(({ clave, input, error, soloAlIntentar }) => {
-    const momento = soloAlIntentar ? intentadoC : (intentadoC || tocadosC.has(clave));
+  campos.forEach(({ clave, input, error, soloAlIntentar, alEscribir }) => {
+    const momento = soloAlIntentar
+      ? intentadoC
+      : (intentadoC || tocadosC.has(clave) || (alEscribir && Boolean(datos[clave])));
     const texto = momento ? fallos[clave] : '';
     error.hidden = !texto;
     error.textContent = texto || '';
@@ -364,7 +372,7 @@ const guardarCuenta = () => {
     window.localStorage.setItem(CLAVE_CUENTA, JSON.stringify({
       nombre: sesion.nombre, correo: sesion.correo,
       telefono: sesion.telefono, direccion: sesion.direccion,
-      verificado: sesion.verificado,
+      verificado: sesion.verificado, sesionAbierta: sesion.dentro,
     }));
   } catch (e) { /* en ventana privada no se puede guardar; la sesion sigue viva en memoria */ }
 };
@@ -385,7 +393,9 @@ const leerCuenta = () => {
     sesion.telefono = soloNueve(String(dato.telefono || ''));
     sesion.direccion = String(dato.direccion || '').slice(0, 200);
     sesion.verificado = dato.verificado === true;
-    sesion.dentro = true;
+    // Una cuenta guardada antes de que existiera este dato no trae el campo, y
+    // entonces se entra como siempre: solo un cierre expreso deja fuera.
+    sesion.dentro = dato.sesionAbierta !== false;
   } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza fuera */ }
 };
 
@@ -656,22 +666,29 @@ panelC.querySelector('.cuenta-entrar').addEventListener('click', () => {
   // codigo: el comprobante del pedido va al correo y hay que saber que es
   // suyo y que esta bien escrito.
   if (!sesion.verificado) { sesion.dentro = false; irAVerificar(); return; }
+  sesion.dentro = true;
   entrarEnSesion(`Entraste como ${sesion.nombre}.`);
 });
 
 panelC.querySelector('.cuenta-salir').addEventListener('click', () => {
   const nombre = sesion.nombre;
+  // Lo que se cierra es la sesion, no la cuenta: los datos se quedan en este
+  // navegador para poder volver a entrar con el correo, que es justo lo que
+  // promete el boton. Antes esto borraba la cuenta entera, y entonces "entrar"
+  // contestaba que en este navegador no habia ninguna.
+  // Se guarda antes de vaciar la sesion en memoria, porque es de ahi de donde
+  // guardarCuenta saca lo que escribe.
+  sesion.dentro = false;
+  guardarCuenta();
   sesion.nombre = '';
   sesion.correo = '';
   sesion.telefono = '';
   sesion.direccion = '';
-  sesion.dentro = false;
   sesion.verificado = false;
-  try { window.localStorage.removeItem(CLAVE_CUENTA); } catch (e) { /* no habia nada guardado */ }
   pintarSesion();
   verPaso('entrar');
   tituloC.focus();
-  avisos.textContent = `Saliste de la cuenta de ${nombre}.`;
+  avisos.textContent = `Cerraste la sesión de ${nombre}.`;
 });
 
 const iniciarCuenta = () => {
