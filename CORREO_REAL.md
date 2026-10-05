@@ -23,18 +23,18 @@ correo y el teléfono se quedó como dato de contacto.
 
 ## Estado
 
-| Paso | Quién | Estado |
-|---|---|---|
-| 1. Cuenta y servicio de Gmail | tú | en marcha |
-| 2. Service ID en el código | ya puesto | ✅ `service_k57jq25` |
-| 3. Plantilla | tú | pendiente |
-| 4. Template ID en el código | pégalo y te lo pongo | pendiente |
-| 5. Public Key en el código | pégala y te la pongo | pendiente |
-| 6. Autorizar el dominio | tú | pendiente |
+| Paso | Estado |
+|---|---|
+| 1. Cuenta y servicio de Gmail | ✅ |
+| 2. Service ID en el código | ✅ `service_k57jq25` |
+| 3. Plantilla | ✅ |
+| 4. Template ID en el código | ✅ `template_uwk7o1f` |
+| 5. Public Key en el código | ✅ `3QujvL0rzX_tjKDrK` |
+| 6. Autorizar el dominio | ⬜ **pendiente, ver el paso 5** |
+| 7. Probar un envío de verdad | ⬜ pendiente |
 
-Hasta que estén los tres valores, `buzonListo()` devuelve `false` y el sitio
-sigue en modo respaldo. Tener solo el Service ID puesto no envía nada ni rompe
-nada — está probado.
+El envío ya está activo. Falta cerrar la lista de dominios, que es lo único que
+impide que un tercero gaste la cuota, y comprobar que llega un correo real.
 
 ## Pasos
 
