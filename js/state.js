@@ -1,0 +1,85 @@
+// ---- Lo que comparten los modulos -------------------------------------
+// El pedido, la entrega, la sesion y las tarifas los leen y los escriben
+// varios modulos a la vez: la canasta, el mapa, el pago y la cuenta. Viven
+// aqui, en un solo sitio, y no copiados en cada uno.
+//
+// Los objetos se exportan tal cual y se modifican por dentro ('pedido.set',
+// 'entrega.modo = ...'). Eso es a proposito: un modulo no puede reasignar lo
+// que otro importo, pero si puede cambiarle el contenido, y asi los cuatro
+// miran siempre el mismo pedido.
+
+const CLAVE = 'eltradicional-pedido';
+const pedido = new Map();
+const entrega = { modo: 'retiro', direccion: '', punto: null };
+// La cuenta es una maqueta sin servidor; la rellena account.js.
+const sesion = { nombre: '', correo: '', telefono: '', direccion: '',
+  dentro: false, verificado: false };
+// El numero con el prefijo delante, tal como lo veria quien lo marca. Ya no
+// es un canal de aviso -eso es el correo-, pero sigue siendo el telefono al
+// que llamarian si hay un problema con la entrega, asi que va escrito en el
+// comprobante para que se pueda comprobar que esta bien.
+const telefonoLargo = (n) => `+593 ${String(n || '').replace(/(\d{2})(\d{3})(\d{4})/, '$1 $2 $3')}`;
+// Los datos de la tarjeta viven aqui y solo aqui: no se guardan ni se envian
+// a ningun lado, y se borran al salir del paso de pago.
+const tarjeta = { numero: '', vence: '', cvv: '', titular: '' };
+const cobro = { metodo: 'efectivo', numero: '', detalle: '' };
+
+// Lo que cuesta llevarlo. Vive aqui arriba, con los demas datos, porque el
+// panel ya lo escribe al nacer para que cada opcion diga lo que vale.
+// Mientras no se senala a donde, se cobra la tarifa de salida; al marcar el
+// punto en el mapa se cobra por lo lejos que queda, como en las apps.
+// Cien panes es un pedido de fiesta; mas que eso se habla por telefono, no se
+// teclea. El tope vive aqui, con los demas datos, porque lo usan el boton, el
+// campo y lo que se recupera de lo guardado, y eso ultimo corre antes.
+const MAX_UNIDADES = 100;
+const ENVIO = 1.50;
+const ENVIO_BASE = 1.00;
+const ENVIO_POR_KM = 0.35;
+const ENVIO_TECHO = 6.00;
+// La panaderia, en la esquina de Eloy Alfaro y Gabriel Espinosa, Tena.
+const LOCAL = { lat: -0.9938, lng: -77.8128 };
+
+// Distancia en linea recta entre dos puntos de la Tierra. No es lo que anda
+// la moto, pero para una maqueta de clase sobra y no necesita ningun servicio.
+const kmEntre = (a, b) => {
+  const R = 6371;
+  const rad = (g) => (g * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat);
+  const dLng = rad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2
+    + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+};
+
+// Al 0,05 mas cercano: cobrar $2,3718 no lo hace nadie.
+const tarifaPara = (km) => Math.min(
+  Math.round((ENVIO_BASE + km * ENVIO_POR_KM) * 20) / 20, ENVIO_TECHO);
+const dinero = (n) => '$' + n.toFixed(2);
+const idDe = (nombre) => nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
+
+
+// Llevarlo cuesta; pasar a retirarlo, no. De ahi que haya dos sumas: la del
+// pan y la del pedido. Antes solo habia una y el envio no existia.
+const subtotal = () => [...pedido.values()].reduce((s, l) => s + l.precio * l.cantidad, 0);
+const envio = () => {
+  if (entrega.modo !== 'domicilio') return 0;
+  return entrega.punto ? tarifaPara(kmEntre(LOCAL, entrega.punto)) : ENVIO;
+};
+const total = () => subtotal() + envio();
+const unidades = () => [...pedido.values()].reduce((s, l) => s + l.cantidad, 0);
+
+// El puente entre modulos que se llaman en circulo. La canasta necesita abrir
+// la cuenta y la cuenta necesita repintar la canasta; el mapa necesita el
+// desglose y el desglose vive en la canasta. Importarse unos a otros en redondo
+// seria un lio, asi que cada modulo deja aqui lo que los demas pueden llamar y
+// nadie lo mira hasta que alguien pulsa algo, cuando ya estan todos cargados.
+// Es lo mismo que hacia el archivo de antes, cuando todo vivia en un solo
+// ambito y una funcion de arriba llamaba a otra declarada mas abajo.
+const puente = {};
+
+export {
+  CLAVE, pedido, entrega, sesion, tarjeta, cobro, puente,
+  MAX_UNIDADES, ENVIO, ENVIO_BASE, ENVIO_POR_KM, ENVIO_TECHO, LOCAL,
+  telefonoLargo, kmEntre, tarifaPara, dinero, idDe,
+  subtotal, envio, total, unidades,
+};

@@ -1,0 +1,236 @@
+{
+  "categorias": [
+    "panes",
+    "dulces",
+    "bebidas-frias"
+  ],
+  "productos": [
+    {
+      "nombre": "Pan redondo",
+      "categoria": "panes",
+      "precio": 0.25,
+      "foto": "https://images.unsplash.com/photo-1509440159596-0249088772ff",
+      "calidad": 72,
+      "alt": "Hogazas redondas de corteza tostada con espigas de trigo",
+      "etiqueta": {
+        "color": "green",
+        "texto": "De la casa"
+      }
+    },
+    {
+      "nombre": "Pan enrollado",
+      "categoria": "panes",
+      "precio": 0.35,
+      "foto": "https://images.unsplash.com/photo-1608198093002-ad4e005484ec",
+      "calidad": 72,
+      "alt": "Surtido de panes dorados recién horneados"
+    },
+    {
+      "nombre": "Palanqueta",
+      "categoria": "panes",
+      "precio": 0.5,
+      "foto": "https://images.unsplash.com/photo-1555507036-ab1f4038808a",
+      "calidad": 72,
+      "alt": "Palanqueta de pan artesanal",
+      "disponible": false
+    },
+    {
+      "nombre": "Pan con queso",
+      "categoria": "panes",
+      "precio": 0.75,
+      "foto": "https://images.unsplash.com/photo-1549931319-a545dcf3bc73",
+      "calidad": 72,
+      "alt": "Hogaza rebanada sobre una tabla de madera",
+      "etiqueta": {
+        "color": "yellow",
+        "texto": "Recién hecho"
+      }
+    },
+    {
+      "nombre": "Pan de chocolate",
+      "categoria": "panes",
+      "precio": 0.85,
+      "foto": "https://images.unsplash.com/photo-1509365465985-25d11c17e812",
+      "calidad": 58,
+      "alt": "Rollos de pan con chocolate espolvoreados con azúcar"
+    },
+    {
+      "nombre": "Pan de queso con cebolla",
+      "categoria": "panes",
+      "precio": 1,
+      "foto": "https://images.unsplash.com/photo-1534620808146-d33bb39128b2",
+      "calidad": 72,
+      "alt": "Pan rebanado con harina sobre una superficie clara"
+    },
+    {
+      "nombre": "Pan redondo dulce",
+      "categoria": "panes",
+      "precio": 0.4,
+      "foto": "https://images.unsplash.com/photo-1495147466023-ac5c588e2e94",
+      "calidad": 72,
+      "alt": "Pan redondo dulce artesanal",
+      "etiqueta": {
+        "color": "green",
+        "texto": "Dulce de siempre"
+      }
+    },
+    {
+      "nombre": "Suspiros",
+      "categoria": "dulces",
+      "precio": 0.75,
+      "foto": "https://images.unsplash.com/photo-1775409774922-3cc5b31e55fc",
+      "calidad": 72,
+      "alt": "Suspiros blancos de merengue apilados en un plato junto a una taza",
+      "disponible": false
+    },
+    {
+      "nombre": "Galletas",
+      "categoria": "dulces",
+      "precio": 1,
+      "foto": "https://images.unsplash.com/photo-1464195244916-405fa0a82545",
+      "calidad": 72,
+      "alt": "Galletas artesanales servidas en un cuenco con un paño"
+    },
+    {
+      "nombre": "Rebanada de pastel de chocolate",
+      "categoria": "dulces",
+      "precio": 1.75,
+      "foto": "https://images.unsplash.com/photo-1722673353577-350697f89b31",
+      "calidad": 72,
+      "alt": "Rebanada de pastel de chocolate con virutas y crema sobre una tabla de madera"
+    },
+    {
+      "nombre": "Rebanada de pastel de vainilla",
+      "categoria": "dulces",
+      "precio": 1.5,
+      "foto": "https://images.unsplash.com/photo-1514435390218-898a0e01517a",
+      "calidad": 72,
+      "alt": "Rebanada de bizcocho claro de vainilla en un plato de borde dorado"
+    },
+    {
+      "nombre": "Rebanada de cheesecake de limón",
+      "categoria": "dulces",
+      "precio": 2,
+      "foto": "https://images.unsplash.com/photo-1589361471339-16b852481424",
+      "calidad": 72,
+      "alt": "Rebanada de cheesecake con cubierta de limón y un arándano encima"
+    },
+    {
+      "nombre": "Coca-Cola",
+      "categoria": "bebidas-frias",
+      "precio": 0.85,
+      "foto": "https://images.unsplash.com/photo-1561758033-48d52648ae8b",
+      "calidad": 72,
+      "alt": "Botella de vidrio de Coca-Cola sobre una tabla de madera",
+      "etiqueta": {
+        "color": "yellow",
+        "texto": "Para llevar"
+      },
+      "tamanos": [
+        {
+          "valor": "500 ml",
+          "precio": 0.85
+        },
+        {
+          "valor": "1 L",
+          "precio": 1.25
+        },
+        {
+          "valor": "2 L",
+          "precio": 2
+        }
+      ]
+    },
+    {
+      "nombre": "Fanta",
+      "categoria": "bebidas-frias",
+      "precio": 0.85,
+      "foto": "https://images.unsplash.com/photo-1787453712989-3bf7db8211c4",
+      "calidad": 72,
+      "alt": "Lata naranja de Fanta de pie sobre el asfalto",
+      "tamanos": [
+        {
+          "valor": "500 ml",
+          "precio": 0.85
+        },
+        {
+          "valor": "1 L",
+          "precio": 1.25
+        }
+      ]
+    },
+    {
+      "nombre": "Sprite",
+      "categoria": "bebidas-frias",
+      "precio": 0.85,
+      "foto": "https://images.unsplash.com/photo-1680404005217-a441afdefe83",
+      "calidad": 72,
+      "alt": "Lata verde de Sprite sobre una caja de madera, con limas alrededor",
+      "tamanos": [
+        {
+          "valor": "500 ml",
+          "precio": 0.85
+        },
+        {
+          "valor": "1 L",
+          "precio": 1.25
+        }
+      ]
+    },
+    {
+      "nombre": "Agua",
+      "categoria": "bebidas-frias",
+      "precio": 0.5,
+      "foto": "https://images.unsplash.com/photo-1788542026849-685dd8e93be2",
+      "calidad": 72,
+      "alt": "Botella de agua sin abrir sobre una mesa de madera",
+      "tamanos": [
+        {
+          "valor": "500 ml",
+          "precio": 0.5
+        },
+        {
+          "valor": "1 L",
+          "precio": 0.75
+        }
+      ]
+    },
+    {
+      "nombre": "Powerade",
+      "categoria": "bebidas-frias",
+      "precio": 1.25,
+      "foto": "https://images.unsplash.com/photo-1606598435967-77bdb0cf773a",
+      "calidad": 72,
+      "alt": "Botella azul de bebida deportiva",
+      "disponible": false,
+      "tamanos": [
+        {
+          "valor": "500 ml",
+          "precio": 1.25
+        },
+        {
+          "valor": "1 L",
+          "precio": 1.75
+        }
+      ]
+    },
+    {
+      "nombre": "Avena polaca",
+      "categoria": "bebidas-frias",
+      "precio": 0.75,
+      "foto": "https://images.unsplash.com/photo-1517448931760-9bf4414148c5",
+      "calidad": 72,
+      "alt": "Vaso de avena cremosa sobre una mesa de madera oscura",
+      "tamanos": [
+        {
+          "valor": "300 ml",
+          "precio": 0.75
+        },
+        {
+          "valor": "500 ml",
+          "precio": 1.25
+        }
+      ]
+    }
+  ]
+}

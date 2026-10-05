@@ -1,0 +1,503 @@
+// ---- La vitrina -------------------------------------------------------
+// Pinta las fichas con lo que trae repo.js y manda el catalogo: el mostrador
+// en fila de la portada, la vista de cada categoria, el orden y el filtro.
+// Las fichas salen de aqui como HTML; el control de cantidad que llevan
+// dentro lo pone cart.js despues, porque eso ya es canasta.
+import { reducedMotion, avisos, grupo, abrirGrupo } from './ui.js';
+import { dinero, idDe } from './state.js';
+
+const catalogStatus = document.querySelector('.catalog-status');
+const productGrid = document.querySelector('.product-grid');
+
+// Los nombres y los textos alternativos vienen de un archivo de datos y entran
+// en la pagina como HTML, asi que se escapan: un '<' en un nombre no puede
+// acabar siendo una etiqueta.
+const escapar = (texto) => String(texto)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+// La misma foto en cuatro anchos: el navegador elige la que le cabe y no
+// descarga la grande en un telefono. El 'sizes' dice cuanto va a ocupar la
+// ficha en cada tamanio de pantalla, que es lo que no puede adivinar solo.
+const ANCHOS = [280, 420, 560, 840];
+const SIZES = '(max-width: 680px) calc(100vw - 32px), (max-width: 900px) calc(50vw - 40px), 280px';
+const foto = (p, w) => `${p.foto}?auto=format&fit=crop&w=${w}&q=${p.calidad}`;
+
+// Lo que viene en varios tamanios lleva un grupo de botones de radio. El
+// identificador sale del nombre, que es lo unico que distingue un producto de
+// otro, y el primero va marcado porque su precio es el que se ve en la ficha.
+const tamanosHtml = (p) => {
+  if (!p.tamanos.length) return '';
+  const id = idDe(p.nombre);
+  const opciones = p.tamanos.map((t, i) => {
+    const marca = i === 0 ? ' checked' : '';
+    // Agotado es agotado en todos sus tamanios: se pueden ver, pero no elegir.
+    const apagado = p.disponible ? '' : ' disabled';
+    return `<input class="tamano-input" type="radio" name="tam-${id}" id="tam-${id}-${i}"`
+      + ` value="${escapar(t.valor)}" data-precio="${t.precio.toFixed(2)}"${marca}${apagado}>`
+      + `<label class="tamano" for="tam-${id}-${i}">${escapar(t.valor)}</label>`;
+  }).join('');
+  return `<div class="card-tamanos" role="group" aria-label="Tamaño de ${escapar(p.nombre)}">`
+    + opciones + '</div>';
+};
+
+// Lo agotado no lleva boton de pedir: lleva dicho que vuelve manana. Poner un
+// boton que no se puede usar seria ofrecer algo que no hay.
+const fondoHtml = (p) => {
+  if (!p.disponible) return '<span class="card-agotado">Vuelve mañana</span>';
+  // Sin JavaScript este enlace sigue siendo la unica manera de pedir, asi que
+  // se queda. Con JS cargado, cart.js lo cambia por el control de cantidad.
+  const texto = encodeURIComponent(`Hola, quiero pedir ${p.nombre}.`);
+  return `<a class="order-button" href="https://wa.me/593990000000?text=${texto}"`
+    + ' target="_blank" rel="noopener">Pedir <span aria-hidden="true">↗</span></a>';
+};
+
+// La etiqueta de agotado no viene en los datos: sale de que no haya existencia,
+// que es el unico sitio donde ese dato tiene que estar escrito.
+const etiquetaHtml = (p) => {
+  if (!p.disponible) return '<span class="product-tag agotado">Agotado</span>';
+  if (!p.etiqueta) return '';
+  return `<span class="product-tag ${escapar(p.etiqueta.color)}">${escapar(p.etiqueta.texto)}</span>`;
+};
+
+const fichaHtml = (p) => {
+  const srcset = ANCHOS.map((w) => `${foto(p, w)} ${w}w`).join(', ');
+  return `<article class="product-card"${p.disponible ? '' : ' data-available="false"'}`
+    + ` data-category="${escapar(p.categoria)}">`
+    + '<div class="product-image">'
+    + `<img src="${foto(p, 560)}" srcset="${srcset}" sizes="${SIZES}"`
+    + ` alt="${escapar(p.alt)}" loading="lazy" width="700" height="520">`
+    + etiquetaHtml(p)
+    + '</div>'
+    + '<div class="product-info">'
+    + `<h3>${escapar(p.nombre)}</h3>`
+    + tamanosHtml(p)
+    + `<div class="product-bottom"><strong>${dinero(p.precio)}</strong>${fondoHtml(p)}</div>`
+    + '</div></article>';
+};
+
+// Las fichas del DOM, una vez pintadas. Lo que viene abajo las ordena, las
+// esconde y las cuenta, asi que necesita la lista de nodos y no los datos.
+let products = [];
+
+const pintarFichas = (productos) => {
+  if (!productGrid) return;
+  productGrid.innerHTML = productos.map(fichaHtml).join('');
+  products = [...productGrid.querySelectorAll('.product-card')];
+};
+
+// El catalogo entero se arma de una vez, con las fichas ya puestas: el
+// mostrador en fila, las flechas, el orden y la vista de categoria necesitan
+// medir fichas de verdad, y antes de pintarlas no habria nada que medir.
+const montarCatalogo = (productos) => {
+  pintarFichas(productos);
+
+  // El stagger lineal recorre la cuadrícula como una tabla. La diagonal se lee como
+  // una bandeja que se llena, así que el retraso depende de fila más columna.
+  const columnCount = (grid) => {
+    if (!grid) return 1;
+    const columns = window.getComputedStyle(grid).gridTemplateColumns;
+    if (!columns || columns === 'none') return 1;
+    return columns.split(' ').filter(Boolean).length || 1;
+  };
+  const diagonalDelay = (index, columns, step, max) => {
+    const row = Math.floor(index / columns);
+    const column = index % columns;
+    return Math.min((row + column) * step, max);
+  };
+
+  // La fila del mostrador se recorre con el dedo o con el teclado -tabulando por
+  // las fichas, que el navegador trae solas a la vista-. Las flechas son el
+  // apaño para el raton, que no tiene como desplazar de lado.
+  const FLECHA = (izq) => '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+    + 'stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" '
+    + 'focusable="false"><path d="M' + (izq ? '14.5 5.5 8 12l6.5 6.5' : '9.5 5.5 16 12l-6.5 6.5') + '"/></svg>';
+  // Una ficha por salto: el salto de casi una pantalla se pasaba de largo y
+  // habia que buscar donde se habia quedado uno. Lo usan la flecha y el reloj.
+  const pasoFila = () => {
+    const ficha = productGrid?.querySelector('.product-card:not([hidden])');
+    const hueco = parseFloat(getComputedStyle(productGrid).columnGap) || 0;
+    return ficha ? ficha.getBoundingClientRect().width + hueco : 280;
+  };
+  let flechas = [];
+  if (productGrid) {
+    const zona = document.createElement('div');
+    zona.className = 'fila-zona';
+    productGrid.parentElement.insertBefore(zona, productGrid);
+    // La fila necesita decir que es: sin nombre parecia el catalogo entero
+    // puesto de lado. Va fuera de la zona para no pasar por debajo de las
+    // flechas, que estan pegadas a los bordes.
+    const cabezaFila = document.createElement('div');
+    cabezaFila.className = 'fila-cabeza';
+    const rotulo = document.createElement('h3');
+    rotulo.className = 'fila-rotulo';
+    // Decia "Los mas pedidos" y debajo estaban los dieciocho productos, sin
+    // ningun dato de ventas detras: un rotulo afirmando lo que el sitio no
+    // sabe. Ahora nombra lo que hay.
+    rotulo.textContent = 'Nuestro mostrador';
+    // La puerta al catalogo entero. Antes esto era una frase en el aviso de
+    // abajo -"Entra en Tienda para ver una categoria completa"-, es decir una
+    // instruccion tapando que no habia por donde entrar.
+    const verTodo = document.createElement('button');
+    verTodo.type = 'button';
+    verTodo.className = 'fila-vertodo';
+    verTodo.innerHTML = 'Ver todo el catálogo<svg viewBox="0 0 24 24" fill="none" '
+      + 'stroke="currentColor" stroke-width="1.9" stroke-linecap="round" '
+      + 'stroke-linejoin="round" aria-hidden="true" focusable="false">'
+      + '<path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>';
+    cabezaFila.append(rotulo, verTodo);
+    zona.before(cabezaFila);
+    zona.append(productGrid);
+    flechas = [-1, 1].map((ir) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'fila-flecha';
+      b.dataset.ir = String(ir);
+      b.innerHTML = FLECHA(ir === -1);
+      b.setAttribute('aria-label', ir === -1 ? 'Ver los productos anteriores' : 'Ver más productos');
+      b.dataset.tip = ir === -1 ? 'Anterior' : 'Siguiente';
+      b.addEventListener('click', () => {
+        productGrid.scrollBy({
+          left: ir * pasoFila(),
+          behavior: reducedMotion.matches ? 'auto' : 'smooth',
+        });
+      });
+      zona.append(b);
+      return b;
+    });
+    // Al llegar a una punta, la flecha de ese lado se apaga.
+    const mirarPuntas = () => {
+      const sobra = productGrid.scrollWidth - productGrid.clientWidth;
+      const hayFila = productGrid.classList.contains('is-fila');
+      flechas.forEach((b) => {
+        b.hidden = !hayFila || sobra < 24;
+        b.disabled = b.dataset.ir === '-1'
+          ? productGrid.scrollLeft < 8
+          : productGrid.scrollLeft > sobra - 8;
+      });
+    };
+    productGrid.addEventListener('scroll', mirarPuntas, { passive: true });
+    window.addEventListener('resize', mirarPuntas, { passive: true });
+    productGrid.dataset.mirarPuntas = '1';
+    productGrid.mirarPuntas = mirarPuntas;
+
+    // La fila se adelanta sola una ficha cada tanto, que si no hay que adivinar
+    // que se puede mover. Al llegar al final vuelve al principio, para que no
+    // se quede parada en seco dando la impresion de que se rompio.
+    const CADA = 4200;
+    let reloj = null;
+    let quieta = false;
+    const puedeAndar = () => productGrid.classList.contains('is-fila')
+      && !reducedMotion.matches
+      && !document.hidden
+      && !productGrid.estaParada?.()
+      && productGrid.scrollWidth - productGrid.clientWidth > 24;
+
+    const avanzar = () => {
+      if (quieta || !puedeAndar()) return;
+      const sobra = productGrid.scrollWidth - productGrid.clientWidth;
+      if (productGrid.scrollLeft > sobra - 8) {
+        productGrid.scrollTo({ left: 0, behavior: 'smooth' });
+        return;
+      }
+      productGrid.scrollBy({ left: pasoFila(), behavior: 'smooth' });
+    };
+
+    const arrancar = () => {
+      if (productGrid.estaParada?.()) return;
+      if (!reloj) reloj = setInterval(avanzar, CADA);
+    };
+    const parar = () => { clearInterval(reloj); reloj = null; };
+    // Tras tocarla a mano se le da un respiro largo: seguir empujando mientras
+    // alguien decide que lleva es la forma mas rapida de molestar.
+    const respiro = () => { parar(); setTimeout(arrancar, CADA * 2); };
+
+    // Mientras se la mira de cerca no se mueve: el raton encima, un dedo, o el
+    // foco en alguna ficha son todas senales de que hay alguien eligiendo.
+    const vigilar = (entra, sale) => {
+      zona.addEventListener(entra, () => { quieta = true; });
+      zona.addEventListener(sale, () => { quieta = false; });
+    };
+    vigilar('mouseenter', 'mouseleave');
+    vigilar('focusin', 'focusout');
+    vigilar('touchstart', 'touchend');
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) parar(); else arrancar();
+    });
+    // El boton de pausa queda fuera de la vigilancia del foco: si entrar en el
+    // lo marcase como "hay alguien eligiendo", pulsarlo no se distinguiria de
+    // pasar por encima.
+    flechas.forEach((b) => b.addEventListener('click', respiro));
+
+    // La fila se adelanta sola, y eso necesita un boton que la pare: no vale
+    // que se detenga al pasar el raton o al entrar el foco, porque eso es un
+    // efecto secundario de hacer otra cosa, no una manera de pedirlo. Quien la
+    // para, la para hasta que diga lo contrario.
+    let parada = false;
+    const botonPausa = document.createElement('button');
+    botonPausa.type = 'button';
+    botonPausa.className = 'fila-pausa';
+    const PAUSA_ICONO = (quieta) => '<svg viewBox="0 0 24 24" fill="currentColor" '
+      + 'aria-hidden="true" focusable="false">'
+      + (quieta ? '<path d="M8 5.5l11 6.5-11 6.5z"/>'
+                : '<rect x="7" y="5.5" width="3.4" height="13" rx="1"/>'
+                  + '<rect x="13.6" y="5.5" width="3.4" height="13" rx="1"/>')
+      + '</svg>';
+    const pintarPausa = () => {
+      botonPausa.innerHTML = PAUSA_ICONO(parada);
+      botonPausa.setAttribute('aria-pressed', String(parada));
+      const dice = parada ? 'Reanudar el avance del mostrador' : 'Detener el avance del mostrador';
+      botonPausa.setAttribute('aria-label', dice);
+      botonPausa.dataset.tip = parada ? 'Reanudar' : 'Pausar';
+    };
+    botonPausa.addEventListener('click', () => {
+      parada = !parada;
+      pintarPausa();
+      if (parada) parar(); else arrancar();
+      avisos.textContent = parada
+        ? 'Mostrador detenido. No se moverá hasta que lo reanudes.'
+        : 'Mostrador en marcha otra vez.';
+    });
+    pintarPausa();
+    cabezaFila.append(botonPausa);
+    // abrirCategoria se declara mas abajo en este mismo ambito; al pulsar ya
+    // existe, igual que 'avisos', que tambien se usa aqui y nace despues.
+    verTodo.addEventListener('click', () => abrirCategoria('catalogo'));
+    // Mientras este parado a mano, ni el reloj ni las flechas lo reanudan.
+    productGrid.estaParada = () => parada;
+    productGrid.andarSola = { arrancar, parar };
+    arrancar();
+  }
+
+  // El orden en que vienen escritas es el de la casa, el que recomienda la
+  // panaderia. Se guarda ahora para poder volver a el.
+  products.forEach((p, i) => { p.dataset.orden = String(i); });
+  const precioDeFicha = (p) => parseFloat(
+    (p.querySelector('.product-bottom strong')?.textContent || '').replace(/[^0-9.]/g, '')) || 0;
+  const nombreDeFicha = (p) => (p.querySelector('h3')?.textContent || '').trim();
+  let orden = 'recomendados';
+  let soloDisponibles = false;
+
+  let filterRun = 0;
+  // Ya no hay barra de filtros: la categoria es un estado de la pagina. 'todos'
+  // es el inicio con su mostrador en fila; cualquier otra abre su vista.
+  let categoria = 'todos';
+  const applyFilter = (shouldAnimate = false) => {
+    const category = categoria;
+    const animate = shouldAnimate && !reducedMotion.matches;
+    const columns = columnCount(productGrid);
+    const entering = [];
+    let visibleCount = 0;
+    let agotados = 0;
+
+    // Sin categoria elegida el catalogo es el mostrador en fila; al elegir una,
+    // pasa a cuadricula, que es cuando se viene a mirarlo todo.
+    productGrid?.classList.toggle('is-fila', category === 'todos');
+    productGrid?.classList.remove('is-filtering');
+    // Cuantos hay en la categoria antes de filtrar nada: es el "de cuantos".
+    const todoJunto = category === 'todos' || category === 'catalogo';
+    const deLaCategoria = products.filter((p) => todoJunto || p.dataset.category === category);
+    const total = deLaCategoria.length;
+
+    // Ordenar se hace con la propiedad order y no moviendo nodos: las fichas
+    // llevan dentro el control de cantidad con su estado, y sacarlas y volverlas
+    // a meter es pedir que algo se pierda por el camino.
+    const porOrden = [...deLaCategoria].sort((a, b) => {
+      if (orden === 'precio-asc') return precioDeFicha(a) - precioDeFicha(b);
+      if (orden === 'precio-desc') return precioDeFicha(b) - precioDeFicha(a);
+      if (orden === 'nombre') return nombreDeFicha(a).localeCompare(nombreDeFicha(b), 'es');
+      return Number(a.dataset.orden) - Number(b.dataset.orden);
+    });
+    porOrden.forEach((p, i) => { p.style.order = String(i); });
+
+    products.forEach((product) => {
+      const deAqui = todoJunto || product.dataset.category === category;
+      // El filtro solo manda dentro de una categoria; en el mostrador no hay
+      // barra con que tocarlo, asi que ahi se sale todo como siempre.
+      const pasaFiltro = category === 'todos' || !soloDisponibles
+        || product.dataset.available !== 'false';
+      const visible = deAqui && pasaFiltro;
+      product.hidden = !visible;
+      if (visible) {
+        product.style.setProperty('--catalog-delay', `${diagonalDelay(visibleCount, columns, 40, 320)}ms`);
+        product.classList.toggle('catalog-enter', animate);
+        if (animate) entering.push(product);
+        visibleCount += 1;
+        if (product.dataset.available === 'false') agotados += 1;
+      } else {
+        product.classList.remove('catalog-enter');
+      }
+    });
+
+    // Dentro de una categoria lo util es saber cuantos se estan viendo de los
+    // que hay: con un filtro puesto, un numero suelto no dice si falta algo.
+    const dice = category === 'todos'
+      ? null
+      : `Mostrando ${visibleCount} de ${total} producto${total === 1 ? '' : 's'}`;
+    if (cuentaVista) cuentaVista.textContent = dice || '';
+
+    if (catalogStatus) {
+      const plural = visibleCount === 1 ? '' : 's';
+      // Llamar "disponible" a lo que esta agotado seria mentira: cuando falta algo,
+      // el aviso cuenta cuantos hay y cuantos se acabaron.
+      const cuantos = agotados
+        ? `${visibleCount} producto${plural}, ${agotados} agotado${agotados === 1 ? '' : 's'}`
+        : `${visibleCount} producto${plural} disponible${plural}`;
+      // En el mostrador, el aviso dice ademas por donde se ve todo: si no, la
+      // fila parece el catalogo entero y la cuadricula no la encuentra nadie.
+      catalogStatus.textContent = category === 'todos'
+        ? `${cuantos} en el mostrador.`
+        : `${dice}. ${cuantos} en esta categoría.`;
+    }
+    productGrid?.mirarPuntas?.();
+    if (!animate) return;
+
+    const run = ++filterRun;
+    const clearEnter = () => {
+      if (run !== filterRun) return;
+      products.forEach((product) => product.classList.remove('catalog-enter'));
+    };
+    entering[entering.length - 1]?.addEventListener('animationend', clearEnter, { once: true });
+    window.setTimeout(clearEnter, 780);
+  };
+  // La salida es la única del sitio: los productos actuales se atenúan con una curva
+  // acelerada y solo después entra la categoría nueva con la curva desacelerada.
+  const cambiarCategoria = (cat) => {
+    if (cat === categoria) return;
+    categoria = cat;
+    // Al cambiar, la fila vuelve a su principio: si no, se entraria a la mitad
+    // de lo nuevo sin saber que hay detras.
+    if (productGrid) productGrid.scrollLeft = 0;
+    if (reducedMotion.matches) {
+      applyFilter(false);
+      return;
+    }
+    productGrid?.classList.add('is-filtering');
+    window.setTimeout(() => applyFilter(true), 160);
+  };
+
+  // ---- La vista de categoria -------------------------------------------
+  // A una categoria se entra desde Tienda, y lo que se abre no es el inicio con
+  // un filtro puesto: es otra vista. Se arma desde aqui porque sin JavaScript no
+  // habria vista que abrir; ahi los enlaces bajan al catalogo, que sin la fila
+  // sale como cuadricula entera, y eso ya es una respuesta valida.
+  const enlacesTienda = [...document.querySelectorAll('.main-nav a[data-filtro]')];
+  const NOMBRES = {};
+  enlacesTienda.forEach((a) => { NOMBRES[a.dataset.filtro] = a.textContent.trim(); });
+
+  const cabeza = document.createElement('div');
+  cabeza.className = 'vista-cabeza';
+  cabeza.hidden = true;
+  cabeza.innerHTML = '<button class="vista-volver" type="button">'
+    + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
+    + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver al inicio</button>'
+    + '<h2 class="vista-titulo" tabindex="-1"></h2>'
+    // Ordenar y filtrar viven aqui y no en el mostrador: la fila de la portada
+    // es un escaparate de seis, y ordenar seis no le hace falta a nadie.
+    + '<div class="vista-barra">'
+    + '<div class="vista-mandos">'
+    + '<label class="vista-mando"><span>Ordenar por</span>'
+    + '<select class="vista-orden">'
+    + '<option value="recomendados">Recomendados</option>'
+    + '<option value="precio-asc">Precio: de menor a mayor</option>'
+    + '<option value="precio-desc">Precio: de mayor a menor</option>'
+    + '<option value="nombre">Nombre: de la A a la Z</option>'
+    + '</select></label>'
+    + '<label class="vista-mando"><span>Mostrar</span>'
+    + '<select class="vista-filtro">'
+    + '<option value="todos">Todos</option>'
+    + '<option value="disponibles">Solo los disponibles</option>'
+    + '</select></label>'
+    + '</div>'
+    // Lo que se ve de lo que hay. Mudo para el lector de pantalla, que ya tiene
+    // el aviso de mas abajo y oirlo dos veces es peor que no oirlo.
+    + '<p class="vista-cuenta" aria-hidden="true"></p>'
+    + '</div>';
+  const encabezado = document.querySelector('.catalog .section-heading');
+  encabezado?.parentElement.insertBefore(cabeza, encabezado);
+  const tituloVista = cabeza.querySelector('.vista-titulo');
+  const selOrden = cabeza.querySelector('.vista-orden');
+  const selFiltro = cabeza.querySelector('.vista-filtro');
+  const cuentaVista = cabeza.querySelector('.vista-cuenta');
+
+  selOrden?.addEventListener('change', () => {
+    orden = selOrden.value;
+    applyFilter(true);
+  });
+  selFiltro?.addEventListener('change', () => {
+    soloDisponibles = selFiltro.value === 'disponibles';
+    applyFilter(true);
+  });
+
+  const pintarVista = (cat) => {
+    const enVista = cat !== 'todos';
+    document.body.classList.toggle('is-vista', enVista);
+    cabeza.hidden = !enVista;
+    if (encabezado) encabezado.hidden = enVista;
+    if (enVista) tituloVista.textContent = NOMBRES[cat] || 'Catálogo';
+    document.title = enVista
+      ? `${NOMBRES[cat] || 'Catálogo'} | El Tradicional`
+      : 'El Tradicional | Panadería & Pastelería';
+  };
+
+  const abrirCategoria = (cat, conHistorial = true) => {
+    // Cada categoria se entra limpia: lo elegido en panes no tiene por que
+    // seguir puesto al pasar a bebidas.
+    orden = 'recomendados';
+    soloDisponibles = false;
+    if (selOrden) selOrden.value = 'recomendados';
+    if (selFiltro) selFiltro.value = 'todos';
+    cambiarCategoria(cat);
+    pintarVista(cat);
+    if (conHistorial) {
+      const destino = cat === 'todos' ? location.pathname + location.search : '#tienda-' + cat;
+      history.pushState({ cat }, '', destino);
+    }
+    window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+    if (cat !== 'todos') tituloVista.focus({ preventScroll: true });
+  };
+
+  enlacesTienda.forEach((a) => a.addEventListener('click', (e) => {
+    e.preventDefault();
+    grupo?.dispatchEvent(new CustomEvent('soltar'));
+    abrirGrupo(false);
+    abrirCategoria(a.dataset.filtro);
+  }));
+  cabeza.querySelector('.vista-volver').addEventListener('click', () => abrirCategoria('todos'));
+
+  // "Ver el menu" de la portada abre el catalogo entero, la misma vista que
+  // "Ver todo el catalogo" de la fila y que la entrada del menu Tienda. Antes
+  // solo bajaba a la seccion y dejaba el mostrador en fila, que es un resumen:
+  // quien pulsa "ver el menu" quiere verlo todo, no una muestra. Sin
+  // JavaScript sigue siendo el enlace de siempre, que baja ahi mismo.
+  document.querySelector('.hero-actions a[href="#catalogo"]')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    abrirCategoria('catalogo');
+  });
+
+  // El boton de atras del navegador tiene que funcionar: la vista es un sitio.
+  const deLaDireccion = () => {
+    const m = location.hash.match(/^#tienda-(.+)$/);
+    return m && NOMBRES[m[1]] ? m[1] : 'todos';
+  };
+  window.addEventListener('popstate', () => {
+    const cat = deLaDireccion();
+    cambiarCategoria(cat);
+    pintarVista(cat);
+  });
+
+  categoria = deLaDireccion();
+  pintarVista(categoria);
+  applyFilter();
+
+  // Al pedir menos animacion, la cuadricula se queda quieta: ni el velo del
+  // cambio de categoria ni la entrada escalonada de las fichas.
+  reducedMotion.addEventListener('change', (event) => {
+    if (!event.matches) return;
+    productGrid?.classList.remove('is-filtering');
+    products.forEach((product) => product.classList.remove('catalog-enter'));
+  });
+};
+
+export { montarCatalogo, fichaHtml };

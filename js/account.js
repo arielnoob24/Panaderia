@@ -1,0 +1,688 @@
+// ---- La cuenta --------------------------------------------------------
+// Crear cuenta, verificar el correo con un codigo y entrar. Es la unica parte
+// que le habla a la canasta de lejos: le pasa la direccion guardada para no
+// tener que escribirla otra vez, y eso va por el puente.
+import {
+  avisos, menuToggle, closeMenu, flechasEnMenu, apagarDetras, atraparFoco,
+} from './ui.js';
+import { sesion, entrega, puente } from './state.js';
+import { buzonListo, enviarCorreo } from './mail.js';
+
+// Maqueta de cuentas. No hay servidor detras, asi que nada de esto viaja a
+// ninguna parte: la cuenta queda escrita en este navegador y en ningun otro
+// sitio. La contrasena se pide, se comprueba y se tira; no se guarda ni aqui
+// ni en el navegador, porque guardarla seria ensenar a hacerlo mal. Por lo
+// mismo, "entrar" no puede comprobar ninguna contrasena: no hay con que
+// compararla, y el panel lo dice en voz alta en vez de fingir que si.
+const CLAVE_CUENTA = 'eltradicional-cuenta';
+
+const fondoC = document.createElement('div');
+fondoC.className = 'cuenta-fondo';
+const panelC = document.createElement('aside');
+panelC.className = 'cuenta-panel';
+panelC.setAttribute('role', 'dialog');
+panelC.setAttribute('aria-modal', 'true');
+panelC.setAttribute('aria-labelledby', 'cuenta-titulo');
+
+// opciones: opcional, prefijo (texto fijo pegado al campo), describe (ids que
+// se suman al aria-describedby) y despues (lo que va entre campo y error).
+const campoHtml = (id, etiqueta, extra, opciones = {}) => {
+  const describe = (opciones.describe ? opciones.describe + ' ' : '') + `cuenta-${id}-error`;
+  const campo = `<input id="cuenta-${id}" ${extra} aria-describedby="${describe}">`;
+  return `<div class="cuenta-campo"><label for="cuenta-${id}">${etiqueta}`
+    + (opciones.opcional ? ' <span class="cuenta-campo-opcional">(opcional)</span>' : '')
+    + '</label>'
+    + (opciones.prefijo
+      ? `<div class="cuenta-conprefijo"><span class="cuenta-prefijo">${opciones.prefijo}</span>${campo}</div>`
+      : campo)
+    + (opciones.despues || '')
+    + `<p class="cuenta-campo-error" id="cuenta-${id}-error" hidden></p></div>`;
+};
+
+// Lo que tiene que cumplir la contrasena, escrito una sola vez: de aqui salen
+// la lista que se ve debajo del campo y la comprobacion de si vale.
+const REGLAS = [
+  { id: 'largo', texto: 'Al menos 8 caracteres', cumple: (v) => v.length >= 8 },
+  { id: 'minuscula', texto: 'Una letra minúscula', cumple: (v) => /[a-zñáéíóúü]/.test(v) },
+  { id: 'mayuscula', texto: 'Una letra mayúscula', cumple: (v) => /[A-ZÑÁÉÍÓÚÜ]/.test(v) },
+  { id: 'numero', texto: 'Un número', cumple: (v) => /[0-9]/.test(v) },
+];
+// El +593 esta fijo delante del campo, asi que el numero va sin el cero de
+// 09... Quien lo escriba de memoria con el cero no se equivoca: se lo come.
+const soloNueve = (v) => v.replace(/\D/g, '').replace(/^0+/, '').slice(0, 9);
+const telefonoBonito = (d) => (d ? `+593 ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}` : '');
+
+const reglasHtml = '<ul class="cuenta-reglas" id="cuenta-clave-reglas">'
+  + REGLAS.map((r) => `<li data-regla="${r.id}">${r.texto}`
+    + '<span class="sr-only cuenta-regla-estado">, falta</span></li>').join('')
+  + '</ul>';
+
+panelC.innerHTML =
+  '<div class="cuenta-cabecera"><h2 id="cuenta-titulo" tabindex="-1">Crear cuenta</h2>'
+  + '<button class="cuenta-cerrar" type="button" aria-label="Cerrar">×</button></div>'
+
+  + '<section class="cuenta-paso" data-paso="crear">'
+  + '<div class="cuenta-cuerpo">'
+  + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Este sitio no tiene '
+  + 'servidor: la cuenta se guarda solo en este navegador y la contraseña no se guarda '
+  + 'en ninguna parte. No escribas una contraseña de verdad.</p>'
+  + campoHtml('nombre', 'Nombre y apellido', 'type="text" autocomplete="name" maxlength="60" placeholder="Ariel Escobar"')
+  + campoHtml('correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
+  + campoHtml('telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel" '
+    + 'maxlength="9" placeholder="990001122"', { prefijo: '+593' })
+  + campoHtml('direccion', 'Dirección', 'type="text" autocomplete="street-address" maxlength="200" '
+    + 'placeholder="Calle, número y una referencia"', { opcional: true })
+  + campoHtml('clave', 'Contraseña', 'type="password" autocomplete="new-password" maxlength="40"',
+    { describe: 'cuenta-clave-reglas', despues: reglasHtml })
+  + campoHtml('repite', 'Repite la contraseña', 'type="password" autocomplete="new-password" maxlength="40"')
+  + '</div>'
+  + '<div class="cuenta-pie">'
+  + '<p class="cuenta-aviso" role="alert" hidden></p>'
+  + '<button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button>'
+  + '<button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button>'
+  + '</div></section>'
+
+  + '<section class="cuenta-paso" data-paso="verificar" hidden>'
+  + '<div class="cuenta-cuerpo">'
+  + '<p class="cuenta-maqueta cuenta-maqueta-codigo" hidden></p>'
+  + '<p class="codigo-dicho">Escribe el código de 6 cifras que enviamos a '
+  + '<strong class="codigo-correo"></strong>.</p>'
+  + '<p class="codigo-estado" role="status" hidden></p>'
+  + '<div class="codigo-falso" hidden>'
+  + '<p class="codigo-falso-de">Correo de El Tradicional</p>'
+  + '<p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. '
+  + 'No lo compartas con nadie.</p></div>'
+  + '<div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label>'
+  + '<input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" '
+  + 'autocomplete="one-time-code" maxlength="6" placeholder="000000" '
+  + 'aria-describedby="cuenta-codigo-error">'
+  + '<p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div>'
+  + '<button class="codigo-reenviar" type="button">Enviar otro código</button>'
+  + '</div>'
+  + '<div class="cuenta-pie">'
+  + '<p class="cuenta-aviso" role="alert" hidden></p>'
+  + '<button class="button button-yellow cuenta-verificar" type="button">Verificar el correo</button>'
+  + '<button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el correo</button>'
+  + '</div></section>'
+
+  + '<section class="cuenta-paso" data-paso="entrar" hidden>'
+  + '<div class="cuenta-cuerpo">'
+  + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor no hay '
+  + 'contraseña que comprobar, así que no se pide: basta el correo de la cuenta que '
+  + 'creaste en este navegador. Pedirla para luego tirarla sería fingir.</p>'
+  + campoHtml('entrar-correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
+  + '</div>'
+  + '<div class="cuenta-pie">'
+  + '<p class="cuenta-aviso" role="alert" hidden></p>'
+  + '<button class="button button-yellow cuenta-entrar" type="button">Entrar</button>'
+  + '<button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button>'
+  + '</div></section>'
+
+  + '<section class="cuenta-paso" data-paso="sesion" hidden>'
+  + '<div class="cuenta-cuerpo">'
+  + '<div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span>'
+  + '<div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div>'
+  + '<dl class="cuenta-datos">'
+  + '<div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div>'
+  + '<div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div>'
+  + '</dl>'
+  + '<p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p>'
+  + '</div>'
+  + '<div class="cuenta-pie">'
+  + '<button class="cuenta-salir" type="button">Salir de la cuenta</button>'
+  + '<p class="cuenta-nota">Salir solo borra la cuenta de este navegador. '
+  + 'No hay ningún otro lugar donde estuviera guardada.</p>'
+  + '</div></section>';
+document.body.append(fondoC, panelC);
+
+// La entrada vive en la navegacion y se crea desde aqui: sin JavaScript no
+// habria panel que abrir, asi que tampoco tiene que haber boton.
+const PERSONA = '<svg class="nav-cuenta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+  + 'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+  + '<circle cx="12" cy="8.2" r="3.6"/>'
+  + '<path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/></svg>';
+const navCuenta = document.createElement('button');
+navCuenta.type = 'button';
+navCuenta.className = 'nav-cuenta';
+// Va en el grupo de acciones, no dentro de la navegacion: asi puede quedarse
+// a la derecha mientras los enlaces se centran, y en el telefono se ve
+// siempre, sin tener que abrir el menu.
+document.querySelector('.nav-acciones')?.prepend(navCuenta);
+
+const tituloC = panelC.querySelector('#cuenta-titulo');
+const pasosC = [...panelC.querySelectorAll('.cuenta-paso')];
+const avisoCrear = panelC.querySelector('[data-paso="crear"] .cuenta-aviso');
+const avisoEntrar = panelC.querySelector('[data-paso="entrar"] .cuenta-aviso');
+const campoCodigo = panelC.querySelector('#cuenta-codigo');
+const errorCodigo = panelC.querySelector('#cuenta-codigo-error');
+const avisoVerificar = panelC.querySelector('[data-paso="verificar"] .cuenta-aviso');
+const codigoCorreo = panelC.querySelector('.codigo-correo');
+const codigoValor = panelC.querySelector('.codigo-valor');
+const codigoFalso = panelC.querySelector('.codigo-falso');
+const codigoEstado = panelC.querySelector('.codigo-estado');
+const maquetaCodigo = panelC.querySelector('.cuenta-maqueta-codigo');
+const codigoReenviar = panelC.querySelector('.codigo-reenviar');
+const correoEntrar = panelC.querySelector('#cuenta-entrar-correo');
+// En "entrar" ya no hay campo de contrasena: ver el parrafo de la maqueta.
+const errorEntrarCorreo = panelC.querySelector('#cuenta-entrar-correo-error');
+
+const TITULOS_CUENTA = { crear: 'Crear cuenta', verificar: 'Verificar tu correo',
+  entrar: 'Entrar', sesion: 'Tu cuenta' };
+
+// El codigo nace en el navegador y de ahi sale por correo. Conviene decir en
+// voz alta lo que eso significa y lo que no: prueba que el correo escrito
+// existe y que quien se registra lo abre, que es para lo que sirve el paso,
+// porque el comprobante del pedido va justo ahi. Lo que no hace es resistir a
+// quien quiera saltarse el paso: el codigo esta en la memoria de su propio
+// navegador y lo puede leer en las herramientas de desarrollo. Para eso haria
+// falta que naciera y se comparara en un servidor, y este sitio no tiene.
+let codigoEsperado = '';
+let relojReenvio = 0;
+const REENVIO = 45;
+// A donde se manda el codigo: al correo que se acaba de escribir si venimos
+// de crear la cuenta, o al de la cuenta guardada si venimos de entrar.
+const correoAVerificar = () => datos.correo || sesion.correo;
+
+const nuevoCodigo = () => {
+  codigoEsperado = String(Math.floor(100000 + Math.random() * 900000));
+  if (codigoValor) codigoValor.textContent = codigoEsperado;
+  if (codigoCorreo) codigoCorreo.textContent = correoAVerificar();
+};
+
+// El codigo se manda y se cuenta como fue. Si el envio no esta configurado o
+// falla, el recuadro que imita el correo aparece con el codigo dentro: asi el
+// registro no se queda tapiado, y el parrafo de arriba dice por que se esta
+// viendo en pantalla algo que deberia haber llegado al buzon.
+const mandarCodigo = async () => {
+  const para = correoAVerificar();
+  const codigo = codigoEsperado;
+  const verAtajo = (motivo) => {
+    // Se vacia y no solo se oculta: si se queda el "Enviando..." dentro, el
+    // lector de pantalla lo puede volver a cantar al reaparecer el renglon.
+    codigoEstado.textContent = '';
+    codigoEstado.hidden = true;
+    codigoFalso.hidden = false;
+    maquetaCodigo.hidden = false;
+    maquetaCodigo.innerHTML = `<strong>Maqueta académica.</strong> ${motivo} `
+      + 'El código se muestra aquí abajo para que puedas seguir.';
+  };
+  if (!buzonListo()) {
+    verAtajo('El envío de correo no está configurado en esta copia del sitio.');
+    return;
+  }
+  codigoFalso.hidden = true;
+  maquetaCodigo.hidden = true;
+  codigoEstado.hidden = false;
+  codigoEstado.textContent = 'Enviando el código a tu correo…';
+  const bien = await enviarCorreo(para, datos.nombre || sesion.nombre,
+    'Tu código de El Tradicional',
+    `Tu código para verificar la cuenta es ${codigo}.\n\n`
+    + 'Caduca cuando pidas otro. No lo compartas con nadie: nadie de '
+    + 'El Tradicional te lo va a pedir.');
+  // Mientras el correo viajaba pudo pedirse otro codigo, y entonces este
+  // mensaje habla de uno que ya no vale.
+  if (codigoEsperado !== codigo) return;
+  if (bien) {
+    codigoEstado.textContent = 'Código enviado. Si no lo ves, mira en la carpeta de spam.';
+    return;
+  }
+  codigoEstado.hidden = true;
+  verAtajo('No se pudo enviar el correo: puede ser la red o la cuota del mes.');
+};
+
+// La espera para reenviar. Ya no es un detalle de maqueta: los correos salen
+// de verdad y el plan gratuito da 200 al mes, asi que pulsar "Enviar otro
+// codigo" en bucle vaciaria la cuota en una tarde.
+const cuentaAtras = () => {
+  window.clearInterval(relojReenvio);
+  let quedan = REENVIO;
+  const pintar = () => {
+    if (quedan <= 0) {
+      window.clearInterval(relojReenvio);
+      relojReenvio = 0;
+      codigoReenviar.disabled = false;
+      codigoReenviar.textContent = 'Enviar otro código';
+      return;
+    }
+    codigoReenviar.disabled = true;
+    codigoReenviar.textContent = `Enviar otro código en ${quedan}s`;
+    quedan -= 1;
+  };
+  pintar();
+  relojReenvio = window.setInterval(pintar, 1000);
+};
+
+const pararCuentaAtras = () => {
+  window.clearInterval(relojReenvio);
+  relojReenvio = 0;
+  if (codigoReenviar) {
+    codigoReenviar.disabled = false;
+    codigoReenviar.textContent = 'Enviar otro código';
+  }
+};
+const verPaso = (nombre) => {
+  pasosC.forEach((paso) => { paso.hidden = paso.dataset.paso !== nombre; });
+  tituloC.textContent = TITULOS_CUENTA[nombre];
+};
+
+// Mismo trato que en la tarjeta: un campo solo se marca cuando ya lo tocaste
+// o cuando ya intentaste enviar. Avisar antes de escribir nada no ayuda.
+const datos = { nombre: '', correo: '', telefono: '', direccion: '', clave: '', repite: '' };
+// Cada campo elige cuando se le puede reganar. El correo y el telefono, al
+// salir de ellos: corregir a alguien el correo en la tercera letra no ayuda.
+// La contrasena no se marca nunca en rojo mientras escribes, porque la lista
+// de abajo ya va diciendo lo que falta; solo al intentar crear la cuenta.
+const campos = [
+  { clave: 'nombre' },
+  { clave: 'correo' },
+  { clave: 'telefono' },
+  { clave: 'direccion' },
+  { clave: 'clave', soloAlIntentar: true },
+  { clave: 'repite' },
+].map((campo) => Object.assign(campo, {
+  input: panelC.querySelector(`#cuenta-${campo.clave}`),
+  error: panelC.querySelector(`#cuenta-${campo.clave}-error`),
+}));
+const tocadosC = new Set();
+let intentadoC = false;
+
+const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+// El correo no se despacha con un "algo esta mal": se dice que le falta.
+const fallaCorreo = (v) => {
+  if (!v) return 'Escribe tu correo.';
+  if (!v.includes('@')) return 'Le falta el @.';
+  if (!/\.[a-z]{2,}$/i.test(v)) return 'Le falta el final, como .com o .ec.';
+  if (!CORREO.test(v)) return 'Revisa el correo, algo no cuadra.';
+  return '';
+};
+const fallosCuenta = () => {
+  const f = {};
+  if (datos.nombre.length < 3) f.nombre = 'Escribe tu nombre.';
+  else if (!datos.nombre.includes(' ')) f.nombre = 'Falta el apellido.';
+  const correo = fallaCorreo(datos.correo);
+  if (correo) f.correo = correo;
+  // Tras el +593 el numero va sin el cero: los celulares de aqui son 09...,
+  // asi que quedan nueve cifras que empiezan en 9.
+  if (!datos.telefono) f.telefono = 'Escribe tu número.';
+  else if (!/^9\d{8}$/.test(datos.telefono)) f.telefono = 'Son 9 números después del +593, empezando por 9.';
+  if (REGLAS.some((r) => !r.cumple(datos.clave))) f.clave = 'A la contraseña le falta algo de la lista.';
+  if (datos.repite !== datos.clave) f.repite = 'Las dos no son iguales.';
+  return f;
+};
+
+// La lista de obligaciones se repinta en cada tecla: es la unica parte del
+// formulario que contesta mientras escribes, y por eso no hay que adivinar.
+const pintarReglas = () => {
+  REGLAS.forEach((r) => {
+    const fila = panelC.querySelector(`[data-regla="${r.id}"]`);
+    const hecha = r.cumple(datos.clave);
+    fila.classList.toggle('is-hecha', hecha);
+    fila.querySelector('.cuenta-regla-estado').textContent = hecha ? ', cumplido' : ', falta';
+  });
+};
+const pintarCampos = () => {
+  const fallos = fallosCuenta();
+  pintarReglas();
+  campos.forEach(({ clave, input, error, soloAlIntentar }) => {
+    const momento = soloAlIntentar ? intentadoC : (intentadoC || tocadosC.has(clave));
+    const texto = momento ? fallos[clave] : '';
+    error.hidden = !texto;
+    error.textContent = texto || '';
+    input.setAttribute('aria-invalid', texto ? 'true' : 'false');
+    input.classList.toggle('is-mal', Boolean(texto));
+  });
+  return fallos;
+};
+campos.forEach(({ clave, input }) => {
+  input.addEventListener('input', () => {
+    // El telefono solo admite cifras. El 0 de 09... se lo come el +593, asi
+    // que escribir el numero de memoria tambien funciona.
+    if (clave === 'telefono') input.value = soloNueve(input.value);
+    datos[clave] = (clave === 'clave' || clave === 'repite') ? input.value : input.value.trim();
+    pintarCampos();
+  });
+  input.addEventListener('blur', () => { tocadosC.add(clave); pintarCampos(); });
+});
+
+// Las contrasenas no se quedan escritas al cerrar: ni en el campo ni en la
+// variable. Es lo unico de aqui que no debe sobrevivir al panel.
+const olvidarFormulario = () => {
+  campos.forEach(({ clave, input }) => { datos[clave] = ''; input.value = ''; });
+  tocadosC.clear();
+  intentadoC = false;
+  pintarCampos();
+  avisoCrear.hidden = true;
+  avisoEntrar.hidden = true;
+  correoEntrar.value = '';
+  errorEntrarCorreo.hidden = true;
+  correoEntrar.classList.remove('is-mal');
+};
+
+const guardarCuenta = () => {
+  try {
+    // Solo lo que hace falta para el pedido. La contrasena no entra aqui.
+    window.localStorage.setItem(CLAVE_CUENTA, JSON.stringify({
+      nombre: sesion.nombre, correo: sesion.correo,
+      telefono: sesion.telefono, direccion: sesion.direccion,
+      verificado: sesion.verificado,
+    }));
+  } catch (e) { /* en ventana privada no se puede guardar; la sesion sigue viva en memoria */ }
+};
+const correoGuardado = () => {
+  try {
+    const crudo = window.localStorage.getItem(CLAVE_CUENTA);
+    return crudo ? String(JSON.parse(crudo).correo || '') : '';
+  } catch (e) { return ''; }
+};
+const leerCuenta = () => {
+  try {
+    const crudo = window.localStorage.getItem(CLAVE_CUENTA);
+    if (!crudo) return;
+    const dato = JSON.parse(crudo);
+    if (!dato || !dato.nombre || typeof dato.correo !== 'string') return;
+    sesion.nombre = String(dato.nombre).slice(0, 60);
+    sesion.correo = String(dato.correo).slice(0, 80);
+    sesion.telefono = soloNueve(String(dato.telefono || ''));
+    sesion.direccion = String(dato.direccion || '').slice(0, 200);
+    sesion.verificado = dato.verificado === true;
+    sesion.dentro = true;
+  } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza fuera */ }
+};
+
+const iniciales = (nombre) => nombre.split(/\s+/).filter(Boolean).slice(0, 2)
+  .map((parte) => parte[0].toUpperCase()).join('');
+
+// El boton de la cuenta no lleva texto: fuera de sesion es la silueta, y dentro
+// son tus iniciales, que hacen de icono. Sin rotulo a la vista, el nombre va en
+// aria-label para quien usa lector de pantalla y en title para quien usa raton;
+// si no, seria un circulo sin explicacion para todos.
+const nombrarBoton = (texto) => {
+  navCuenta.setAttribute('aria-label', texto);
+  navCuenta.setAttribute('title', texto);
+};
+
+const pintarSesion = () => {
+  if (!sesion.dentro) {
+    navCuenta.classList.remove('is-dentro');
+    navCuenta.innerHTML = PERSONA;
+    nombrarBoton('Entrar o crear una cuenta');
+    return;
+  }
+  navCuenta.classList.add('is-dentro');
+  // El nombre lo escribe quien usa el sitio, asi que entra como texto y no como
+  // HTML: con innerHTML, un nombre con etiquetas dentro se ejecutaria.
+  navCuenta.textContent = '';
+  const marca = document.createElement('span');
+  marca.className = 'nav-cuenta-iniciales';
+  marca.setAttribute('aria-hidden', 'true');
+  marca.textContent = iniciales(sesion.nombre);
+  navCuenta.append(marca);
+  nombrarBoton(`Tu cuenta, ${sesion.nombre}`);
+  panelC.querySelector('.cuenta-avatar').textContent = iniciales(sesion.nombre);
+  panelC.querySelector('.cuenta-sesion-nombre').textContent = sesion.nombre;
+  panelC.querySelector('.cuenta-sesion-correo').textContent = sesion.correo;
+  panelC.querySelector('.cuenta-dato-telefono').textContent = telefonoBonito(sesion.telefono) || '—';
+  panelC.querySelector('.cuenta-dato-direccion').textContent = sesion.direccion || 'Sin dirección guardada';
+};
+
+// Tener cuenta sirve para no volver a escribir lo mismo: la direccion pasa a la
+// canasta, pero solo si esta vacia. Lo que ya escribiste manda sobre la cuenta.
+const prellenarPedido = () => {
+  if (!sesion.dentro || !sesion.direccion || entrega.direccion) return;
+  puente.ponerDireccion(sesion.direccion);
+};
+
+let ultimoFocoC = null;
+const abiertoC = () => panelC.classList.contains('is-open');
+const abrirC = (paso) => {
+  ultimoFocoC = document.activeElement;
+  // Con sesion abierta se entra a la ficha; sin ella, al paso que se pidio.
+  verPaso(sesion.dentro ? 'sesion' : (paso || 'entrar'));
+  fondoC.classList.add('is-open');
+  panelC.classList.add('is-open');
+  document.body.style.overflow = 'hidden';
+  apagarDetras(panelC, true);
+  tituloC.focus();
+};
+const cerrarC = () => {
+  menuCuenta?.classList.remove('is-open');
+  navCuenta.setAttribute('aria-expanded', 'false');
+  fondoC.classList.remove('is-open');
+  panelC.classList.remove('is-open');
+  document.body.style.overflow = '';
+  // Igual que en la canasta: primero se enciende, despues se devuelve el foco.
+  apagarDetras(panelC, false);
+  olvidarFormulario();
+  // En el telefono el menu se cerro al abrir el panel, asi que el boton al que
+  // habria que volver esta escondido: el foco va al de abrir el menu, que si se ve.
+  if (ultimoFocoC && ultimoFocoC.offsetParent === null) menuToggle?.focus();
+  else ultimoFocoC?.focus();
+};
+
+// Pulsar el circulo no lanza al formulario de crear cuenta: despliega las dos
+// puertas, entrar o registrarse, y cada una abre su paso. Estando dentro no
+// hay nada que elegir, asi que va directo a la ficha de la sesion.
+const menuCuenta = document.createElement('div');
+menuCuenta.className = 'cuenta-menu';
+menuCuenta.id = 'cuenta-menu';
+menuCuenta.innerHTML = '<button type="button" data-va="entrar">Iniciar sesión</button>'
+  + '<button type="button" data-va="crear">Registrarse</button>';
+navCuenta.insertAdjacentElement('afterend', menuCuenta);
+
+const abrirMenuCuenta = (abierto) => {
+  menuCuenta.classList.toggle('is-open', abierto);
+  navCuenta.setAttribute('aria-expanded', String(abierto));
+};
+navCuenta.setAttribute('aria-expanded', 'false');
+navCuenta.setAttribute('aria-haspopup', 'true');
+navCuenta.setAttribute('aria-controls', menuCuenta.id);
+navCuenta.dataset.tip = 'Tu cuenta';
+// Las dos puertas se recorren con las flechas, como el desplegable de Tienda.
+flechasEnMenu(navCuenta, menuCuenta, abrirMenuCuenta,
+  () => menuCuenta.classList.contains('is-open'));
+
+navCuenta.addEventListener('click', () => {
+  closeMenu();
+  if (sesion.dentro) { abrirC(); return; }
+  abrirMenuCuenta(!menuCuenta.classList.contains('is-open'));
+});
+menuCuenta.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+  abrirMenuCuenta(false);
+  abrirC(b.dataset.va);
+}));
+const fueraDeCuenta = (destino) => !navCuenta.contains(destino) && !menuCuenta.contains(destino);
+document.addEventListener('click', (e) => {
+  if (!fueraDeCuenta(e.target)) return;
+  abrirMenuCuenta(false);
+});
+// Tabular fuera lo cierra: dejarlo desplegado detras del foco es ensenar un
+// menu que ya no responde a nada.
+document.addEventListener('focusin', (e) => {
+  if (!fueraDeCuenta(e.target)) return;
+  abrirMenuCuenta(false);
+});
+// Escape lo cierra desde donde sea y devuelve el foco al circulo, que si no
+// se queda colgando en un boton que acaba de desaparecer.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || !menuCuenta.classList.contains('is-open')) return;
+  abrirMenuCuenta(false);
+  navCuenta.focus();
+});
+fondoC.addEventListener('click', cerrarC);
+panelC.querySelector('.cuenta-cerrar').addEventListener('click', cerrarC);
+atraparFoco(panelC, abiertoC, cerrarC);
+
+panelC.querySelectorAll('.cuenta-cambiar').forEach((boton) => {
+  boton.addEventListener('click', () => {
+    avisoCrear.hidden = true;
+    avisoEntrar.hidden = true;
+    verPaso(boton.dataset.va);
+    tituloC.focus();
+  });
+});
+
+// Entrar en la sesion es lo mismo se venga de crear la cuenta o de reconocerla.
+const entrarEnSesion = (aviso) => {
+  guardarCuenta();
+  pintarSesion();
+  prellenarPedido();
+  olvidarFormulario();
+  verPaso('sesion');
+  tituloC.focus();
+  avisos.textContent = aviso;
+};
+
+panelC.querySelector('.cuenta-crear').addEventListener('click', () => {
+  intentadoC = true;
+  const fallos = pintarCampos();
+  const malos = Object.keys(fallos);
+  if (malos.length) {
+    avisoCrear.hidden = false;
+    avisoCrear.textContent = malos.length === 1
+      ? 'Falta corregir un campo.'
+      : `Faltan ${malos.length} campos por corregir.`;
+    campos.find(({ clave }) => clave === malos[0])?.input.focus();
+    return;
+  }
+  sesion.nombre = datos.nombre;
+  sesion.correo = datos.correo;
+  sesion.telefono = datos.telefono;
+  sesion.direccion = datos.direccion;
+  // La cuenta todavia no esta dentro: falta probar que el correo es suyo. Si
+  // entrara aqui, el correo podria ser inventado o estar mal escrito y el
+  // comprobante del pedido no llegaria a ninguna parte.
+  sesion.verificado = false;
+  irAVerificar();
+});
+
+// --- Verificar el correo -----------------------------------------------
+const irAVerificar = () => {
+  nuevoCodigo();
+  campoCodigo.value = '';
+  errorCodigo.hidden = true;
+  campoCodigo.classList.remove('is-mal');
+  avisoVerificar.hidden = true;
+  codigoEstado.hidden = true;
+  verPaso('verificar');
+  cuentaAtras();
+  tituloC.focus();
+  avisos.textContent = `Te enviamos un código a ${correoAVerificar()}.`;
+  mandarCodigo();
+};
+
+// El error va por dos sitios: debajo del campo, unido con aria-describedby
+// para quien lo lee al enfocarlo, y en la region con role="alert" del pie,
+// que el lector canta al momento. Un codigo equivocado merece interrumpir:
+// quien lo escribio esta esperando una respuesta ahora, no despues.
+const marcarCodigo = (texto) => {
+  errorCodigo.hidden = !texto;
+  errorCodigo.textContent = texto;
+  campoCodigo.classList.toggle('is-mal', Boolean(texto));
+  avisoVerificar.hidden = !texto;
+  avisoVerificar.textContent = texto;
+};
+
+// Mientras escribe solo se limpia lo que no son cifras. El codigo no se
+// comprueba al vuelo: nadie quiere que le digan que va mal a la tercera.
+campoCodigo.addEventListener('input', () => {
+  const limpio = campoCodigo.value.replace(/[^0-9]/g, '').slice(0, 6);
+  if (limpio !== campoCodigo.value) campoCodigo.value = limpio;
+  if (!errorCodigo.hidden) marcarCodigo('');
+});
+
+const comprobarCodigo = () => {
+  const escrito = campoCodigo.value.trim();
+  if (escrito.length !== 6) {
+    marcarCodigo('El código tiene 6 cifras.');
+    campoCodigo.focus();
+    return;
+  }
+  if (escrito !== codigoEsperado) {
+    marcarCodigo('Ese código no es el que enviamos. Míralo otra vez.');
+    campoCodigo.focus();
+    return;
+  }
+  marcarCodigo('');
+  codigoEstado.hidden = true;
+  pararCuentaAtras();
+  codigoEsperado = '';
+  sesion.verificado = true;
+  sesion.dentro = true;
+  entrarEnSesion(`Correo verificado. Entraste como ${sesion.nombre}.`);
+};
+
+panelC.querySelector('.cuenta-verificar').addEventListener('click', comprobarCodigo);
+campoCodigo.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  comprobarCodigo();
+});
+
+codigoReenviar.addEventListener('click', () => {
+  nuevoCodigo();
+  campoCodigo.value = '';
+  marcarCodigo('');
+  cuentaAtras();
+  campoCodigo.focus();
+  avisos.textContent = 'Te enviamos un código nuevo.';
+  mandarCodigo();
+});
+
+panelC.querySelector('.cuenta-entrar').addEventListener('click', () => {
+  const escrito = correoEntrar.value.trim();
+  const marcar = (texto) => {
+    errorEntrarCorreo.hidden = !texto;
+    errorEntrarCorreo.textContent = texto || '';
+    correoEntrar.setAttribute('aria-invalid', texto ? 'true' : 'false');
+    correoEntrar.classList.toggle('is-mal', Boolean(texto));
+  };
+  if (!CORREO.test(escrito)) { marcar('Revisa el correo, algo le falta.'); correoEntrar.focus(); return; }
+  marcar('');
+  // Sin servidor solo se puede reconocer la cuenta de este navegador. Decirlo
+  // asi es mas honrado que inventar un "correo o contrasena incorrectos".
+  const guardado = correoGuardado();
+  if (!guardado) {
+    avisoEntrar.hidden = false;
+    avisoEntrar.textContent = 'En este navegador no hay ninguna cuenta creada todavía.';
+    return;
+  }
+  if (guardado.toLowerCase() !== escrito.toLowerCase()) {
+    avisoEntrar.hidden = false;
+    avisoEntrar.textContent = `Ese correo no es el de la cuenta de este navegador (${guardado}).`;
+    return;
+  }
+  leerCuenta();
+  // Una cuenta de antes de la verificacion entra igual, pero pasa por el
+  // codigo: el comprobante del pedido va al correo y hay que saber que es
+  // suyo y que esta bien escrito.
+  if (!sesion.verificado) { sesion.dentro = false; irAVerificar(); return; }
+  entrarEnSesion(`Entraste como ${sesion.nombre}.`);
+});
+
+panelC.querySelector('.cuenta-salir').addEventListener('click', () => {
+  const nombre = sesion.nombre;
+  sesion.nombre = '';
+  sesion.correo = '';
+  sesion.telefono = '';
+  sesion.direccion = '';
+  sesion.dentro = false;
+  sesion.verificado = false;
+  try { window.localStorage.removeItem(CLAVE_CUENTA); } catch (e) { /* no habia nada guardado */ }
+  pintarSesion();
+  verPaso('entrar');
+  tituloC.focus();
+  avisos.textContent = `Saliste de la cuenta de ${nombre}.`;
+});
+
+const iniciarCuenta = () => {
+  leerCuenta();
+  pintarSesion();
+  prellenarPedido();
+};
+
+// Lo que la canasta puede pedirle a la cuenta: abrir el panel y saber si en
+// este navegador hay alguna cuenta creada, para abrir en "entrar" o en "crear".
+puente.abrirC = abrirC;
+puente.correoGuardado = correoGuardado;
+
+export { iniciarCuenta };

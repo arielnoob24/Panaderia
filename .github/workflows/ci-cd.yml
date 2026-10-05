@@ -21,37 +21,69 @@ jobs:
         run: |
           set -euo pipefail
           test -s index.html
-          test -s styles.css
-          test -s mascota.png
-          grep -q 'mascota.png' index.html
-          # El catalogo crece y encoge: un numero exacto obliga a acordarse de
-          # tocar el CI cada vez que entra un producto, y cuando no te acuerdas
-          # el sitio deja de publicarse sin que nadie lo note. Se comprueba que
-          # el archivo no venga truncado y que a cada categoria se pueda llegar,
-          # que es lo que de verdad puede romperse.
-          test "$(grep -o '<article class="product-card"' index.html | wc -l)" -ge 8
-          # La unica puerta al catalogo es el menu Tienda: si una categoria no
-          # esta ahi, sus productos quedan inalcanzables, y al reves, una entrada
-          # del menu sin productos detras lleva a una vista vacia.
-          categorias=$(grep -o 'data-category="[^"]*"' index.html | sed 's/.*="//;s/"$//' | sort -u)
-          entradas=$(grep -o 'data-filtro="[^"]*"' index.html | sed 's/.*="//;s/"$//' | sort -u)
-          for c in $categorias; do
-            if ! echo "$entradas" | grep -qx "$c"; then
-              echo "La categoria '$c' no se puede abrir desde el menu Tienda."
-              exit 1
-            fi
+          test -s assets/styles.css
+          test -s assets/img/mascota.png
+          test -s data/productos.json
+          # Las rutas cambiaron al repartir el sitio en carpetas: si alguna se
+          # queda atras, la pagina sale sin estilos o sin JavaScript y el HTML
+          # por si solo parece correcto.
+          grep -q 'assets/styles.css' index.html
+          grep -q 'assets/img/mascota.png' index.html
+          grep -q 'js/app.js' index.html
+
+          # Cada modulo tiene que parsear. Un error de sintaxis en uno solo
+          # deja la pagina entera sin JavaScript, y eso no se ve en el HTML:
+          # el sitio se publica igual y se rompe en el navegador.
+          for f in js/*.js; do
+            cp "$f" "$f.mjs"
+            node --check "$f.mjs"
+            rm "$f.mjs"
           done
-          # "Todo el catalogo" y "todos" no son categorias: son la puerta a
-          # todas a la vez, y el script las trata aparte. Exigirles productos
-          # propios tumbaba el despliegue por algo que esta bien.
-          for e in $entradas; do
-            case "$e" in catalogo|todos) continue ;; esac
-            if ! echo "$categorias" | grep -qx "$e"; then
-              echo "La entrada '$e' del menu Tienda no tiene ningun producto detras."
-              exit 1
-            fi
+
+          # Lo que un modulo importa tiene que existir con ese nombre exacto.
+          # Una mayuscula de diferencia funciona en Windows y falla en el
+          # servidor, que distingue, y entonces solo se rompe lo publicado.
+          grep -ho "from '\./[A-Za-z0-9_-]*\.js'" js/*.js | sed "s|.*/||; s|'||" | sort -u | while read -r m; do
+            test -s "js/$m" || { echo "Falta js/$m, que algun modulo importa."; exit 1; }
           done
-          if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html styles.css; then
+
+          # El catalogo ya no esta en el HTML: vive en data/productos.json y lo
+          # revisa el mismo codigo que usa el sitio al cargarlo, asi que aqui se
+          # comprueba con las reglas de verdad y no con una copia de ellas.
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const { revisar } = await import("./js/repo.js");
+            const datos = JSON.parse(readFileSync("data/productos.json", "utf8"));
+            const productos = datos.productos;
+            if (!Array.isArray(productos) || !productos.length) {
+              throw new Error("data/productos.json no trae ningun producto");
+            }
+            productos.forEach(revisar);
+            // El catalogo crece y encoge: un numero exacto obliga a acordarse de
+            // tocar el CI cada vez que entra un producto. Se comprueba que el
+            // archivo no venga truncado, que es lo que de verdad puede romperse.
+            if (productos.length < 8) {
+              throw new Error(`solo hay ${productos.length} productos: el archivo parece truncado`);
+            }
+            // La unica puerta al catalogo es el menu Tienda: si una categoria no
+            // esta ahi, sus productos quedan inalcanzables, y al reves, una
+            // entrada del menu sin productos detras lleva a una vista vacia.
+            const html = readFileSync("index.html", "utf8");
+            const entradas = new Set([...html.matchAll(/data-filtro="([^"]*)"/g)].map((m) => m[1]));
+            const categorias = new Set(productos.map((p) => p.categoria));
+            for (const c of categorias) {
+              if (!entradas.has(c)) throw new Error(`la categoria "${c}" no se puede abrir desde el menu Tienda`);
+            }
+            // "Todo el catalogo" y "todos" no son categorias: son la puerta a
+            // todas a la vez, y view.js las trata aparte.
+            for (const e of entradas) {
+              if (e === "catalogo" || e === "todos") continue;
+              if (!categorias.has(e)) throw new Error(`la entrada "${e}" del menu Tienda no tiene ningun producto detras`);
+            }
+            console.log(`${productos.length} productos en ${categorias.size} categorias, todas alcanzables.`);
+          '
+
+          if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html assets/styles.css data/productos.json js/*.js; then
             echo 'Se encontro una referencia no permitida a cafeteria, cafe o cocteles.'
             exit 1
           fi
