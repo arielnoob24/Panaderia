@@ -53,20 +53,47 @@ nada — está probado.
 
 ### 2. La plantilla
 
-**Email Templates** → **Create New Template**. Rellena los campos así, con las
-llaves dobles tal cual:
+EmailJS crea una plantilla de ejemplo llamada **Contact Us**. Está hecha para un
+formulario de contacto —manda *hacia* el dueño del sitio— y aquí hace falta lo
+contrario: mandar *al cliente*. Hay que cambiarle todos los campos. Puedes
+reaprovechar esa misma o crear una nueva con **Create New Template**; da igual.
 
-| Campo del formulario | Qué poner |
-|---|---|
-| To Email | `{{a_correo}}` |
-| To Name | `{{a_nombre}}` |
-| Subject | `{{asunto}}` |
-| Content | `{{cuerpo}}` |
+En la pestaña **Content**, deja los campos así:
 
-En **Content** usa la vista de texto plano (el botón `</>` o "Edit Content"), no
-el editor visual: el cuerpo ya viene con sus saltos de línea escritos.
+| Campo | Lo que trae de ejemplo | Lo que hay que poner |
+|---|---|---|
+| Subject | `Contact Us: {{title}}` | `{{asunto}}` |
+| Content | bloque con `{{name}}`, `{{time}}`, `{{message}}` | `{{cuerpo}}` y nada más |
+| To Email | `arielescobar2003@gmail.com` | `{{a_correo}}` |
+| From Name | `{{name}}` | `El Tradicional` |
+| From Email | ☑ Use Default Email Address | déjalo marcado |
+| Reply To | `{{email}}` | `arielescobar2003@gmail.com` |
+| Bcc / Cc | vacíos | déjalos vacíos |
 
-Guarda y apunta el **Template ID** (`template_x9y8z7w`).
+Los tres cambios que no se pueden saltar:
+
+- **To Email.** Es el que decide quién recibe. Si se queda con el correo fijo,
+  todos los códigos y comprobantes llegan a tu buzón en vez de al del cliente.
+- **From Name.** Si se queda en `{{name}}`, sale vacío: ese nombre de variable
+  no existe en lo que manda el sitio, que solo envía `a_correo`, `a_nombre`,
+  `asunto` y `cuerpo`.
+- **Reply To.** Mismo caso con `{{email}}`. Poniendo tu correo, quien responda
+  al comprobante te escribe a ti.
+
+Para el **Content**: pulsa **Edit Content** y borra todo el bloque de ejemplo. Si
+el editor es de texto plano, basta con dejar `{{cuerpo}}`. Si es HTML, pon esto,
+porque si no los saltos de línea del mensaje se aplastan en un solo párrafo:
+
+```html
+<pre style="font-family: Arial, sans-serif; white-space: pre-wrap; font-size: 14px;">{{cuerpo}}</pre>
+```
+
+Esta versión del formulario no tiene campo **To Name**. No pasa nada: el sitio
+manda `a_nombre` igual y simplemente no se usa, y el mensaje ya saluda por el
+nombre dentro del cuerpo.
+
+Guarda con **Save** y apunta el **Template ID** (`template_x9y8z7w`), que sale en
+la pestaña **Settings** de la plantilla.
 
 Una sola plantilla sirve para los dos mensajes — el código de verificación y el
 comprobante del pedido — porque el asunto y el cuerpo viajan como variables. Así
