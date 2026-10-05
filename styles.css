@@ -800,6 +800,24 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-cantidad button { display: grid; width: 30px; height: 30px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 700 1rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
 .canasta-cantidad button:hover { background: var(--masa); }
 .canasta-cantidad output { min-width: 26px; font: 700 .9rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; }
+/* El basurero de la ultima unidad, al mismo tamanio que en la ficha. */
+.canasta-cantidad .card-icono { width: 17px; height: 17px; }
+
+/* ---- "¿Lo quitamos de la canasta?" ---------------------------------------
+   La pregunta ocupa el sitio del control de cantidad, en la misma linea del
+   producto: preguntar en una ventana aparte obligaria a mirar a otro lado para
+   contestar por algo que esta aqui. El nombre se queda arriba, asi que la
+   pregunta no tiene que repetirlo y puede ser corta. */
+.canasta-confirma-dicho { margin: .15rem 0 0; color: var(--corteza-oscura); font: 700 .85rem/1.4 Arial, sans-serif; }
+.canasta-confirma { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
+.canasta-confirma button { padding: .4rem .8rem; border-radius: var(--r-pill); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
+/* El que borra lleva el color de la corteza y no el ambar de los demas botones:
+   es el unico de la canasta que deshace algo, y conviene que no se pulse por
+   inercia creyendo que es el de siempre. */
+.canasta-confirma-si { background: var(--corteza-oscura); border: 0; color: var(--sobre-horno); }
+.canasta-confirma-si:hover { background: var(--corteza); }
+.canasta-confirma-no { background: none; border: 1px solid var(--masa-linea); color: var(--horno); }
+.canasta-confirma-no:hover { background: var(--masa); }
 .canasta-vacio { margin: 2rem 0; color: var(--horno-suave); font: .9rem/1.5 Arial, sans-serif; text-align: center; }
 .canasta-pie, .cuenta-pie { padding: 1.2rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--masa-linea); }
 .canasta-total { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; font: .95rem/1.3 Arial, sans-serif; }

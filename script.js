@@ -1340,22 +1340,114 @@
   // cambia de identificador al cambiar el tamanio elegido.
   const botonesMas = [];
 
+  // Basurero del mismo trazo que el resto de los iconos: tapa, asa, cuerpo que
+  // se estrecha y dos costillas. Lo usan la ficha del catalogo y la linea de la
+  // canasta, asi que vive aqui arriba, antes que las dos.
+  const BASURERO = '<svg class="card-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+    + 'stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<path d="M4.8 7.1h14.4"/>'
+    + '<path d="M9.7 7.1V5.3a1.4 1.4 0 0 1 1.4-1.4h1.8a1.4 1.4 0 0 1 1.4 1.4v1.8"/>'
+    + '<path d="M6.5 7.1l.8 11.3a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-11.3"/>'
+    + '<path d="M10.3 10.8v5.8"/><path d="M13.7 10.8v5.8"/></svg>';
+
+  // Que linea esta esperando un si o un no. Vive fuera de pintar porque pintar
+  // rehace la lista entera en cada cambio: si la pregunta viviera en el DOM y
+  // nada mas, tocar el "mas" de otro producto la borraria sin contestarla.
+  let porConfirmar = null;
+
   const pintar = () => {
     lista.textContent = '';
     for (const [id, l] of pedido) {
       const li = document.createElement('li');
       li.className = 'canasta-linea';
+      // Para poder devolverle el foco a esta misma linea despues de repintar.
+      // Por el dataset y no por un selector: el identificador lleva dentro el
+      // nombre del producto y el tamanio, y eso no siempre es un selector valido.
+      li.dataset.id = id;
+      if (id === porConfirmar) {
+        li.classList.add('is-confirmando');
+        li.innerHTML =
+          `<div><h3>${l.nombre}</h3>`
+          + '<p class="canasta-confirma-dicho">¿Lo quitamos de la canasta?</p>'
+          + '<div class="canasta-confirma">'
+          + '<button class="canasta-confirma-si" type="button" '
+          + `aria-label="Sí, quitar ${l.nombre} de la canasta">Sí, quitar</button>`
+          + '<button class="canasta-confirma-no" type="button" '
+          + `aria-label="Cancelar, dejar ${l.nombre} en la canasta">Cancelar</button>`
+          + '</div></div>'
+          + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
+        li.querySelector('.canasta-confirma-si').addEventListener('click', () => confirmarQuitar(id));
+        li.querySelector('.canasta-confirma-no').addEventListener('click', () => cancelarQuitar(id));
+        // Escape dice que no, y se queda aqui: sin esto subiria hasta el
+        // vigilante del panel, que lo entiende como "cierra la canasta" y se
+        // llevaria por delante el pedido entero por contestar a una pregunta.
+        li.addEventListener('keydown', (e) => {
+          if (e.key !== 'Escape') return;
+          e.stopPropagation();
+          cancelarQuitar(id);
+        });
+        lista.append(li);
+        continue;
+      }
+      // Con una sola unidad, quitarla es borrar el producto: el boton lo dice
+      // con un basurero, igual que en la ficha del catalogo, y ademas pregunta.
+      const ultima = l.cantidad === 1;
       li.innerHTML =
         `<div><h3>${l.nombre}</h3><p class="canasta-precio">${dinero(l.precio)} la unidad</p>`
-        + `<div class="canasta-cantidad"><button type="button" data-menos aria-label="Quitar uno de ${l.nombre}">−</button>`
+        + '<div class="canasta-cantidad"><button type="button" data-menos '
+        + `aria-label="${ultima ? `Quitar ${l.nombre} de la canasta` : `Quitar uno de ${l.nombre}`}">`
+        + `${ultima ? BASURERO : '−'}</button>`
         + `<output>${l.cantidad}</output>`
         + `<button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div></div>`
         + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
-      li.querySelector('[data-menos]').addEventListener('click', () => cambiar(id, -1));
+      li.querySelector('[data-menos]').addEventListener('click', () => {
+        if (l.cantidad === 1) { pedirQuitar(id); return; }
+        cambiar(id, -1);
+      });
       li.querySelector('[data-mas]').addEventListener('click', () => cambiar(id, 1));
       lista.append(li);
     }
     pintarPie();
+  };
+
+  const lineaDe = (id) => [...lista.children].find((li) => li.dataset.id === id);
+
+  const pedirQuitar = (id) => {
+    const l = pedido.get(id);
+    if (!l) return;
+    porConfirmar = id;
+    pintar();
+    // El basurero que se acaba de pulsar ya no existe, asi que hay que recoger
+    // el foco. Va al "Si, quitar" y no al "Cancelar": quien pulso el basurero
+    // ya dijo lo que queria, y la pregunta esta para que lo vea, no para
+    // esconderle la salida. El clic de mas sigue estando ahi para el descuido.
+    lineaDe(id)?.querySelector('.canasta-confirma-si')?.focus();
+    avisos.textContent = `¿Quitar ${l.nombre} de la canasta?`;
+  };
+
+  const cancelarQuitar = (id) => {
+    if (porConfirmar !== id) return;
+    porConfirmar = null;
+    pintar();
+    // De vuelta al basurero del que salio la pregunta, que es donde estaba el
+    // foco antes de preguntar.
+    lineaDe(id)?.querySelector('[data-menos]')?.focus();
+    avisos.textContent = `${pedido.get(id)?.nombre || 'El producto'} sigue en la canasta.`;
+  };
+
+  const confirmarQuitar = (id) => {
+    const l = pedido.get(id);
+    porConfirmar = null;
+    if (!l) { pintar(); return; }
+    // Se anota antes de borrar: la barra de deshacer necesita una copia, porque
+    // la linea original desaparece del pedido.
+    anotarBorrado(id, { ...l });
+    pedido.delete(id);
+    pintar();
+    avisos.textContent = `Quitaste ${l.nombre}. ${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
+    // La linea donde vivia el foco ya no existe. Se le pasa a "Deshacer", que
+    // acaba de aparecer y es justo lo siguiente que querria quien se arrepienta.
+    deshacerBoton.focus();
   };
 
   // ---- El mapa del reparto ---------------------------------------------
@@ -1924,10 +2016,20 @@
   let relojDeshacer = 0;
 
   const olvidarBorrado = () => {
+    // Confirmar un borrado deja el foco en "Deshacer". Si la barra se va sola a
+    // los doce segundos con el foco dentro, se quedaria en el body y quien usa
+    // teclado perderia el sitio, asi que hay que recogerlo.
+    const teniaFoco = barraDeshacer.contains(document.activeElement);
+    const id = borrado?.id;
     window.clearTimeout(relojDeshacer);
     relojDeshacer = 0;
     borrado = null;
     barraDeshacer.hidden = true;
+    if (!teniaFoco) return;
+    // Con el panel abierto, su titulo, que es a donde manda tambien el cambio
+    // de paso. Si no, el "mas" de la ficha del producto que se quito.
+    const destino = abierto() ? titulo : botonesMas.find(({ coincide }) => coincide(id))?.boton;
+    destino?.focus();
   };
 
   const anotarBorrado = (id, linea) => {
@@ -2001,6 +2103,10 @@
     // se corta el temporizador y se vuelve siempre a la canasta. Si ya habia
     // comprobante, el pedido esta cumplido y la canasta se vacia.
     if (temporizador) { window.clearTimeout(temporizador); temporizador = 0; }
+    // Una pregunta sin contestar no sobrevive al cierre: al volver, la linea se
+    // ve entera otra vez y no con un "¿lo quitamos?" de la visita anterior.
+    // Hay que repintar, no basta con olvidarla: la pregunta esta dibujada.
+    if (porConfirmar) { porConfirmar = null; pintar(); }
     restablecerPagar();
     olvidarTarjeta();
     copiado.hidden = true;
@@ -2046,15 +2152,6 @@
     boton.addEventListener('click', abrir);
     boton.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
   }
-
-  // Basurero del mismo trazo que el resto de los iconos: tapa, asa, cuerpo que
-  // se estrecha y dos costillas.
-  const BASURERO = '<svg class="card-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
-    + 'stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
-    + '<path d="M4.8 7.1h14.4"/>'
-    + '<path d="M9.7 7.1V5.3a1.4 1.4 0 0 1 1.4-1.4h1.8a1.4 1.4 0 0 1 1.4 1.4v1.8"/>'
-    + '<path d="M6.5 7.1l.8 11.3a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-11.3"/>'
-    + '<path d="M10.3 10.8v5.8"/><path d="M13.7 10.8v5.8"/></svg>';
 
   // Sin JavaScript cada "Pedir" sigue siendo un enlace a WhatsApp que funciona.
   // Con JS se cambia por el control de cantidad: mientras no hay nada pedido solo
