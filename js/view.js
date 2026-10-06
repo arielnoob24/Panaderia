@@ -26,7 +26,12 @@ const escapar = (texto) => String(texto)
 // archivo de mas que pesa: con 420 y 840 se cubren el telefono y la pantalla
 // con el doble de densidad, que es el salto que de verdad se nota.
 const ANCHOS = [420, 840];
-const SIZES = '(max-width: 680px) calc(100vw - 32px), (max-width: 900px) calc(50vw - 40px), 280px';
+// Lo que mide la foto en cada vista. En el telefono la cuadricula es de dos
+// columnas y la ficha de la fila mide como mucho 272 px: decirle al navegador
+// que la foto ocupa toda la pantalla le hacia bajar la de 840 donde basta la
+// de 420. La fila es la vista de entrada, asi que es la que se pinta primero.
+const SIZES_CUADRICULA = '(max-width: 680px) calc(50vw - 23px), (max-width: 900px) calc(50vw - 40px), 280px';
+const SIZES_FILA = 'min(272px, 74vw)';
 const foto = (p, w) => `${p.foto}-${w}.jpg`;
 
 // Lo que viene en varios tamanios lleva un grupo de botones de radio. El
@@ -73,8 +78,8 @@ const fichaHtml = (p) => {
     + '<div class="product-image">'
     // El src es el de reserva, para el navegador que no entienda srcset: va el
     // grande, que se ve bien en cualquier sitio aunque pese mas.
-    + `<img src="${foto(p, 840)}" srcset="${srcset}" sizes="${SIZES}"`
-    + ` alt="${escapar(p.alt)}" loading="lazy" width="700" height="520">`
+    + `<img src="${foto(p, 840)}" srcset="${srcset}" sizes="${SIZES_FILA}"`
+    + ` alt="${escapar(p.alt)}" loading="lazy" width="840" height="630">`
     + etiquetaHtml(p)
     + '</div>'
     + '<div class="product-info">'
@@ -295,6 +300,8 @@ const montarCatalogo = (productos) => {
     // Sin categoria elegida el catalogo es el mostrador en fila; al elegir una,
     // pasa a cuadricula, que es cuando se viene a mirarlo todo.
     productGrid?.classList.toggle('is-fila', category === 'todos');
+    const sizes = category === 'todos' ? SIZES_FILA : SIZES_CUADRICULA;
+    productGrid?.querySelectorAll('.product-image img').forEach((img) => { img.sizes = sizes; });
     productGrid?.classList.remove('is-filtering');
     // Cuantos hay en la categoria antes de filtrar nada: es el "de cuantos".
     const todoJunto = category === 'todos' || category === 'catalogo';

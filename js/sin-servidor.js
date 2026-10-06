@@ -669,7 +669,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var productGrid = document.querySelector(".product-grid");
   var escapar = (texto) => String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var ANCHOS = [420, 840];
-  var SIZES = "(max-width: 680px) calc(100vw - 32px), (max-width: 900px) calc(50vw - 40px), 280px";
+  var SIZES_CUADRICULA = "(max-width: 680px) calc(50vw - 23px), (max-width: 900px) calc(50vw - 40px), 280px";
+  var SIZES_FILA = "min(272px, 74vw)";
   var foto = (p, w) => `${p.foto}-${w}.jpg`;
   var tamanosHtml = (p) => {
     if (!p.tamanos.length) return "";
@@ -693,7 +694,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   };
   var fichaHtml = (p) => {
     const srcset = ANCHOS.map((w) => `${foto(p, w)} ${w}w`).join(", ");
-    return `<article class="product-card"${p.disponible ? "" : ' data-available="false"'} data-category="${escapar(p.categoria)}"><div class="product-image"><img src="${foto(p, 840)}" srcset="${srcset}" sizes="${SIZES}" alt="${escapar(p.alt)}" loading="lazy" width="700" height="520">` + etiquetaHtml(p) + `</div><div class="product-info"><h3>${escapar(p.nombre)}</h3>` + tamanosHtml(p) + `<div class="product-bottom"><strong>${dinero(p.precio)}</strong>${fondoHtml(p)}</div></div></article>`;
+    return `<article class="product-card"${p.disponible ? "" : ' data-available="false"'} data-category="${escapar(p.categoria)}"><div class="product-image"><img src="${foto(p, 840)}" srcset="${srcset}" sizes="${SIZES_FILA}" alt="${escapar(p.alt)}" loading="lazy" width="840" height="630">` + etiquetaHtml(p) + `</div><div class="product-info"><h3>${escapar(p.nombre)}</h3>` + tamanosHtml(p) + `<div class="product-bottom"><strong>${dinero(p.precio)}</strong>${fondoHtml(p)}</div></div></article>`;
   };
   var products = [];
   var pintarFichas = (productos) => {
@@ -849,6 +850,10 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       let visibleCount = 0;
       let agotados = 0;
       productGrid?.classList.toggle("is-fila", category === "todos");
+      const sizes = category === "todos" ? SIZES_FILA : SIZES_CUADRICULA;
+      productGrid?.querySelectorAll(".product-image img").forEach((img) => {
+        img.sizes = sizes;
+      });
       productGrid?.classList.remove("is-filtering");
       const todoJunto = category === "todos" || category === "catalogo";
       const enCatalogo = category === "catalogo";
