@@ -31,7 +31,6 @@ Lo de abajo está comprobado contra el sitio de hoy.
   sus precios en resultados como «pan de queso Tena».
 - **La imagen para compartir el enlace no declara su tamaño**, y algunas redes la recortan
   mal.
-- **El año del pie sigue en 2024**, lo que hace parecer el sitio abandonado.
 - **Los precios no dicen la unidad:** por pieza, por funda o por docena.
 
 ### Bajo
@@ -51,6 +50,9 @@ Lo de abajo está comprobado contra el sitio de hoy.
 
 Se conserva como registro, para no repetir los errores.
 
+- **Abrir sin servidor.** Con doble clic la página salía en blanco, porque el navegador
+  bloquea los módulos y la lectura del catálogo en `file://`. Ahora carga una versión en un
+  solo archivo con el catálogo dentro. El año del pie, que seguía en 2024, ya dice 2026.
 - **Buscadores.** La dirección canónica apuntaba a un dominio de ejemplo inexistente, lo que
   podía dejar el sitio fuera de Google. Ya apunta a GitHub Pages.
 - **Peso: de 945 KB a 333 KB (−65 %).** Las fotos se pedían al doble del tamaño mostrado y

@@ -3,10 +3,10 @@
 // trae de ahi al abrir la pagina. Asi, meter un pan nuevo o cambiar un precio
 // es tocar un archivo de datos y nada mas, sin buscar entre las etiquetas.
 //
-// A cambio hace falta un servidor que sirva el archivo: abrir index.html con
-// doble clic no funciona, porque el navegador no deja que una pagina en file://
-// lea archivos de al lado. En GitHub Pages, que es donde esto se publica, va
-// por HTTP y no hay problema.
+// Abierto con doble clic, el navegador no deja que una pagina en file:// lea
+// archivos de al lado. Para ese caso esta js/sin-servidor.js, que trae el
+// catalogo ya metido dentro en CATALOGO_EMBEBIDO: si existe se usa ese, y si
+// no se pide el archivo, que es lo que pasa en GitHub Pages o con Live Server.
 const RUTA = 'data/productos.json';
 
 // Lo que se espera de cada producto. Se comprueba al cargar y no al pintar: si
@@ -60,9 +60,12 @@ const normalizar = (p) => ({
 });
 
 const cargarProductos = async () => {
-  const r = await fetch(RUTA);
-  if (!r.ok) throw new Error(`no se pudo leer ${RUTA} (${r.status})`);
-  const datos = await r.json();
+  let datos = globalThis.CATALOGO_EMBEBIDO;
+  if (!datos) {
+    const r = await fetch(RUTA);
+    if (!r.ok) throw new Error(`no se pudo leer ${RUTA} (${r.status})`);
+    datos = await r.json();
+  }
   const crudos = Array.isArray(datos) ? datos : datos.productos;
   if (!Array.isArray(crudos) || !crudos.length) throw new Error(`${RUTA} no trae ningun producto`);
   crudos.forEach(revisar);

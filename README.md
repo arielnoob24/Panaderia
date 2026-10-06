@@ -26,12 +26,17 @@ js/
   ui.js               barra, foco, cuadritos de ayuda, animaciones y horario
   state.js            lo que comparten los modulos, y el puente entre ellos
   storage.js          los cuatro sitios donde se guarda: local, session, IDB y cookie
+  sin-servidor.js     los 11 modulos en un solo archivo, con el catalogo dentro
+                      (generado; es lo que corre al abrir index.html con doble clic)
+herramientas/
+  empaquetar.mjs      genera js/sin-servidor.js
 ```
 
 ## Con que esta hecho
 
-Sin dependencias ni compilacion: lo que hay en el repositorio es lo que corre
-en el navegador.
+Sin dependencias: lo que hay en el repositorio es lo que corre en el
+navegador. La unica pieza generada es `js/sin-servidor.js`, para abrir el sitio
+sin servidor (ver abajo).
 
 - **HTML5 semantico.** `header`, `nav`, `main`, `footer` y `section`; los
   dialogos de la canasta y de la cuenta son `aside` con `role="dialog"`.
@@ -53,21 +58,35 @@ de principio a fin; el pago es simulado y no necesita a nadie.
 
 ## Para verlo en tu maquina
 
-Hace falta servirlo por HTTP. Abrir `index.html` con doble clic no funciona: el
-navegador no deja que una pagina en `file://` cargue modulos de JavaScript ni
-lea `data/productos.json`, asi que saldria en blanco.
+Funciona de tres formas, sin servidor dinamico en ninguna:
 
-```sh
-python -m http.server 8000
-# y abrir http://localhost:8000
-```
+- **Doble clic en `index.html`.** El navegador no deja que una pagina abierta
+  como archivo (`file://`) cargue modulos de JavaScript ni lea
+  `data/productos.json`, asi que en ese caso `index.html` carga
+  `js/sin-servidor.js`: el mismo codigo en un solo archivo, con el catalogo
+  dentro. Lo unico que no hace asi es escribir en el pie cuando se guardo el
+  pedido, porque el navegador no guarda cookies en `file://`; el pedido se
+  guarda igual.
+- **Live Server** (la extension de VS Code) o cualquier servidor estatico:
 
-En GitHub Pages va por HTTP, asi que ahi no hay nada que preparar.
+  ```sh
+  python -m http.server 8000
+  # y abrir http://localhost:8000
+  ```
+
+- **En internet**, en GitHub Pages: https://arielnoob24.github.io/Panaderia/.
+  Sirve igual en cualquier hosting estatico, como Neocities: se suben los
+  archivos tal cual.
+
+Servida por HTTP, la pagina carga los modulos de `js/` de siempre.
 
 ## Para tocar el catalogo
 
-Meter, quitar o cambiar un producto es editar `data/productos.json` y nada mas:
-las fichas se pintan desde ahi. Cada producto necesita `nombre`, `categoria`,
+Meter, quitar o cambiar un producto es editar `data/productos.json`: las
+fichas se pintan desde ahi. Despues hay que correr
+`node herramientas/empaquetar.mjs`, para que la version de doble clic lleve el
+catalogo nuevo; lo mismo al tocar cualquier archivo de `js/`. El CI lo
+comprueba y no publica si se olvida. Cada producto necesita `nombre`, `categoria`,
 `precio`, `foto` y `alt`; `disponible: false` lo marca como agotado, `etiqueta`
 le pone el rotulo de color y `tamanos` le da varias medidas con su precio.
 

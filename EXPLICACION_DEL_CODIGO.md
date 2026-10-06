@@ -33,6 +33,12 @@ no funcionarían, así que tampoco tiene sentido que existan.
 El HTML carga un solo archivo: `js/app.js`. Ese archivo importa a los demás, y
 cada uno importa lo que necesita de los otros con `import` / `export`.
 
+La excepción es cuando `index.html` se abre con doble clic: ahí el navegador
+bloquea los módulos, y un pequeño script al final del HTML carga en su lugar
+`js/sin-servidor.js`. Es el mismo código de los 11 módulos juntado en un solo
+archivo, con el catálogo ya metido dentro, y lo genera
+`herramientas/empaquetar.mjs`.
+
 ```
 index.html
    └── app.js  (el arranque)
@@ -103,7 +109,9 @@ y a los buscadores.
    ejemplo y `.footer-guardado`, donde se escribe cuándo se guardó el pedido.
 5. **`.floating-whatsapp`**: el botón flotante. Sin JavaScript es un enlace a
    WhatsApp; con JavaScript, `cart.js` lo convierte en el botón de la canasta.
-6. **`<script type="module" src="js/app.js">`**: arranca todo.
+6. **El script del final**: mira si la página se abrió como archivo
+   (`file:`). Si es así carga `js/sin-servidor.js`; si no, carga `js/app.js`
+   como módulo. Cualquiera de los dos arranca todo.
 
 ---
 
@@ -225,8 +233,9 @@ cuenta siguen funcionando.
 - **`normalizar(p)`**: rellena lo opcional con su valor por defecto
   (`disponible: true`, `tamanos: []`, `etiqueta: null`) para que el resto del
   código no tenga que preguntar si existe.
-- **`cargarProductos()`**: hace el `fetch`, revisa, normaliza y devuelve
-  `{ productos }`.
+- **`cargarProductos()`**: usa el catálogo de `CATALOGO_EMBEBIDO` si existe
+  (la versión de doble clic lo trae dentro) y si no hace el `fetch`; después
+  revisa, normaliza y devuelve `{ productos }`.
 
 ### 5.3 `state.js` — los datos compartidos
 
@@ -575,14 +584,16 @@ publicar:
 
 1. Comprueba que existan los archivos principales.
 2. Comprueba que los 11 módulos tengan la sintaxis correcta (`node --check`).
-3. Comprueba que todo lo que se importa exista con el nombre exacto
+3. Vuelve a generar `js/sin-servidor.js` y falla si no coincide con el subido,
+   para que la versión de doble clic nunca se quede atrás.
+4. Comprueba que todo lo que se importa exista con el nombre exacto
    (mayúsculas incluidas, porque el servidor las distingue y Windows no).
-4. Valida `productos.json` con la misma función `revisar` del sitio, comprueba
+5. Valida `productos.json` con la misma función `revisar` del sitio, comprueba
    que cada categoría tenga su entrada en el menú Tienda y que existan las dos
    fotos de cada producto.
-5. Rechaza el cambio si aparecen las palabras café, cafetería o cóctel (el
+6. Rechaza el cambio si aparecen las palabras café, cafetería o cóctel (el
    proyecto es de una panadería, no de una cafetería), incluso en comentarios.
-6. Si todo pasa, publica en GitHub Pages.
+7. Si todo pasa, publica en GitHub Pages.
 
 Si alguna comprobación falla, el sitio publicado **no cambia** y se queda con la
 última versión buena.

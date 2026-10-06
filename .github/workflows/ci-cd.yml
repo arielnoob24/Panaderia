@@ -40,6 +40,16 @@ jobs:
             rm "$f.mjs"
           done
 
+          # js/sin-servidor.js es lo que corre al abrir index.html con doble
+          # clic. Si alguien toca js/ o el catalogo y no lo vuelve a generar,
+          # el sitio publicado va bien y el abierto como archivo va con lo
+          # viejo, y eso no se nota hasta que alguien lo abre asi.
+          node herramientas/empaquetar.mjs
+          git diff --exit-code -- js/sin-servidor.js || {
+            echo 'js/sin-servidor.js no esta al dia: corre node herramientas/empaquetar.mjs y subelo.'
+            exit 1
+          }
+
           # Lo que un modulo importa tiene que existir con ese nombre exacto.
           # Una mayuscula de diferencia funciona en Windows y falla en el
           # servidor, que distingue, y entonces solo se rompe lo publicado.
