@@ -200,6 +200,13 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 .text-link.light { color: white; }
 .text-link:hover, .text-link.light:hover { color: var(--corteza-oscura); }
 .text-link.light:hover { color: var(--ambar); }
+/* "Como llegar" en la portada: la raya de abajo sube y se vuelve un fondo
+   entero al pasar el cursor, y el pin da un saltito. Con solo cambiar el
+   color de la letra no se notaba que era un boton. */
+.hero-actions .text-link { padding: .55rem .75rem .45rem; border-bottom: 0; border-radius: var(--r-btn); background: linear-gradient(var(--horno), var(--horno)) bottom / 100% 1px no-repeat; transition: color var(--dur-fast) var(--ease-ui), background-size var(--dur-fast) var(--ease-ui); }
+.hero-actions .text-link:hover, .hero-actions .text-link:focus-visible { background-size: 100% 100%; color: var(--papel); }
+.hero-actions .text-link:hover .link-icon { animation: pin-salta .5s var(--ease-ui); }
+@keyframes pin-salta { 0%, 100% { transform: none; } 45% { transform: translateY(-4px); } }
 .hero-note { position: absolute; right: max(24px, calc((100% - 1180px) / 2)); bottom: 3.2rem; z-index: 1; display: flex; gap: .7rem; align-items: flex-start; padding: 1rem 1.2rem; color: var(--horno); background: rgba(255, 253, 248, .92); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-card) var(--r-card) 0; box-shadow: var(--shadow-lift); font: .8rem Arial, sans-serif; }
 .status-dot { display: inline-block; width: 8px; height: 8px; margin-top: .38rem; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 0 4px rgba(215, 155, 74, .2); }
 .status-dot.is-closed { background: var(--corteza-oscura); box-shadow: 0 0 0 4px rgba(168, 95, 69, .22); }
@@ -499,7 +506,7 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 /* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
 .button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
-.button-yellow:focus-visible > span[aria-hidden] { transform: translateY(6px); }
+.button-yellow:focus-visible > span[aria-hidden] { transform: rotate(-8deg) scale(1.12); }
 .text-link:focus-visible > span[aria-hidden], .footer-mapa:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
 .button-yellow, .text-link, .footer-mapa { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
@@ -536,7 +543,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 
 @media (hover: hover) and (pointer: fine) {
   .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
-  .button-yellow:hover > span[aria-hidden] { transform: translateY(6px); }
+  .button-yellow:hover > span[aria-hidden] { transform: rotate(-8deg) scale(1.12); }
   .text-link:hover > span[aria-hidden],
   .footer-mapa:hover > span[aria-hidden] { transform: translate(4px, -4px); }
   .product-card:hover { transform: translateY(-5px); }
@@ -835,6 +842,7 @@ body.is-checkout .floating-whatsapp { display: none; }
   .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno output { animation: none; }
   .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { transform: none; }
   .nav-submenu, .nav-grupo-flecha { transition: none; }
+  .hero-actions .text-link:hover .link-icon { animation: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
   .product-image.is-loading { animation: none; }
   .product-image img { opacity: 1; }
