@@ -64,8 +64,7 @@ ventana y el botón «atrás» deja de funcionar.
   pie. Hay atajo para saltar al contenido, así que no es un fallo. Y el botón flotante es un
   enlace al que se le escribieron a mano Enter y Espacio para que abra la canasta: deuda, no
   fallo, porque así sigue llevando a WhatsApp cuando el JavaScript no carga.
-- La aguja del mapa no se mueve con las flechas: se marca el centro y ya. Y la guía del
-  correo menciona un archivo que ya no existe.
+- La aguja del mapa no se mueve con las flechas: se marca el centro y ya.
 - Falta decidir si se destaca algún producto haciéndolo más grande. Está sin hacer a
   propósito: cambia la jerarquía del contenido, así que primero hay que elegir cuál.
 
@@ -219,5 +218,4 @@ real de cada archivo y el tamaño de cada botón.
 
 - [ACCESIBILIDAD_TECLADO.md](ACCESIBILIDAD_TECLADO.md): el recorrido del sitio sin ratón,
   tecla por tecla. No busca fallos, explica cómo se maneja; sirve para la demostración.
-- [CORREO_REAL.md](CORREO_REAL.md): cómo conectar el envío de correo.
 - [README.md](README.md): cómo está repartido el proyecto y qué está simulado.

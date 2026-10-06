@@ -13,7 +13,8 @@
 // lista de dominios permitidos del panel de EmailJS, no esconderlas aqui.
 // Mientras esten vacias no se manda nada y el recuadro que imita la
 // notificacion sigue siendo la unica prueba, declarado como simulacion.
-// Como rellenarlas: CORREO_REAL.md.
+// Salen del panel de EmailJS: el id del servicio, el de la plantilla y la
+// clave publica de la cuenta.
 const BUZON = {
   servicio: 'service_u77o0ad',
   plantilla: 'template_76qhpup',

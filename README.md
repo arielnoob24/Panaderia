@@ -54,4 +54,5 @@ quedan inalcanzables: el CI lo comprueba y no publica.
 El cobro no existe: no se procesa ningun pago y los datos de la tarjeta no se
 guardan ni se envian. La cuenta se guarda solo en el navegador y la contrasena
 no se guarda en ninguna parte. El correo del codigo y del comprobante si sale
-de verdad, por EmailJS; como configurarlo esta en `CORREO_REAL.md`.
+de verdad, por EmailJS: las tres claves van en `js/mail.js`, y mientras esten
+vacias el codigo y el comprobante se ensenan en pantalla en vez de enviarse.
