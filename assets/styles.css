@@ -704,7 +704,8 @@ body.is-checkout .floating-whatsapp { display: none; }
 
 /* El mapa del reparto. Alto fijo: si se deja crecer, en el telefono se come la
    pantalla entera y la direccion queda fuera de la vista. */
-.mapa-zona { margin: 0 0 .9rem; }
+.mapa-zona { margin: .2rem 0 .9rem; }
+.mapa-zona[hidden] { display: none; }
 .mapa-caja { position: relative; overflow: hidden; height: 210px; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); }
 .mapa-lienzo { width: 100%; height: 100%; }
 .mapa-lienzo[hidden] { display: none; }
@@ -722,6 +723,15 @@ body.is-checkout .floating-whatsapp { display: none; }
 .mapa-caja .leaflet-container:focus-visible { outline: none; }
 /* Leaflet trae su propia tipografia y su z-index alto; aqui dentro no manda. */
 .mapa-caja .leaflet-container { z-index: 1; font: .75rem Arial, sans-serif; }
+
+/* El mapa del local es una referencia, no un control: mas bajo que el del
+   reparto, porque no hay que apuntar a nada dentro, y con el cursor normal para
+   que nadie intente arrastrarlo. */
+.mapa-caja-local { height: 150px; margin-top: .7rem; }
+.mapa-caja-local .leaflet-container { cursor: default; }
+.mapa-ruta { display: inline-flex; align-items: center; gap: .4rem; min-height: 24px; margin-top: .6rem; color: var(--corteza-oscura); font: 700 .8rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.mapa-ruta:hover { color: var(--horno); }
+.mapa-ruta svg { width: 15px; height: 15px; flex: 0 0 auto; }
 
 /* ---- Cuenta -----------------------------------------------------------
    Maqueta de cuentas: no hay servidor detras. El panel es el mismo objeto que
@@ -889,6 +899,31 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-direccion label { display: block; margin-bottom: .35rem; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
 .canasta-direccion input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .9rem/1.3 Arial, sans-serif; }
 .canasta-direccion input:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
+/* ---- Buscador de la direccion -----------------------------------------
+   Primero se dice a donde con palabras y luego se precisa en el mapa, que es el
+   orden de cualquier aplicacion de reparto. El campo y el boton de ubicacion van
+   en la misma fila mientras quepan; en el telefono se apilan. */
+.dir-busca { display: flex; flex-wrap: wrap; gap: .5rem; }
+.dir-busca-campo { flex: 1 1 15rem; }
+.canasta-direccion .dir-busca-aqui { flex: 0 0 auto; }
+/* La lista flota sobre lo que viene debajo: si empujara el contenido, el mapa y
+   los campos bailarian con cada tecla. */
+.dir-resultados { position: relative; z-index: 3; margin: .35rem 0 0; padding: .25rem; list-style: none; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); box-shadow: var(--shadow-lift); }
+.dir-resultados[hidden] { display: none; }
+.dir-resultado { padding: .5rem .6rem; border-radius: var(--r-chip); color: var(--horno); cursor: pointer; font: .82rem/1.4 Arial, sans-serif; }
+.dir-resultado:hover { background: var(--masa); }
+.dir-resultado:focus-visible { background: var(--masa); outline: 2px solid var(--ambar); outline-offset: -2px; }
+.dir-busca-estado { margin: .4rem 0 0; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
+.dir-busca-estado:empty { display: none; }
+.canasta-direccion .dir-a-mano { margin: .2rem 0 .3rem; font: 700 .78rem/1.3 Arial, sans-serif; }
+/* Piso y referencia caben juntos en escritorio: son dos datos cortos del mismo
+   asunto, y separados hacen el formulario mas largo de lo que es. */
+.dir-detalle { display: grid; gap: .6rem .8rem; margin-top: .7rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
+.canasta-direccion textarea { width: 100%; margin-top: 0; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .9rem/1.45 Arial, sans-serif; resize: vertical; }
+.canasta-direccion textarea:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
+.canasta-direccion label small { color: var(--horno-suave); font-weight: 400; }
+.canasta-direccion > label:not(:first-child) { margin-top: .7rem; }
+
 .canasta-aviso, .cuenta-aviso { margin: .4rem 0 0; color: var(--corteza-oscura); font: .78rem/1.4 Arial, sans-serif; }
 .canasta-aviso[hidden], .cuenta-aviso[hidden] { display: none; }
 .canasta-nota, .cuenta-nota { margin: .7rem 0 0; color: var(--horno-suave); font: .75rem/1.45 Arial, sans-serif; text-align: center; }

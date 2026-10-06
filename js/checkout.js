@@ -6,7 +6,7 @@
 // el puente, porque la canasta tambien llama aqui.
 import { avisos } from './ui.js';
 import {
-  pedido, entrega, sesion, tarjeta, cobro, puente,
+  pedido, entrega, sesion, tarjeta, cobro, puente, direccionEntera,
   dinero, telefonoLargo, subtotal, envio, total,
 } from './state.js';
 import { buzonListo, enviarCorreo } from './mail.js';
@@ -124,6 +124,8 @@ const comprobanteHtml = () => ''
   + '<div><dt>Pago</dt><dd class="recibo-metodo"></dd></div>'
   + '<div><dt>Entrega</dt><dd class="recibo-modo"></dd></div>'
   + '<div class="recibo-linea-dir" hidden><dt>Dirección</dt><dd class="recibo-direccion"></dd></div>'
+  + '<div class="recibo-linea-notas" hidden><dt>Indicaciones</dt>'
+  + '<dd class="recibo-notas"></dd></div>'
   + '</dl>'
   + '<h3 class="recibo-titulo">Lo que pediste</h3><ul class="recibo-lista"></ul></div>'
   + '<div class="codigo-falso recibo-enviado">'
@@ -300,7 +302,11 @@ const pintarComprobante = () => {
   panel.querySelector('.recibo-metodo').textContent = cobro.detalle;
   panel.querySelector('.recibo-modo').textContent = entrega.modo === 'domicilio' ? 'A domicilio' : 'Paso retirando por el local';
   panel.querySelector('.recibo-linea-dir').hidden = entrega.modo !== 'domicilio';
-  panel.querySelector('.recibo-direccion').textContent = entrega.direccion;
+  panel.querySelector('.recibo-direccion').textContent = direccionEntera();
+  // Las indicaciones solo salen si hay alguna: una fila "Indicaciones: —" no
+  // informa de nada y alarga el comprobante.
+  panel.querySelector('.recibo-linea-notas').hidden = entrega.modo !== 'domicilio' || !entrega.notas;
+  panel.querySelector('.recibo-notas').textContent = entrega.notas;
   const recibo = panel.querySelector('.recibo-lista');
   recibo.textContent = '';
   for (const l of pedido.values()) {
@@ -317,7 +323,7 @@ const pintarComprobante = () => {
 // el recuadro estaria ensenando un mensaje que nadie recibio.
 const saludoComprobante = () => `Hola ${sesion.nombre.split(' ')[0]}: tu pedido `
   + `${cobro.numero} quedó registrado por ${dinero(total())}. `
-  + `${entrega.modo === 'domicilio' ? 'Te lo llevamos a ' + entrega.direccion : 'Pasa a retirarlo por el local'}. `
+  + `${entrega.modo === 'domicilio' ? 'Te lo llevamos a ' + direccionEntera() : 'Pasa a retirarlo por el local'}. `
   + 'Gracias por comprar en El Tradicional.';
 
 // El correo si puede llevar el detalle entero, que en un SMS no cabria. Va en
@@ -335,7 +341,10 @@ const cuerpoComprobante = () => {
     `Envío: ${envio() ? dinero(envio()) : 'Gratis'}`,
     `Total: ${dinero(total())}`,
     `Pago: ${cobro.detalle}`,
-    `Entrega: ${entrega.modo === 'domicilio' ? 'A domicilio — ' + entrega.direccion : 'Paso retirando por el local'}`,
+    `Entrega: ${entrega.modo === 'domicilio' ? 'A domicilio — ' + direccionEntera() : 'Paso retirando por el local'}`,
+    // Quien reparte lee esto antes de bajarse de la moto, asi que va en su
+    // propia linea y no pegado a la direccion.
+    ...(entrega.modo === 'domicilio' && entrega.notas ? [`Indicaciones: ${entrega.notas}`] : []),
     `Te llamamos al ${telefonoLargo(sesion.telefono)} si hace falta.`,
     '',
     'Este pedido es parte de un proyecto académico: el cobro está simulado y',

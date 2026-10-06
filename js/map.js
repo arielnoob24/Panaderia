@@ -12,6 +12,11 @@ let mapaFallo = null;
 let mapaDato = null;
 let mapaAqui = null;
 let mapaCentro = null;
+// El mapa de quien pasa a retirar es otro: ensena donde esta el local y no se
+// marca nada en el, asi que no comparte ni lienzo ni aguja con el de arriba.
+let localLienzo = null;
+let localFallo = null;
+let mapaLocal = null;
 
 // Leaflet se trae recien cuando alguien elige que se lo lleven: quien pasa a
 // retirar no tiene por que descargar un mapa que no va a mirar. Si no llega
@@ -38,6 +43,33 @@ const traerLeaflet = () => {
     document.head.append(guion);
   });
   return pidiendoMapa;
+};
+
+// ---- Buscar una direccion ---------------------------------------------
+// Nominatim es el buscador de OpenStreetMap: gratis, sin clave y sin tarjeta,
+// que es la unica clase de servicio que este proyecto puede usar. A cambio pide
+// no inundarlo de consultas, de ahi que la canasta espere a que la mano pare
+// antes de llamar aqui.
+//
+// La busqueda se ata a Ecuador y se centra en Tena: sin eso, "Eloy Alfaro" trae
+// calles de medio continente, porque hay una en casi cada ciudad del pais.
+const BUSCADOR = 'https://nominatim.openstreetmap.org/search';
+const CAJA_TENA = '-78.1,-0.75,-77.5,-1.25';
+
+const buscarDireccion = (texto) => {
+  const url = `${BUSCADOR}?format=jsonv2&limit=6&addressdetails=1`
+    + '&accept-language=es&countrycodes=ec'
+    + `&viewbox=${CAJA_TENA}&q=${encodeURIComponent(texto)}`;
+  return fetch(url, { headers: { Accept: 'application/json' } })
+    .then((r) => (r.ok ? r.json() : Promise.reject(new Error('no respondio'))))
+    .then((lista) => (Array.isArray(lista) ? lista : [])
+      .map((sitio) => ({
+        // display_name trae el pais y la provincia al final, que en una lista
+        // de seis resultados de la misma ciudad es ruido repetido en todos.
+        nombre: String(sitio.display_name || '').split(',').slice(0, 4).join(',').trim(),
+        punto: { lat: Number(sitio.lat), lng: Number(sitio.lon) },
+      }))
+      .filter((s) => s.nombre && Number.isFinite(s.punto.lat) && Number.isFinite(s.punto.lng)));
 };
 
 const contarDistancia = () => {
@@ -69,6 +101,51 @@ const marcarCentro = () => {
   if (!aguja._map) aguja.addTo(mapa);
   const centro = mapa.getCenter();
   ponerAguja({ lat: centro.lat, lng: centro.lng });
+};
+
+// Llevar el mapa a un punto y dejar la aguja ahi. Lo llama el buscador al
+// elegir un resultado: desde ese momento ya hay punto, asi que el envio se
+// cobra por distancia y no por la tarifa de salida. Si el mapa todavia se esta
+// descargando, se espera a que este: el punto ya quedo guardado en 'entrega', y
+// armarMapa lo coloca al nacer.
+const irAlPunto = (punto) => {
+  ponerAguja(punto);
+  armarMapa();
+  if (!mapa || !aguja) return;
+  if (!aguja._map) aguja.addTo(mapa);
+  mapa.setView([punto.lat, punto.lng], 17);
+  setTimeout(() => mapa.invalidateSize(), 60);
+};
+
+// El mapa del local: de referencia y nada mas. Sin arrastre, sin rueda y sin
+// teclado, por lo mismo que se le quitaron al mapa del reparto en su dia: un
+// mapa metido en una pagina larga que captura la rueda secuestra el
+// desplazamiento. Para llegar de verdad esta el enlace de al lado, que abre la
+// aplicacion de mapas con la ruta ya puesta.
+const armarMapaLocal = () => {
+  if (mapaLocal || !localLienzo) return;
+  traerLeaflet().then((L) => {
+    mapaLocal = L.map(localLienzo, {
+      attributionControl: true,
+      dragging: false, scrollWheelZoom: false, touchZoom: false,
+      doubleClickZoom: false, boxZoom: false, keyboard: false, zoomControl: false,
+    }).setView([LOCAL.lat, LOCAL.lng], 16);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '&copy; OpenStreetMap',
+    }).addTo(mapaLocal);
+    L.circleMarker([LOCAL.lat, LOCAL.lng], {
+      radius: 9, color: '#a85f45', fillColor: '#d79b4a', fillOpacity: 1, weight: 3,
+    }).addTo(mapaLocal).bindTooltip('El Tradicional');
+    // Es una imagen, no un control: no se tabula hasta el ni se anuncia, porque
+    // la direccion escrita encima ya dice lo mismo y el enlace hace lo util.
+    localLienzo.setAttribute('aria-hidden', 'true');
+    localLienzo.tabIndex = -1;
+    setTimeout(() => mapaLocal.invalidateSize(), 60);
+  }).catch(() => {
+    if (localFallo) localFallo.hidden = false;
+    if (localLienzo) localLienzo.hidden = true;
+  });
 };
 
 const armarMapa = () => {
@@ -121,26 +198,40 @@ const montarMapa = (panel) => {
   mapaDato = panel.querySelector('.mapa-dato');
   mapaAqui = panel.querySelector('.mapa-aqui');
   mapaCentro = panel.querySelector('.mapa-centro');
+  localLienzo = panel.querySelector('.mapa-local-lienzo');
+  localFallo = panel.querySelector('.mapa-local-fallo');
 
   mapaCentro?.addEventListener('click', marcarCentro);
 
+  // "Usar mi ubicacion" vive arriba, junto al buscador: es la otra manera de
+  // contestar a donde, y las dos tienen que estar en el mismo sitio. El estado
+  // se escribe en el rotulo del buscador mientras el mapa sigue escondido, y
+  // pasa al del mapa en cuanto este a la vista.
+  const avisar = (texto) => {
+    const estado = panel.querySelector('.dir-busca-estado');
+    if (estado) estado.textContent = texto;
+    if (mapaDato && mapa) mapaDato.textContent = texto;
+  };
+
   mapaAqui?.addEventListener('click', () => {
     if (!navigator.geolocation) {
-      mapaDato.textContent = 'Este navegador no sabe decir dónde estás; marca el punto a mano';
+      avisar('Este navegador no sabe decir dónde estás; márcalo en el mapa');
+      puente.mostrarMapa?.();
       return;
     }
-    mapaDato.textContent = 'Buscando dónde estás…';
+    avisar('Buscando dónde estás…');
     navigator.geolocation.getCurrentPosition((pos) => {
-      const donde = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      if (mapa && aguja) {
-        if (!aguja._map) aguja.addTo(mapa);
-        mapa.setView([donde.lat, donde.lng], 16);
-      }
-      ponerAguja(donde);
+      // El punto del GPS cae en la manzana, no en la puerta: se ensena el mapa
+      // para que se acabe de precisar, que es justo lo que no se podia hacer
+      // cuando el mapa aparecia solo si ya se habia elegido domicilio.
+      puente.mostrarMapa?.();
+      irAlPunto({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      avisar('Esa es tu zona: arrastra la aguja hasta la puerta.');
     }, () => {
-      mapaDato.textContent = 'No se pudo saber dónde estás; marca el punto en el mapa';
+      avisar('No se pudo saber dónde estás; márcalo en el mapa');
+      puente.mostrarMapa?.();
     }, { enableHighAccuracy: true, timeout: 8000 });
   });
 };
 
-export { montarMapa, armarMapa, contarDistancia };
+export { montarMapa, armarMapa, armarMapaLocal, buscarDireccion, irAlPunto, contarDistancia };

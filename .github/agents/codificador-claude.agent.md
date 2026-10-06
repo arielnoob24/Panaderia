@@ -1,7 +1,7 @@
 ---
 description: "Use when implementing features, fixing bugs, refactoring code, or writing tests. Coding agent powered by Claude."
 name: "Codificador Claude"
-model: "Claude Sonnet 4.5 (copilot)"
+model: "Claude Opus 4.1 (copilot)"
 reasoning-effort: "high"
 tools: [read, edit, search, execute, todo]
 user-invocable: true

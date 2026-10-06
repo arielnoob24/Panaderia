@@ -57,11 +57,13 @@ ventana y el botón «atrás» deja de funcionar.
 
 - Ni el título ni la descripción mencionan Tena, que para un negocio local es probablemente
   la palabra que más visitas útiles traería.
-- Algunos enlaces del pie quedan por debajo del área mínima que pide la norma para pulsarlos
-  con el dedo. No hace falta agrandar el texto, solo darles más margen.
+- El enlace «Ver en el mapa» del pie queda en unos 18 px de alto, por debajo del mínimo de
+  24 que pide la norma para pulsarlo con el dedo. Los dos contactos de al lado sí llegan,
+  porque su icono es más grande. No hace falta agrandar el texto, solo darle margen.
 - No hay atajo para saltarse el catálogo: son unas dieciocho paradas de tabulación antes del
   pie. Hay atajo para saltar al contenido, así que no es un fallo. Y el botón flotante es un
-  enlace que se comporta como botón: deuda, no fallo, porque así funciona sin JavaScript.
+  enlace al que se le escribieron a mano Enter y Espacio para que abra la canasta: deuda, no
+  fallo, porque así sigue llevando a WhatsApp cuando el JavaScript no carga.
 - La aguja del mapa no se mueve con las flechas: se marca el centro y ya. Y la guía del
   correo menciona un archivo que ya no existe.
 - Falta decidir si se destaca algún producto haciéndolo más grande. Está sin hacer a

@@ -10,7 +10,11 @@
 
 const CLAVE = 'eltradicional-pedido';
 const pedido = new Map();
-const entrega = { modo: 'retiro', direccion: '', punto: null };
+// La direccion es la calle; el resto es lo que hace falta para encontrar la
+// puerta. Van aparte y no todo en un campo porque quien reparte los lee en
+// momentos distintos: la calle para llegar al portal, el piso al estar ahi, y
+// las notas antes de bajarse de la moto.
+const entrega = { modo: 'retiro', direccion: '', piso: '', referencia: '', notas: '', punto: null };
 // La cuenta es una maqueta sin servidor; la rellena account.js.
 const sesion = { nombre: '', correo: '', telefono: '', direccion: '',
   dentro: false, verificado: false };
@@ -55,6 +59,11 @@ const kmEntre = (a, b) => {
 const tarifaPara = (km) => Math.min(
   Math.round((ENVIO_BASE + km * ENVIO_POR_KM) * 20) / 20, ENVIO_TECHO);
 const dinero = (n) => '$' + n.toFixed(2);
+// La direccion en una linea, para el comprobante, el correo y el resumen. Se
+// arma aqui y no en cada sitio: si estuviera escrita tres veces, anadir un
+// campo mas obligaria a acordarse de los tres.
+const direccionEntera = () => [entrega.direccion, entrega.piso, entrega.referencia]
+  .filter(Boolean).join(' · ');
 const idDe = (nombre) => nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
 
 
@@ -80,6 +89,6 @@ const puente = {};
 export {
   CLAVE, pedido, entrega, sesion, tarjeta, cobro, puente,
   MAX_UNIDADES, ENVIO, ENVIO_BASE, ENVIO_POR_KM, ENVIO_TECHO, LOCAL,
-  telefonoLargo, kmEntre, tarifaPara, dinero, idDe,
+  telefonoLargo, kmEntre, tarifaPara, dinero, direccionEntera, idDe,
   subtotal, envio, total, unidades,
 };
