@@ -10,7 +10,7 @@
       "categoria": "panes",
       "precio": 0.25,
       "foto": "assets/img/productos/pan-redondo",
-      "alt": "Hogazas redondas de corteza tostada con espigas de trigo",
+      "alt": "Pan redondo de corteza dorada y brillante sobre papel blanco",
       "etiqueta": {
         "color": "green",
         "texto": "De la casa"
@@ -21,14 +21,14 @@
       "categoria": "panes",
       "precio": 0.35,
       "foto": "assets/img/productos/pan-enrollado",
-      "alt": "Surtido de panes dorados recién horneados"
+      "alt": "Pan enrollado en forma de media luna, dorado y hojaldrado"
     },
     {
       "nombre": "Palanqueta",
       "categoria": "panes",
       "precio": 0.5,
       "foto": "assets/img/productos/palanqueta",
-      "alt": "Palanqueta de pan artesanal",
+      "alt": "Palanqueta alargada de corteza crujiente con cortes en la superficie",
       "disponible": false
     },
     {
@@ -36,7 +36,7 @@
       "categoria": "panes",
       "precio": 0.75,
       "foto": "assets/img/productos/pan-con-queso",
-      "alt": "Hogaza rebanada sobre una tabla de madera",
+      "alt": "Pan con queso en forma de empanada, con borde repulgado y azúcar glas",
       "etiqueta": {
         "color": "yellow",
         "texto": "Recién hecho"
@@ -47,7 +47,7 @@
       "categoria": "panes",
       "precio": 0.85,
       "foto": "assets/img/productos/pan-de-chocolate",
-      "alt": "Rollos de pan con chocolate espolvoreados con azúcar"
+      "alt": "Pan de chocolate partido por la mitad, con el relleno de chocolate a la vista"
     },
     {
       "nombre": "Pan de queso con cebolla",
@@ -61,7 +61,7 @@
       "categoria": "panes",
       "precio": 0.4,
       "foto": "assets/img/productos/pan-redondo-dulce",
-      "alt": "Pan redondo dulce artesanal",
+      "alt": "Pan redondo dulce y brillante con grageas de colores encima",
       "etiqueta": {
         "color": "green",
         "texto": "Dulce de siempre"
@@ -72,7 +72,7 @@
       "categoria": "dulces",
       "precio": 0.75,
       "foto": "assets/img/productos/suspiros",
-      "alt": "Suspiros blancos de merengue apilados en un plato junto a una taza",
+      "alt": "Suspiro de merengue blanco en espiral sobre papel",
       "disponible": false
     },
     {
@@ -80,21 +80,21 @@
       "categoria": "dulces",
       "precio": 1,
       "foto": "assets/img/productos/galletas",
-      "alt": "Galletas artesanales servidas en un cuenco con un paño"
+      "alt": "Galleta con chispas de chocolate sobre papel blanco"
     },
     {
       "nombre": "Rebanada de pastel de chocolate",
       "categoria": "dulces",
       "precio": 1.75,
       "foto": "assets/img/productos/rebanada-de-pastel-de-chocolate",
-      "alt": "Rebanada de pastel de chocolate con virutas y crema sobre una tabla de madera"
+      "alt": "Rebanada de pastel de chocolate de tres capas con cobertura de chocolate"
     },
     {
       "nombre": "Rebanada de pastel de vainilla",
       "categoria": "dulces",
       "precio": 1.5,
       "foto": "assets/img/productos/rebanada-de-pastel-de-vainilla",
-      "alt": "Rebanada de bizcocho claro de vainilla en un plato de borde dorado"
+      "alt": "Rebanada de pastel de vainilla de tres capas con crema blanca"
     },
     {
       "nombre": "Rebanada de cheesecake de limón",
@@ -108,7 +108,7 @@
       "categoria": "bebidas-frias",
       "precio": 0.85,
       "foto": "assets/img/productos/coca-cola",
-      "alt": "Botella de vidrio de Coca-Cola sobre una tabla de madera",
+      "alt": "Botella de vidrio de Coca-Cola sobre papel blanco",
       "etiqueta": {
         "color": "yellow",
         "texto": "Para llevar"
@@ -133,7 +133,7 @@
       "categoria": "bebidas-frias",
       "precio": 0.85,
       "foto": "assets/img/productos/fanta",
-      "alt": "Lata naranja de Fanta de pie sobre el asfalto",
+      "alt": "Botella de Fanta de naranja sobre papel blanco",
       "tamanos": [
         {
           "valor": "500 ml",
@@ -150,7 +150,7 @@
       "categoria": "bebidas-frias",
       "precio": 0.85,
       "foto": "assets/img/productos/sprite",
-      "alt": "Lata verde de Sprite sobre una caja de madera, con limas alrededor",
+      "alt": "Botella de Sprite sobre papel blanco",
       "tamanos": [
         {
           "valor": "500 ml",
@@ -167,7 +167,7 @@
       "categoria": "bebidas-frias",
       "precio": 0.5,
       "foto": "assets/img/productos/agua",
-      "alt": "Botella de agua sin abrir sobre una mesa de madera",
+      "alt": "Botella de agua sin gas sobre papel blanco",
       "tamanos": [
         {
           "valor": "500 ml",
@@ -184,7 +184,7 @@
       "categoria": "bebidas-frias",
       "precio": 1.25,
       "foto": "assets/img/productos/powerade",
-      "alt": "Botella azul de bebida deportiva",
+      "alt": "Botella de Powerade azul de tapa negra",
       "disponible": false,
       "tamanos": [
         {
@@ -202,7 +202,7 @@
       "categoria": "bebidas-frias",
       "precio": 0.75,
       "foto": "assets/img/productos/avena-polaca",
-      "alt": "Vaso de avena cremosa sobre una mesa de madera oscura",
+      "alt": "Vaso de Avena Polaca con su etiqueta roja y blanca",
       "tamanos": [
         {
           "valor": "300 ml",
