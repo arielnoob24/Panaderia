@@ -143,17 +143,7 @@ const montarCatalogo = (productos) => {
     // ningun dato de ventas detras: un rotulo afirmando lo que el sitio no
     // sabe. Ahora nombra lo que hay.
     rotulo.textContent = 'Nuestro mostrador';
-    // La puerta al catalogo entero. Antes esto era una frase en el aviso de
-    // abajo -"Entra en Tienda para ver una categoria completa"-, es decir una
-    // instruccion tapando que no habia por donde entrar.
-    const verTodo = document.createElement('button');
-    verTodo.type = 'button';
-    verTodo.className = 'fila-vertodo';
-    verTodo.innerHTML = 'Ver todo el catálogo<svg viewBox="0 0 24 24" fill="none" '
-      + 'stroke="currentColor" stroke-width="1.9" stroke-linecap="round" '
-      + 'stroke-linejoin="round" aria-hidden="true" focusable="false">'
-      + '<path d="M9.5 5.5 16 12l-6.5 6.5"/></svg>';
-    cabezaFila.append(rotulo, verTodo);
+    cabezaFila.append(rotulo);
     zona.before(cabezaFila);
     zona.append(productGrid);
     flechas = [-1, 1].map((ir) => {
@@ -268,9 +258,6 @@ const montarCatalogo = (productos) => {
     });
     pintarPausa();
     cabezaFila.append(botonPausa);
-    // abrirCategoria se declara mas abajo en este mismo ambito; al pulsar ya
-    // existe, igual que 'avisos', que tambien se usa aqui y nace despues.
-    verTodo.addEventListener('click', () => abrirCategoria('catalogo'));
     // Mientras este parado a mano, ni el reloj ni las flechas lo reanudan.
     productGrid.estaParada = () => parada;
     productGrid.andarSola = { arrancar, parar };
@@ -536,8 +523,7 @@ const montarCatalogo = (productos) => {
   }));
   cabeza.querySelector('.vista-volver').addEventListener('click', () => abrirCategoria('todos'));
 
-  // "Ver el menu" de la portada abre el catalogo entero, la misma vista que
-  // "Ver todo el catalogo" de la fila y que la entrada del menu Tienda. Antes
+  // "Ver el menu" de la portada es la unica puerta al catalogo entero. Antes
   // solo bajaba a la seccion y dejaba el mostrador en fila, que es un resumen:
   // quien pulsa "ver el menu" quiere verlo todo, no una muestra. Sin
   // JavaScript sigue siendo el enlace de siempre, que baja ahi mismo.

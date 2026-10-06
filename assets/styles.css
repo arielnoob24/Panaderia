@@ -246,12 +246,6 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 .fila-cabeza { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; margin: 0 0 .9rem; }
 body.is-vista .fila-cabeza { display: none; }
 .fila-rotulo { margin: 0; margin-right: auto; color: var(--horno); font: 500 1.45rem/1.2 Georgia, serif; }
-/* La puerta al catalogo entero. Es un boton y no un enlace porque abre una
-   vista que monta el JavaScript; sin JavaScript la cuadricula ya sale entera. */
-.fila-vertodo { display: inline-flex; align-items: center; gap: .2rem; padding: .4rem .5rem .4rem .7rem; background: none; border: 0; border-radius: var(--r-pill); color: var(--corteza-oscura); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.fila-vertodo:hover { background: var(--masa-honda); color: var(--horno); }
-.fila-vertodo svg { width: 17px; height: 17px; transition: transform var(--dur-fast) var(--ease-ui); }
-.fila-vertodo:hover svg, .fila-vertodo:focus-visible svg { transform: translateX(3px); }
 /* El boton de pausa del mostrador. Cuadrado de 44 px: es un objetivo tactil y
    tiene que cumplir el minimo sin depender del icono, que es pequeno. */
 .fila-pausa { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: 50%; color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
@@ -847,7 +841,6 @@ body.is-checkout .floating-whatsapp { display: none; }
   .product-image.is-loading { animation: none; }
   .product-image img { opacity: 1; }
   .deshacer-barra { animation: none; }
-  .fila-vertodo:hover svg, .fila-vertodo:focus-visible svg { transform: none; }
 }
 
 /* ---- Canasta ----------------------------------------------------------
