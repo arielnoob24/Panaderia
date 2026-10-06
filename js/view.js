@@ -176,7 +176,6 @@ const montarCatalogo = (productos) => {
     };
     productGrid.addEventListener('scroll', mirarPuntas, { passive: true });
     window.addEventListener('resize', mirarPuntas, { passive: true });
-    productGrid.dataset.mirarPuntas = '1';
     productGrid.mirarPuntas = mirarPuntas;
 
     // La fila se adelanta sola una ficha cada tanto, que si no hay que adivinar
@@ -260,7 +259,6 @@ const montarCatalogo = (productos) => {
     cabezaFila.append(botonPausa);
     // Mientras este parado a mano, ni el reloj ni las flechas lo reanudan.
     productGrid.estaParada = () => parada;
-    productGrid.andarSola = { arrancar, parar };
     arrancar();
   }
 

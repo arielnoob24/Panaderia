@@ -611,7 +611,6 @@ radios.forEach((radio) => radio.addEventListener('change', () => {
   entrega.modo = radio.value === 'domicilio' ? 'domicilio' : 'retiro';
   avisoDir.hidden = true;
   pintarPie();
-  pintarDesglose();
   // Cada modo trae su mapa, y ninguno se descarga antes de hacer falta: el de
   // referencia al retirar, el de marcar el punto al pedir a domicilio. Ese
   // segundo se arma solo si ya habia un punto guardado; si no, espera a que el
