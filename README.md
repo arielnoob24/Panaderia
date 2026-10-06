@@ -10,7 +10,8 @@ GitHub Pages.
 index.html            la pagina, con sus secciones semanticas
 assets/
   styles.css          todos los estilos
-  img/                fotos, logo, mascota e iconos
+  img/                logo, mascota, iconos y la foto de portada
+    productos/        las fotos del catalogo, cada una en 420 y 840 px
 data/
   productos.json      el catalogo: nombre, precio, foto, categoria y tamanos
 js/
@@ -44,6 +45,12 @@ en el navegador.
   solo cuando se elige envio a domicilio.
 - **EmailJS** para el codigo de verificacion y el comprobante.
 
+Las fotos estan en el repositorio y no en un CDN, asi que el catalogo entero se
+ve sin conexion. Lo unico que sale por red es lo que no se puede traer de otra
+forma, y solo cuando hace falta: el mapa al elegir envio a domicilio, y el
+correo al pedir el codigo o el comprobante. Sin internet el sitio se usa igual
+de principio a fin; el pago es simulado y no necesita a nadie.
+
 ## Para verlo en tu maquina
 
 Hace falta servirlo por HTTP. Abrir `index.html` con doble clic no funciona: el
@@ -63,6 +70,12 @@ Meter, quitar o cambiar un producto es editar `data/productos.json` y nada mas:
 las fichas se pintan desde ahi. Cada producto necesita `nombre`, `categoria`,
 `precio`, `foto` y `alt`; `disponible: false` lo marca como agotado, `etiqueta`
 le pone el rotulo de color y `tamanos` le da varias medidas con su precio.
+
+El campo `foto` es la raiz del nombre del archivo, sin ancho ni extension: de
+`assets/img/productos/pan-redondo` salen `pan-redondo-420.jpg` y
+`pan-redondo-840.jpg`, y el navegador elige la que le cabe. Un producto nuevo
+necesita las dos, con esos mismos sufijos; el CI comprueba que esten y no
+publica si falta alguna.
 
 Si una categoria nueva no esta en el menu Tienda de `index.html`, sus productos
 quedan inalcanzables: el CI lo comprueba y no publica.

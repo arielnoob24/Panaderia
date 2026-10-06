@@ -17,12 +17,17 @@ const escapar = (texto) => String(texto)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;')
   .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
-// La misma foto en cuatro anchos: el navegador elige la que le cabe y no
-// descarga la grande en un telefono. El 'sizes' dice cuanto va a ocupar la
-// ficha en cada tamanio de pantalla, que es lo que no puede adivinar solo.
-const ANCHOS = [280, 420, 560, 840];
+// La misma foto en dos anchos: el navegador elige la que le cabe y no descarga
+// la grande en un telefono. El 'sizes' dice cuanto va a ocupar la ficha en
+// cada tamanio de pantalla, que es lo que no puede adivinar solo.
+//
+// Antes eran cuatro anchos porque los servia un CDN que los recortaba al
+// vuelo. Ahora las fotos estan en el repositorio, y cada ancho de mas es un
+// archivo de mas que pesa: con 420 y 840 se cubren el telefono y la pantalla
+// con el doble de densidad, que es el salto que de verdad se nota.
+const ANCHOS = [420, 840];
 const SIZES = '(max-width: 680px) calc(100vw - 32px), (max-width: 900px) calc(50vw - 40px), 280px';
-const foto = (p, w) => `${p.foto}?auto=format&fit=crop&w=${w}&q=${p.calidad}`;
+const foto = (p, w) => `${p.foto}-${w}.jpg`;
 
 // Lo que viene en varios tamanios lleva un grupo de botones de radio. El
 // identificador sale del nombre, que es lo unico que distingue un producto de
@@ -66,7 +71,9 @@ const fichaHtml = (p) => {
   return `<article class="product-card"${p.disponible ? '' : ' data-available="false"'}`
     + ` data-category="${escapar(p.categoria)}">`
     + '<div class="product-image">'
-    + `<img src="${foto(p, 560)}" srcset="${srcset}" sizes="${SIZES}"`
+    // El src es el de reserva, para el navegador que no entienda srcset: va el
+    // grande, que se ve bien en cualquier sitio aunque pese mas.
+    + `<img src="${foto(p, 840)}" srcset="${srcset}" sizes="${SIZES}"`
     + ` alt="${escapar(p.alt)}" loading="lazy" width="700" height="520">`
     + etiquetaHtml(p)
     + '</div>'

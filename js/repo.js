@@ -18,7 +18,14 @@ const revisar = (p, i) => {
   if (typeof p.nombre !== 'string' || !p.nombre.trim()) throw new Error(`a ${donde} le falta el nombre`);
   if (typeof p.categoria !== 'string' || !p.categoria.trim()) throw new Error(`a ${donde} le falta la categoria`);
   if (!Number.isFinite(p.precio) || p.precio < 0) throw new Error(`${donde} no tiene un precio valido`);
+  // La foto es la raiz del nombre del archivo, sin ancho ni extension: de
+  // "assets/img/productos/pan-redondo" salen "...-420.jpg" y "...-840.jpg",
+  // que es lo que el navegador elige segun lo que le quepa. Se guarda asi y no
+  // con la ruta entera para no repetir dos veces lo mismo en cada producto.
   if (typeof p.foto !== 'string' || !p.foto) throw new Error(`a ${donde} le falta la foto`);
+  if (/\.(jpg|jpeg|png|webp|avif)$/i.test(p.foto)) {
+    throw new Error(`la foto de ${donde} lleva extension: va la raiz, sin ancho ni .jpg`);
+  }
   // El alt no es un adorno: sin el, quien usa lector de pantalla no sabe que
   // hay en la foto. Vacio solo valdria si la imagen fuera decorativa, y estas
   // no lo son.
@@ -46,7 +53,6 @@ const normalizar = (p) => ({
   categoria: p.categoria.trim(),
   precio: p.precio,
   foto: p.foto,
-  calidad: Number.isFinite(p.calidad) ? p.calidad : 72,
   alt: p.alt.trim(),
   disponible: p.disponible !== false,
   etiqueta: p.etiqueta && p.etiqueta.texto ? p.etiqueta : null,

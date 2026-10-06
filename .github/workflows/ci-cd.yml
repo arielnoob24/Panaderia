@@ -51,7 +51,7 @@ jobs:
           # revisa el mismo codigo que usa el sitio al cargarlo, asi que aqui se
           # comprueba con las reglas de verdad y no con una copia de ellas.
           node --input-type=module -e '
-            import { readFileSync } from "node:fs";
+            import { readFileSync, existsSync } from "node:fs";
             const { revisar } = await import("./js/repo.js");
             const datos = JSON.parse(readFileSync("data/productos.json", "utf8"));
             const productos = datos.productos;
@@ -80,7 +80,21 @@ jobs:
               if (e === "catalogo" || e === "todos") continue;
               if (!categorias.has(e)) throw new Error(`la entrada "${e}" del menu Tienda no tiene ningun producto detras`);
             }
+            // Las fotos ya no las sirve un CDN: estan en el repositorio, y una
+            // ruta mal escrita deja la ficha con el hueco gris en vez de con
+            // la foto. El navegador no se queja y el HTML parece correcto.
+            const ANCHOS = [420, 840];
+            for (const p of productos) {
+              for (const w of ANCHOS) {
+                const ruta = `${p.foto}-${w}.jpg`;
+                if (!existsSync(ruta)) throw new Error(`falta ${ruta}, la foto de "${p.nombre}"`);
+              }
+            }
+            for (const h of ["assets/img/hero-900.jpg", "assets/img/hero-1600.jpg", "assets/img/hero-1200.jpg"]) {
+              if (!existsSync(h)) throw new Error(`falta ${h}`);
+            }
             console.log(`${productos.length} productos en ${categorias.size} categorias, todas alcanzables.`);
+            console.log(`${productos.length * ANCHOS.length + 3} fotos en su sitio.`);
           '
 
           if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html assets/styles.css data/productos.json js/*.js; then
