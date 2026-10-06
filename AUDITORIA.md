@@ -3,434 +3,294 @@
 Archivo único. Reúne las nueve auditorías que antes estaban sueltas: la general,
 estética y animaciones, accesibilidad, responsive, rendimiento, SEO y contenido.
 
-**Rondas originales:** 2026-09-22 a 2026-09-24.
-**Estado verificado contra el código actual:** 2026-10-05.
+**Rondas originales:** del 22 al 24 de septiembre de 2026.
+**Revisado contra el sitio actual:** 5 de octubre de 2026.
 
 Esa diferencia de fechas importa. Las auditorías originales se hicieron sobre un
-sitio de tres archivos (`index.html`, `styles.css`, `script.js`) con nueve
-productos fijos y una barra de filtros. Después el sitio se rehizo: el catálogo
-sale de `data/productos.json`, el JavaScript son diez módulos ES en `js/`, y hay
-canasta, pago simulado, cuenta de cliente y mapa de reparto. Así que buena parte
-de los hallazgos viejos dejaron de aplicar, no porque se arreglaran sino porque
-desapareció el código que los tenía.
-
-Lo que sigue está comprobado contra el código de hoy. Cada punto abierto lleva el
-archivo y la línea donde está.
+sitio de tres archivos, con nueve productos escritos a mano y una barra de filtros.
+Después el sitio se rehizo: el catálogo sale de un archivo de datos, el JavaScript
+está repartido en módulos, y hay canasta, pago simulado, cuenta de cliente y mapa
+de reparto. Así que muchos hallazgos viejos dejaron de aplicar, no porque se
+arreglaran sino porque desapareció la parte del sitio que los tenía. Lo que sigue
+está comprobado contra el sitio de hoy.
 
 ---
 
-## 1. Lo que está abierto ahora mismo
+## 1. Lo que sigue abierto
 
 ### Crítico
 
-#### El sitio le dice a Google que su página real está en otro dominio
-
-Tres sitios apuntan a `https://www.ejemplo.com/`, un dominio de ejemplo que no
-existe, mientras el sitio se publica en `https://arielnoob24.github.io/Panaderia/`:
-
-| Dónde | Etiqueta |
-|---|---|
-| [index.html:10](index.html#L10) | `<link rel="canonical">` |
-| [index.html:16](index.html#L16) | `og:url` |
-| [index.html:36](index.html#L36) | `url` del JSON-LD |
-
-El `canonical` es la instrucción más fuerte que se le puede dar a un buscador
-sobre qué indexar, y está diciendo que la página buena es otra que no responde.
-Es el tipo de error que hace que un sitio publicado simplemente no aparezca en
-las búsquedas, por bien hecho que esté todo lo demás. El `og:url` tiene el mismo
-problema al compartir el enlace.
-
-Arreglo: poner las tres a la URL real. Si algún día hay dominio propio, cambiarlas
-a la vez que se configure el redireccionamiento, nunca antes.
+**El sitio le dice a Google que su página de verdad está en otro sitio.** Tres
+etiquetas del encabezado declaran que la dirección oficial de la página es un
+dominio de ejemplo que no existe, mientras el sitio se publica en GitHub Pages. Esa
+declaración es la instrucción más fuerte que se le puede dar a un buscador sobre
+qué indexar, y apunta a la nada. Es el tipo de error que hace que un sitio
+publicado simplemente no aparezca en las búsquedas, por bien hecho que esté todo lo
+demás. Lo mismo afecta a la vista previa al compartir el enlace.
 
 ### Alto
 
-#### El JSON-LD publica un teléfono inventado como si fuera verificado
+**Los datos estructurados publican un teléfono inventado como si estuviera
+verificado.** El pie ya avisa de que los contactos son de ejemplo, y eso resuelve
+el problema para quien lee la página. Pero los datos estructurados no los lee una
+persona: alimentan la ficha de negocio del buscador, donde ese número saldría como
+dato bueno y sin el aviso al lado. Mejor retirar el campo mientras no haya número
+real: una ficha sin teléfono es válida, una con teléfono falso no es honesta.
 
-[index.html:35](index.html#L35) declara `"telephone": "+593 99 000 0000"`.
-
-El pie ya avisa de que los contactos son de ejemplo, y eso resuelve el problema
-de cara a quien lee la página. Pero el JSON-LD no lo lee una persona: alimenta la
-ficha de negocio local del buscador, donde ese número aparecería como dato bueno,
-sin el aviso al lado. Un `Bakery` sin `telephone` es válido; uno con un teléfono
-falso, no es honesto.
-
-Arreglo: retirar el campo del JSON-LD mientras no haya número real. El aviso del
-pie se queda como está.
-
-#### Dos enlaces abren pestaña nueva sin avisarlo
-
-El resto del sitio ya lo resuelve con `<span class="sr-only"> (abre en una pestaña
-nueva)</span>`. Faltan dos:
-
-- El botón flotante, [index.html:104](index.html#L104): tiene
-  `aria-label="Pedir por WhatsApp"` pero no menciona el cambio de ventana.
-- El `order-button` que genera [js/view.js:51](js/view.js#L51), que es el enlace
-  de reserva para cuando no hay JavaScript.
-
-Quien navega con lector de pantalla pulsa, el foco desaparece a otra ventana y el
-botón «atrás» deja de funcionar, sin que nada lo haya anunciado. Es la técnica
-G201 de WCAG, criterio 3.2.5.
+**Dos enlaces abren una ventana nueva sin avisarlo:** el botón flotante y el enlace
+de reserva que aparece si el JavaScript no carga. El resto del sitio ya lo avisa con
+un texto que solo oye el lector de pantalla. Sin ese aviso, quien navega así pulsa,
+el foco desaparece a otra ventana y el botón «atrás» deja de funcionar.
 
 ### Medio
 
-#### No hay `robots.txt` ni `sitemap.xml`
+**No hay archivo de rastreo ni mapa del sitio.** Para una sola página no es
+determinante, pero el mapa del sitio es donde se declara la fecha de última
+modificación, y sin él no hay forma de avisar al buscador de que la página cambió.
 
-Ninguno de los dos existe. Para una sola página no es determinante, pero el
-sitemap es donde se declara la fecha de última modificación y el `robots.txt` es
-donde se enlaza el sitemap. Dos archivos muy cortos en la raíz. Ojo: GitHub Pages
-sirve el sitio bajo `/Panaderia/`, así que las rutas tienen que incluir ese
-segmento.
+**Falta declarar el menú como dato estructurado, que es justo lo que este sitio
+tiene.** Los datos estructurados describen el negocio pero no el catálogo, y es lo
+que hace que los productos y sus precios salgan en los resultados enriquecidos.
+Para una panadería que quiere que la encuentren buscando «pan de queso Tena» es
+exactamente lo que hace falta. Se puede generar desde el catálogo, que ya tiene
+todos los campos.
 
-#### Falta el dato estructurado de menú, que es justo lo que este sitio tiene
+**La imagen con la que se comparte el enlace es de banco de fotos y no declara su
+tamaño.** Sin el tamaño, algunas redes tardan más en componer la vista previa o la
+recortan mal. Y el enlace se presenta con una foto que no es del negocio.
 
-El JSON-LD describe el negocio pero no el catálogo. Hay productos con nombre,
-categoría, precio y tamaños en `data/productos.json`, y ninguno está declarado
-como dato estructurado. Schema.org tiene `Menu`, `MenuSection` y `MenuItem` con
-`offers` y `price`, que es lo que hace que los productos y sus precios salgan en
-resultados enriquecidos. Para una panadería que quiere que la encuentren buscando
-«pan de queso Tena», es exactamente lo que hace falta.
+**El año del pie está congelado en 2024,** lo que sugiere que el sitio está
+abandonado: lo contrario de lo que interesa.
 
-Se puede generar desde el JSON del catálogo, que ya tiene todos los campos.
+**Las fotos del catálogo siguen siendo enlaces a un servicio externo.** Están
+optimizadas, así que no es un problema de peso sino de control: si ese servicio
+retira una foto, la tarjeta se queda vacía. Solo la foto de historia y la mascota
+son propias.
 
-#### La imagen para compartir es de banco y no declara dimensiones
-
-`og:image` y `twitter:image` apuntan a la misma foto de Unsplash que usa el hero,
-sin `og:image:width` ni `og:image:height`. Sin dimensiones, algunas plataformas
-tardan más en componer la vista previa o la recortan mal. Y el enlace se presenta
-con una imagen que no es del negocio.
-
-#### El año del pie está congelado en 2024
-
-[index.html:103](index.html#L103): «© 2024 El Tradicional · Tena, Ecuador». Un año
-viejo en el pie sugiere que el sitio está abandonado, que es lo contrario de lo
-que interesa. Generarlo desde JavaScript o quitarlo.
-
-#### Las fotos del catálogo siguen siendo enlaces a Unsplash
-
-25 referencias a `images.unsplash.com`. Están optimizadas (`srcset`, `auto=format`,
-calidades afinadas), así que no es un problema de peso. Es de control: si Unsplash
-cambia o retira una foto, la tarjeta se queda sin imagen. Solo la foto de la
-sección de historia y la mascota son locales.
-
-#### Los precios no dicen la unidad
-
-`$0.25`, `$1.00`. En Ecuador el dólar se entiende sin explicar, pero no se dice si
-es por unidad, por funda o por docena, y en panadería eso no siempre es obvio.
+**Los precios no dicen la unidad,** y en panadería no siempre se deduce si es por
+pieza, por funda o por docena.
 
 ### Bajo
 
-- **Ni el título ni la descripción mencionan Tena.** Para un negocio local es
-  probablemente la palabra que más tráfico útil traería. Merece probarlo.
-- **Faltan 24 px de área táctil en algunos enlaces del pie.** El criterio 2.5.8 de
-  WCAG 2.2 AA pide 24×24 px mínimo. No hace falta agrandar el texto: basta
-  `padding-block` o `min-height: 24px` con `display: inline-flex`.
-- **No hay un «Saltar el mostrador».** El catálogo son unas 18 paradas de
-  tabulación antes de llegar al pie. Hay «Saltar al contenido» y los encabezados
-  dan estructura, así que no es un fallo, pero el trecho es largo.
-- **El botón flotante es un `<a role="button" tabindex="0">`,** no un `<button>`.
-  Funciona con Enter y Espacio porque se le escribieron los dos a mano. Es deuda,
-  no fallo: sin JavaScript ese mismo elemento sigue siendo el enlace de WhatsApp.
-- **La aguja del mapa no se mueve con las flechas.** Se marca el centro y ya; para
-  corregir el punto hay que mover el mapa y volver a marcar. Arrastrar sigue
-  siendo solo de ratón.
-- **`CORREO_REAL.md` dice «rellenar tres claves en `script.js`»,** y ese archivo ya
-  no existe: las claves van en `js/mail.js`.
-- **Módulo destacado en el catálogo** con `grid-column: span 2`. Está sin hacer a
-  propósito: cambia la jerarquía del contenido, no solo la forma, así que primero
-  hay que decidir qué producto se destaca.
-- **La mascota como SVG.** Con 8 KB ya no es urgente, pero un vector escalaría
-  perfecto en sus cuatro tamaños.
+- Ni el título ni la descripción mencionan Tena, que para un negocio local es
+  probablemente la palabra que más visitas útiles traería.
+- Algunos enlaces del pie quedan por debajo del área mínima que pide la norma para
+  pulsarlos con el dedo. No hace falta agrandar el texto, solo darles más margen.
+- No hay atajo para saltarse el catálogo: son unas dieciocho paradas de tabulación
+  antes del pie. Hay atajo para saltar al contenido, así que no es un fallo, pero el
+  trecho es largo.
+- El botón flotante está construido como un enlace que se comporta como botón, con
+  las teclas escritas a mano. Es deuda, no fallo: así sigue funcionando sin
+  JavaScript.
+- La aguja del mapa no se mueve con las flechas: se marca el centro y ya. Para
+  corregir el punto hay que mover el mapa y volver a marcar.
+- La guía del correo menciona un archivo que ya no existe, de cuando el JavaScript
+  estaba todo junto.
+- Falta decidir si se destaca algún producto haciéndolo más grande. Está sin hacer a
+  propósito: cambia la jerarquía del contenido, así que primero hay que elegir cuál.
 
 ---
 
 ## 2. Lo que ya está arreglado
 
-Registro compacto. Se conserva porque saber qué estaba mal es lo que evita
-repetirlo.
+Se conserva como registro, porque saber qué estaba mal es lo que evita repetirlo.
 
-### Rendimiento: de 945 KB a 333 KB, un 65 % menos
+**Peso: de 945 KB a 333 KB, un 65 % menos.** Todo el problema estaba en las fotos,
+no en cómo está hecho el sitio: se pedían al doble del tamaño en que se mostraban, y
+la mascota era un archivo enorme que nunca se ve grande. Ahora cada pantalla pide la
+foto en su tamaño, y la mascota quedó un 96 % más ligera e indistinguible del
+original. Lo sano del proyecto, que conviene no estropear: ninguna fuente
+descargada, así que no hay parpadeo al cargar el texto; ninguna librería ni
+JavaScript de terceros; y todo el movimiento usa las propiedades que al navegador le
+cuestan poco.
 
-Medido sobre el sitio publicado, a 1418 px y densidad 1.
+**Paleta: de 27 colores sueltos a 5 con sus tonos.** Dos eran el mismo color con dos
+nombres, y los nombres ya no describían nada: el llamado «petróleo» era marrón y el
+llamado «coral» era terracota, restos de una paleta anterior. El color de marca pasó
+de aparecer en menos del 1 % del sitio a marcar todas las acciones principales, que
+era su trabajo: que el ojo aprenda que ese color significa «esto se puede pulsar».
 
-| | Antes | Después |
-|---|---:|---:|
-| **Total de la página** | **945 KB** | **333 KB** |
-| Imagen del hero | 138 KB | 71 KB |
-| Foto más pesada del catálogo | 304 KB | 55 KB |
-| Mascota | 216 KB | **8 KB** |
-| HTML, CSS y JS, ya comprimidos | — | 15 KB |
+**Forma: el sitio dejó de verse cuadrado.** Era medible, no una impresión: en toda la
+hoja de estilos había seis esquinas redondeadas, cinco de ellas círculos
+decorativos, y la página era una pila de franjas con cortes perfectamente rectos.
+Se añadió una escala de redondeos, hombros curvos entre secciones y tres gestos
+tomados del oficio, entre ellos la foto de historia recortada como una hogaza.
 
-Qué se hizo: `srcset` con cuatro anchuras y `sizes`; la mascota redimensionada a
-224 px y cuantizada a 128 colores conservando transparencia, de 216 925 a 8 277
-bytes, indistinguible del original a 44, 52, 72 y 104 px; la foto que comprimía
-mal bajada a `q=58`; el hero con `image-set()` 1x y 2x; `preconnect` a Unsplash y
-`preload` del hero con `fetchpriority="high"`; y la foto de historia sustituida por
-una propia y local, recortada a 4:5 y servida en dos tamaños.
+**Movimiento: dejó de animarse todo igual.** También medible: había un solo patrón
+de entrada aplicado a seis tipos de elemento, y las once animaciones usaban la misma
+curva. Ahora cada zona tiene el movimiento que le toca: la foto de historia se
+descubre de abajo arriba como un corte de pan, el texto entra de lado porque la
+rejilla es de dos columnas, los tres principios entran en orden porque son una
+secuencia numerada, y el mapa solo aparece sin moverse, porque es un territorio.
 
-Lo sano del proyecto, que conviene no estropear: **cero fuentes web** (Georgia y
-Arial son del sistema, así que no hay descarga ni parpadeo de texto), **cero
-dependencias y cero JavaScript de terceros**, y todo el movimiento anima solo
-`transform` y `opacity`, que son las propiedades baratas.
+**Contraste.** Se midió el de todos los pares de color y cumplen la norma. El peor
+fallo era un texto pequeño en mayúsculas sobre fondo oscuro, casi ilegible. También
+se midió **sobre las fotografías**, que es el caso difícil porque el fondo cambia en
+cada píxel: se muestreó la zona entera y se tomó el peor píxel, no la media. Así se
+encontró un rótulo del hero que fallaba en el 100 % de los píxeles.
 
-### Paleta: de 27 colores sueltos a 5 con 9 tonos derivados
+**El mapa de reparto era imposible de usar sin ratón:** el punto de entrega solo se
+podía marcar con un clic o arrastrando. Ahora hay un botón que marca el centro, las
+flechas mueven el mapa, y el mapa se presenta diciendo en voz alta qué teclas
+funcionan. Antes, al tabular hasta ahí, solo se oía «mapa».
 
-El sitio tenía 18 hexadecimales y 9 bases `rgb` distintas, dos tokens que eran el
-mismo color con nombres diferentes (`--ink` y `--petroleum`), y nombres que ya no
-describían nada (`--petroleum` era marrón, `--coral` era terracota, `--sage` era un
-verde usado una sola vez).
+**Los paneles se comportan como ventanas de verdad.** En canasta, pago y cuenta el
+tabulador da vueltas dentro y no se escapa, la página de detrás queda apagada
+también para el lector de pantalla, Escape cierra desde cualquier sitio y el foco
+vuelve al botón que lo abrió. Además, abrir el menú del teléfono mete el foco
+dentro: sin eso el siguiente tabulador se saltaba el menú que acababas de abrir. Y
+la fila de productos, que se adelanta sola, se detiene en cuanto el foco entra en
+ella: nadie va a perseguir un producto que se mueve mientras lo elige.
 
-Quedó en `--masa`, `--horno`, `--ambar`, `--corteza` y `--papel`, más nueve tonos
-derivados con nombre. **Cero valores de color escritos a mano fuera de `:root`.**
-Los once pares nuevos se comprobaron con WCAG antes de aplicarlos.
+**Responsive.** Había una barra de desplazamiento horizontal en toda la página en
+tabletas y ventanas a media anchura, causada por una animación que empujaba un
+bloque de texto hacia la derecha. Y la barra de categorías se desbordaba sin ninguna
+señal de que se podía arrastrar, así que en móvil dos categorías eran invisibles:
+quien no arrastrara por casualidad creía que el catálogo tenía tres.
 
-El reparto 60-30-10: el 60 y el 30 estaban bien; el problema era el acento, que
-ocupaba menos del 1 %. El ámbar pasó de 8 a 18 elementos y de 2 de 5 tipos de CTA
-a 4 de 5. Los nueve botones «Pedir», el botón del hero y el flotante quedaron en
-el color de marca; el enlace del mapa se dejó en marrón a propósito, como acción
-secundaria, para que la jerarquía siga significando algo.
+**El pedido pasó a ser una canasta.** Antes cada botón abría WhatsApp con un mensaje
+de un solo producto: para pedir tres cosas había que mandar tres mensajes. Ahora se
+acumula con cantidades, sobrevive a recargar la página y sale en un solo mensaje con
+el total ya redactado. Si el JavaScript falla, los botones siguen funcionando como
+antes.
 
-### Geometría: el sitio dejó de verse cuadrado
+**Datos y textos corregidos.** Se retiró «Audio-PhoneComputer» de la dirección,
+porque parecía ser el nombre del negocio y suena a tienda de electrónica. El aviso
+de frescura decía «Sale a las 17:00» con texto fijo, así que a las siete de la tarde
+seguía diciéndolo; ahora dice que se hornea a lo largo del día. El indicador de
+disponibilidad anunciaba «Disponible» en los nueve productos sin que nadie lo
+hubiera decidido, porque la lógica existía pero el dato no; ahora sale del catálogo.
+Se repasaron las tildes del texto visible. Y se quitaron los duplicados: dos enlaces
+que iban a la misma dirección, un teléfono que repetía el número de WhatsApp, el
+WhatsApp de la barra superior y «Tena» dicho dos veces en la misma tarjeta.
 
-El diagnóstico con datos: en 231 líneas de CSS había **6 radios declarados**, cinco
-de ellos círculos decorativos, más un valor huérfano de 2 px. Todo lo demás tenía
-radio 0, y la página era una pila de seis bandas a sangre con cortes rectos.
+**Fotos.** Había cuatro para once espacios, una repetida siete veces incluida la del
+hero, y otra que devolvía error y dejaba dos tarjetas vacías en el sitio publicado.
+También se retiró la foto de bebidas, que estaba alojada en un medio ajeno y
+mostraba botellas de marcas conocidas: era un problema de marca, de derechos y de
+control a la vez. Un sitio que argumenta masa madre y fermentación lenta no puede
+terminar la vitrina con bebidas industriales.
 
-Se aplicó una escala de radios tokenizada, hombros de 40 px en la sección de
-historia, un separador curvo bajo la franja coral, y tres gestos orgánicos
-escasos: radio de masa en la foto de historia, sello circular girado en las
-etiquetas y cinta con esquina cortada en el pie de foto.
+**Cómo se pide, cómo se paga y si hay entrega** quedó resuelto con el pago simulado:
+retiro en local o a domicilio, y efectivo, tarjeta o transferencia.
 
-### Movimiento: dejó de animarse todo igual
-
-El diagnóstico: existía **un único patrón de entrada** (opacidad más desplazamiento
-vertical) aplicado a seis tipos de componente, con dos `@keyframes` de contenido
-idéntico, y las once declaraciones de movimiento usaban la misma curva `ease`.
-
-Se crearon tokens de duración y cinco curvas de easing, se eliminó `ease` de toda
-la hoja, se fusionaron los dos `@keyframes` en uno con amplitud por variable, y se
-repartieron patrones distintos por zona: revelado por máscara en la foto de
-historia, entrada lateral en el texto, secuencia numerada en los principios,
-stagger diagonal en el catálogo, solo opacidad en el mapa. Un hook muerto
-(`.is-filtering` existía en el JS y no en el CSS) quedó escrito.
-
-### Accesibilidad y teclado
-
-- 18 pares de color medidos, todos cumplen AA. El peor fallo, un eyebrow con
-  **1,73:1**, quedó en 5,76:1, y se resolvió con una regla estructural para que
-  ningún eyebrow en sección oscura pueda repetirlo.
-- Contraste medido también **sobre fotografía**, muestreando un píxel de cada dos
-  y quedándose con el peor, no con la media. Encontró el eyebrow del hero a 3,85
-  frente al 4,5 exigido: el 100 % de los píxeles fallaba. Quedó en 6,49.
-- El mapa de reparto era **imposible de usar sin ratón**. Ahora hay botón «Marcar
-  el centro del mapa», Enter sobre el mapa, flechas para moverlo, `role="application"`
-  con `aria-label` que dice qué teclas funcionan, y anillo de foco en el recuadro,
-  porque Leaflet no marca su lienzo.
-- Los tres paneles (canasta, pago, cuenta) son diálogos modales de verdad: foco
-  atrapado, `inert` en la página de detrás, Esc desde cualquier sitio, y el foco
-  vuelve al control que los abrió.
-- Flechas, Inicio y Fin en los desplegables; abrir el menú del teléfono mete el
-  foco dentro (sin eso el siguiente Tab se lo saltaba, porque la navegación va
-  antes del botón en el documento); `↑ ↓` en el campo de cantidad.
-- Las cuatro imágenes de la mascota declaran `width` y `height`.
-- Los productos agotados no tienen botón, así que el tabulador se los salta.
-- La fila del mostrador se adelanta sola cada 4,2 s, pero **se detiene en cuanto el
-  foco entra** y respeta `prefers-reduced-motion`.
-
-### Responsive
-
-- **Desbordamiento horizontal entre 681 y 900 px**, 718 px de contenido en 698 de
-  viewport. La causa era un patrón de entrada que desplazaba 18 px en el eje X.
-  Corregido con `overflow-x: clip` en la sección.
-- **Barra de filtros que desbordaba sin ninguna señal**, con dos categorías
-  invisibles en móvil. Resuelto sin JavaScript: capas de fondo con
-  `background-attachment: local` que se mueven con el contenido y descubren una
-  sombra cuando queda algo fuera.
-- Rejilla del catálogo con `auto-fill` y `minmax(260px, 1fr)`, así que se recompone
-  sola al filtrar en lugar de dejar huecos.
-- El botón flotante respeta `env(safe-area-inset-bottom)`.
-
-### Contenido
-
-- **El pedido pasa a ser una canasta.** Antes cada botón abría WhatsApp con un
-  mensaje de un producto: para pedir tres cosas había que mandar tres mensajes.
-  Ahora se acumula con cantidades, sobrevive a recargar la página, y sale en un
-  solo mensaje con las líneas y el total redactados. Hecho como mejora
-  progresiva: el HTML conserva los enlaces `wa.me` originales y es el JavaScript
-  el que los convierte en botones de añadir.
-- **«Audio-PhoneComputer» retirado** del texto visible y del `streetAddress` del
-  JSON-LD, donde alimentaba la ficha de negocio local. Parecía el nombre del
-  negocio, y suena a tienda de electrónica.
-- **El aviso de frescura ya es cierto siempre.** Decía «Sale a las 17:00» con texto
-  fijo, así que a las 19:00 seguía diciéndolo. Ahora dice «Pan recién hecho a lo
-  largo del día».
-- **El indicador de disponibilidad tiene origen de datos.** Antes el JavaScript
-  escribía «Agotado» con `data-available="false"` y ningún producto lo declaraba,
-  así que los nueve anunciaban «Disponible» sin que nadie lo hubiera decidido.
-  Ahora sale de `disponible` en `data/productos.json`.
-- **Las tildes del texto visible,** incluidas las dos que más dolían: el botón
-  principal («Ver el menu») y la frase de marca («No hacemos pan rapido»).
-- **La foto de bebidas alojada en un tercero,** con botellas de Coca-Cola, Pepsi,
-  Red Bull y Monster, retirada. Eran tres problemas a la vez: de marca, de
-  derechos de imagen y de control técnico.
-- **Cómo se pide, cómo se paga y si hay entrega** ya está resuelto por el pago
-  simulado: hay retiro en local o domicilio, y efectivo, tarjeta o transferencia.
-- **Diez fotos distintas para diez espacios.** Antes había cuatro, una de ellas
-  repetida siete veces, incluida la del hero. Era la causa de que la foto de
-  historia «no se acabara de ver bien»: no era el encuadre, era que ya se había
-  visto esa hogaza tres veces. Y una devolvía 404.
-- **Duplicados retirados:** dos enlaces que llevaban a la misma URL carácter por
-  carácter, el `tel:` que repetía el número de WhatsApp, el WhatsApp de la
-  navegación, el «01» de un único local, «Tena» repetido en título y dirección.
-
-### La sección de historia
-
-El usuario dijo «creo que está demasiado texto». Medido: 85 palabras, 572
-caracteres, 5,5 % de cobertura de tinta, cuando un muro de texto real ronda el
-12-20 %. En volumen era de las zonas más escuetas del sitio.
-
-La impresión era correcta y la causa era otra. **La foto llevaba todo ese tiempo
-renderizándose en 1:2,23 en lugar de 4:5**, con 429 px de altura muerta. El `<img>`
-llevaba `width="760" height="950"`, y aunque `width: 100%` anulaba la anchura,
-nada anulaba la altura; y `aspect-ratio` solo se aplica cuando una de las dos
-dimensiones es `auto`, así que se ignoraba en silencio. La foto medía 293 px más
-que la columna de texto, y dejaba unos 146 px de vacío encima y debajo del texto.
-**Ese vacío era lo que hacía parecer el texto abundante.** Corregido solo eso, sin
-tocar una palabra, la sección pasó de 1158 px a 767 px, un 34 % menos.
-
-Lo segundo sí era texto, pero por repetición, no por extensión: la idea de
-lentitud aparecía cuatro veces y «masa madre viva» estaba repetido palabra por
-palabra. Se recortó de 85 a 64 palabras, y el principio 03 recuperó literalmente
-la frase que se quitó del párrafo, así que no se perdió información ni se inventó
-nada.
+**La sección de historia.** El usuario dijo «creo que está demasiado texto». Medido,
+la sección tenía 85 palabras y la mancha de tinta era del 5,5 %, cuando un muro de
+texto de verdad ronda el 12-20 %: en volumen era de las zonas más escuetas del
+sitio. La impresión era correcta pero la causa era otra. **La fotografía llevaba
+todo ese tiempo estirándose al doble de alto del que debía,** porque el tamaño que
+traía el archivo mandaba sobre la proporción que pedía la hoja de estilos. La foto
+medía casi trescientos píxeles más que la columna de texto y dejaba un hueco grande
+encima y debajo: **ese vacío alrededor era lo que hacía parecer el texto
+abundante.** Corregido solo eso, sin tocar una palabra, la sección se acortó un
+34 %. Lo segundo sí era texto, pero por repetir: la idea de lentitud aparecía cuatro
+veces y una frase estaba repetida palabra por palabra. Se recortó a 64 palabras, y
+uno de los principios recuperó literalmente la frase que se quitó del párrafo, así
+que no se perdió información ni se inventó nada.
 
 ---
 
 ## 3. Decisiones tomadas, con su motivo
 
-Lo que conviene no deshacer sin releer por qué se hizo así.
+Lo que conviene no deshacer sin leer antes por qué se hizo así.
 
-- **Nada ligado al scroll: ni parallax ni animación scroll-driven.** El motivo es
-  técnico, no de gusto: la textura de `body::before` es una capa fija a pantalla
-  completa que el navegador recompone en cada desplazamiento, y el iframe del mapa
-  lleva `filter`. Sumar scroll encima de eso es el camino al jank.
-- **Un solo bucle infinito en todo el sitio,** el pulso del aviso de frescura.
-  Cualquier bucle adicional compite con esa textura fija.
-- **Las tarjetas del catálogo llevan un solo patrón de entrada.** Son nueve
-  elementos simultáneos: la variedad va en el stagger, no en el patrón.
-- **La navegación superior no se desplaza en hover,** solo crece un subrayado. El
-  header es absoluto sobre la fotografía: mover enlaces sobre un fondo de
-  contraste variable agravaría la legibilidad.
-- **El estado oculto de las animaciones se añade siempre desde JavaScript,** nunca
-  en el CSS base. Si se declarara en el CSS, un fallo de JS dejaría esos elementos
-  invisibles para siempre. Es por lo que el hero sigue visible sin JavaScript.
-- **Los nueve tonos derivados se quedan como hexadecimales, no como `color-mix()`.**
-  Se eligieron uno a uno para cumplir AA y se verificaron los once pares.
-  Calcularlos desplazaría varios lo bastante como para tener que volver a
-  comprobarlos todos, a cambio de una propagación automática que una paleta
-  estática de cinco colores rara vez necesita.
-- **El carrito sigue saliendo por WhatsApp, y no puede ser de otro modo.** El sitio
-  es estático: no hay servidor ni pasarela. El carrito organiza el pedido, no lo
+- **Nada de parallax ni animación ligada al desplazamiento.** El motivo es técnico,
+  no de gusto: el fondo de papel es una capa fija del tamaño de la ventana que el
+  navegador recompone en cada scroll. Sumarle más es el camino a que vaya a saltos.
+- **Un solo movimiento en bucle en todo el sitio,** el latido del aviso de recién
+  horneado. Cualquier otro compite con ese fondo fijo.
+- **Las tarjetas del catálogo entran todas igual.** Son nueve a la vez: la variedad
+  va en el orden en que aparecen, no en darle a cada una un movimiento distinto.
+- **Los enlaces de la barra superior no se mueven al pasar el cursor,** solo les
+  crece un subrayado. La barra está sobre la fotografía, y mover texto sobre un
+  fondo que cambia empeora la legibilidad.
+- **Los elementos empiezan ocultos solo si el JavaScript lo dice, nunca desde la
+  hoja de estilos.** Si estuviera en los estilos, un fallo del JavaScript los
+  dejaría invisibles para siempre. Por eso el hero se ve aunque el JavaScript no
+  cargue.
+- **El pedido sigue saliendo por WhatsApp, y no puede ser de otro modo.** El sitio
+  es estático: no hay servidor ni pasarela. La canasta organiza el pedido, no lo
   cobra.
-- **La tarjeta de local no tiene botones propios de WhatsApp ni de llamada,** aunque
-  las guías de fichas locales los recomiendan. Decisión del usuario: esos
-  contactos ya están en el pie y en el botón flotante, y repetirlos sería la misma
-  duplicación que se acaba de retirar.
-- **La tarjeta de producto no lleva `overflow: hidden`.** La sombra de hover se
-  dibuja en un `::after` con `inset: 0`, fuera de la caja: recortarla le quitaría
-  la elevación. El radio se resuelve dando radio completo a la tarjeta y radio
-  superior a la imagen, que ya tiene su propio `overflow`.
-- **La columna de texto de historia es más estrecha que la rejilla de principios,**
-  y se deja así. El párrafo mide 69 caracteres por línea a 530 px; a 640 px pasaría
-  de 80, por encima del máximo editorial de 75. Es una decisión editorial normal,
-  no un descuadre.
-- **Por debajo de 40 px la mascota deja de leerse.** Comprobado renderizándola a 28,
-  32, 40, 48, 56 y 72 px. Por eso la marca de cabecera está a 44 px y la de la
-  franja a 52, y van dentro de un círculo de fondo: el círculo es lo que le da
-  silueta reconocible en tamaño pequeño.
-- **Si algún día hay más de un local, probablemente haya que reponer el
-  `min-height` de la dirección,** que se retiró. Su función era alinear las
-  tarjetas entre sí.
-- **El contacto general de WhatsApp quedó solo en el pie,** al retirar el de la
-  navegación y convertir el flotante en canasta. Es coherente con quitar
-  duplicados, pero significa que quien quiera **preguntar** algo mirando el
-  catálogo tiene que bajar hasta el final. Si molesta en uso real, la solución no
-  es devolver el botón idéntico sino decidir dónde vive la consulta.
+- **La tarjeta de local no lleva botones propios de WhatsApp ni de llamada,** aunque
+  las guías los recomiendan. Decisión del usuario, y es razonable: esos contactos ya
+  están en el pie y en el botón flotante, y repetirlos sería la misma duplicación
+  que se acababa de retirar.
+- **La columna de texto de historia es más estrecha que el bloque de principios, y
+  se deja así.** A lo ancho de la rejilla el párrafo pasaría de ochenta caracteres
+  por línea, por encima de lo que se lee cómodo. Que el texto corrido sea más
+  estrecho es una decisión editorial normal, no un descuadre.
+- **Por debajo de cierto tamaño la mascota deja de leerse.** Comprobado dibujándola
+  a seis tamaños: pequeña es una mancha. Por eso las marcas van más grandes de lo
+  previsto y dentro de un círculo de fondo, que es lo que le da silueta reconocible.
+- **Si algún día hay más de un local, hay que reponer la altura mínima de la
+  dirección,** que se quitó. Servía para alinear las tarjetas entre sí.
+- **El contacto general de WhatsApp quedó solo en el pie,** al retirar el de la barra
+  y convertir el flotante en canasta. Es coherente con quitar duplicados, pero
+  significa que quien quiera **preguntar** algo mirando el catálogo tiene que bajar
+  hasta el final. Si molesta en uso real, la solución no es devolver el botón
+  idéntico, sino decidir dónde vive la consulta.
 
 ---
 
 ## 4. Lecciones de método
 
-Errores de medición que ya se cometieron una vez. Están escritos para no repetirlos.
+Errores de medición ya cometidos una vez, escritos para no repetirlos.
 
-- **Sumar el peso de cada URL del HTML da un número falso,** porque cuenta todas las
-  versiones de `srcset` y el navegador descarga una. Y la API de rendimiento da 0
-  para los archivos propios, porque GitHub Pages no envía `Timing-Allow-Origin`.
-  El número bueno combina las dos fuentes.
-- **Un fondo tintado baja el contraste del texto que lleva encima,** y a ojo no se
-  nota. Dos versiones del distintivo de horario fallaron AA por muy poco (4,48 y
-  4,33 frente a 4,5) con fondos ámbar al 14 y al 16 %. Se barrieron opacidades y
-  se fijó el 10 %, que da 4,79.
-- **Leer reglas de CSS con la API de hojas de estilo devuelve cero si la hoja es de
-  otro origen o es local, y eso no significa que el CSS esté roto.** Dos intentos
-  se dieron por rotos antes de caer en que la comprobación válida era mucho más
-  simple: preguntar si el selector encuentra el elemento.
-- **Un movimiento de 2 o 3 px en un glifo pequeño no se percibe.** El usuario avisó
-  dos veces de que «no se nota nada» y el mecanismo funcionaba: el problema era de
-  magnitud. Subido a 6 px y 4 px.
-- **Un tono solo un poco más claro no se lee como estado distinto.**
-  `--horno-suave` era 3,5 veces más luminoso que `--horno`, demasiado poco. Se
-  barrió la mezcla buscando el punto más claro que siguiera cumpliendo AA con
-  texto blanco: al 60 % ya falla, así que quedó el 66 %, 6,2 veces más luminoso.
-- **En la fila de locales, cada vez que se quita contenido de la tarjeta hay que
-  revisar el `min-height` del mapa,** o el ahorro no se nota: la tarjeta se estira
-  a la altura de la fila y el hueco se traslada a su borde inferior en lugar de
-  desaparecer. Pasó dos veces seguidas.
+- **Sumar el peso de todas las fotos que nombra la página da un número falso,**
+  porque cuenta todas las versiones de cada foto y el navegador descarga una sola.
+  El número bueno hay que pedírselo al navegador.
+- **Un fondo de color claro baja el contraste del texto que lleva encima, y a ojo no
+  se nota.** Dos versiones de la etiqueta de horario fallaron la norma por muy poco;
+  hubo que probar varias intensidades hasta encontrar la que cumple.
+- **Que no se puedan leer las reglas de estilo desde el navegador no significa que
+  los estilos estén roto.** Dos veces se dio por roto algo que funcionaba. La
+  comprobación válida era más simple: preguntar si la regla encuentra el elemento.
+- **Un movimiento de dos o tres píxeles en un icono pequeño no se percibe.** El
+  usuario avisó dos veces de que no se notaba nada y el mecanismo funcionaba: el
+  problema era el tamaño del gesto, no el código. Lo mismo con los colores: el
+  primer intento de distinguir «el cursor está encima» de «esto está seleccionado»
+  usó dos tonos demasiado parecidos.
+- **Al quitar contenido de la tarjeta de local hay que revisar la altura mínima del
+  mapa de al lado,** o el ahorro no se nota: la tarjeta se estira a la altura de la
+  fila y el hueco se traslada a su borde inferior en lugar de desaparecer. Pasó dos
+  veces seguidas.
 - **Cuando un bloque se siente vacío, a veces el problema no es cuánto espacio hay
-  sino cómo está repartido el contenido.** El pie se recortó de 315 a 258 px y
+  sino cómo está repartido el contenido dentro.** El pie se recortó dos veces y
   seguía sobrando sitio, porque el hueco había pasado de vertical a horizontal.
-  Reordenarlo a una sola fila, con el lema ocupando el centro que estaba vacío, lo
-  dejó en 203 px.
-- **Cualquier patrón de animación que desplace en el eje X necesita que su sección
-  lo recorte,** o el desplazamiento se convierte en scroll de página en algún punto
-  de ruptura.
-- **Todo `js/` son módulos ES, y un error en ejecución se lleva la página entera
-  por delante sin que `node --check` lo vea.** Cualquier cambio hay que probarlo
-  cargando la página, no solo comprobando que compila.
+  Reordenarlo a una sola fila, con el lema ocupando el centro vacío, lo dejó un 36 %
+  más corto.
+- **Cualquier animación que mueva algo hacia los lados necesita que su sección lo
+  recorte,** o ese movimiento se convierte en barra de desplazamiento en alguna
+  anchura de pantalla.
+- **Un error de ejecución en el JavaScript se lleva la página entera por delante, y
+  comprobar que compila no lo detecta.** Cualquier cambio hay que probarlo cargando
+  la página.
 
 ---
 
 ## 5. Cómo se midió, y qué no se ha probado
 
-Los números de este archivo vienen de medir, no de leer código:
-
-- Renderizado en navegador sin interfaz a 512, 698 y 1418 px, con capturas de cada
-  sección y comprobación de `scrollWidth` frente al viewport.
-- Relación de contraste WCAG de 29 pares de color plano, más muestreo píxel a
-  píxel sobre fotografía, quedándose con el peor píxel.
-- Código de respuesta HTTP de todas las imágenes.
-- `transferSize` por recurso con la API de rendimiento, y tamaño servido real para
-  los archivos del repositorio.
-- Tamaño de los objetivos táctiles con `getBoundingClientRect`, y recuento de
-  paradas de tabulación sobre la página, no deducido del marcado.
+Los números vienen de medir, no de leer código: la página se renderizó en un
+navegador a varias anchuras, se calculó el contraste de cada par de color (incluido
+el muestreo píxel a píxel sobre las fotografías), se comprobó que todas las imágenes
+responden, se pidió al navegador el peso real de cada archivo, y se midió el tamaño
+de cada botón y el número de paradas de tabulación sobre la página, no deducido del
+código.
 
 **Lo que no se ha hecho, y conviene saberlo:**
 
-- Ningún lector de pantalla real: ni NVDA, ni JAWS, ni VoiceOver. Todo lo que este
-  archivo dice sobre lectores de pantalla se basa en la estructura del marcado, no
-  en haberlo escuchado.
-- Ningún dispositivo físico, ninguna entrada táctil real, ningún móvil en
-  horizontal, ninguna anchura por debajo de 512 px con contenido real.
+- Ningún lector de pantalla real. Lo que este archivo dice sobre lectores de
+  pantalla se deduce de cómo está construido el sitio, no de haberlo escuchado.
+- Ningún dispositivo físico, ninguna pantalla táctil real, ningún móvil en
+  horizontal, ninguna pantalla muy estrecha con contenido real.
 - Ningún navegador que no sea Chrome.
-- Ni Lighthouse, ni limitación de red o de procesador, ni métricas de experiencia
-  de carga. Las afirmaciones sobre coste de pintado se basan en qué propiedad se
-  anima, no en una traza.
-- Ni la herramienta de resultados enriquecidos de Google, ni Search Console. El
-  diagnóstico del `canonical` se basa en lo que significa esa etiqueta, no en haber
-  observado al buscador.
+- Ninguna medición con conexión lenta ni con las herramientas que puntúan el
+  rendimiento. Lo que se dice sobre coste de dibujado se basa en qué se anima, no en
+  haberlo cronometrado.
+- Ninguna comprobación de cómo indexa el buscador de verdad.
 - **Ningún dato de negocio verificado con nadie:** ni teléfono, ni dirección, ni
-  horarios, ni precios, ni catálogo. Lo que aquí se marca como marcador se deduce
-  de su forma, por ejemplo un número que es todo ceros. Puede haber datos que
+  horarios, ni precios, ni catálogo. Lo que aquí se marca como dato de relleno se
+  deduce de su forma, por ejemplo un número que es todo ceros. Puede haber datos que
   parezcan correctos y no lo sean, y esta auditoría no los detectaría.
 
 ---
@@ -438,8 +298,8 @@ Los números de este archivo vienen de medir, no de leer código:
 ## 6. Archivos relacionados
 
 - [ACCESIBILIDAD_TECLADO.md](ACCESIBILIDAD_TECLADO.md): el recorrido completo del
-  sitio sin ratón, tecla por tecla. No es una auditoría: no busca hallazgos,
-  explica cómo se maneja. Sirve para la demostración.
-- [CORREO_REAL.md](CORREO_REAL.md): cómo conectar EmailJS para que el código de
-  verificación y el comprobante salgan de verdad.
+  sitio sin ratón, tecla por tecla. No es una auditoría: no busca fallos, explica
+  cómo se maneja. Sirve para la demostración.
+- [CORREO_REAL.md](CORREO_REAL.md): cómo conectar el envío de correo para que el
+  código de verificación y el comprobante salgan de verdad.
 - [README.md](README.md): cómo está repartido el proyecto y qué está simulado.
