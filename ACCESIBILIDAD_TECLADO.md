@@ -1,8 +1,8 @@
 # Navegación con teclado: El Tradicional
 
-Fecha: 2026-10-04. Índice de auditorías: [AUDITORIAS.md](AUDITORIAS.md).
+Fecha: 2026-10-04. Auditoría del sitio: [AUDITORIA.md](AUDITORIA.md).
 
-Este archivo es la guía práctica para recorrer el sitio **sin tocar el ratón**: qué tecla hace qué en cada pantalla, qué se arregló para que eso fuera posible, y qué queda cojo. Lo general de accesibilidad (alt, contraste, landmarks, lectores de pantalla) vive en [AUDITORIA_ACCESIBILIDAD.md](AUDITORIA_ACCESIBILIDAD.md); aquí solo el teclado.
+Este archivo es la guía práctica para recorrer el sitio **sin tocar el ratón**: qué tecla hace qué en cada pantalla, qué se arregló para que eso fuera posible, y qué queda cojo. Lo general de accesibilidad (alt, contraste, landmarks, lectores de pantalla) vive en [AUDITORIA.md](AUDITORIA.md); aquí solo el teclado.
 
 ---
 
@@ -172,7 +172,7 @@ Los botones que son solo un dibujo (las flechas de la fila, la papelera, el cír
 ## 5. Lo que queda y no se arregló
 
 - **El mostrador son 18 paradas de tabulación** antes de llegar al pie. No es un fallo (hay un "Saltar al contenido" y los encabezados dan estructura a un lector de pantalla), pero quien vaya solo con `Tab` tiene un trecho largo. La solución real sería un segundo enlace de salto, "Saltar el mostrador"; no está puesto.
-- **Quince enlaces abren pestaña nueva sin avisarlo.** Es el hallazgo A1 de [AUDITORIA_ACCESIBILIDAD.md](AUDITORIA_ACCESIBILIDAD.md) y afecta al teclado: pulsas, el foco desaparece a otra ventana y el botón "atrás" deja de funcionar. Sigue pendiente.
+- **Dos enlaces abren pestaña nueva sin avisarlo**, el botón flotante y el `order-button` de reserva. Está recogido en [AUDITORIA.md](AUDITORIA.md) y afecta al teclado: pulsas, el foco desaparece a otra ventana y el botón "atrás" deja de funcionar. Sigue pendiente.
 - **El botón flotante de la canasta es un `<a role="button" tabindex="0">`,** no un `<button>`. Funciona con `Enter` y `Espacio` porque se le escribieron los dos a mano, pero un botón de verdad no necesitaría eso. Es deuda, no fallo: sin JavaScript ese mismo elemento sigue siendo el enlace de WhatsApp que funciona solo.
 - **La aguja del mapa no se mueve con las flechas.** Se marca el centro y ya; para corregir el punto hay que mover el mapa y volver a marcar. Arrastrarla sigue siendo solo de ratón.
 
