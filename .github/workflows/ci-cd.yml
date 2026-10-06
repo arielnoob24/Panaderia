@@ -74,10 +74,7 @@ jobs:
             for (const c of categorias) {
               if (!entradas.has(c)) throw new Error(`la categoria "${c}" no se puede abrir desde el menu Tienda`);
             }
-            // "Todo el catalogo" y "todos" no son categorias: son la puerta a
-            // todas a la vez, y view.js las trata aparte.
             for (const e of entradas) {
-              if (e === "catalogo" || e === "todos") continue;
               if (!categorias.has(e)) throw new Error(`la entrada "${e}" del menu Tienda no tiene ningun producto detras`);
             }
             // Las fotos ya no las sirve un CDN: estan en el repositorio, y una

@@ -1128,10 +1128,9 @@ const iniciarCanasta = () => {
 
 // Lo que los demas modulos pueden pedirle a la canasta. Va por el puente porque
 // ellos tambien se llaman desde aqui: el cobro ensena el comprobante, el mapa
-// pide el desglose y la cuenta repinta el pie. Las entradas de las vistas
+// pide el desglose. Las entradas de las vistas
 // -verCheckout, ocultarCheckout y verComprobante- se apuntan mas arriba, donde
 // se declaran.
-puente.pintarPie = pintarPie;
 puente.pintarDesglose = pintarDesglose;
 // El boton de "usar mi ubicacion" vive junto al buscador y lo atiende map.js,
 // pero el mapa esta escondido hasta que hay algo que precisar y descubrirlo es

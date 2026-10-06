@@ -365,7 +365,7 @@ const respaldoCopiar = (texto) => {
   temporal.style.cssText = 'position:fixed;top:-100px;opacity:0';
   document.body.append(temporal);
   temporal.select();
-  let hecho = false;
+  let hecho;
   try { hecho = document.execCommand('copy'); } catch (e) { hecho = false; }
   temporal.remove();
   return hecho;
@@ -622,7 +622,7 @@ const montarPago = (elPanel) => {
 
   reciboCopiar.addEventListener('click', async () => {
     const texto = panel.querySelector('.recibo-numero').textContent.trim();
-    let hecho = false;
+    let hecho;
     try {
       if (!navigator.clipboard) throw new Error('sin portapapeles');
       await navigator.clipboard.writeText(texto);
@@ -680,6 +680,6 @@ const montarPago = (elPanel) => {
 
 export {
   montarPago, piezasDePago, comprobanteHtml,
-  pintarPago, pintarComprobante, olvidarTarjeta, restablecerPagar,
+  pintarPago, olvidarTarjeta, restablecerPagar,
   cancelarProceso, limpiarCopiados, reiniciarMetodo, cargarFactura,
 };

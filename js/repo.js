@@ -59,14 +59,6 @@ const normalizar = (p) => ({
   tamanos: p.tamanos || [],
 });
 
-// Las categorias salen del archivo, pero si no vinieran se sacan de los
-// propios productos: es un dato que ya esta ahi y repetirlo mal seria peor.
-const categoriasDe = (datos, productos) => (
-  Array.isArray(datos.categorias) && datos.categorias.length
-    ? datos.categorias
-    : [...new Set(productos.map((p) => p.categoria))]
-);
-
 const cargarProductos = async () => {
   const r = await fetch(RUTA);
   if (!r.ok) throw new Error(`no se pudo leer ${RUTA} (${r.status})`);
@@ -75,7 +67,8 @@ const cargarProductos = async () => {
   if (!Array.isArray(crudos) || !crudos.length) throw new Error(`${RUTA} no trae ningun producto`);
   crudos.forEach(revisar);
   const productos = crudos.map(normalizar);
-  return { productos, categorias: categoriasDe(datos, productos) };
+  return { productos };
 };
 
-export { cargarProductos, RUTA, revisar, normalizar };
+// revisar se exporta para el CI, que valida el JSON con estas mismas reglas.
+export { cargarProductos, RUTA, revisar };

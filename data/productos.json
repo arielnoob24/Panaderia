@@ -1,9 +1,4 @@
 {
-  "categorias": [
-    "panes",
-    "dulces",
-    "bebidas-frias"
-  ],
   "productos": [
     {
       "nombre": "Pan redondo",
@@ -50,13 +45,6 @@
       "alt": "Pan de chocolate partido por la mitad, con el relleno de chocolate a la vista"
     },
     {
-      "nombre": "Pan de queso con cebolla",
-      "categoria": "panes",
-      "precio": 1,
-      "foto": "assets/img/productos/pan-de-queso-con-cebolla",
-      "alt": "Pan rebanado con harina sobre una superficie clara"
-    },
-    {
       "nombre": "Pan redondo dulce",
       "categoria": "panes",
       "precio": 0.4,
@@ -101,7 +89,7 @@
       "categoria": "dulces",
       "precio": 2,
       "foto": "assets/img/productos/rebanada-de-cheesecake-de-limon",
-      "alt": "Rebanada de cheesecake con cubierta de limón y un arándano encima"
+      "alt": "Rebanada de cheesecake de limón con base de galleta, una rodaja de limón y ralladura encima"
     },
     {
       "nombre": "Coca-Cola",

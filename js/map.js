@@ -234,4 +234,4 @@ const montarMapa = (panel) => {
   });
 };
 
-export { montarMapa, armarMapa, armarMapaLocal, buscarDireccion, irAlPunto, contarDistancia };
+export { montarMapa, armarMapa, armarMapaLocal, buscarDireccion, irAlPunto };

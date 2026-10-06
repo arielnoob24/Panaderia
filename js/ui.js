@@ -531,8 +531,8 @@ if (heroImage) {
 }
 
 export {
-  menuToggle, navigation, reducedMotion, avisos,
-  focosDe, anexosDeFoco, apagarDetras, atraparFoco,
-  flechasEnMenu, closeMenu, grupo, grupoBoton, abrirGrupo,
+  menuToggle, reducedMotion, avisos,
+  anexosDeFoco, apagarDetras, atraparFoco,
+  flechasEnMenu, closeMenu, grupo, abrirGrupo,
   updateOpeningStatus, horarioDeHoy, vigilarImagenes,
 };

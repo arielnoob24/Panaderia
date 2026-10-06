@@ -93,7 +93,7 @@ const puente = {};
 
 export {
   CLAVE, pedido, entrega, sesion, tarjeta, cobro, factura, puente,
-  MAX_UNIDADES, ENVIO, ENVIO_BASE, ENVIO_POR_KM, ENVIO_TECHO, LOCAL,
+  MAX_UNIDADES, ENVIO_BASE, LOCAL,
   telefonoLargo, kmEntre, tarifaPara, dinero, direccionEntera, idDe,
   subtotal, envio, total, unidades,
 };

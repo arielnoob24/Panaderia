@@ -584,4 +584,4 @@ const montarCatalogo = (productos) => {
   });
 };
 
-export { montarCatalogo, fichaHtml };
+export { montarCatalogo };
