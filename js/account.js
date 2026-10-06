@@ -5,8 +5,9 @@
 import {
   avisos, menuToggle, closeMenu, flechasEnMenu, apagarDetras, atraparFoco,
 } from './ui.js';
-import { sesion, entrega, puente } from './state.js';
+import { sesion, entrega, puente, dinero } from './state.js';
 import { buzonListo, enviarCorreo } from './mail.js';
+import { pedidosGuardados, marcaBonita } from './storage.js';
 
 // Maqueta de cuentas. No hay servidor detras, asi que nada de esto viaja a
 // ninguna parte: la cuenta queda escrita en este navegador y en ningun otro
@@ -127,6 +128,14 @@ panelC.innerHTML =
   + '<div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div>'
   + '</dl>'
   + '<p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p>'
+  // Los pedidos ya pagados. Nace oculto: quien entra por primera vez no tiene
+  // ninguno, y un titulo sobre una lista vacia es peor que no poner nada.
+  + '<section class="cuenta-pedidos" hidden>'
+  + '<h3>Tus últimos pedidos</h3>'
+  + '<ul class="cuenta-pedidos-lista"></ul>'
+  + '<p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra '
+  + 'parte: desde otro equipo no se ven.</p>'
+  + '</section>'
   + '</div>'
   + '<div class="cuenta-pie">'
   + '<button class="cuenta-salir" type="button">Cerrar sesión</button>'
@@ -264,6 +273,10 @@ const pararCuentaAtras = () => {
 const verPaso = (nombre) => {
   pasosC.forEach((paso) => { paso.hidden = paso.dataset.paso !== nombre; });
   tituloC.textContent = TITULOS_CUENTA[nombre];
+  // El historial se relee al entrar al paso de la sesion y no una sola vez al
+  // cargar: entre una apertura y otra puede haberse pagado un pedido, y la
+  // lista tendria que ensenarlo sin recargar la pagina.
+  if (nombre === 'sesion') pintarPedidos();
 };
 
 // Mismo trato que en la tarjeta: un campo solo se marca cuando ya lo tocaste
@@ -433,6 +446,41 @@ const pintarSesion = () => {
   panelC.querySelector('.cuenta-sesion-correo').textContent = sesion.correo;
   panelC.querySelector('.cuenta-dato-telefono').textContent = telefonoBonito(sesion.telefono) || '—';
   panelC.querySelector('.cuenta-dato-direccion').textContent = sesion.direccion || 'Sin dirección guardada';
+};
+
+// El historial sale de IndexedDB, que se lee con promesas, asi que esto va
+// aparte de pintarSesion: lo demas del panel se pinta de golpe y no tiene por
+// que esperar a una base de datos para ensenar un nombre.
+const pintarPedidos = async () => {
+  const zona = panelC.querySelector('.cuenta-pedidos');
+  const lista = zona?.querySelector('.cuenta-pedidos-lista');
+  if (!lista) return;
+  const pedidos = await pedidosGuardados();
+  zona.hidden = !pedidos.length;
+  if (!pedidos.length) return;
+  lista.textContent = '';
+  pedidos.forEach((p) => {
+    const fila = document.createElement('li');
+    const numero = document.createElement('span');
+    numero.className = 'cuenta-pedido-numero';
+    numero.textContent = p.numero;
+    const cuando = document.createElement('span');
+    cuando.className = 'cuenta-pedido-fecha';
+    cuando.textContent = marcaBonita(new Date(p.fecha));
+    const cuanto = document.createElement('strong');
+    cuanto.textContent = dinero(Number(p.total) || 0);
+    // Cuantas cosas llevaba, que es lo que distingue un pedido de otro cuando
+    // los numeros no dicen nada por si solos.
+    const cuantos = (p.lineas || []).reduce((s, l) => s + (Number(l.cantidad) || 0), 0);
+    const detalle = document.createElement('span');
+    detalle.className = 'cuenta-pedido-detalle';
+    detalle.textContent = `${cuantos} ${cuantos === 1 ? 'unidad' : 'unidades'}`
+      + (p.modo === 'domicilio' ? ' · a domicilio' : ' · para retirar');
+    // En el orden en que se leen: numero y total arriba, cuando y que llevaba
+    // debajo. Es tambien el orden en que los dice un lector de pantalla.
+    fila.append(numero, cuanto, cuando, detalle);
+    lista.append(fila);
+  });
 };
 
 // Tener cuenta sirve para no volver a escribir lo mismo: la direccion pasa a la

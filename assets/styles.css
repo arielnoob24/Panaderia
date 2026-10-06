@@ -483,6 +483,10 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 .contacto-icono { display: block; width: 26px; height: 26px; flex: 0 0 auto; }
 /* Solo el copyright a la izquierda: la esquina derecha la ocupa el boton de la canasta. */
 .footer-note { grid-column: 1 / -1; margin: .6rem 0 0; padding-top: .8rem; border-top: 1px solid rgba(255, 255, 255, .15); color: var(--sobre-horno-tenue); font: .68rem Arial, sans-serif; }
+/* La marca de lo que este navegador tiene apuntado. Va debajo del aviso de
+   copyright, con su letra, porque es del mismo tipo de nota: algo sobre el
+   sitio y no sobre la panaderia. */
+.footer-guardado { grid-column: 1 / -1; margin: .35rem 0 0; color: var(--sobre-horno-tenue); font: .68rem Arial, sans-serif; }
 .floating-whatsapp { cursor: pointer; position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 /* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
@@ -926,6 +930,17 @@ body.is-checkout .floating-whatsapp { display: none; }
 
 .canasta-aviso, .cuenta-aviso { margin: .4rem 0 0; color: var(--corteza-oscura); font: .78rem/1.4 Arial, sans-serif; }
 .canasta-aviso[hidden], .cuenta-aviso[hidden] { display: none; }
+/* Los pedidos ya pagados que quedan en IndexedDB. Cada uno en dos renglones:
+   arriba el numero y el total, que es lo que se busca, y debajo cuando fue y
+   que llevaba, que es lo que lo distingue de los demas. */
+.cuenta-pedidos { margin-top: 1.1rem; padding-top: .9rem; border-top: 1px solid var(--masa-linea); }
+.cuenta-pedidos h3 { margin: 0 0 .6rem; color: var(--horno); font: 700 .85rem/1.4 Arial, sans-serif; }
+.cuenta-pedidos-lista { margin: 0; padding: 0; list-style: none; }
+.cuenta-pedidos-lista li { display: grid; grid-template-columns: 1fr auto; gap: .1rem .8rem; padding: .55rem 0; border-bottom: 1px solid var(--masa-linea); }
+.cuenta-pedido-numero { color: var(--horno); font: 700 .82rem/1.4 Arial, sans-serif; }
+.cuenta-pedidos-lista strong { color: var(--horno); font: 700 .82rem/1.4 Arial, sans-serif; text-align: right; }
+.cuenta-pedido-fecha, .cuenta-pedido-detalle { color: var(--horno-suave); font: .72rem/1.45 Arial, sans-serif; }
+.cuenta-pedido-detalle { text-align: right; }
 .canasta-nota, .cuenta-nota { margin: .7rem 0 0; color: var(--horno-suave); font: .75rem/1.45 Arial, sans-serif; text-align: center; }
 .canasta-enviar, .canasta-pagar, .canasta-avisar { width: 100%; justify-content: center; }
 .canasta-enviar[aria-disabled="true"], .canasta-pagar[aria-disabled="true"] { opacity: .45; pointer-events: none; }

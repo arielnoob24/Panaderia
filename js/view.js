@@ -5,6 +5,7 @@
 // dentro lo pone cart.js despues, porque eso ya es canasta.
 import { reducedMotion, avisos, grupo, abrirGrupo } from './ui.js';
 import { dinero, idDe, puente } from './state.js';
+import { recordarVista, vistaRecordada } from './storage.js';
 
 const catalogStatus = document.querySelector('.catalog-status');
 const productGrid = document.querySelector('.product-grid');
@@ -284,6 +285,9 @@ const montarCatalogo = (productos) => {
   let categoria = 'todos';
   const applyFilter = (shouldAnimate = false) => {
     const category = categoria;
+    // Donde estabas se apunta en cada cambio, no al salir: de la pagina se
+    // sale cerrandola, y no hay un momento fiable para guardar al final.
+    recordarVista({ categoria: category, orden, soloDisponibles });
     const animate = shouldAnimate && !reducedMotion.matches;
     const columns = columnCount(productGrid);
     const entering = [];
@@ -501,6 +505,21 @@ const montarCatalogo = (productos) => {
   });
 
   categoria = deLaDireccion();
+  // La categoria la dice la direccion, que es la que manda y la que se puede
+  // compartir. El orden y el filtro los dice la pestana, y solo si lo que
+  // recordaba es de esta misma categoria: recargar en "dulces" te deja donde
+  // estabas, pero lo que elegiste alli no tiene que aparecer puesto en panes.
+  const antes = vistaRecordada();
+  if (antes && antes.categoria === categoria) {
+    // Lo recordado se comprueba contra las opciones que existen de verdad. Es
+    // un dato del navegador y se puede editar a mano: un orden inventado
+    // dejaria el selector en blanco y ordenando por nada.
+    const ordenes = [...(selOrden?.options || [])].map((o) => o.value);
+    if (ordenes.includes(antes.orden)) orden = antes.orden;
+    soloDisponibles = antes.soloDisponibles === true;
+    if (selOrden) selOrden.value = orden;
+    if (selFiltro) selFiltro.value = soloDisponibles ? 'disponibles' : 'todos';
+  }
   pintarVista(categoria);
   applyFilter();
 

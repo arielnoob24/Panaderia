@@ -10,6 +10,7 @@ import {
   dinero, telefonoLargo, subtotal, envio, total,
 } from './state.js';
 import { buzonListo, enviarCorreo } from './mail.js';
+import { guardarPedido } from './storage.js';
 
 // Las piezas que pone este modulo dentro de la pantalla de confirmar el pedido.
 // No son un paso propio: la canasta las intercala entre la entrega y el
@@ -505,6 +506,23 @@ const aprobar = (metodo) => {
   cobro.detalle = detalleDe(metodo);
   pintarComprobante();
   mandarComprobante();
+  // El pedido pasa al historial de este navegador antes de vaciar nada. Es lo
+  // unico que queda de el: el recibo de la pantalla se va al cerrar el panel y
+  // el correo puede no haber salido, asi que sin esto no habria donde volver a
+  // mirar que se pidio ni por cuanto.
+  guardarPedido({
+    numero: cobro.numero,
+    fecha: new Date().toISOString(),
+    modo: entrega.modo,
+    direccion: entrega.modo === 'domicilio' ? direccionEntera() : '',
+    metodo: cobro.detalle,
+    subtotal: subtotal(),
+    envio: envio(),
+    total: total(),
+    lineas: [...pedido].map(([id, l]) => ({
+      id, nombre: l.nombre, precio: l.precio, cantidad: l.cantidad,
+    })),
+  });
   // El comprobante ya esta emitido: la canasta guardada se borra para que no
   // reaparezca en la proxima visita, pero las lineas siguen en memoria para
   // poder leer el recibo y armar el mensaje hasta que se cierre el panel.

@@ -10,6 +10,7 @@ import {
   subtotal, envio, total, unidades,
 } from './state.js';
 import { montarMapa, armarMapa, armarMapaLocal, buscarDireccion, irAlPunto } from './map.js';
+import { marcarActualizacion, olvidarMarca } from './storage.js';
 import {
   montarPago, piezasDePago, comprobanteHtml, pintarPago,
   olvidarTarjeta, restablecerPagar, cancelarProceso, limpiarCopiados, reiniciarMetodo,
@@ -53,6 +54,11 @@ const leerGuardado = () => {
   } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza vacio */ }
 };
 const guardar = () => {
+  // Cuando se guardo va en dos sitios a la vez, y no por descuido: dentro del
+  // propio pedido, para saber de cuando es lo que se esta recuperando, y en la
+  // cookie, que es la que se lee para escribirlo en el pie sin tener que abrir
+  // el pedido entero.
+  const cuando = marcarActualizacion();
   try {
     window.localStorage.setItem(CLAVE, JSON.stringify({
       lineas: [...pedido].map(([id, l]) => ({ id, ...l })),
@@ -63,11 +69,17 @@ const guardar = () => {
       notas: entrega.notas,
       punto: entrega.punto,
       factura: { ...factura },
+      guardado: cuando.toISOString(),
     }));
   } catch (e) { /* en ventana privada no se puede guardar; el pedido sigue vivo en memoria */ }
+  puente.pintarGuardado?.(cuando);
 };
 const borrarGuardado = () => {
   try { window.localStorage.removeItem(CLAVE); } catch (e) { /* si no se pudo guardar, no hay nada que borrar */ }
+  // Sin pedido guardado no hay nada de que dar la fecha: dejar la marca puesta
+  // seria decir en el pie que se guardo algo que ya no esta.
+  olvidarMarca();
+  puente.pintarGuardado?.(null);
 };
 
 // Panel, fondo y region de avisos se crean desde JavaScript: sin JS no hacen falta.
