@@ -27,6 +27,11 @@ const telefonoLargo = (n) => `+593 ${String(n || '').replace(/(\d{2})(\d{3})(\d{
 // a ningun lado, y se borran al salir del paso de pago.
 const tarjeta = { numero: '', vence: '', cvv: '', titular: '' };
 const cobro = { metodo: 'efectivo', numero: '', detalle: '' };
+// A nombre de quien va la factura. Por defecto, de quien pide: lo normal es que
+// sean la misma persona, y preguntarlo siempre seria un formulario de mas. Se
+// pide aparte solo cuando alguien dice que la factura va a otro nombre, que es
+// lo que pasa cuando se compra para una oficina o se paga por un familiar.
+const factura = { aOtro: false, nombre: '', ident: '', correo: '', direccion: '' };
 
 // Lo que cuesta llevarlo. Vive aqui arriba, con los demas datos, porque el
 // panel ya lo escribe al nacer para que cada opcion diga lo que vale.
@@ -87,7 +92,7 @@ const unidades = () => [...pedido.values()].reduce((s, l) => s + l.cantidad, 0);
 const puente = {};
 
 export {
-  CLAVE, pedido, entrega, sesion, tarjeta, cobro, puente,
+  CLAVE, pedido, entrega, sesion, tarjeta, cobro, factura, puente,
   MAX_UNIDADES, ENVIO, ENVIO_BASE, ENVIO_POR_KM, ENVIO_TECHO, LOCAL,
   telefonoLargo, kmEntre, tarifaPara, dinero, direccionEntera, idDe,
   subtotal, envio, total, unidades,

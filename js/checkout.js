@@ -6,31 +6,10 @@
 // el puente, porque la canasta tambien llama aqui.
 import { avisos } from './ui.js';
 import {
-  pedido, entrega, sesion, tarjeta, cobro, puente, direccionEntera,
+  pedido, entrega, sesion, tarjeta, cobro, factura, puente, direccionEntera,
   dinero, telefonoLargo, subtotal, envio, total,
 } from './state.js';
 import { buzonListo, enviarCorreo } from './mail.js';
-
-// QR decorativo: los modulos salen de una secuencia fija, asi que siempre se
-// dibuja igual y tiene la textura de un QR, pero no codifica nada. Por eso va
-// aria-hidden y con un texto al lado que explica que es.
-const qrDecorativo = () => {
-  const lado = 25;
-  const enOjo = (x, y) => [[0, 0], [lado - 7, 0], [0, lado - 7]].some(([ox, oy]) => x >= ox && x < ox + 7 && y >= oy && y < oy + 7);
-  let semilla = 20260926;
-  const modulos = [];
-  for (let y = 0; y < lado; y += 1) {
-    for (let x = 0; x < lado; x += 1) {
-      semilla = (semilla * 1103515245 + 12345) % 2147483648;
-      if (enOjo(x, y) || semilla % 100 >= 46) continue;
-      modulos.push(`<rect x="${x}" y="${y}" width="1" height="1"/>`);
-    }
-  }
-  const ojo = (x, y) => `<path d="M${x + 0.5} ${y + 0.5}h6v6h-6z" fill="none" stroke="currentColor" stroke-width="1"/><rect x="${x + 2}" y="${y + 2}" width="3" height="3"/>`;
-  return '<svg class="pago-qr" viewBox="-1 -1 27 27" aria-hidden="true" focusable="false"><g fill="currentColor">'
-    + modulos.join('') + ojo(0, 0) + ojo(lado - 7, 0) + ojo(0, lado - 7) + '</g></svg>';
-};
-
 
 // Las piezas que pone este modulo dentro de la pantalla de confirmar el pedido.
 // No son un paso propio: la canasta las intercala entre la entrega y el
@@ -50,8 +29,6 @@ const piezasDePago = () => ({
   + '<div class="canasta-opciones">'
   + '<label><input type="radio" name="canasta-metodo" value="efectivo" checked><span>Efectivo</span></label>'
   + '<label><input type="radio" name="canasta-metodo" value="tarjeta"><span>Tarjeta</span></label>'
-  + '<label><input type="radio" name="canasta-metodo" value="transferencia"><span>Transferencia</span></label>'
-  + '<label><input type="radio" name="canasta-metodo" value="deuna"><span>DeUna</span></label>'
   + '</div></fieldset>'
 
   + '<div class="pago-detalle" data-detalle="efectivo">'
@@ -76,25 +53,45 @@ const piezasDePago = () => ({
   + '<div class="pago-campo"><label for="pago-titular">Nombre del titular</label>'
   + '<input id="pago-titular" type="text" autocomplete="off" '
   + 'placeholder="Como aparece en la tarjeta" maxlength="60" aria-describedby="pago-titular-error">'
-  + '<p class="pago-campo-error" id="pago-titular-error" hidden></p></div></div>'
+  + '<p class="pago-campo-error" id="pago-titular-error" hidden></p></div></div>',
 
-  + '<div class="pago-detalle" data-detalle="transferencia" hidden>'
-  + '<p class="pago-dato">Transfiere desde tu banco y avísanos con el comprobante.</p>'
-  + '<dl class="pago-banco">'
-  + '<div><dt>Banco</dt><dd>Banco Pichincha</dd></div>'
-  + '<div><dt>Tipo de cuenta</dt><dd>Corriente</dd></div>'
-  + '<div><dt>Número de cuenta</dt><dd><span class="pago-cuenta">2100123456</span></dd></div>'
-  + '<div><dt>Titular</dt><dd>Panadería El Tradicional Cía. Ltda.</dd></div>'
-  + '<div><dt>RUC</dt><dd>1591234567001</dd></div></dl>'
-  + '<button class="pago-copiar" type="button">Copiar el número de cuenta</button>'
-  + '<p class="pago-copiado" role="status" hidden></p>'
-  + '<p class="pago-dato pago-ficticio">Datos bancarios ficticios, puestos para la demostración.</p></div>'
-
-  + '<div class="pago-detalle" data-detalle="deuna" hidden>'
-  + '<p class="pago-dato">Abre DeUna en la app de tu banco y escanea el código.</p>'
-  + '<div class="pago-qr-caja">' + qrDecorativo()
-  + '<p class="pago-qr-alt">Código QR de adorno: tiene la forma de un QR de DeUna '
-  + 'para El Tradicional, pero no codifica nada y no abre ningún cobro.</p></div></div>',
+  // A nombre de quien va la factura. Lo normal es que sea de quien pide, asi que
+  // eso viene marcado y no hay nada que rellenar; los campos aparecen solo al
+  // decir que va a otro nombre, que es el caso de comprar para una oficina o de
+  // que pague un familiar.
+  factura: ''
+  + '<fieldset class="canasta-entrega factura-bloque"><legend>Datos para la factura</legend>'
+  + '<div class="canasta-opciones">'
+  + '<label><input type="radio" name="canasta-factura" value="mi" checked>'
+  + '<span>A mi nombre</span></label>'
+  + '<label><input type="radio" name="canasta-factura" value="otro">'
+  + '<span>A nombre de otra persona</span></label></div>'
+  + '<div class="factura-mia">'
+  + '<p class="factura-dato"><strong class="factura-mi-nombre"></strong><br>'
+  + '<span class="factura-mi-correo"></span></p>'
+  + '<p class="factura-nota">Son los datos de tu cuenta. Si te falta la cédula o el RUC, '
+  + 'elige la otra opción y escríbelos.</p></div>'
+  + '<div class="factura-otra" hidden>'
+  + '<div class="pago-campo"><label for="factura-nombre">Nombre o razón social</label>'
+  + '<input id="factura-nombre" type="text" autocomplete="off" maxlength="80" '
+  + 'placeholder="A quién se le factura" aria-describedby="factura-nombre-error">'
+  + '<p class="pago-campo-error" id="factura-nombre-error" hidden></p></div>'
+  + '<div class="pago-campo"><label for="factura-ident">Cédula o RUC</label>'
+  + '<input id="factura-ident" type="text" inputmode="numeric" autocomplete="off" '
+  + 'maxlength="13" placeholder="10 dígitos, o 13 si es RUC" '
+  + 'aria-describedby="factura-ident-error">'
+  + '<p class="pago-campo-error" id="factura-ident-error" hidden></p></div>'
+  + '<div class="pago-campo"><label for="factura-correo">Correo para enviarle la factura '
+  + '<small>(opcional)</small></label>'
+  + '<input id="factura-correo" type="email" autocomplete="off" maxlength="120" '
+  + 'placeholder="Si se la quieres hacer llegar a esa persona"></div>'
+  + '<div class="pago-campo"><label for="factura-dir">Dirección '
+  + '<small>(opcional)</small></label>'
+  + '<input id="factura-dir" type="text" autocomplete="off" maxlength="160" '
+  + 'placeholder="La que debe constar en la factura"></div>'
+  + '<p class="factura-nota">El comprobante del pedido sigue llegando a tu correo; '
+  + 'esto es solo a nombre de quién sale la factura.</p></div>'
+  + '</fieldset>',
 
   canal: ''
   + '<div class="pago-canal"><h3 class="pago-canal-titulo">Dónde te llega el comprobante</h3>'
@@ -123,6 +120,7 @@ const comprobanteHtml = () => ''
   + '<div><dt>Total</dt><dd class="recibo-total">$0.00</dd></div>'
   + '<div><dt>Pago</dt><dd class="recibo-metodo"></dd></div>'
   + '<div><dt>Entrega</dt><dd class="recibo-modo"></dd></div>'
+  + '<div><dt>Factura</dt><dd class="recibo-factura"></dd></div>'
   + '<div class="recibo-linea-dir" hidden><dt>Dirección</dt><dd class="recibo-direccion"></dd></div>'
   + '<div class="recibo-linea-notas" hidden><dt>Indicaciones</dt>'
   + '<dd class="recibo-notas"></dd></div>'
@@ -148,19 +146,105 @@ let camposTarjeta = [];
 let pagoEfectivo = null;
 let pagar = null;
 let errorPago = null;
-let copiar = null;
-let copiado = null;
 let canalCorreo = null;
 let reciboEnviadoDe = null;
 let reciboEnviadoTexto = null;
 let reciboEnvioEstado = null;
 let reciboCopiar = null;
 let reciboCopiado = null;
+let facturaRadios = [];
+let facturaCampos = [];
+let facturaMia = null;
+let facturaOtra = null;
+
+// ---- Datos para la factura ----
+// Dos reglas y nada mas, porque la factura de verdad no se emite aqui: el nombre
+// no puede estar vacio y el documento tiene que tener forma de cedula o de RUC.
+// No se comprueba el digito verificador: eso valida que el numero exista, no que
+// sea de quien dice, y en una maqueta sin SRI detras daria una falsa sensacion de
+// haberlo verificado.
+const facturaAOtro = () => facturaRadios.find((r) => r.checked)?.value === 'otro';
+
+const revisarFactura = () => {
+  const fallos = {};
+  if (!facturaAOtro()) return fallos;
+  if (!factura.nombre) fallos.nombre = 'Escribe a nombre de quién va la factura.';
+  const digitos = factura.ident.replace(/\D/g, '');
+  if (!digitos) fallos.ident = 'Escribe la cédula o el RUC.';
+  else if (digitos.length !== 10 && digitos.length !== 13) {
+    fallos.ident = 'La cédula tiene 10 dígitos y el RUC 13.';
+  } else if (Number(digitos.slice(0, 2)) < 1 || Number(digitos.slice(0, 2)) > 24) {
+    // Los dos primeros digitos son la provincia, del 01 al 24. Es la unica
+    // comprobacion que se puede hacer sin inventarse una validacion completa.
+    fallos.ident = 'Los dos primeros dígitos no son de una provincia del Ecuador.';
+  }
+  return fallos;
+};
+
+// Los errores solo salen cuando ya se intento confirmar o cuando el campo se
+// dejo atras: avisar mientras alguien escribe su cedula es regañarle a medias.
+const tocadosFactura = new Set();
+let intentadoFactura = false;
+
+const pintarFactura = () => {
+  const aOtro = facturaAOtro();
+  factura.aOtro = aOtro;
+  if (facturaMia) facturaMia.hidden = aOtro;
+  if (facturaOtra) facturaOtra.hidden = !aOtro;
+  const nombreMio = panel?.querySelector('.factura-mi-nombre');
+  const correoMio = panel?.querySelector('.factura-mi-correo');
+  if (nombreMio) nombreMio.textContent = sesion.nombre || 'Tu nombre';
+  if (correoMio) correoMio.textContent = sesion.correo;
+  const fallos = revisarFactura();
+  facturaCampos.forEach(({ clave, input, error }) => {
+    const mal = fallos[clave] && (intentadoFactura || tocadosFactura.has(clave));
+    error.hidden = !mal;
+    error.textContent = mal ? fallos[clave] : '';
+    input.setAttribute('aria-invalid', String(Boolean(mal)));
+  });
+  return fallos;
+};
+
+// Pedido cumplido: la proxima factura vuelve a ser a nombre de quien pide.
+const olvidarFactura = () => {
+  factura.aOtro = false;
+  factura.nombre = '';
+  factura.ident = '';
+  factura.correo = '';
+  factura.direccion = '';
+  facturaRadios.forEach((r) => { r.checked = r.value === 'mi'; });
+  facturaCampos.forEach(({ input, error }) => {
+    input.value = '';
+    error.hidden = true;
+    input.removeAttribute('aria-invalid');
+  });
+  tocadosFactura.clear();
+  intentadoFactura = false;
+  pintarFactura();
+};
+
+// Lo guardado del pedido anterior, de vuelta a los campos. La canasta llama a
+// esto al arrancar, cuando ya leyo el almacenamiento y el panel existe.
+const cargarFactura = () => {
+  facturaRadios.forEach((r) => { r.checked = r.value === (factura.aOtro ? 'otro' : 'mi'); });
+  facturaCampos.forEach(({ clave, input }) => { input.value = factura[clave]; });
+  const correo = panel?.querySelector('#factura-correo');
+  const dir = panel?.querySelector('#factura-dir');
+  if (correo) correo.value = factura.correo;
+  if (dir) dir.value = factura.direccion;
+  pintarFactura();
+};
+
+// Como se escribe en el comprobante y en el correo. A nombre propio no hace
+// falta repetir el nombre de la cuenta, que ya esta arriba en el saludo.
+const facturaTexto = () => (factura.aOtro
+  ? `${factura.nombre} · ${factura.ident.replace(/\D/g, '')}`
+  : 'A tu nombre');
 
 // ---- Pago simulado ----
 // El proyecto es academico: la gracia es enseñar el recorrido completo, no
 // cobrar. Cada pantalla lo dice en voz alta para que nadie crea otra cosa.
-const METODOS = { efectivo: 'Efectivo', tarjeta: 'Tarjeta', transferencia: 'Transferencia bancaria', deuna: 'DeUna' };
+const METODOS = { efectivo: 'Efectivo', tarjeta: 'Tarjeta' };
 const metodoActual = () => metodos.find((m) => m.checked)?.value || 'efectivo';
 let procesando = false;
 let temporizador = 0;
@@ -173,6 +257,9 @@ const pintarPago = () => {
     : 'Pagas en efectivo al retirar el pedido en el local.';
   detalles.forEach((d) => { d.hidden = d.dataset.detalle !== metodo; });
   if (canalCorreo) canalCorreo.textContent = sesion.correo;
+  // El nombre y el correo de la cuenta pueden haber cambiado desde la ultima
+  // vez que se abrio esto, asi que se vuelven a escribir aqui y no una sola vez.
+  pintarFactura();
   // Mientras procesa, el boton dice otra cosa y no se le puede pisar el texto.
   if (procesando) return;
   // Si se vacia la canasta estando en la vista de confirmar -se puede, la
@@ -290,7 +377,6 @@ const numeroDePedido = () => 'ET-' + Array.from({ length: 4 }, () => ALFABETO[Ma
 const detalleDe = (metodo) => {
   if (metodo === 'efectivo') return entrega.modo === 'domicilio' ? 'Efectivo al recibir' : 'Efectivo al retirar';
   if (metodo === 'tarjeta') return `Tarjeta terminada en ${tarjeta.numero.replace(/\D/g, '').slice(-4)}`;
-  if (metodo === 'deuna') return 'DeUna (QR)';
   return METODOS[metodo];
 };
 
@@ -301,6 +387,7 @@ const pintarComprobante = () => {
   panel.querySelector('.recibo-total').textContent = dinero(total());
   panel.querySelector('.recibo-metodo').textContent = cobro.detalle;
   panel.querySelector('.recibo-modo').textContent = entrega.modo === 'domicilio' ? 'A domicilio' : 'Paso retirando por el local';
+  panel.querySelector('.recibo-factura').textContent = facturaTexto();
   panel.querySelector('.recibo-linea-dir').hidden = entrega.modo !== 'domicilio';
   panel.querySelector('.recibo-direccion').textContent = direccionEntera();
   // Las indicaciones solo salen si hay alguna: una fila "Indicaciones: —" no
@@ -341,6 +428,8 @@ const cuerpoComprobante = () => {
     `Envío: ${envio() ? dinero(envio()) : 'Gratis'}`,
     `Total: ${dinero(total())}`,
     `Pago: ${cobro.detalle}`,
+    `Factura: ${facturaTexto()}`,
+    ...(factura.aOtro && factura.direccion ? [`Dirección de la factura: ${factura.direccion}`] : []),
     `Entrega: ${entrega.modo === 'domicilio' ? 'A domicilio — ' + direccionEntera() : 'Paso retirando por el local'}`,
     // Quien reparte lee esto antes de bajarse de la moto, asi que va en su
     // propia linea y no pegado a la direccion.
@@ -369,7 +458,6 @@ const cancelarProceso = () => {
 // Al cerrar, los dos renglones de "copiado" se van: al volver a abrir no tiene
 // que seguir puesto el aviso de la visita anterior.
 const limpiarCopiados = () => {
-  if (copiado) copiado.hidden = true;
   if (reciboCopiado) reciboCopiado.hidden = true;
 };
 
@@ -423,6 +511,7 @@ const aprobar = (metodo) => {
   puente.borrarGuardado();
   puente.vaciarContador();
   olvidarTarjeta();
+  olvidarFactura();
   restablecerPagar();
   puente.verComprobante();
   avisos.textContent = `Pago aprobado. Pedido ${cobro.numero}. Es una simulación: no se cobró nada.`;
@@ -436,8 +525,6 @@ const montarPago = (elPanel) => {
   pagoEfectivo = panel.querySelector('.pago-efectivo');
   pagar = panel.querySelector('.canasta-pagar');
   errorPago = panel.querySelector('.pago-error');
-  copiar = panel.querySelector('.pago-copiar');
-  copiado = panel.querySelector('.pago-copiado');
   canalCorreo = panel.querySelector('.pago-canal-correo');
   reciboEnviadoDe = panel.querySelector('.recibo-enviado-de');
   reciboEnviadoTexto = panel.querySelector('.recibo-enviado-texto');
@@ -446,6 +533,50 @@ const montarPago = (elPanel) => {
   reciboEnvioEstado = panel.querySelector('.recibo-envio-estado');
   reciboCopiar = panel.querySelector('.recibo-copiar');
   reciboCopiado = panel.querySelector('.recibo-copiado');
+
+  facturaRadios = [...panel.querySelectorAll('input[name="canasta-factura"]')];
+  facturaMia = panel.querySelector('.factura-mia');
+  facturaOtra = panel.querySelector('.factura-otra');
+  facturaCampos = [
+    { clave: 'nombre', nombre: 'el nombre', input: panel.querySelector('#factura-nombre'), error: panel.querySelector('#factura-nombre-error') },
+    { clave: 'ident', nombre: 'la cédula o el RUC', input: panel.querySelector('#factura-ident'), error: panel.querySelector('#factura-ident-error') },
+  ];
+  const facturaCorreo = panel.querySelector('#factura-correo');
+  const facturaDir = panel.querySelector('#factura-dir');
+
+  facturaRadios.forEach((r) => r.addEventListener('change', () => {
+    if (!r.checked) return;
+    errorPago.hidden = true;
+    // Al volver a "a mi nombre" se dejan de avisar errores de campos que ya no
+    // se piden, pero lo escrito se queda: puede ser un cambio de idea de ida y
+    // vuelta, y borrarlo obligaria a teclear la cedula otra vez.
+    intentadoFactura = false;
+    tocadosFactura.clear();
+    pintarFactura();
+    puente.guardar?.();
+    if (facturaAOtro()) facturaCampos[0].input.focus();
+  }));
+
+  facturaCampos.forEach(({ clave, input }) => {
+    input.addEventListener('input', () => {
+      // El documento es numerico: dejar escribir letras ahi solo lleva a un
+      // error que se podia haber evitado al teclear.
+      if (clave === 'ident') input.value = input.value.replace(/\D/g, '').slice(0, 13);
+      factura[clave] = input.value.trim().slice(0, clave === 'nombre' ? 80 : 13);
+      pintarFactura();
+      puente.guardar?.();
+    });
+    input.addEventListener('blur', () => { tocadosFactura.add(clave); pintarFactura(); });
+  });
+
+  facturaCorreo?.addEventListener('input', () => {
+    factura.correo = facturaCorreo.value.trim().slice(0, 120);
+    puente.guardar?.();
+  });
+  facturaDir?.addEventListener('input', () => {
+    factura.direccion = facturaDir.value.trim().slice(0, 160);
+    puente.guardar?.();
+  });
 
   camposTarjeta = [
     { clave: 'numero', nombre: 'el número', input: panel.querySelector('#pago-numero'), error: panel.querySelector('#pago-numero-error') },
@@ -468,7 +599,6 @@ const montarPago = (elPanel) => {
   metodos.forEach((m) => m.addEventListener('change', () => {
     if (!m.checked) return;
     errorPago.hidden = true;
-    copiado.hidden = true;
     pintarPago();
   }));
 
@@ -488,24 +618,22 @@ const montarPago = (elPanel) => {
       : `No se pudo copiar; apunta el ${texto} a mano.`;
   });
 
-  copiar.addEventListener('click', async () => {
-    const texto = panel.querySelector('.pago-cuenta').textContent.trim();
-    let hecho = false;
-    try {
-      if (!navigator.clipboard) throw new Error('sin portapapeles');
-      await navigator.clipboard.writeText(texto);
-      hecho = true;
-    } catch (e) {
-      hecho = respaldoCopiar(texto);
-    }
-    copiado.hidden = false;
-    copiado.textContent = hecho ? 'Número de cuenta copiado.' : 'No se pudo copiar; selecciónalo a mano.';
-  });
-
   pagar.addEventListener('click', () => {
     if (procesando || !pedido.size) return;
     // El aviso y el foco los pone la canasta, que es de quien es el campo.
     if (puente.faltaDireccion()) return;
+    // La factura se revisa antes que la tarjeta porque su bloque esta mas
+    // arriba en la pantalla: avisar primero de lo de abajo manda el foco hacia
+    // atras y hace parecer que el formulario salta.
+    intentadoFactura = true;
+    const malFactura = pintarFactura();
+    const faltaFactura = facturaCampos.filter(({ clave }) => malFactura[clave]);
+    if (faltaFactura.length) {
+      errorPago.hidden = false;
+      errorPago.textContent = `Para la factura, revisa ${faltaFactura.map((c) => c.nombre).join(' y ')}.`;
+      faltaFactura[0].input.focus();
+      return;
+    }
     const metodo = metodoActual();
     if (metodo === 'tarjeta') {
       intentado = true;
@@ -535,5 +663,5 @@ const montarPago = (elPanel) => {
 export {
   montarPago, piezasDePago, comprobanteHtml,
   pintarPago, pintarComprobante, olvidarTarjeta, restablecerPagar,
-  cancelarProceso, limpiarCopiados, reiniciarMetodo,
+  cancelarProceso, limpiarCopiados, reiniciarMetodo, cargarFactura,
 };

@@ -5,7 +5,7 @@
 // del reparto, map.js; aqui se arma el panel entero y se reparte.
 import { avisos, anexosDeFoco, atraparFoco, apagarDetras, horarioDeHoy } from './ui.js';
 import {
-  CLAVE, pedido, entrega, sesion, cobro, puente,
+  CLAVE, pedido, entrega, sesion, cobro, factura, puente,
   MAX_UNIDADES, ENVIO_BASE, dinero, idDe,
   subtotal, envio, total, unidades,
 } from './state.js';
@@ -13,6 +13,7 @@ import { montarMapa, armarMapa, armarMapaLocal, buscarDireccion, irAlPunto } fro
 import {
   montarPago, piezasDePago, comprobanteHtml, pintarPago,
   olvidarTarjeta, restablecerPagar, cancelarProceso, limpiarCopiados, reiniciarMetodo,
+  cargarFactura,
 } from './checkout.js';
 
 const leerGuardado = () => {
@@ -31,6 +32,16 @@ const leerGuardado = () => {
       if (typeof dato.piso === 'string') entrega.piso = dato.piso.slice(0, 120);
       if (typeof dato.referencia === 'string') entrega.referencia = dato.referencia.slice(0, 200);
       if (typeof dato.notas === 'string') entrega.notas = dato.notas.slice(0, 300);
+      // A nombre de quien va la factura tambien sobrevive a recargar: quien pide
+      // para una oficina lo hace siempre a nombre de la misma.
+      const f = dato.factura;
+      if (f && typeof f === 'object') {
+        factura.aOtro = f.aOtro === true;
+        if (typeof f.nombre === 'string') factura.nombre = f.nombre.slice(0, 80);
+        if (typeof f.ident === 'string') factura.ident = f.ident.replace(/\D/g, '').slice(0, 13);
+        if (typeof f.correo === 'string') factura.correo = f.correo.slice(0, 120);
+        if (typeof f.direccion === 'string') factura.direccion = f.direccion.slice(0, 160);
+      }
       // El punto del mapa viene de lo que haya en este navegador: se mira que
       // sean dos numeros de verdad antes de cobrar una distancia con ellos.
       const p = dato.punto;
@@ -51,6 +62,7 @@ const guardar = () => {
       referencia: entrega.referencia,
       notas: entrega.notas,
       punto: entrega.punto,
+      factura: { ...factura },
     }));
   } catch (e) { /* en ventana privada no se puede guardar; el pedido sigue vivo en memoria */ }
 };
@@ -205,8 +217,11 @@ vista.innerHTML =
   + 'placeholder="Timbre dañado, llamar al llegar. Hay perro."></textarea>'
   + '</div></fieldset>'
 
-  // Como se paga, puesto por checkout.js.
+  // Como se paga y a nombre de quien va la factura, puestos por checkout.js.
+  // La factura va despues del pago porque es un dato administrativo: primero se
+  // decide lo que afecta al pedido y luego a quien se le emite el papel.
   + piezas.metodos
+  + piezas.factura
   + '</div>'
 
   // La columna del resumen lleva dentro el boton de confirmar: es lo ultimo que
@@ -1095,6 +1110,7 @@ const iniciarCanasta = () => {
   if (campoPiso) campoPiso.value = entrega.piso;
   if (campoRef) campoRef.value = entrega.referencia;
   if (campoNotas) campoNotas.value = entrega.notas;
+  cargarFactura();
   pintar();
 };
 

@@ -965,6 +965,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    escribir y despues la sugerencia de como. La separacion tambien crece, para
    que el nombre se lea como titulo del campo y no como parte de el. */
 .pago-campo label, .cuenta-campo label { display: block; margin-bottom: .4rem; color: var(--horno); font: 700 .8rem/1.3 Arial, sans-serif; }
+.pago-campo label small, .cuenta-campo label small { color: var(--horno-suave); font-size: 1em; font-weight: 400; }
 /* opacity a 1 porque Firefox aclara los ejemplos por su cuenta, y entonces el
    color de aqui no seria el que se ve. */
 .pago-campo input::placeholder, .cuenta-campo input::placeholder { color: var(--horno-claro); opacity: 1; }
@@ -974,19 +975,24 @@ body.is-checkout .floating-whatsapp { display: none; }
 .pago-campo-error, .cuenta-campo-error { margin: .3rem 0 0; color: var(--corteza-oscura); font: .74rem/1.4 Arial, sans-serif; }
 .pago-campo-error[hidden], .cuenta-campo-error[hidden] { display: none; }
 .pago-fila { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
-.pago-banco { display: grid; margin: 0 0 .8rem; gap: .35rem; }
-.pago-banco div, .recibo-datos div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .4rem; border-bottom: 1px solid var(--masa-linea); }
-.pago-banco dt, .recibo-datos dt { color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
-.pago-banco dd, .recibo-datos dd { margin: 0; font: 700 .84rem/1.4 Arial, sans-serif; text-align: right; }
-.pago-cuenta, .recibo-numero { font-variant-numeric: tabular-nums; -webkit-user-select: text; -ms-user-select: text; user-select: text; }
-.pago-copiar { width: 100%; padding: .6rem .8rem; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .8rem/1.3 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.pago-copiar:hover { background: var(--masa-honda); }
-.pago-copiado { margin: .45rem 0 0; color: var(--horno-suave); font: .76rem/1.4 Arial, sans-serif; text-align: center; }
-.pago-copiado[hidden] { display: none; }
-.pago-ficticio { margin: .85rem 0 0; }
-.pago-qr-caja { display: grid; gap: .6rem; justify-items: center; }
-.pago-qr { width: 170px; max-width: 100%; height: auto; padding: .5rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-chip); color: var(--horno); }
-.pago-qr-alt { margin: 0; color: var(--horno-suave); font: .76rem/1.45 Arial, sans-serif; text-align: center; }
+.recibo-datos div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .4rem; border-bottom: 1px solid var(--masa-linea); }
+.recibo-datos dt { color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
+.recibo-datos dd { margin: 0; font: 700 .84rem/1.4 Arial, sans-serif; text-align: right; }
+.recibo-numero { font-variant-numeric: tabular-nums; -webkit-user-select: text; -ms-user-select: text; user-select: text; }
+
+/* ---- Datos para la factura --------------------------------------------
+   Los campos aparecen solo al decir que la factura va a otro nombre, asi que el
+   bloque crece: por eso el aire va dentro y no en un margen que quede colgando
+   cuando no hay nada que ensenar. */
+.factura-bloque { margin-top: .9rem; }
+.factura-mia[hidden], .factura-otra[hidden] { display: none; }
+.factura-mia { margin-top: .7rem; padding: .7rem .85rem; background: var(--masa); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; }
+.factura-dato { margin: 0; font: .85rem/1.5 Arial, sans-serif; }
+.factura-dato strong { font-size: .9rem; }
+.factura-nota { margin: .5rem 0 0; color: var(--horno-suave); font: .76rem/1.45 Arial, sans-serif; }
+.factura-otra { display: grid; gap: .7rem; margin-top: .8rem; }
+.factura-otra .pago-campo { margin: 0; }
+#factura-ident { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
 .pago-error { margin: 0 0 .7rem; text-align: center; }
 .pago-girando { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(58, 40, 34, .25); border-top-color: var(--horno); border-radius: 50%; vertical-align: -2px; animation: girar 700ms linear infinite; }
 @keyframes girar { to { transform: rotate(360deg); } }
