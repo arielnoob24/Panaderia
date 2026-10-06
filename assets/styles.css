@@ -389,11 +389,19 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 .vista-mando select:focus-visible { outline: 2px solid var(--ambar); outline-offset: 2px; }
 .vista-cuenta { margin: 0; color: var(--horno-suave); font: .82rem Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .vista-cuenta:empty { display: none; }
+.vista-cabeza:not(.es-catalogo) .solo-catalogo { display: none; }
+.vista-buscar { position: relative; }
+.vista-buscar svg { position: absolute; left: .7rem; width: 15px; height: 15px; color: var(--horno-suave); pointer-events: none; }
+.vista-buscar input { width: 15rem; max-width: 100%; padding: .45rem .8rem .45rem 2rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); font: .85rem Arial, sans-serif; transition: border-color var(--dur-fast) var(--ease-ui); }
+.vista-buscar input:hover { border-color: var(--corteza); }
+.vista-buscar input:focus-visible { outline: 2px solid var(--ambar); outline-offset: 2px; }
+.vista-vacio { width: 100%; margin: 1.5rem 0 0; color: var(--horno-suave); font: 1rem Georgia, serif; text-align: center; }
 @media (max-width: 680px) {
   .vista-barra { flex-direction: column; align-items: stretch; }
   .vista-mandos { flex-direction: column; align-items: stretch; }
   .vista-mando { justify-content: space-between; }
   .vista-mando select { flex: 0 0 62%; }
+  .vista-buscar input { width: 100%; }
 }
 
 .vista-titulo:focus { outline: none; }

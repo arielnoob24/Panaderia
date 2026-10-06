@@ -285,6 +285,12 @@ const montarCatalogo = (productos) => {
   const nombreDeFicha = (p) => (p.querySelector('h3')?.textContent || '').trim();
   let orden = 'recomendados';
   let soloDisponibles = false;
+  // Solo en el catalogo entero: por que categoria se mira y que se busca. En
+  // una categoria sobran, alli ya se esta dentro de una.
+  let subcategoria = 'todas';
+  let busqueda = '';
+  // Se busca sin tildes ni mayusculas: quien escribe "cafe" quiere el cafe.
+  const plano = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
   let filterRun = 0;
   // Ya no hay barra de filtros: la categoria es un estado de la pagina. 'todos'
@@ -294,7 +300,7 @@ const montarCatalogo = (productos) => {
     const category = categoria;
     // Donde estabas se apunta en cada cambio, no al salir: de la pagina se
     // sale cerrandola, y no hay un momento fiable para guardar al final.
-    recordarVista({ categoria: category, orden, soloDisponibles });
+    recordarVista({ categoria: category, orden, soloDisponibles, subcategoria });
     const animate = shouldAnimate && !reducedMotion.matches;
     const columns = columnCount(productGrid);
     const entering = [];
@@ -307,6 +313,7 @@ const montarCatalogo = (productos) => {
     productGrid?.classList.remove('is-filtering');
     // Cuantos hay en la categoria antes de filtrar nada: es el "de cuantos".
     const todoJunto = category === 'todos' || category === 'catalogo';
+    const enCatalogo = category === 'catalogo';
     const deLaCategoria = products.filter((p) => todoJunto || p.dataset.category === category);
     const total = deLaCategoria.length;
 
@@ -327,7 +334,11 @@ const montarCatalogo = (productos) => {
       // barra con que tocarlo, asi que ahi se sale todo como siempre.
       const pasaFiltro = category === 'todos' || !soloDisponibles
         || product.dataset.available !== 'false';
-      const visible = deAqui && pasaFiltro;
+      const pasaSub = !enCatalogo || subcategoria === 'todas'
+        || product.dataset.category === subcategoria;
+      const pasaBusqueda = !enCatalogo || !busqueda
+        || plano(nombreDeFicha(product)).includes(plano(busqueda));
+      const visible = deAqui && pasaFiltro && pasaSub && pasaBusqueda;
       product.hidden = !visible;
       if (visible) {
         product.style.setProperty('--catalog-delay', `${diagonalDelay(visibleCount, columns, 40, 320)}ms`);
@@ -346,6 +357,14 @@ const montarCatalogo = (productos) => {
       ? null
       : `Mostrando ${visibleCount} de ${total} producto${total === 1 ? '' : 's'}`;
     if (cuentaVista) cuentaVista.textContent = dice || '';
+    // Una busqueda sin resultados no puede quedarse en una pantalla vacia: se
+    // dice que no hay y por que.
+    if (vacioVista) {
+      vacioVista.hidden = !(enCatalogo && visibleCount === 0);
+      vacioVista.textContent = busqueda
+        ? `No encontramos nada que se llame «${busqueda.trim()}». Prueba con otra palabra o quita algún filtro.`
+        : 'No hay productos con estos filtros.';
+    }
 
     if (catalogStatus) {
       const plural = visibleCount === 1 ? '' : 's';
@@ -408,6 +427,20 @@ const montarCatalogo = (productos) => {
     // es un escaparate de seis, y ordenar seis no le hace falta a nadie.
     + '<div class="vista-barra">'
     + '<div class="vista-mandos">'
+    // Buscar y filtrar por categoria salen solo en el catalogo entero, que es
+    // donde hay tanto que hace falta.
+    + '<label class="vista-mando vista-buscar solo-catalogo"><span class="sr-only">Buscar en el catálogo</span>'
+    + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" '
+    + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+    + '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>'
+    + '<input class="vista-busca" type="search" placeholder="Buscar un producto" autocomplete="off"></label>'
+    + '<label class="vista-mando solo-catalogo"><span>Filtrar por</span>'
+    + '<select class="vista-sub">'
+    + '<option value="todas">Todas las categorías</option>'
+    + '<option value="panes">Panes</option>'
+    + '<option value="dulces">Dulces y pasteles</option>'
+    + '<option value="bebidas-frias">Bebidas</option>'
+    + '</select></label>'
     + '<label class="vista-mando"><span>Ordenar por</span>'
     + '<select class="vista-orden">'
     + '<option value="recomendados">Recomendados</option>'
@@ -424,13 +457,20 @@ const montarCatalogo = (productos) => {
     // Lo que se ve de lo que hay. Mudo para el lector de pantalla, que ya tiene
     // el aviso de mas abajo y oirlo dos veces es peor que no oirlo.
     + '<p class="vista-cuenta" aria-hidden="true"></p>'
-    + '</div>';
+    + '</div>'
+    + '<p class="vista-vacio" role="status" hidden></p>';
   const encabezado = document.querySelector('.catalog .section-heading');
   encabezado?.parentElement.insertBefore(cabeza, encabezado);
   const tituloVista = cabeza.querySelector('.vista-titulo');
   const selOrden = cabeza.querySelector('.vista-orden');
   const selFiltro = cabeza.querySelector('.vista-filtro');
   const cuentaVista = cabeza.querySelector('.vista-cuenta');
+  const selSub = cabeza.querySelector('.vista-sub');
+  const campoBusca = cabeza.querySelector('.vista-busca');
+  const vacioVista = cabeza.querySelector('.vista-vacio');
+  // "Todo el catalogo" ya no esta en el menu Tienda (a el se llega con "Ver el
+  // menu"), pero sigue siendo una vista con nombre y direccion propia.
+  NOMBRES.catalogo = 'Todo el catálogo';
 
   selOrden?.addEventListener('change', () => {
     orden = selOrden.value;
@@ -440,11 +480,21 @@ const montarCatalogo = (productos) => {
     soloDisponibles = selFiltro.value === 'disponibles';
     applyFilter(true);
   });
+  selSub?.addEventListener('change', () => {
+    subcategoria = selSub.value;
+    applyFilter(true);
+  });
+  // Mientras se escribe no se anima: las fichas entrando a cada tecla marean.
+  campoBusca?.addEventListener('input', () => {
+    busqueda = campoBusca.value;
+    applyFilter(false);
+  });
 
   const pintarVista = (cat) => {
     const enVista = cat !== 'todos';
     document.body.classList.toggle('is-vista', enVista);
     cabeza.hidden = !enVista;
+    cabeza.classList.toggle('es-catalogo', cat === 'catalogo');
     if (encabezado) encabezado.hidden = enVista;
     if (enVista) tituloVista.textContent = NOMBRES[cat] || 'Catálogo';
     document.title = enVista
@@ -462,6 +512,12 @@ const montarCatalogo = (productos) => {
     soloDisponibles = false;
     if (selOrden) selOrden.value = 'recomendados';
     if (selFiltro) selFiltro.value = 'todos';
+    subcategoria = 'todas';
+    busqueda = '';
+    if (selSub) selSub.value = 'todas';
+    if (campoBusca) campoBusca.value = '';
+    // Volver a la misma vista no la cambia, pero si la limpia.
+    if (cat === categoria) applyFilter(false);
     cambiarCategoria(cat);
     pintarVista(cat);
     if (conHistorial) {
@@ -526,6 +582,9 @@ const montarCatalogo = (productos) => {
     soloDisponibles = antes.soloDisponibles === true;
     if (selOrden) selOrden.value = orden;
     if (selFiltro) selFiltro.value = soloDisponibles ? 'disponibles' : 'todos';
+    const subs = [...(selSub?.options || [])].map((o) => o.value);
+    if (subs.includes(antes.subcategoria)) subcategoria = antes.subcategoria;
+    if (selSub) selSub.value = subcategoria;
   }
   pintarVista(categoria);
   applyFilter();

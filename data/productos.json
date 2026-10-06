@@ -32,11 +32,11 @@
       "disponible": false
     },
     {
-      "nombre": "Pan con queso",
+      "nombre": "Empanada de queso",
       "categoria": "panes",
       "precio": 0.75,
       "foto": "assets/img/productos/pan-con-queso",
-      "alt": "Pan con queso en forma de empanada, con borde repulgado y azúcar glas",
+      "alt": "Empanada de queso con borde repulgado y azúcar glas",
       "etiqueta": {
         "color": "yellow",
         "texto": "Recién hecho"
