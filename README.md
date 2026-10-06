@@ -116,8 +116,14 @@ quien todavia no ha pedido nada.
 - **Textos alternativos.** Cada producto trae su `alt` en
   `data/productos.json`, y `repo.js` se niega a cargar el catalogo si a alguno
   le falta: sin el, quien usa lector de pantalla no sabe que hay en la foto.
-- **Contraste.** Los colores del tema pasan AA sobre sus fondos. Lo que es solo
-  color -las etiquetas de "Agotado" o "De la casa"- lleva tambien su texto.
+- **Contraste.** Los pares de texto del tema pasan AA de sobra, comprobados
+  con la formula de luminancia relativa de la WCAG: 12,4:1 el texto principal
+  sobre el fondo claro, 6,8:1 el secundario, 11,1:1 el texto sobre el fondo
+  oscuro del pie y 8,7:1 el secundario de ahi. El unico color por debajo de
+  4,5:1 es `--horno-claro` (4,5:1 justo), y no se usa para texto sino para el
+  puntero de los filtros, donde el minimo que pide la norma es 3:1. Lo que es
+  solo color -las etiquetas de "Agotado" o "De la casa"- lleva tambien su
+  texto, para quien no distingue el verde del rojo.
 - **Movimiento.** Con `prefers-reduced-motion: reduce` se quitan la entrada
   escalonada de las fichas, el velo del cambio de categoria y el desplazamiento
   suave.
