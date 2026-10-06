@@ -289,7 +289,7 @@ const montarCatalogo = (productos) => {
   // una categoria sobran, alli ya se esta dentro de una.
   let subcategoria = 'todas';
   let busqueda = '';
-  // Se busca sin tildes ni mayusculas: quien escribe "cafe" quiere el cafe.
+  // Se busca sin tildes ni mayusculas: quien escribe "limon" quiere el de limón.
   const plano = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
   let filterRun = 0;
