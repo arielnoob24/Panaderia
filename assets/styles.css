@@ -632,6 +632,48 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-local-hora { margin: .3rem 0 0; color: var(--corteza-oscura); font: 700 .78rem/1.45 Arial, sans-serif; }
 .canasta-local-hora:empty { display: none; }
 
+/* ---- La vista de confirmar el pedido ----
+   Es otra vista, como la de categoria: ocupa la pagina y esconde lo demas. En
+   pantalla ancha los datos van a un lado y el resumen al otro, pegado al
+   desplazarse, para que el total y el boton no se queden arriba perdidos. */
+body.is-checkout .hero, body.is-checkout .sign-band,
+body.is-checkout .catalog, body.is-checkout .story { display: none; }
+body.is-checkout .floating-whatsapp { display: none; }
+.checkout { padding-top: 150px; }
+.checkout[hidden] { display: none; }
+.checkout-cabeza { margin-bottom: 1.6rem; }
+.checkout-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); align-items: start; gap: 1.6rem 2.4rem; }
+.checkout-datos { min-width: 0; }
+/* La columna del resumen se queda a la vista al desplazarse. Es de alto
+   limitado y en columna a proposito: con una canasta larga, lo que se desplaza
+   por dentro es la lista, y el total y el boton se quedan siempre abajo. Fijada
+   sin mas, una tarjeta mas alta que la ventana dejaba el boton inalcanzable. */
+.checkout-resumen { position: sticky; top: 110px; display: flex; max-height: calc(100vh - 130px); flex-direction: column; padding: 1.2rem 1.3rem 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); box-shadow: 0 10px 30px -22px rgba(58, 40, 34, .45); }
+.checkout-resumen .pedido-resumen { min-height: 0; margin-bottom: .9rem; overflow-y: auto; }
+.checkout-resumen .canasta-desglose { flex-shrink: 0; margin-bottom: .9rem; }
+.checkout-resumen .pago-canal { flex-shrink: 0; margin: 0 0 .9rem; }
+/* El pie llega a los bordes de la tarjeta, que para eso es un pie. */
+.checkout-resumen .canasta-pie { flex-shrink: 0; margin: 0 -1.3rem; padding: 1rem 1.3rem calc(1.2rem + env(safe-area-inset-bottom)); }
+.checkout-resumen .canasta-nota { margin: .6rem 0 0; }
+
+/* El recibo, ya en su propia vista: una columna estrecha y centrada, que es
+   todo lo que necesita un comprobante para leerse. */
+.checkout-recibo { max-width: 540px; margin: 0 auto; }
+.recibo-cuerpo { margin-bottom: 1.2rem; }
+.recibo-pie { padding-top: 1.2rem; border-top: 1px solid var(--masa-linea); }
+
+@media (max-width: 900px) {
+  /* Una columna. Aqui lo que se pega abajo es solo el pie con el boton, no el
+     resumen entero: pegado entero taparia media pantalla del telefono. */
+  .checkout-grid { grid-template-columns: 1fr; }
+  .checkout-resumen { position: static; max-height: none; }
+  .checkout-resumen .pedido-resumen { overflow-y: visible; }
+  .checkout-resumen .canasta-pie { position: sticky; bottom: 0; background: var(--papel); box-shadow: 0 -12px 30px -22px rgba(58, 40, 34, .5); }
+}
+@media (max-width: 680px) {
+  .checkout { padding-top: 110px; }
+}
+
 /* Cada opcion lleva debajo lo que cuesta, que es la mitad de la decision. */
 .canasta-opciones span small { display: block; margin-top: .2rem; color: var(--horno-suave); font: 400 .72rem Arial, sans-serif; }
 .canasta-opciones input:checked + span small { color: var(--corteza-oscura); }
@@ -787,10 +829,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .canasta-fondo.is-open, .cuenta-fondo.is-open { opacity: 1; pointer-events: auto; }
 .canasta-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 21; display: flex; width: min(420px, 100%); flex-direction: column; background: var(--papel); box-shadow: var(--shadow-float); transform: translateX(100%); visibility: hidden; transition: transform var(--dur-base) var(--ease-in), visibility var(--dur-base); }
 .canasta-panel.is-open { transform: none; visibility: visible; transition: transform var(--dur-base) var(--ease-out), visibility var(--dur-base); }
-/* Desde el pago el mismo panel cambia de forma: tarjeta centrada sobre un fondo
-   desenfocado. Se hereda todo lo demas, asi que el dialogo, la trampa de foco y
-   el Escape siguen siendo los mismos. */
-.canasta-fondo.is-difuminado { background: rgba(58, 40, 34, .42); -webkit-backdrop-filter: blur(7px) saturate(.85); backdrop-filter: blur(7px) saturate(.85); }
 @keyframes pago-centra { from { opacity: 0; transform: translate(50%, -50%) scale(.97); } to { opacity: 1; transform: translate(50%, -50%); } }
 .canasta-cabecera, .cuenta-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.5rem 1rem; border-bottom: 1px solid var(--masa-linea); }
 .canasta-cabecera h2, .cuenta-cabecera h2 { margin: 0; font: 500 1.6rem/1.1 Georgia, serif; }
@@ -870,7 +908,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 @keyframes paso-entra { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
 .canasta-panel button.button { font: 700 1rem/1.55 Georgia, "Times New Roman", serif; cursor: pointer; }
 .canasta-panel button.button:disabled { cursor: not-allowed; }
-.canasta-panel.is-procesando button.button:disabled { cursor: progress; }
+.checkout.is-procesando button.button:disabled { cursor: progress; }
 .canasta-volver { display: inline-flex; align-items: center; gap: .45rem; margin-bottom: 1rem; padding: .3rem 0; background: none; border: 0; color: var(--horno-suave); cursor: pointer; font: 700 .82rem/1.3 Arial, sans-serif; transition: color var(--dur-fast) var(--ease-ui); }
 .canasta-volver:hover { color: var(--horno); }
 .canasta-volver > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }

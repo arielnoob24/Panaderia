@@ -4,7 +4,7 @@
 // Las fichas salen de aqui como HTML; el control de cantidad que llevan
 // dentro lo pone cart.js despues, porque eso ya es canasta.
 import { reducedMotion, avisos, grupo, abrirGrupo } from './ui.js';
-import { dinero, idDe } from './state.js';
+import { dinero, idDe, puente } from './state.js';
 
 const catalogStatus = document.querySelector('.catalog-status');
 const productGrid = document.querySelector('.product-grid');
@@ -442,6 +442,9 @@ const montarCatalogo = (productos) => {
   };
 
   const abrirCategoria = (cat, conHistorial = true) => {
+    // La vista de confirmar el pedido se ve con la barra puesta, asi que desde
+    // alli se puede pulsar una categoria: eso es irse del checkout.
+    puente.ocultarCheckout?.();
     // Cada categoria se entra limpia: lo elegido en panes no tiene por que
     // seguir puesto al pasar a bebidas.
     orden = 'recomendados';
@@ -481,10 +484,20 @@ const montarCatalogo = (productos) => {
     const m = location.hash.match(/^#tienda-(.+)$/);
     return m && NOMBRES[m[1]] ? m[1] : 'todos';
   };
-  window.addEventListener('popstate', () => {
+  const pintarRuta = () => {
     const cat = deLaDireccion();
     cambiarCategoria(cat);
     pintarVista(cat);
+  };
+  // Al salir del checkout, la pagina vuelve a lo que diga la direccion: la
+  // categoria que hubiera puesta y su titulo.
+  puente.pintarRuta = pintarRuta;
+
+  window.addEventListener('popstate', () => {
+    // El checkout es otra vista y vive en cart.js. Si la direccion es la suya,
+    // manda el y aqui no hay categoria que pintar.
+    if (puente.verCheckout?.()) return;
+    pintarRuta();
   });
 
   categoria = deLaDireccion();

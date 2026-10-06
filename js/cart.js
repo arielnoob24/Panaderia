@@ -11,7 +11,7 @@ import {
 } from './state.js';
 import { montarMapa, armarMapa } from './map.js';
 import {
-  montarPago, piezasDePago, pasoComprobanteHtml, pintarPago,
+  montarPago, piezasDePago, comprobanteHtml, pintarPago,
   olvidarTarjeta, restablecerPagar, cancelarProceso, limpiarCopiados, reiniciarMetodo,
 } from './checkout.js';
 
@@ -79,15 +79,36 @@ panel.innerHTML =
   + '<p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p>'
   + '</div></section>'
 
-  // Confirmar el pedido es una sola pantalla que se desplaza: como lo recibes,
-  // como pagas, lo que llevas y cuanto cuesta, con el total escrito en el boton
-  // de abajo. Antes eran dos pasos, y en el de pago no habia manera de ver que
-  // panes eran: solo el importe. El pie no se desplaza con el cuerpo, asi que
-  // el boton de confirmar se queda siempre a la vista.
-  + '<section class="canasta-paso" data-paso="pedido" hidden>'
-  + '<div class="canasta-cuerpo">'
-  + '<button class="canasta-volver" data-vuelve="canasta" type="button">'
-  + '<span aria-hidden="true">←</span> Volver a la canasta</button>'
+  + '</div>';
+
+
+// ---- La vista de confirmar el pedido ---------------------------------
+// Confirmar el pedido no es una ventana encima del catalogo: es otra vista, con
+// su direccion (#confirmar), su boton de volver y el atras del navegador, igual
+// que la vista de categoria que abre "Ver el menu". De ahi que viva dentro de
+// <main> y no dentro del panel: es una pagina mas del sitio, no un dialogo, y
+// por eso tampoco lleva cerco de foco ni apaga lo de detras.
+//
+// En pantalla ancha se reparte en dos columnas -los datos a un lado y el
+// resumen al otro, pegado al desplazarse-, que es para lo que sirve ganar el
+// ancho; en el telefono es una columna con el boton pegado abajo.
+const vista = document.createElement('section');
+vista.id = 'confirmar';
+vista.className = 'checkout section-pad';
+vista.hidden = true;
+vista.innerHTML =
+  '<div class="container">'
+  + '<div class="vista-cabeza checkout-cabeza">'
+  + '<button class="vista-volver checkout-volver" type="button">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
+  + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+  + '<path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver a la tienda</button>'
+  + '<h2 class="vista-titulo checkout-titulo" tabindex="-1">Confirmar el pedido</h2>'
+  + '</div>'
+
+  + '<div class="checkout-paso" data-checkout="pedido">'
+  + '<div class="checkout-grid">'
+  + '<div class="checkout-datos">'
   + piezas.aviso
   + '<fieldset class="canasta-entrega"><legend>¿Cómo lo quieres?</legend>'
   + '<div class="canasta-opciones">'
@@ -130,7 +151,11 @@ panel.innerHTML =
 
   // Como se paga, puesto por checkout.js.
   + piezas.metodos
+  + '</div>'
 
+  // La columna del resumen lleva dentro el boton de confirmar: es lo ultimo que
+  // se lee, justo debajo del total, y no al final de un formulario largo.
+  + '<aside class="checkout-resumen">'
   // Lo que llevas, de solo lectura: editar se hace en la canasta. Si se pudiera
   // cambiar la cantidad aqui, el total cambiaria por debajo mientras alguien
   // escribe los datos de la tarjeta. De ahi el boton de al lado, que es la
@@ -150,12 +175,15 @@ panel.innerHTML =
   + '<div class="desglose-suma"><dt>Total</dt><dd class="desglose-total">$0.00</dd></div>'
   + '</dl>'
   + piezas.canal
-  + '</div>'
   + piezas.pie
-  + '</section>'
+  + '</aside>'
+  + '</div></div>'
 
-  + pasoComprobanteHtml()
+  + '<div class="checkout-paso" data-checkout="comprobante" hidden>'
+  + comprobanteHtml()
+  + '</div>'
   + '</div>';
+document.querySelector('#contenido')?.append(vista);
 
 // La barra de deshacer. Vive en el body y no dentro del panel porque se
 // quita desde los dos sitios: desde la ficha del catalogo y desde la lista de
@@ -173,26 +201,25 @@ anexosDeFoco.add(barraDeshacer);
 document.body.append(fondo, panel, barraDeshacer);
 
 const titulo = panel.querySelector('#canasta-titulo');
-const pasos = [...panel.querySelectorAll('.canasta-paso')];
 const lista = panel.querySelector('.canasta-lista');
 const vacio = panel.querySelector('.canasta-vacio');
 const totalEl = panel.querySelector('[data-paso="canasta"] .canasta-total strong');
 const enviar = panel.querySelector('.canasta-enviar');
-const radios = [...panel.querySelectorAll('input[name="canasta-entrega"]')];
-const bloqueDir = panel.querySelector('.canasta-direccion');
-const campoDir = panel.querySelector('#canasta-dir');
-const avisoDir = panel.querySelector('.canasta-direccion .canasta-aviso');
-const resumenLista = panel.querySelector('.resumen-lista');
-const resumenCuenta = panel.querySelector('.resumen-cuenta');
-const resumenEditar = panel.querySelector('.resumen-editar');
-const localHora = panel.querySelector('.canasta-local-hora');
-const desgloseSub = panel.querySelector('.desglose-subtotal');
-const desgloseEnvio = panel.querySelector('.desglose-envio');
-const desgloseTotal = panel.querySelector('.desglose-total');
-const bloqueLocal = panel.querySelector('.canasta-local');
+const radios = [...vista.querySelectorAll('input[name="canasta-entrega"]')];
+const bloqueDir = vista.querySelector('.canasta-direccion');
+const campoDir = vista.querySelector('#canasta-dir');
+const avisoDir = vista.querySelector('.canasta-direccion .canasta-aviso');
+const resumenLista = vista.querySelector('.resumen-lista');
+const resumenCuenta = vista.querySelector('.resumen-cuenta');
+const resumenEditar = vista.querySelector('.resumen-editar');
+const localHora = vista.querySelector('.canasta-local-hora');
+const desgloseSub = vista.querySelector('.desglose-subtotal');
+const desgloseEnvio = vista.querySelector('.desglose-envio');
+const desgloseTotal = vista.querySelector('.desglose-total');
+const bloqueLocal = vista.querySelector('.canasta-local');
 const pideCuenta = panel.querySelector('.pide-cuenta');
 const pideCuentaBoton = panel.querySelector('.pide-cuenta-boton');
-const listo = panel.querySelector('.canasta-listo');
+const listo = vista.querySelector('.canasta-listo');
 
 const boton = document.querySelector('.floating-whatsapp');
 if (boton) boton.dataset.tip = 'Tu canasta';
@@ -380,34 +407,106 @@ const pintarPie = () => {
   guardar();
 };
 
-const TITULOS = { canasta: 'Tu canasta', pedido: 'Confirmar el pedido',
-  comprobante: 'Pedido confirmado' };
-let pasoActual = 'canasta';
+// ---- Moverse entre la canasta y la vista de confirmar ----------------
+// La canasta se queda gaveta: es la ojeada rapida a lo que llevas y se abre
+// encima de donde estes. Confirmar y el comprobante son vistas, cada una con su
+// direccion y su entrada en el historial, asi que el atras del navegador va de
+// una a otra igual que en la vista de categoria.
+const RUTAS = { '#confirmar': 'pedido', '#comprobante': 'comprobante' };
+const TITULOS = { pedido: 'Confirmar el pedido', comprobante: 'Pedido confirmado' };
+const pasosVista = [...vista.querySelectorAll('.checkout-paso')];
+const tituloVista = vista.querySelector('.checkout-titulo');
+// Cual de los dos pasos se esta viendo, o null si no estamos en el checkout.
+let pasoActual = null;
 
-// Al pasar a confirmar, el fondo se desenfoca: lo que queda detras ya no pinta
-// nada y pagar merece la pantalla. El panel se queda de alto completo, que es
-// lo que hace falta para una pantalla que se desplaza. La forma solo se
-// recalcula con el panel abierto, asi que al cerrar se desvanece donde estaba.
-const pintarForma = () => {
-  fondo.classList.toggle('is-difuminado', pasoActual !== 'canasta');
+// Ensena uno de los dos pasos, o esconde la vista entera. No toca el historial:
+// de eso se encargan quien abre y el popstate, para no apuntar dos veces.
+const verVista = (paso, mover = true) => {
+  pasoActual = paso;
+  const dentro = Boolean(paso);
+  document.body.classList.toggle('is-checkout', dentro);
+  vista.hidden = !dentro;
+  pasosVista.forEach((s) => { s.hidden = s.dataset.checkout !== paso; });
+  if (!dentro) return;
+  tituloVista.textContent = TITULOS[paso];
+  document.title = TITULOS[paso] + ' | El Tradicional';
+  // Se llega arriba de golpe y no con desplazamiento suave: es otra pagina, no
+  // un salto dentro de la que ya se estaba mirando.
+  window.scrollTo({ top: 0, behavior: 'auto' });
+  if (mover) tituloVista.focus({ preventScroll: true });
 };
 
-const irA = (nombre, mover = true, forma = true) => {
-  pasoActual = nombre;
-  if (forma) pintarForma();
-  // El dialogo se sigue nombrando por el mismo h2, que cambia con el paso.
-  titulo.textContent = TITULOS[nombre];
-  pasos.forEach((s) => { s.hidden = s.dataset.paso !== nombre; });
-  const cuerpo = panel.querySelector('.canasta-paso:not([hidden]) .canasta-cuerpo');
-  if (cuerpo) cuerpo.scrollTop = 0;
-  if (mover) titulo.focus();
+const abrirCheckout = () => {
+  if (abierto()) cerrar();
+  history.pushState({ checkout: 'pedido' }, '', '#confirmar');
+  verVista('pedido');
 };
 
-// Ahora solo hay un sitio del que volver, y es la canasta: entrega y pago son
-// la misma pantalla.
-panel.querySelectorAll('.canasta-volver').forEach((b) => b.addEventListener('click',
-  () => irA(b.dataset.vuelve || 'canasta')));
-listo.addEventListener('click', () => cerrar());
+// El comprobante sustituye a confirmar en el historial en vez de apilarse: el
+// atras no puede devolver al pago de un pedido que ya esta hecho.
+const verComprobante = () => {
+  history.replaceState({ checkout: 'comprobante' }, '', '#comprobante');
+  verVista('comprobante');
+};
+
+// Lo que hay que recoger al salir del checkout, y da igual por donde se salga:
+// por el boton de volver o por el atras del navegador. Un cobro a medias se
+// corta, y saliendo desde el comprobante el pedido esta cumplido y la canasta
+// se vacia. Vive aparte justo porque son dos caminos: cuando esto colgaba solo
+// del boton, volver atras desde el comprobante dejaba el pedido en la canasta
+// como si no se hubiera hecho.
+const recogerCheckout = () => {
+  const desdeComprobante = pasoActual === 'comprobante';
+  cancelarProceso();
+  restablecerPagar();
+  olvidarTarjeta();
+  limpiarCopiados();
+  if (!desdeComprobante) return;
+  cobro.numero = '';
+  olvidarBorrado();
+  pedido.clear();
+  // Pedido cumplido: el proximo empieza de cero, tambien en la forma de pago.
+  reiniciarMetodo();
+  pintar();
+};
+
+// Salir del checkout por el boton: apunta la vuelta en el historial y devuelve
+// la pagina a lo que diga la direccion.
+const cerrarCheckout = () => {
+  recogerCheckout();
+  history.pushState({}, '', location.pathname + location.search);
+  verVista(null);
+  // El catalogo se repinta con lo que diga la direccion, y con el el titulo.
+  puente.pintarRuta?.();
+  boton?.focus();
+};
+
+vista.querySelector('.checkout-volver').addEventListener('click', () => cerrarCheckout());
+listo.addEventListener('click', () => cerrarCheckout());
+
+// El popstate de view.js pregunta primero por aqui. Devuelve si la vista se
+// queda en pantalla, para que alla sepan si hay categoria que pintar.
+puente.verCheckout = () => {
+  const paso = RUTAS[location.hash] || null;
+  const limpiar = () => {
+    recogerCheckout();
+    verVista(null);
+    history.replaceState({}, '', location.pathname + location.search);
+    return false;
+  };
+  if (!paso) { if (pasoActual) { recogerCheckout(); verVista(null); } return false; }
+  // A un comprobante sin numero no se vuelve: el pedido se cerro y sus datos
+  // vivian en memoria. Y a confirmar no se entra con la canasta vacia.
+  if (paso === 'comprobante' && !cobro.numero) return limpiar();
+  if (paso === 'pedido' && !pedido.size) return limpiar();
+  if (paso !== pasoActual) verVista(paso);
+  return true;
+};
+
+// Al entrar en una categoria desde la barra, el checkout se cierra: la barra
+// sigue a la vista, y pulsar "Panes" ahi significa irse.
+puente.ocultarCheckout = () => { if (pasoActual) verVista(null); };
+puente.verComprobante = verComprobante;
 
 // Elegir retiro o domicilio: lo unico que cambia es el pie.
 radios.forEach((radio) => radio.addEventListener('change', () => {
@@ -444,7 +543,7 @@ enviar.addEventListener('click', () => {
   }
   pideCuenta.hidden = true;
   pintarDesglose();
-  irA('pedido');
+  abrirCheckout();
 });
 
 // Saltar a la cuenta no pierde el pedido: la canasta se queda como esta y al
@@ -462,7 +561,7 @@ pideCuentaBoton.addEventListener('click', () => {
 
 // El resumen es de solo lectura, asi que necesita una puerta de vuelta a donde
 // si se puede cambiar la cantidad.
-resumenEditar?.addEventListener('click', () => irA('canasta'));
+resumenEditar?.addEventListener('click', () => abrir());
 
 // Sin direccion no se puede llevar nada. Antes esto cortaba el paso de "seguir
 // al pago"; ahora que todo esta en una pantalla, corta la confirmacion, y lo
@@ -551,7 +650,6 @@ const cambiar = (id, delta) => {
 let ultimoFoco = null;
 const abrir = () => {
   ultimoFoco = document.activeElement;
-  pintarForma();
   fondo.classList.add('is-open');
   panel.classList.add('is-open');
   document.body.style.overflow = 'hidden';
@@ -564,28 +662,11 @@ const cerrar = () => {
   document.body.style.overflow = '';
   // Se enciende antes de devolver el foco: a lo apagado no se le puede dar.
   apagarDetras(panel, false);
-  // Cerrar a media compra no puede dejar el panel atascado en "procesando":
-  // se corta el temporizador y se vuelve siempre a la canasta. Si ya habia
-  // comprobante, el pedido esta cumplido y la canasta se vacia.
-  cancelarProceso();
   // Una pregunta sin contestar no sobrevive al cierre: al volver, la linea se
   // ve entera otra vez y no con un "¿lo quitamos?" de la visita anterior.
   // Hay que repintar, no basta con olvidarla: la pregunta esta dibujada.
   if (porConfirmar) { porConfirmar = null; pintar(); }
-  restablecerPagar();
-  olvidarTarjeta();
-  limpiarCopiados();
   pideCuenta.hidden = true;
-  if (pasoActual === 'comprobante') {
-    cobro.numero = '';
-    olvidarBorrado();
-    pedido.clear();
-    // Pedido cumplido: el proximo empieza de cero, tambien en la forma de
-    // pago. Cerrar a medio pago si conserva lo elegido, que no se ha gastado.
-    reiniciarMetodo();
-    pintar();
-  }
-  irA('canasta', false, false);
   ultimoFoco?.focus();
 };
 const abierto = () => panel.classList.contains('is-open');
@@ -617,10 +698,10 @@ if (boton) {
   boton.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
 }
 
-// El panel ya esta armado y en la pagina: el mapa y el cobro pueden buscar sus
-// trozos dentro de el.
-montarMapa(panel);
-montarPago(panel);
+// La vista ya esta armada y en la pagina: el mapa y el cobro pueden buscar sus
+// trozos dentro de ella.
+montarMapa(vista);
+montarPago(vista);
 
 // Sin JavaScript cada "Pedir" sigue siendo un enlace a WhatsApp que funciona.
 // Con JS se cambia por el control de cantidad: mientras no hay nada pedido solo
@@ -754,6 +835,10 @@ const montarControlesDeFicha = () => {
 // Lo guardado se recupera al final, cuando ya existe todo lo que hay que
 // repintar con ello.
 const iniciarCanasta = () => {
+  // Nadie llega al checkout con un enlace: lo que se confirma vive en memoria y
+  // en este navegador, no en la direccion. Si alguien recarga o pega la URL, se
+  // limpia el hash y se queda en el catalogo.
+  if (RUTAS[location.hash]) history.replaceState({}, '', location.pathname + location.search);
   leerGuardado();
   radios.forEach((radio) => { radio.checked = radio.value === entrega.modo; });
   campoDir.value = entrega.direccion;
@@ -761,14 +846,15 @@ const iniciarCanasta = () => {
 };
 
 // Lo que los demas modulos pueden pedirle a la canasta. Va por el puente porque
-// ellos tambien se llaman desde aqui: el cobro cambia de paso, el mapa pide el
-// desglose y la cuenta repinta el pie.
+// ellos tambien se llaman desde aqui: el cobro ensena el comprobante, el mapa
+// pide el desglose y la cuenta repinta el pie. Las entradas de las vistas
+// -verCheckout, ocultarCheckout y verComprobante- se apuntan mas arriba, donde
+// se declaran.
 puente.pintarPie = pintarPie;
 puente.pintarDesglose = pintarDesglose;
 puente.guardar = guardar;
 puente.borrarGuardado = borrarGuardado;
-puente.irA = irA;
-puente.enfocarTitulo = () => titulo.focus();
+puente.enfocarTitulo = () => tituloVista.focus();
 // El contador del boton flotante se queda en cero al emitir el comprobante.
 puente.vaciarContador = () => {
   cuenta.hidden = true;

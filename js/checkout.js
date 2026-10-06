@@ -109,9 +109,9 @@ const piezasDePago = () => ({
   + '</div>',
 });
 
-const pasoComprobanteHtml = () => ''
-  + '<section class="canasta-paso" data-paso="comprobante" hidden>'
-  + '<div class="canasta-cuerpo">'
+const comprobanteHtml = () => ''
+  + '<div class="checkout-recibo">'
+  + '<div class="recibo-cuerpo">'
   + '<p class="recibo-sello"><span aria-hidden="true">✓</span> Pedido registrado</p>'
   + '<p class="recibo-simulado">Pedido simulado. Es una demostración académica: '
   + 'no se realizó ningún cobro y la panadería todavía no ha recibido nada.</p>'
@@ -130,12 +130,12 @@ const pasoComprobanteHtml = () => ''
   + '<p class="codigo-falso-de recibo-enviado-de"></p>'
   + '<p class="codigo-falso-texto recibo-enviado-texto"></p></div>'
   + '<p class="recibo-simulado recibo-envio-estado" role="status"></p>'
-  + '<div class="canasta-pie">'
+  + '<div class="recibo-pie">'
   + '<p class="recibo-copiado" role="status" hidden></p>'
   + '<button class="button button-yellow canasta-listo" type="button">Listo, cerrar</button>'
   + '<p class="canasta-nota">Apunta o copia el número antes de cerrar: al cerrar, '
   + 'el pedido queda cumplido y la canasta se vacía.</p>'
-  + '</div></section>';
+  + '</div></div>';
 
 // Los trozos del panel con que trabaja. Se rellenan en montarPago, que corre
 // cuando la canasta ya armo el panel.
@@ -173,6 +173,16 @@ const pintarPago = () => {
   if (canalCorreo) canalCorreo.textContent = sesion.correo;
   // Mientras procesa, el boton dice otra cosa y no se le puede pisar el texto.
   if (procesando) return;
+  // Si se vacia la canasta estando en la vista de confirmar -se puede, la
+  // gaveta se abre encima-, no hay nada que confirmar. Antes el boton se
+  // dejaba pulsar y no pasaba nada.
+  const vacia = pedido.size === 0;
+  pagar.disabled = vacia;
+  pagar.setAttribute('aria-disabled', String(vacia));
+  if (vacia) {
+    pagar.textContent = 'Tu canasta está vacía';
+    return;
+  }
   // El importe va escrito en el boton: es lo ultimo que se mira antes de
   // pulsarlo, y teniendo el pedido entero en una pantalla que se desplaza, el
   // desglose puede haberse quedado arriba fuera de la vista. En efectivo no se
@@ -405,7 +415,7 @@ const aprobar = (metodo) => {
   puente.vaciarContador();
   olvidarTarjeta();
   restablecerPagar();
-  puente.irA('comprobante');
+  puente.verComprobante();
   avisos.textContent = `Pago aprobado. Pedido ${cobro.numero}. Es una simulación: no se cobró nada.`;
 };
 
@@ -514,7 +524,7 @@ const montarPago = (elPanel) => {
 };
 
 export {
-  montarPago, piezasDePago, pasoComprobanteHtml,
+  montarPago, piezasDePago, comprobanteHtml,
   pintarPago, pintarComprobante, olvidarTarjeta, restablecerPagar,
   cancelarProceso, limpiarCopiados, reiniciarMetodo,
 };
