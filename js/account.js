@@ -750,12 +750,17 @@ const entrar = async () => {
     return;
   }
   const huella = huellaGuardada();
+  // Una cuenta creada antes de que se guardara la huella no tiene con que
+  // comparar, y dejarla entrar con cualquier contrasena seria no pedirla.
+  if (!huella) {
+    avisoEntrar.hidden = false;
+    avisoEntrar.textContent = 'Esta cuenta se creó sin contraseña. Vuelve a registrarte para ponerle una.';
+    return;
+  }
   // Correo equivocado y contrasena equivocada reciben la misma respuesta: decir
   // cual de los dos fallo le ahorra la mitad del trabajo a quien adivina.
   const correoBien = guardado.toLowerCase() === escrito.toLowerCase();
-  const claveBien = huella
-    ? (await calcularHuella(claveEntrar.value, huella.sal)).hash === huella.hash
-    : true;
+  const claveBien = (await calcularHuella(claveEntrar.value, huella.sal)).hash === huella.hash;
   if (!correoBien || !claveBien) {
     claveEntrar.value = '';
     avisoEntrar.hidden = false;
@@ -764,9 +769,6 @@ const entrar = async () => {
     return;
   }
   leerCuenta();
-  // Una cuenta creada antes de que se guardara la huella no tiene con que
-  // comparar: la contrasena que se escribe ahora pasa a ser la suya.
-  if (!huella) huellaClave = await calcularHuella(claveEntrar.value);
   // Una cuenta de antes de la verificacion entra igual, pero pasa por el
   // codigo: el comprobante del pedido va al correo y hay que saber que es
   // suyo y que esta bien escrito.

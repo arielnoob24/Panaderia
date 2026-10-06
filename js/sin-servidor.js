@@ -2926,8 +2926,13 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       return;
     }
     const huella = huellaGuardada();
+    if (!huella) {
+      avisoEntrar.hidden = false;
+      avisoEntrar.textContent = "Esta cuenta se creó sin contraseña. Vuelve a registrarte para ponerle una.";
+      return;
+    }
     const correoBien = guardado.toLowerCase() === escrito.toLowerCase();
-    const claveBien = huella ? (await calcularHuella(claveEntrar.value, huella.sal)).hash === huella.hash : true;
+    const claveBien = (await calcularHuella(claveEntrar.value, huella.sal)).hash === huella.hash;
     if (!correoBien || !claveBien) {
       claveEntrar.value = "";
       avisoEntrar.hidden = false;
@@ -2936,7 +2941,6 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       return;
     }
     leerCuenta();
-    if (!huella) huellaClave = await calcularHuella(claveEntrar.value);
     if (!sesion.verificado) {
       sesion.dentro = false;
       irAVerificar();
