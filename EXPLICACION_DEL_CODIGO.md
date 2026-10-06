@@ -497,7 +497,9 @@ un método antiguo (`respaldoCopiar`).
 ### 5.9 `account.js` — la cuenta
 
 Es una **maqueta**: sin servidor, la cuenta solo existe en el navegador. La
-contraseña se pide y se comprueba, pero **no se guarda en ninguna parte**.
+contraseña **no se guarda tal cual**: se guarda su huella (un hash PBKDF2 con
+sal, hecho con `crypto.subtle`), y al entrar se calcula la huella de lo escrito
+y se compara con la guardada.
 
 **El panel** tiene cuatro pasos (`data-paso`): `crear`, `verificar`, `entrar` y
 `sesion`; `verPaso(nombre)` muestra uno y oculta los demás.

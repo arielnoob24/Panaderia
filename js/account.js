@@ -11,11 +11,28 @@ import { pedidosGuardados, marcaBonita } from './storage.js';
 
 // Maqueta de cuentas. No hay servidor detras, asi que nada de esto viaja a
 // ninguna parte: la cuenta queda escrita en este navegador y en ningun otro
-// sitio. La contrasena se pide, se comprueba y se tira; no se guarda ni aqui
-// ni en el navegador, porque guardarla seria ensenar a hacerlo mal. Por lo
-// mismo, "entrar" no puede comprobar ninguna contrasena: no hay con que
-// compararla, y el panel lo dice en voz alta en vez de fingir que si.
+// sitio. La contrasena no se guarda tal cual: se guarda su huella, un hash
+// PBKDF2 con sal, que sirve para comprobarla al entrar pero no para leerla.
+// Guardarla en claro seria ensenar a hacerlo mal.
 const CLAVE_CUENTA = 'eltradicional-cuenta';
+
+// La huella de la contrasena de la cuenta guardada: { sal, hash } en hex, o
+// null si la cuenta es de antes de que se guardara.
+let huellaClave = null;
+const VUELTAS = 100000;
+const aHex = (bytes) => [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, '0')).join('');
+const deHex = (hex) => new Uint8Array((hex.match(/../g) || []).map((h) => parseInt(h, 16)));
+// crypto.subtle solo existe en contexto seguro (https o el archivo abierto con
+// doble clic); en otro caso no hay con que calcular la huella.
+const puedeHuella = () => Boolean(window.crypto?.subtle);
+const calcularHuella = async (clave, salHex) => {
+  const sal = salHex ? deHex(salHex) : window.crypto.getRandomValues(new Uint8Array(16));
+  const base = await window.crypto.subtle.importKey('raw', new TextEncoder().encode(clave),
+    'PBKDF2', false, ['deriveBits']);
+  const bits = await window.crypto.subtle.deriveBits(
+    { name: 'PBKDF2', salt: sal, iterations: VUELTAS, hash: 'SHA-256' }, base, 256);
+  return { sal: aHex(sal), hash: aHex(bits) };
+};
 
 const fondoC = document.createElement('div');
 fondoC.className = 'cuenta-fondo';
@@ -65,8 +82,8 @@ panelC.innerHTML =
   + '<section class="cuenta-paso" data-paso="crear">'
   + '<div class="cuenta-cuerpo">'
   + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Este sitio no tiene '
-  + 'servidor: la cuenta se guarda solo en este navegador y la contraseña no se guarda '
-  + 'en ninguna parte. No escribas una contraseña de verdad.</p>'
+  + 'servidor: la cuenta se guarda solo en este navegador, y de la contraseña solo '
+  + 'su huella cifrada. Aun así, no escribas una contraseña de verdad.</p>'
   + campoHtml('nombre', 'Nombre y apellido', 'type="text" autocomplete="name" maxlength="60" placeholder="María Pérez"')
   + campoHtml('correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
   + campoHtml('telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel" '
@@ -108,10 +125,10 @@ panelC.innerHTML =
 
   + '<section class="cuenta-paso" data-paso="entrar" hidden>'
   + '<div class="cuenta-cuerpo">'
-  + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor no hay '
-  + 'contraseña que comprobar, así que no se pide: basta el correo de la cuenta que '
-  + 'creaste en este navegador. Pedirla para luego tirarla sería fingir.</p>'
+  + '<p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor, solo '
+  + 'se puede entrar a la cuenta que creaste en este navegador.</p>'
   + campoHtml('entrar-correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
+  + campoHtml('entrar-clave', 'Contraseña', 'type="password" autocomplete="current-password" maxlength="40"')
   + '</div>'
   + '<div class="cuenta-pie">'
   + '<p class="cuenta-aviso" role="alert" hidden></p>'
@@ -140,7 +157,7 @@ panelC.innerHTML =
   + '<div class="cuenta-pie">'
   + '<button class="cuenta-salir" type="button">Cerrar sesión</button>'
   + '<p class="cuenta-nota">La cuenta se queda guardada en este navegador: '
-  + 'puedes volver a entrar con tu correo. No hay ningún otro lugar donde '
+  + 'puedes volver a entrar con tu correo y tu contraseña. No hay ningún otro lugar donde '
   + 'estuviera guardada.</p>'
   + '</div></section>';
 document.body.append(fondoC, panelC);
@@ -173,8 +190,9 @@ const codigoEstado = panelC.querySelector('.codigo-estado');
 const maquetaCodigo = panelC.querySelector('.cuenta-maqueta-codigo');
 const codigoReenviar = panelC.querySelector('.codigo-reenviar');
 const correoEntrar = panelC.querySelector('#cuenta-entrar-correo');
-// En "entrar" ya no hay campo de contrasena: ver el parrafo de la maqueta.
 const errorEntrarCorreo = panelC.querySelector('#cuenta-entrar-correo-error');
+const claveEntrar = panelC.querySelector('#cuenta-entrar-clave');
+const errorEntrarClave = panelC.querySelector('#cuenta-entrar-clave-error');
 
 const TITULOS_CUENTA = { crear: 'Crear cuenta', verificar: 'Verificar tu correo',
   entrar: 'Entrar', sesion: 'Tu cuenta' };
@@ -377,15 +395,20 @@ const olvidarFormulario = () => {
   correoEntrar.value = '';
   errorEntrarCorreo.hidden = true;
   correoEntrar.classList.remove('is-mal');
+  claveEntrar.value = '';
+  errorEntrarClave.hidden = true;
+  claveEntrar.classList.remove('is-mal');
 };
 
 const guardarCuenta = () => {
   try {
-    // Solo lo que hace falta para el pedido. La contrasena no entra aqui.
+    // Lo que hace falta para el pedido y la huella de la contrasena; la
+    // contrasena en si no entra aqui.
     window.localStorage.setItem(CLAVE_CUENTA, JSON.stringify({
       nombre: sesion.nombre, correo: sesion.correo,
       telefono: sesion.telefono, direccion: sesion.direccion,
       verificado: sesion.verificado, sesionAbierta: sesion.dentro,
+      clave: huellaClave,
     }));
   } catch (e) { /* en ventana privada no se puede guardar; la sesion sigue viva en memoria */ }
 };
@@ -395,7 +418,14 @@ const correoGuardado = () => {
     return crudo ? String(JSON.parse(crudo).correo || '') : '';
   } catch (e) { return ''; }
 };
+const huellaGuardada = () => {
+  try {
+    const h = JSON.parse(window.localStorage.getItem(CLAVE_CUENTA) || '{}').clave;
+    return h && typeof h.sal === 'string' && typeof h.hash === 'string' ? h : null;
+  } catch (e) { return null; }
+};
 const leerCuenta = () => {
+  huellaClave = huellaGuardada();
   try {
     const crudo = window.localStorage.getItem(CLAVE_CUENTA);
     if (!crudo) return;
@@ -590,7 +620,7 @@ const entrarEnSesion = (aviso) => {
   avisos.textContent = aviso;
 };
 
-panelC.querySelector('.cuenta-crear').addEventListener('click', () => {
+panelC.querySelector('.cuenta-crear').addEventListener('click', async () => {
   intentadoC = true;
   const fallos = pintarCampos();
   const malos = Object.keys(fallos);
@@ -602,6 +632,12 @@ panelC.querySelector('.cuenta-crear').addEventListener('click', () => {
     campos.find(({ clave }) => clave === malos[0])?.input.focus();
     return;
   }
+  if (!puedeHuella()) {
+    avisoCrear.hidden = false;
+    avisoCrear.textContent = 'Este navegador no puede guardar la contraseña aquí. Abre el sitio por https.';
+    return;
+  }
+  huellaClave = await calcularHuella(datos.clave);
   sesion.nombre = datos.nombre;
   sesion.correo = datos.correo;
   sesion.telefono = datos.telefono;
@@ -686,37 +722,64 @@ codigoReenviar.addEventListener('click', () => {
   mandarCodigo();
 });
 
-panelC.querySelector('.cuenta-entrar').addEventListener('click', () => {
+const entrar = async () => {
   const escrito = correoEntrar.value.trim();
-  const marcar = (texto) => {
-    errorEntrarCorreo.hidden = !texto;
-    errorEntrarCorreo.textContent = texto || '';
-    correoEntrar.setAttribute('aria-invalid', texto ? 'true' : 'false');
-    correoEntrar.classList.toggle('is-mal', Boolean(texto));
+  const marcar = (input, error, texto) => {
+    error.hidden = !texto;
+    error.textContent = texto || '';
+    input.setAttribute('aria-invalid', texto ? 'true' : 'false');
+    input.classList.toggle('is-mal', Boolean(texto));
   };
-  if (!CORREO.test(escrito)) { marcar('Revisa el correo, algo le falta.'); correoEntrar.focus(); return; }
-  marcar('');
-  // Sin servidor solo se puede reconocer la cuenta de este navegador. Decirlo
-  // asi es mas honrado que inventar un "correo o contrasena incorrectos".
+  const malCorreo = CORREO.test(escrito) ? '' : 'Revisa el correo, algo le falta.';
+  const malClave = claveEntrar.value ? '' : 'Escribe tu contraseña.';
+  marcar(correoEntrar, errorEntrarCorreo, malCorreo);
+  marcar(claveEntrar, errorEntrarClave, malClave);
+  if (malCorreo) { correoEntrar.focus(); return; }
+  if (malClave) { claveEntrar.focus(); return; }
+  avisoEntrar.hidden = true;
+  // Sin servidor solo se puede reconocer la cuenta de este navegador.
   const guardado = correoGuardado();
   if (!guardado) {
     avisoEntrar.hidden = false;
     avisoEntrar.textContent = 'En este navegador no hay ninguna cuenta creada todavía.';
     return;
   }
-  if (guardado.toLowerCase() !== escrito.toLowerCase()) {
+  if (!puedeHuella()) {
     avisoEntrar.hidden = false;
-    avisoEntrar.textContent = `Ese correo no es el de la cuenta de este navegador (${guardado}).`;
+    avisoEntrar.textContent = 'Este navegador no puede comprobar la contraseña aquí. Abre el sitio por https.';
+    return;
+  }
+  const huella = huellaGuardada();
+  // Correo equivocado y contrasena equivocada reciben la misma respuesta: decir
+  // cual de los dos fallo le ahorra la mitad del trabajo a quien adivina.
+  const correoBien = guardado.toLowerCase() === escrito.toLowerCase();
+  const claveBien = huella
+    ? (await calcularHuella(claveEntrar.value, huella.sal)).hash === huella.hash
+    : true;
+  if (!correoBien || !claveBien) {
+    claveEntrar.value = '';
+    avisoEntrar.hidden = false;
+    avisoEntrar.textContent = 'El correo o la contraseña no son correctos.';
+    claveEntrar.focus();
     return;
   }
   leerCuenta();
+  // Una cuenta creada antes de que se guardara la huella no tiene con que
+  // comparar: la contrasena que se escribe ahora pasa a ser la suya.
+  if (!huella) huellaClave = await calcularHuella(claveEntrar.value);
   // Una cuenta de antes de la verificacion entra igual, pero pasa por el
   // codigo: el comprobante del pedido va al correo y hay que saber que es
   // suyo y que esta bien escrito.
   if (!sesion.verificado) { sesion.dentro = false; irAVerificar(); return; }
   sesion.dentro = true;
   entrarEnSesion(`Entraste como ${sesion.nombre}.`);
-});
+};
+panelC.querySelector('.cuenta-entrar').addEventListener('click', entrar);
+[correoEntrar, claveEntrar].forEach((input) => input.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  e.preventDefault();
+  entrar();
+}));
 
 panelC.querySelector('.cuenta-salir').addEventListener('click', () => {
   const nombre = sesion.nombre;

@@ -2385,6 +2385,27 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
 
   // js/account.js
   var CLAVE_CUENTA = "eltradicional-cuenta";
+  var huellaClave = null;
+  var VUELTAS = 1e5;
+  var aHex = (bytes) => [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, "0")).join("");
+  var deHex = (hex) => new Uint8Array((hex.match(/../g) || []).map((h) => parseInt(h, 16)));
+  var puedeHuella = () => Boolean(window.crypto?.subtle);
+  var calcularHuella = async (clave, salHex) => {
+    const sal = salHex ? deHex(salHex) : window.crypto.getRandomValues(new Uint8Array(16));
+    const base = await window.crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(clave),
+      "PBKDF2",
+      false,
+      ["deriveBits"]
+    );
+    const bits = await window.crypto.subtle.deriveBits(
+      { name: "PBKDF2", salt: sal, iterations: VUELTAS, hash: "SHA-256" },
+      base,
+      256
+    );
+    return { sal: aHex(sal), hash: aHex(bits) };
+  };
   var fondoC = document.createElement("div");
   fondoC.className = "cuenta-fondo";
   var panelC = document.createElement("aside");
@@ -2406,12 +2427,12 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var soloNueve = (v) => v.replace(/\D/g, "").replace(/^0+/, "").slice(0, 9);
   var telefonoBonito = (d) => d ? `+593 ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}` : "";
   var reglasHtml = '<ul class="cuenta-reglas" id="cuenta-clave-reglas">' + REGLAS.map((r) => `<li data-regla="${r.id}">${r.texto}<span class="sr-only cuenta-regla-estado">, falta</span></li>`).join("") + "</ul>";
-  panelC.innerHTML = '<div class="cuenta-cabecera"><h2 id="cuenta-titulo" tabindex="-1">Crear cuenta</h2><button class="cuenta-cerrar" type="button" aria-label="Cerrar">×</button></div><section class="cuenta-paso" data-paso="crear"><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Este sitio no tiene servidor: la cuenta se guarda solo en este navegador y la contraseña no se guarda en ninguna parte. No escribas una contraseña de verdad.</p>' + campoHtml("nombre", "Nombre y apellido", 'type="text" autocomplete="name" maxlength="60" placeholder="María Pérez"') + campoHtml("correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + campoHtml("telefono", "Teléfono", 'type="tel" inputmode="numeric" autocomplete="tel" maxlength="9" placeholder="990001122"', { prefijo: "+593" }) + campoHtml("direccion", "Dirección", 'type="text" autocomplete="street-address" maxlength="200" placeholder="Calle, número y una referencia"', { opcional: true }) + campoHtml(
+  panelC.innerHTML = '<div class="cuenta-cabecera"><h2 id="cuenta-titulo" tabindex="-1">Crear cuenta</h2><button class="cuenta-cerrar" type="button" aria-label="Cerrar">×</button></div><section class="cuenta-paso" data-paso="crear"><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Este sitio no tiene servidor: la cuenta se guarda solo en este navegador, y de la contraseña solo su huella cifrada. Aun así, no escribas una contraseña de verdad.</p>' + campoHtml("nombre", "Nombre y apellido", 'type="text" autocomplete="name" maxlength="60" placeholder="María Pérez"') + campoHtml("correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + campoHtml("telefono", "Teléfono", 'type="tel" inputmode="numeric" autocomplete="tel" maxlength="9" placeholder="990001122"', { prefijo: "+593" }) + campoHtml("direccion", "Dirección", 'type="text" autocomplete="street-address" maxlength="200" placeholder="Calle, número y una referencia"', { opcional: true }) + campoHtml(
     "clave",
     "Contraseña",
     'type="password" autocomplete="new-password" maxlength="40"',
     { describe: "cuenta-clave-reglas", despues: reglasHtml }
-  ) + campoHtml("repite", "Repite la contraseña", 'type="password" autocomplete="new-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button><button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button></div></section><section class="cuenta-paso" data-paso="verificar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta cuenta-maqueta-codigo" hidden></p><p class="codigo-dicho">Escribe el código de 6 cifras que enviamos a <strong class="codigo-correo"></strong>.</p><p class="codigo-estado" role="status" hidden></p><div class="codigo-falso" hidden><p class="codigo-falso-de">Correo de El Tradicional</p><p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. No lo compartas con nadie.</p></div><div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label><input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="cuenta-codigo-error"><p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div><button class="codigo-reenviar" type="button">Enviar otro código</button></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-verificar" type="button">Verificar el correo</button><button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el correo</button></div></section><section class="cuenta-paso" data-paso="entrar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor no hay contraseña que comprobar, así que no se pide: basta el correo de la cuenta que creaste en este navegador. Pedirla para luego tirarla sería fingir.</p>' + campoHtml("entrar-correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-entrar" type="button">Entrar</button><button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button></div></section><section class="cuenta-paso" data-paso="sesion" hidden><div class="cuenta-cuerpo"><div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span><div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div><dl class="cuenta-datos"><div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div><div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div></dl><p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p><section class="cuenta-pedidos" hidden><h3>Tus últimos pedidos</h3><ul class="cuenta-pedidos-lista"></ul><p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra parte: desde otro equipo no se ven.</p></section></div><div class="cuenta-pie"><button class="cuenta-salir" type="button">Cerrar sesión</button><p class="cuenta-nota">La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo. No hay ningún otro lugar donde estuviera guardada.</p></div></section>';
+  ) + campoHtml("repite", "Repite la contraseña", 'type="password" autocomplete="new-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button><button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button></div></section><section class="cuenta-paso" data-paso="verificar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta cuenta-maqueta-codigo" hidden></p><p class="codigo-dicho">Escribe el código de 6 cifras que enviamos a <strong class="codigo-correo"></strong>.</p><p class="codigo-estado" role="status" hidden></p><div class="codigo-falso" hidden><p class="codigo-falso-de">Correo de El Tradicional</p><p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. No lo compartas con nadie.</p></div><div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label><input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="cuenta-codigo-error"><p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div><button class="codigo-reenviar" type="button">Enviar otro código</button></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-verificar" type="button">Verificar el correo</button><button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el correo</button></div></section><section class="cuenta-paso" data-paso="entrar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor, solo se puede entrar a la cuenta que creaste en este navegador.</p>' + campoHtml("entrar-correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + campoHtml("entrar-clave", "Contraseña", 'type="password" autocomplete="current-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-entrar" type="button">Entrar</button><button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button></div></section><section class="cuenta-paso" data-paso="sesion" hidden><div class="cuenta-cuerpo"><div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span><div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div><dl class="cuenta-datos"><div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div><div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div></dl><p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p><section class="cuenta-pedidos" hidden><h3>Tus últimos pedidos</h3><ul class="cuenta-pedidos-lista"></ul><p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra parte: desde otro equipo no se ven.</p></section></div><div class="cuenta-pie"><button class="cuenta-salir" type="button">Cerrar sesión</button><p class="cuenta-nota">La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo y tu contraseña. No hay ningún otro lugar donde estuviera guardada.</p></div></section>';
   document.body.append(fondoC, panelC);
   var PERSONA = '<svg class="nav-cuenta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/></svg>';
   var navCuenta = document.createElement("button");
@@ -2433,6 +2454,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var codigoReenviar = panelC.querySelector(".codigo-reenviar");
   var correoEntrar = panelC.querySelector("#cuenta-entrar-correo");
   var errorEntrarCorreo = panelC.querySelector("#cuenta-entrar-correo-error");
+  var claveEntrar = panelC.querySelector("#cuenta-entrar-clave");
+  var errorEntrarClave = panelC.querySelector("#cuenta-entrar-clave-error");
   var TITULOS_CUENTA = {
     crear: "Crear cuenta",
     verificar: "Verificar tu correo",
@@ -2594,6 +2617,9 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     correoEntrar.value = "";
     errorEntrarCorreo.hidden = true;
     correoEntrar.classList.remove("is-mal");
+    claveEntrar.value = "";
+    errorEntrarClave.hidden = true;
+    claveEntrar.classList.remove("is-mal");
   };
   var guardarCuenta = () => {
     try {
@@ -2603,7 +2629,8 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
         telefono: sesion.telefono,
         direccion: sesion.direccion,
         verificado: sesion.verificado,
-        sesionAbierta: sesion.dentro
+        sesionAbierta: sesion.dentro,
+        clave: huellaClave
       }));
     } catch (e) {
     }
@@ -2616,7 +2643,16 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       return "";
     }
   };
+  var huellaGuardada = () => {
+    try {
+      const h = JSON.parse(window.localStorage.getItem(CLAVE_CUENTA) || "{}").clave;
+      return h && typeof h.sal === "string" && typeof h.hash === "string" ? h : null;
+    } catch (e) {
+      return null;
+    }
+  };
   var leerCuenta = () => {
+    huellaClave = huellaGuardada();
     try {
       const crudo = window.localStorage.getItem(CLAVE_CUENTA);
       if (!crudo) return;
@@ -2774,7 +2810,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     tituloC.focus();
     avisos.textContent = aviso;
   };
-  panelC.querySelector(".cuenta-crear").addEventListener("click", () => {
+  panelC.querySelector(".cuenta-crear").addEventListener("click", async () => {
     intentadoC = true;
     const fallos = pintarCampos();
     const malos = Object.keys(fallos);
@@ -2784,6 +2820,12 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       campos.find(({ clave }) => clave === malos[0])?.input.focus();
       return;
     }
+    if (!puedeHuella()) {
+      avisoCrear.hidden = false;
+      avisoCrear.textContent = "Este navegador no puede guardar la contraseña aquí. Abre el sitio por https.";
+      return;
+    }
+    huellaClave = await calcularHuella(datos.clave);
     sesion.nombre = datos.nombre;
     sesion.correo = datos.correo;
     sesion.telefono = datos.telefono;
@@ -2851,32 +2893,50 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     avisos.textContent = "Te enviamos un código nuevo.";
     mandarCodigo();
   });
-  panelC.querySelector(".cuenta-entrar").addEventListener("click", () => {
+  var entrar = async () => {
     const escrito = correoEntrar.value.trim();
-    const marcar = (texto) => {
-      errorEntrarCorreo.hidden = !texto;
-      errorEntrarCorreo.textContent = texto || "";
-      correoEntrar.setAttribute("aria-invalid", texto ? "true" : "false");
-      correoEntrar.classList.toggle("is-mal", Boolean(texto));
+    const marcar = (input, error, texto) => {
+      error.hidden = !texto;
+      error.textContent = texto || "";
+      input.setAttribute("aria-invalid", texto ? "true" : "false");
+      input.classList.toggle("is-mal", Boolean(texto));
     };
-    if (!CORREO.test(escrito)) {
-      marcar("Revisa el correo, algo le falta.");
+    const malCorreo = CORREO.test(escrito) ? "" : "Revisa el correo, algo le falta.";
+    const malClave = claveEntrar.value ? "" : "Escribe tu contraseña.";
+    marcar(correoEntrar, errorEntrarCorreo, malCorreo);
+    marcar(claveEntrar, errorEntrarClave, malClave);
+    if (malCorreo) {
       correoEntrar.focus();
       return;
     }
-    marcar("");
+    if (malClave) {
+      claveEntrar.focus();
+      return;
+    }
+    avisoEntrar.hidden = true;
     const guardado = correoGuardado();
     if (!guardado) {
       avisoEntrar.hidden = false;
       avisoEntrar.textContent = "En este navegador no hay ninguna cuenta creada todavía.";
       return;
     }
-    if (guardado.toLowerCase() !== escrito.toLowerCase()) {
+    if (!puedeHuella()) {
       avisoEntrar.hidden = false;
-      avisoEntrar.textContent = `Ese correo no es el de la cuenta de este navegador (${guardado}).`;
+      avisoEntrar.textContent = "Este navegador no puede comprobar la contraseña aquí. Abre el sitio por https.";
+      return;
+    }
+    const huella = huellaGuardada();
+    const correoBien = guardado.toLowerCase() === escrito.toLowerCase();
+    const claveBien = huella ? (await calcularHuella(claveEntrar.value, huella.sal)).hash === huella.hash : true;
+    if (!correoBien || !claveBien) {
+      claveEntrar.value = "";
+      avisoEntrar.hidden = false;
+      avisoEntrar.textContent = "El correo o la contraseña no son correctos.";
+      claveEntrar.focus();
       return;
     }
     leerCuenta();
+    if (!huella) huellaClave = await calcularHuella(claveEntrar.value);
     if (!sesion.verificado) {
       sesion.dentro = false;
       irAVerificar();
@@ -2884,7 +2944,13 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     }
     sesion.dentro = true;
     entrarEnSesion(`Entraste como ${sesion.nombre}.`);
-  });
+  };
+  panelC.querySelector(".cuenta-entrar").addEventListener("click", entrar);
+  [correoEntrar, claveEntrar].forEach((input) => input.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    entrar();
+  }));
   panelC.querySelector(".cuenta-salir").addEventListener("click", () => {
     const nombre = sesion.nombre;
     sesion.dentro = false;

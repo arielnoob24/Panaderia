@@ -167,7 +167,7 @@ quien todavia no ha pedido nada.
 ## Lo que esta simulado
 
 El cobro no existe: no se procesa ningun pago y los datos de la tarjeta no se
-guardan ni se envian. La cuenta se guarda solo en el navegador y la contrasena
-no se guarda en ninguna parte. El correo del codigo y del comprobante si sale
-de verdad, por EmailJS: las tres claves van en `js/mail.js`, y mientras esten
+guardan ni se envian. La cuenta se guarda solo en el navegador, y de la
+contrasena solo su huella (PBKDF2 con sal), con la que se comprueba al entrar.
+El correo del codigo y del comprobante si sale de verdad, por EmailJS: las tres claves van en `js/mail.js`, y mientras esten
 vacias el codigo y el comprobante se ensenan en pantalla en vez de enviarse.
