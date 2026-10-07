@@ -98,7 +98,7 @@ Mismo trato que Tienda: `Enter` abre las dos puertas, `↓` `↑` recorren, `Esc
 
 La fila se recorre **tabulando por los productos**: el navegador trae solo a la vista el que recibe foco, así que no hace falta desplazar nada a mano.
 
-Las dos flechas `←` `→` del final son el apaño para el ratón, que no tiene manera de desplazar de lado. Con teclado son opcionales. Al llegar a una punta, la flecha de ese lado se deshabilita, y un botón deshabilitado no se tabula.
+Las dos flechas `←` `→` del final son el apaño para el ratón, que no tiene manera de desplazar de lado. Con teclado son opcionales. Al principio, la flecha `←` se deshabilita, y un botón deshabilitado no se tabula. La `→` no se apaga nunca: en el último producto pasa a llamarse "Volver al primer producto" y lleva de vuelta al principio.
 
 La fila **se adelanta sola** cada 4,2 s, pero se detiene en cuanto el foco entra en ella (`focusin`) y no vuelve a andar hasta que sale. También respeta `prefers-reduced-motion`. Nadie va a perseguir un producto que se mueve mientras lo elige.
 

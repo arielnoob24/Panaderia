@@ -309,7 +309,8 @@ Es el módulo que dibuja los productos y controla cómo se ven.
 En la portada, los productos se ven en una sola fila que se desplaza de lado:
 - Crea el rótulo "Nuestro mostrador", las dos flechas y el botón de pausa.
 - **`pasoFila()`** calcula cuánto mover para avanzar exactamente una ficha.
-- **`mirarPuntas()`** apaga la flecha de un lado al llegar al extremo.
+- **`mirarPuntas()`** apaga la flecha de atrás al principio. La de adelante
+  no se apaga: en el último producto (`enElFinal()`) vuelve al primero.
 - **Avance automático**: cada 4,2 segundos (`CADA`) la fila avanza sola. Se
   detiene si el ratón, el dedo o el foco están encima (`vigilar`), si la
   pestaña está oculta, si el usuario pidió menos movimiento o si se pulsó

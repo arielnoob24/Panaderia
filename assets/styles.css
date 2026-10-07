@@ -263,7 +263,8 @@ body.is-vista .fila-pausa { display: none; }
 .fila-flecha[data-ir="-1"] { left: 4px; }
 .fila-flecha[data-ir="1"] { right: 4px; }
 .fila-flecha svg { width: 19px; height: 19px; }
-/* Al llegar a una punta la flecha de ese lado sobra: se apaga y deja de tocarse. */
+/* Al principio la flecha de atras sobra: se apaga y deja de tocarse. La de
+   adelante no se apaga nunca: al final vuelve al primer producto. */
 .fila-flecha[disabled] { opacity: 0; pointer-events: none; }
 .fila-flecha[hidden] { display: none; }
 
@@ -607,6 +608,10 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   /* Dos columnas en pantalla de telefono: la ficha es la mitad de ancha, asi que
      la foto, el nombre y el precio bajan de tamano a la vez para no apretarse. */
   .product-grid { gap: .9rem; }
+  /* En la fila tambien caben dos: con una sola ficha por pantalla el mostrador
+     se veia de producto en producto. Sigue avanzando de uno en uno. */
+  .product-grid.is-fila { gap: .9rem; }
+  .product-grid.is-fila .product-card { width: calc(50% - .45rem); }
   .fila-flecha { display: none; }
   .product-tag { width: 52px; height: 52px; padding: .25rem; font-size: .5rem; }
   .product-info { padding: .9rem; }

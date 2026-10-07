@@ -37,7 +37,7 @@ const ANCHOS = [420, 840];
 // que la foto ocupa toda la pantalla le hacia bajar la de 840 donde basta la
 // de 420. La fila es la vista de entrada, asi que es la que se pinta primero.
 const SIZES_CUADRICULA = '(max-width: 680px) calc(50vw - 23px), (max-width: 900px) calc(50vw - 40px), 280px';
-const SIZES_FILA = 'min(272px, 74vw)';
+const SIZES_FILA = '(max-width: 680px) calc(50vw - 23px), 272px';
 const foto = (p, w) => `${p.foto}-${w}.jpg`;
 
 // Lo que viene en varios tamanios lleva un grupo de botones de radio. El
@@ -144,6 +144,10 @@ const montarCatalogo = (productos) => {
     const hueco = parseFloat(getComputedStyle(productGrid).columnGap) || 0;
     return ficha ? ficha.getBoundingClientRect().width + hueco : 280;
   };
+  // Con 8 px de margen: el desplazamiento suave a veces se queda a uno o dos
+  // pixeles de la punta exacta.
+  const enElFinal = () => productGrid.scrollLeft
+    > productGrid.scrollWidth - productGrid.clientWidth - 8;
   let flechas = [];
   if (productGrid) {
     const zona = document.createElement('div');
@@ -172,6 +176,12 @@ const montarCatalogo = (productos) => {
       b.setAttribute('aria-label', ir === -1 ? 'Ver los productos anteriores' : 'Ver más productos');
       b.dataset.tip = ir === -1 ? 'Anterior' : 'Siguiente';
       b.addEventListener('click', () => {
+        // La de adelante, en la ultima ficha, vuelve a la primera: lo mismo que
+        // hace la fila cuando avanza sola.
+        if (ir === 1 && enElFinal()) {
+          productGrid.scrollTo({ left: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
+          return;
+        }
         productGrid.scrollBy({
           left: ir * pasoFila(),
           behavior: reducedMotion.matches ? 'auto' : 'smooth',
@@ -180,15 +190,21 @@ const montarCatalogo = (productos) => {
       zona.append(b);
       return b;
     });
-    // Al llegar a una punta, la flecha de ese lado se apaga.
+    // Al principio se apaga la flecha de atras. La de adelante no se apaga: en
+    // la ultima ficha cambia de nombre y lleva de vuelta a la primera, que
+    // perderla ahi dejaba al raton sin manera de seguir.
     const mirarPuntas = () => {
       const sobra = productGrid.scrollWidth - productGrid.clientWidth;
       const hayFila = productGrid.classList.contains('is-fila');
+      const final = enElFinal();
       flechas.forEach((b) => {
         b.hidden = !hayFila || sobra < 24;
-        b.disabled = b.dataset.ir === '-1'
-          ? productGrid.scrollLeft < 8
-          : productGrid.scrollLeft > sobra - 8;
+        if (b.dataset.ir === '-1') {
+          b.disabled = productGrid.scrollLeft < 8;
+        } else {
+          b.setAttribute('aria-label', final ? 'Volver al primer producto' : 'Ver más productos');
+          b.dataset.tip = final ? 'Volver al principio' : 'Siguiente';
+        }
       });
     };
     productGrid.addEventListener('scroll', mirarPuntas, { passive: true });
@@ -209,8 +225,7 @@ const montarCatalogo = (productos) => {
 
     const avanzar = () => {
       if (quieta || !puedeAndar()) return;
-      const sobra = productGrid.scrollWidth - productGrid.clientWidth;
-      if (productGrid.scrollLeft > sobra - 8) {
+      if (enElFinal()) {
         productGrid.scrollTo({ left: 0, behavior: 'smooth' });
         return;
       }

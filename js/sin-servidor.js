@@ -666,7 +666,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   });
   var ANCHOS = [420, 840];
   var SIZES_CUADRICULA = "(max-width: 680px) calc(50vw - 23px), (max-width: 900px) calc(50vw - 40px), 280px";
-  var SIZES_FILA = "min(272px, 74vw)";
+  var SIZES_FILA = "(max-width: 680px) calc(50vw - 23px), 272px";
   var foto = (p, w) => `${p.foto}-${w}.jpg`;
   var tamanosHtml = (p) => {
     if (!p.tamanos.length) return "";
@@ -718,6 +718,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       const hueco = parseFloat(getComputedStyle(productGrid).columnGap) || 0;
       return ficha ? ficha.getBoundingClientRect().width + hueco : 280;
     };
+    const enElFinal = () => productGrid.scrollLeft > productGrid.scrollWidth - productGrid.clientWidth - 8;
     let flechas = [];
     if (productGrid) {
       const zona = document.createElement("div");
@@ -740,6 +741,10 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         b.setAttribute("aria-label", ir === -1 ? "Ver los productos anteriores" : "Ver más productos");
         b.dataset.tip = ir === -1 ? "Anterior" : "Siguiente";
         b.addEventListener("click", () => {
+          if (ir === 1 && enElFinal()) {
+            productGrid.scrollTo({ left: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
+            return;
+          }
           productGrid.scrollBy({
             left: ir * pasoFila(),
             behavior: reducedMotion.matches ? "auto" : "smooth"
@@ -751,9 +756,15 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       const mirarPuntas = () => {
         const sobra = productGrid.scrollWidth - productGrid.clientWidth;
         const hayFila = productGrid.classList.contains("is-fila");
+        const final = enElFinal();
         flechas.forEach((b) => {
           b.hidden = !hayFila || sobra < 24;
-          b.disabled = b.dataset.ir === "-1" ? productGrid.scrollLeft < 8 : productGrid.scrollLeft > sobra - 8;
+          if (b.dataset.ir === "-1") {
+            b.disabled = productGrid.scrollLeft < 8;
+          } else {
+            b.setAttribute("aria-label", final ? "Volver al primer producto" : "Ver más productos");
+            b.dataset.tip = final ? "Volver al principio" : "Siguiente";
+          }
         });
       };
       productGrid.addEventListener("scroll", mirarPuntas, { passive: true });
@@ -765,8 +776,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       const puedeAndar = () => productGrid.classList.contains("is-fila") && !reducedMotion.matches && !document.hidden && !productGrid.estaParada?.() && productGrid.scrollWidth - productGrid.clientWidth > 24;
       const avanzar = () => {
         if (quieta || !puedeAndar()) return;
-        const sobra = productGrid.scrollWidth - productGrid.clientWidth;
-        if (productGrid.scrollLeft > sobra - 8) {
+        if (enElFinal()) {
           productGrid.scrollTo({ left: 0, behavior: "smooth" });
           return;
         }
