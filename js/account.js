@@ -836,26 +836,40 @@ codigoReenviar.addEventListener('click', () => {
   mandarCodigo();
 });
 
+// Marca un campo de "Entrar" con su error, o lo limpia con un texto vacio. El
+// error va debajo del campo y unido a el con aria-describedby, asi que el
+// lector lo lee al volver al campo; ademas se canta al momento por la region
+// de avisos, porque quien pulso "Entrar" esta esperando una respuesta.
+const marcarEntrar = (input, error, texto, decir = false) => {
+  error.hidden = !texto;
+  error.textContent = texto || '';
+  input.setAttribute('aria-invalid', texto ? 'true' : 'false');
+  input.classList.toggle('is-mal', Boolean(texto));
+  if (texto && decir) avisos.textContent = texto;
+};
+
 const entrar = async () => {
   const escrito = correoEntrar.value.trim();
-  const marcar = (input, error, texto) => {
-    error.hidden = !texto;
-    error.textContent = texto || '';
-    input.setAttribute('aria-invalid', texto ? 'true' : 'false');
-    input.classList.toggle('is-mal', Boolean(texto));
-  };
+  avisoEntrar.hidden = true;
+  // Primero lo que se ve sin buscar nada: que el correo tenga forma de correo
+  // y que haya una contrasena escrita.
   const malCorreo = fallaCorreo(escrito);
   const malClave = claveEntrar.value ? '' : 'Escribe tu contraseña.';
-  marcar(correoEntrar, errorEntrarCorreo, malCorreo);
-  marcar(claveEntrar, errorEntrarClave, malClave);
+  marcarEntrar(correoEntrar, errorEntrarCorreo, malCorreo);
+  marcarEntrar(claveEntrar, errorEntrarClave, malClave);
   if (malCorreo) { correoEntrar.focus(); return; }
   if (malClave) { claveEntrar.focus(); return; }
-  avisoEntrar.hidden = true;
-  // Sin servidor solo se puede reconocer la cuenta de este navegador.
+  // Despues, si la cuenta existe. Se dice cual de los dos fallo, el correo o
+  // la contrasena, porque es lo que hace falta para arreglarlo (heuristica 9).
+  // Con un servidor de verdad se responderia lo mismo a los dos, para no
+  // confirmarle a quien adivina que un correo tiene cuenta; aqui no hay nada
+  // que proteger asi: la unica cuenta posible es la de este navegador.
   const guardado = correoGuardado();
-  if (!guardado) {
-    avisoEntrar.hidden = false;
-    avisoEntrar.textContent = 'En este navegador no hay ninguna cuenta creada todavía.';
+  if (!guardado || guardado.toLowerCase() !== escrito.toLowerCase()) {
+    marcarEntrar(correoEntrar, errorEntrarCorreo, guardado
+      ? 'No hay ninguna cuenta con este correo. Revisa que esté bien escrito: es el que usaste al registrarte.'
+      : 'En este navegador no hay ninguna cuenta creada todavía. Créala con el enlace de abajo.', true);
+    correoEntrar.focus();
     return;
   }
   if (!puedeHuella()) {
@@ -871,14 +885,11 @@ const entrar = async () => {
     avisoEntrar.textContent = 'Esta cuenta se creó sin contraseña. Vuelve a registrarte para ponerle una.';
     return;
   }
-  // Correo equivocado y contrasena equivocada reciben la misma respuesta: decir
-  // cual de los dos fallo le ahorra la mitad del trabajo a quien adivina.
-  const correoBien = guardado.toLowerCase() === escrito.toLowerCase();
-  const claveBien = (await calcularHuella(claveEntrar.value, huella.sal)).hash === huella.hash;
-  if (!correoBien || !claveBien) {
-    claveEntrar.value = '';
-    avisoEntrar.hidden = false;
-    avisoEntrar.textContent = 'El correo o la contraseña no son correctos.';
+  if ((await calcularHuella(claveEntrar.value, huella.sal)).hash !== huella.hash) {
+    // La contrasena no se borra: con "Mostrar" se puede ver lo que se
+    // escribio y corregir la letra que falla, en vez de empezar de cero.
+    marcarEntrar(claveEntrar, errorEntrarClave,
+      'La contraseña no es correcta. Revisa mayúsculas y minúsculas, o pulsa Mostrar para ver lo que escribiste.', true);
     claveEntrar.focus();
     return;
   }
@@ -893,15 +904,25 @@ const entrar = async () => {
 panelC.querySelector('.cuenta-entrar').addEventListener('click', entrar);
 // Enter en el correo pasa a la contrasena; en la contrasena, entra.
 enterAvanza([correoEntrar, claveEntrar], entrar);
+// Al salir del correo se mira solo si tiene forma de correo (usuario, @ y un
+// dominio con punto), no si hay cuenta: eso se sabe al pulsar "Entrar". Vacio
+// no se marca al salir: puede que solo se este pasando por el campo, y el
+// "Escribe tu correo" ya sale al intentar entrar.
+correoEntrar.addEventListener('blur', () => {
+  const escrito = correoEntrar.value.trim();
+  if (!escrito) return;
+  marcarEntrar(correoEntrar, errorEntrarCorreo, fallaCorreo(escrito));
+});
 // Si el correo ya salio marcado, el aviso sigue lo que se va escribiendo:
 // al poner el @ pasa a pedir lo que falta despues, y al completarlo se va.
+// Lo mismo con "no hay ninguna cuenta": al tocar el correo deja de valer.
 correoEntrar.addEventListener('input', () => {
   if (errorEntrarCorreo.hidden) return;
-  const texto = fallaCorreo(correoEntrar.value.trim());
-  errorEntrarCorreo.hidden = !texto;
-  errorEntrarCorreo.textContent = texto;
-  correoEntrar.setAttribute('aria-invalid', texto ? 'true' : 'false');
-  correoEntrar.classList.toggle('is-mal', Boolean(texto));
+  marcarEntrar(correoEntrar, errorEntrarCorreo, fallaCorreo(correoEntrar.value.trim()));
+});
+// Y el de la contrasena se va en cuanto se empieza a corregir.
+claveEntrar.addEventListener('input', () => {
+  if (!errorEntrarClave.hidden) marcarEntrar(claveEntrar, errorEntrarClave, '');
 });
 
 panelC.querySelector('.cuenta-salir').addEventListener('click', () => {

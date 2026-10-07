@@ -2735,18 +2735,20 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     avisos.textContent = "Te enviamos un código nuevo.";
     mandarCodigo();
   });
+  var marcarEntrar = (input, error, texto, decir = false) => {
+    error.hidden = !texto;
+    error.textContent = texto || "";
+    input.setAttribute("aria-invalid", texto ? "true" : "false");
+    input.classList.toggle("is-mal", Boolean(texto));
+    if (texto && decir) avisos.textContent = texto;
+  };
   var entrar = async () => {
     const escrito = correoEntrar.value.trim();
-    const marcar = (input, error, texto) => {
-      error.hidden = !texto;
-      error.textContent = texto || "";
-      input.setAttribute("aria-invalid", texto ? "true" : "false");
-      input.classList.toggle("is-mal", Boolean(texto));
-    };
+    avisoEntrar.hidden = true;
     const malCorreo = fallaCorreo(escrito);
     const malClave = claveEntrar.value ? "" : "Escribe tu contraseña.";
-    marcar(correoEntrar, errorEntrarCorreo, malCorreo);
-    marcar(claveEntrar, errorEntrarClave, malClave);
+    marcarEntrar(correoEntrar, errorEntrarCorreo, malCorreo);
+    marcarEntrar(claveEntrar, errorEntrarClave, malClave);
     if (malCorreo) {
       correoEntrar.focus();
       return;
@@ -2755,11 +2757,10 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       claveEntrar.focus();
       return;
     }
-    avisoEntrar.hidden = true;
     const guardado = correoGuardado();
-    if (!guardado) {
-      avisoEntrar.hidden = false;
-      avisoEntrar.textContent = "En este navegador no hay ninguna cuenta creada todavía.";
+    if (!guardado || guardado.toLowerCase() !== escrito.toLowerCase()) {
+      marcarEntrar(correoEntrar, errorEntrarCorreo, guardado ? "No hay ninguna cuenta con este correo. Revisa que esté bien escrito: es el que usaste al registrarte." : "En este navegador no hay ninguna cuenta creada todavía. Créala con el enlace de abajo.", true);
+      correoEntrar.focus();
       return;
     }
     if (!puedeHuella()) {
@@ -2773,12 +2774,13 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       avisoEntrar.textContent = "Esta cuenta se creó sin contraseña. Vuelve a registrarte para ponerle una.";
       return;
     }
-    const correoBien = guardado.toLowerCase() === escrito.toLowerCase();
-    const claveBien = (await calcularHuella(claveEntrar.value, huella.sal)).hash === huella.hash;
-    if (!correoBien || !claveBien) {
-      claveEntrar.value = "";
-      avisoEntrar.hidden = false;
-      avisoEntrar.textContent = "El correo o la contraseña no son correctos.";
+    if ((await calcularHuella(claveEntrar.value, huella.sal)).hash !== huella.hash) {
+      marcarEntrar(
+        claveEntrar,
+        errorEntrarClave,
+        "La contraseña no es correcta. Revisa mayúsculas y minúsculas, o pulsa Mostrar para ver lo que escribiste.",
+        true
+      );
       claveEntrar.focus();
       return;
     }
@@ -2793,13 +2795,17 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
   };
   panelC.querySelector(".cuenta-entrar").addEventListener("click", entrar);
   enterAvanza([correoEntrar, claveEntrar], entrar);
+  correoEntrar.addEventListener("blur", () => {
+    const escrito = correoEntrar.value.trim();
+    if (!escrito) return;
+    marcarEntrar(correoEntrar, errorEntrarCorreo, fallaCorreo(escrito));
+  });
   correoEntrar.addEventListener("input", () => {
     if (errorEntrarCorreo.hidden) return;
-    const texto = fallaCorreo(correoEntrar.value.trim());
-    errorEntrarCorreo.hidden = !texto;
-    errorEntrarCorreo.textContent = texto;
-    correoEntrar.setAttribute("aria-invalid", texto ? "true" : "false");
-    correoEntrar.classList.toggle("is-mal", Boolean(texto));
+    marcarEntrar(correoEntrar, errorEntrarCorreo, fallaCorreo(correoEntrar.value.trim()));
+  });
+  claveEntrar.addEventListener("input", () => {
+    if (!errorEntrarClave.hidden) marcarEntrar(claveEntrar, errorEntrarClave, "");
   });
   panelC.querySelector(".cuenta-salir").addEventListener("click", () => {
     const nombre = sesion.nombre;

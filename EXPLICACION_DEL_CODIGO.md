@@ -538,8 +538,18 @@ y se compara con la guardada.
   la sesión.
 
 **Entrar y salir**
-- Entrar solo pide el correo y lo compara con el de la cuenta guardada en ese
-  navegador.
+- Entrar pide el correo y la contraseña. Al salir del campo del correo solo se
+  revisa que tenga forma de correo (`fallaCorreo`: usuario, @ y un dominio con
+  punto); si está vacío no se marca todavía.
+- Al pulsar "Entrar" (`entrar()`) se comprueba primero el formato, después que
+  el correo sea el de la cuenta guardada en ese navegador y por último la
+  contraseña, comparando su huella. Cada fallo se dice en su campo y con lo
+  que hay que hacer: "No hay ninguna cuenta con este correo…" o "La contraseña
+  no es correcta. Revisa mayúsculas y minúsculas…" (heurística 9). Un servidor
+  de verdad daría la misma respuesta a los dos casos, para no confirmar qué
+  correos tienen cuenta; aquí no hace falta porque la única cuenta posible es
+  la de ese navegador. La contraseña equivocada no se borra, para poder
+  corregirla con "Mostrar".
 - `entrarEnSesion()` guarda la cuenta, pinta el botón con tus iniciales y pasa
   tu dirección a la canasta si estaba vacía (`prellenarPedido`).
 - Cerrar sesión no borra la cuenta: solo marca `sesionAbierta: false`.
