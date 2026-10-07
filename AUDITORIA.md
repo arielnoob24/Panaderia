@@ -8,7 +8,7 @@ accesibilidad, responsive, rendimiento, SEO y contenido.
 
 Las rondas originales se hicieron sobre un sitio de tres archivos con nueve productos
 escritos a mano. Desde entonces se rehízo entero (catálogo en un archivo de datos, módulos,
-canasta, pago simulado, cuenta y mapa), así que muchos hallazgos viejos dejaron de aplicar.
+canasta, pago simulado y cuenta), así que muchos hallazgos viejos dejaron de aplicar.
 Lo de abajo está comprobado contra el sitio de hoy.
 
 ---
@@ -40,7 +40,6 @@ Lo de abajo está comprobado contra el sitio de hoy.
   norma para el dedo. Basta con darle margen.
 - Antes del pie hay 17 paradas de tabulación (una por producto). No es un fallo, porque
   existe «Saltar al contenido», pero un segundo atajo ayudaría.
-- La aguja del mapa no se mueve con las flechas: se marca el centro del mapa y listo.
 - Falta decidir si se destaca algún producto más grande. Está sin hacer a propósito: primero
   hay que elegir cuál.
 
@@ -68,8 +67,7 @@ Se conserva como registro, para no repetir los errores.
   corte de pan y los principios entran en orden.
 - **Contraste.** Todos los pares cumplen la norma, medidos también sobre las fotos con el peor
   píxel de la zona. Así apareció un rótulo del hero que fallaba.
-- **Teclado.** El mapa ya se usa sin ratón (botón para marcar el centro, flechas para
-  moverlo). Los paneles atrapan el foco, Escape los cierra y el foco vuelve a su botón. La
+- **Teclado.** Los paneles atrapan el foco, Escape los cierra y el foco vuelve a su botón. La
   fila de productos se detiene cuando el foco entra.
 - **Responsive.** Se quitó una barra de desplazamiento horizontal en tabletas y una barra de
   categorías que escondía dos opciones en el móvil.

@@ -517,7 +517,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   // js/state.js
   var CLAVE = "eltradicional-pedido";
   var pedido = /* @__PURE__ */ new Map();
-  var entrega = { modo: "retiro", direccion: "", piso: "", referencia: "", notas: "", punto: null };
+  var entrega = { modo: "retiro", direccion: "", piso: "", referencia: "", notas: "" };
   var sesion = {
     nombre: "",
     correo: "",
@@ -532,30 +532,11 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var factura = { aOtro: false, nombre: "", ident: "", correo: "", direccion: "" };
   var MAX_UNIDADES = 100;
   var ENVIO = 1.5;
-  var ENVIO_BASE = 1;
-  var ENVIO_POR_KM = 0.35;
-  var ENVIO_TECHO = 6;
-  var LOCAL = { lat: -0.9938, lng: -77.8128 };
-  var kmEntre = (a, b) => {
-    const R = 6371;
-    const rad = (g) => g * Math.PI / 180;
-    const dLat = rad(b.lat - a.lat);
-    const dLng = rad(b.lng - a.lng);
-    const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
-    return 2 * R * Math.asin(Math.sqrt(h));
-  };
-  var tarifaPara = (km) => Math.min(
-    Math.round((ENVIO_BASE + km * ENVIO_POR_KM) * 20) / 20,
-    ENVIO_TECHO
-  );
   var dinero = (n) => "$" + n.toFixed(2);
   var direccionEntera = () => [entrega.direccion, entrega.piso, entrega.referencia].filter(Boolean).join(" · ");
   var idDe = (nombre) => nombre.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-");
   var subtotal = () => [...pedido.values()].reduce((s, l) => s + l.precio * l.cantidad, 0);
-  var envio = () => {
-    if (entrega.modo !== "domicilio") return 0;
-    return entrega.punto ? tarifaPara(kmEntre(LOCAL, entrega.punto)) : ENVIO;
-  };
+  var envio = () => entrega.modo === "domicilio" ? ENVIO : 0;
   var total = () => subtotal() + envio();
   var unidades = () => [...pedido.values()].reduce((s, l) => s + l.cantidad, 0);
   var puente = {};
@@ -1034,184 +1015,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       if (!event.matches) return;
       productGrid?.classList.remove("is-filtering");
       products.forEach((product) => product.classList.remove("catalog-enter"));
-    });
-  };
-
-  // js/map.js
-  var mapaLienzo = null;
-  var mapaFallo = null;
-  var mapaDato = null;
-  var mapaAqui = null;
-  var mapaCentro = null;
-  var localLienzo = null;
-  var localFallo = null;
-  var mapaLocal = null;
-  var LEAFLET_JS = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js";
-  var LEAFLET_CSS = "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css";
-  var mapa = null;
-  var aguja = null;
-  var pidiendoMapa = null;
-  var traerLeaflet = () => {
-    if (window.L) return Promise.resolve(window.L);
-    if (pidiendoMapa) return pidiendoMapa;
-    pidiendoMapa = new Promise((listo2, falla) => {
-      const hoja = document.createElement("link");
-      hoja.rel = "stylesheet";
-      hoja.href = LEAFLET_CSS;
-      document.head.append(hoja);
-      const guion = document.createElement("script");
-      guion.src = LEAFLET_JS;
-      guion.onload = () => window.L ? listo2(window.L) : falla(new Error("sin L"));
-      guion.onerror = () => falla(new Error("no cargo"));
-      document.head.append(guion);
-    });
-    return pidiendoMapa;
-  };
-  var BUSCADOR = "https://nominatim.openstreetmap.org/search";
-  var CAJA_TENA = "-78.1,-0.75,-77.5,-1.25";
-  var buscarDireccion = (texto) => {
-    const url = `${BUSCADOR}?format=jsonv2&limit=6&addressdetails=1&accept-language=es&countrycodes=ec&viewbox=${CAJA_TENA}&q=${encodeURIComponent(texto)}`;
-    return fetch(url, { headers: { Accept: "application/json" } }).then((r) => r.ok ? r.json() : Promise.reject(new Error("no respondio"))).then((lista2) => (Array.isArray(lista2) ? lista2 : []).map((sitio) => ({
-      // display_name trae el pais y la provincia al final, que en una lista
-      // de seis resultados de la misma ciudad es ruido repetido en todos.
-      nombre: String(sitio.display_name || "").split(",").slice(0, 4).join(",").trim(),
-      punto: { lat: Number(sitio.lat), lng: Number(sitio.lon) }
-    })).filter((s) => s.nombre && Number.isFinite(s.punto.lat) && Number.isFinite(s.punto.lng)));
-  };
-  var contarDistancia = () => {
-    if (!mapaDato) return;
-    if (!entrega.punto) {
-      mapaDato.textContent = "Marca a dónde va el pedido: toca el mapa, o muévelo con las flechas y pulsa Enter";
-      return;
-    }
-    const km = kmEntre(LOCAL, entrega.punto);
-    mapaDato.textContent = `A ${km.toFixed(1)} km del local · envío ${dinero(tarifaPara(km))}`;
-  };
-  var ponerAguja = (donde) => {
-    entrega.punto = { lat: donde.lat, lng: donde.lng };
-    if (aguja) aguja.setLatLng(donde);
-    contarDistancia();
-    puente.pintarDesglose();
-    puente.guardar();
-  };
-  var marcarCentro = () => {
-    if (!mapa || !aguja) {
-      if (mapaDato) mapaDato.textContent = "El mapa todavía se está cargando; espera un momento";
-      return;
-    }
-    if (!aguja._map) aguja.addTo(mapa);
-    const centro = mapa.getCenter();
-    ponerAguja({ lat: centro.lat, lng: centro.lng });
-  };
-  var irAlPunto = (punto) => {
-    ponerAguja(punto);
-    armarMapa();
-    if (!mapa || !aguja) return;
-    if (!aguja._map) aguja.addTo(mapa);
-    mapa.setView([punto.lat, punto.lng], 17);
-    setTimeout(() => mapa.invalidateSize(), 60);
-  };
-  var armarMapaLocal = () => {
-    if (mapaLocal || !localLienzo) return;
-    traerLeaflet().then((L) => {
-      mapaLocal = L.map(localLienzo, {
-        attributionControl: true,
-        dragging: false,
-        scrollWheelZoom: false,
-        touchZoom: false,
-        doubleClickZoom: false,
-        boxZoom: false,
-        keyboard: false,
-        zoomControl: false
-      }).setView([LOCAL.lat, LOCAL.lng], 16);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 18,
-        attribution: "&copy; OpenStreetMap"
-      }).addTo(mapaLocal);
-      L.circleMarker([LOCAL.lat, LOCAL.lng], {
-        radius: 9,
-        color: "#a85f45",
-        fillColor: "#d79b4a",
-        fillOpacity: 1,
-        weight: 3
-      }).addTo(mapaLocal).bindTooltip("El Tradicional");
-      localLienzo.setAttribute("aria-hidden", "true");
-      localLienzo.tabIndex = -1;
-      setTimeout(() => mapaLocal.invalidateSize(), 60);
-    }).catch(() => {
-      if (localFallo) localFallo.hidden = false;
-      if (localLienzo) localLienzo.hidden = true;
-    });
-  };
-  var armarMapa = () => {
-    if (mapa || !mapaLienzo) return;
-    traerLeaflet().then((L) => {
-      mapa = L.map(mapaLienzo, { attributionControl: true }).setView([LOCAL.lat, LOCAL.lng], 14);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 18,
-        attribution: "&copy; OpenStreetMap"
-      }).addTo(mapa);
-      L.circleMarker([LOCAL.lat, LOCAL.lng], {
-        radius: 7,
-        color: "#a85f45",
-        fillColor: "#d79b4a",
-        fillOpacity: 1,
-        weight: 2
-      }).addTo(mapa).bindTooltip("El Tradicional");
-      aguja = L.marker([LOCAL.lat, LOCAL.lng], { draggable: true });
-      aguja.on("dragend", () => ponerAguja(aguja.getLatLng()));
-      mapa.on("click", (e) => {
-        if (!aguja._map) aguja.addTo(mapa);
-        ponerAguja(e.latlng);
-      });
-      mapaLienzo.setAttribute("role", "application");
-      mapaLienzo.setAttribute("aria-label", "Mapa del reparto. Muévelo con las flechas, acerca y aleja con las teclas más y menos, y pulsa Enter para marcar el centro como punto de entrega.");
-      mapaLienzo.addEventListener("keydown", (e) => {
-        if (e.key !== "Enter") return;
-        e.preventDefault();
-        marcarCentro();
-      });
-      if (entrega.punto) {
-        aguja.setLatLng(entrega.punto).addTo(mapa);
-        contarDistancia();
-      }
-      setTimeout(() => mapa.invalidateSize(), 60);
-    }).catch(() => {
-      if (mapaFallo) mapaFallo.hidden = false;
-      if (mapaLienzo) mapaLienzo.hidden = true;
-      if (mapaAqui) mapaAqui.hidden = true;
-      if (mapaCentro) mapaCentro.hidden = true;
-    });
-  };
-  var montarMapa = (panel3) => {
-    mapaLienzo = panel3.querySelector(".mapa-lienzo");
-    mapaFallo = panel3.querySelector(".mapa-fallo");
-    mapaDato = panel3.querySelector(".mapa-dato");
-    mapaAqui = panel3.querySelector(".mapa-aqui");
-    mapaCentro = panel3.querySelector(".mapa-centro");
-    localLienzo = panel3.querySelector(".mapa-local-lienzo");
-    localFallo = panel3.querySelector(".mapa-local-fallo");
-    mapaCentro?.addEventListener("click", marcarCentro);
-    const avisar = (texto) => {
-      const estado = panel3.querySelector(".dir-busca-estado");
-      if (estado) estado.textContent = texto;
-      if (mapaDato && mapa) mapaDato.textContent = texto;
-    };
-    mapaAqui?.addEventListener("click", () => {
-      if (!navigator.geolocation) {
-        avisar("Este navegador no sabe decir dónde estás; márcalo en el mapa");
-        puente.mostrarMapa?.();
-        return;
-      }
-      avisar("Buscando dónde estás…");
-      navigator.geolocation.getCurrentPosition((pos) => {
-        puente.mostrarMapa?.();
-        irAlPunto({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        avisar("Esa es tu zona: arrastra la aguja hasta la puerta.");
-      }, () => {
-        avisar("No se pudo saber dónde estás; márcalo en el mapa");
-        puente.mostrarMapa?.();
-      }, { enableHighAccuracy: true, timeout: 8e3 });
     });
   };
 
@@ -1725,10 +1528,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
           if (typeof f.correo === "string") factura.correo = f.correo.slice(0, 120);
           if (typeof f.direccion === "string") factura.direccion = f.direccion.slice(0, 160);
         }
-        const p = dato.punto;
-        if (p && Number.isFinite(p.lat) && Number.isFinite(p.lng) && Math.abs(p.lat) <= 90 && Math.abs(p.lng) <= 180) {
-          entrega.punto = { lat: p.lat, lng: p.lng };
-        }
       }
     } catch (e) {
     }
@@ -1743,7 +1542,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         piso: entrega.piso,
         referencia: entrega.referencia,
         notas: entrega.notas,
-        punto: entrega.punto,
         factura: { ...factura },
         guardado: cuando.toISOString()
       }));
@@ -1772,7 +1570,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   vista.id = "confirmar";
   vista.className = "checkout section-pad";
   vista.hidden = true;
-  vista.innerHTML = '<div class="container"><div class="vista-cabeza checkout-cabeza"><button class="vista-volver checkout-volver" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver a la tienda</button><h2 class="vista-titulo checkout-titulo" tabindex="-1">Confirmar el pedido</h2></div><div class="checkout-paso" data-checkout="pedido"><div class="checkout-grid"><div class="checkout-datos">' + piezas.aviso + '<fieldset class="canasta-entrega"><legend>¿Cómo lo quieres?</legend><div class="canasta-opciones"><label><input type="radio" name="canasta-entrega" value="retiro" checked><span>Paso retirando<small>Gratis</small></span></label><label><input type="radio" name="canasta-entrega" value="domicilio"><span>A domicilio<small>Desde ' + dinero(ENVIO_BASE) + '</small></span></label></div><div class="canasta-local"><p class="canasta-local-titulo">Esquina de Eloy Alfaro y Gabriel Espinosa</p><p class="canasta-local-dato">Tena, Napo. Te esperamos en el mostrador.</p><div class="mapa-caja mapa-caja-local"><div class="mapa-local-lienzo"></div><p class="mapa-fallo mapa-local-fallo" hidden>No se pudo cargar el mapa, pero la dirección de arriba es la buena</p></div><a class="mapa-ruta" href="https://www.google.com/maps/dir/?api=1&destination=-1.004033,-77.812690" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21.4c0 0-6.6-5.3-6.6-10.1a6.6 6.6 0 0 1 13.2 0c0 4.8-6.6 10.1-6.6 10.1Z"/><circle cx="12" cy="11" r="2.4"/></svg>Cómo llegar <span aria-hidden="true">↗</span><span class="sr-only"> (abre en una pestaña nueva)</span></a><p class="canasta-local-hora"></p></div><div class="canasta-direccion" hidden><label for="canasta-busca">¿A dónde lo llevamos?</label><div class="dir-busca"><input id="canasta-busca" class="dir-busca-campo" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="canasta-busca-lista" aria-autocomplete="list" placeholder="Calle, barrio o un sitio conocido"><button class="dir-busca-aqui mapa-aqui" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="3.3"/><path d="M12 2v3.2M12 18.8V22M22 12h-3.2M5.2 12H2"/><circle cx="12" cy="12" r="8"/></svg>Usar mi ubicación</button></div><ul id="canasta-busca-lista" class="dir-resultados" role="listbox" aria-label="Direcciones encontradas" hidden></ul><p class="dir-busca-estado" role="status"></p><button class="dir-a-mano text-link" type="button">Prefiero marcarlo en el mapa</button><div class="mapa-zona" hidden><div class="mapa-caja"><div class="mapa-lienzo"></div><p class="mapa-fallo" hidden>No se pudo cargar el mapa. Escribe la dirección y cobramos la tarifa de salida</p></div><div class="mapa-pie"><button class="mapa-centro" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21.4c0 0-6.6-5.3-6.6-10.1a6.6 6.6 0 0 1 13.2 0c0 4.8-6.6 10.1-6.6 10.1Z"/><circle cx="12" cy="11" r="2.4"/></svg>Marcar el centro del mapa</button><p class="mapa-dato">Arrastra la aguja hasta la puerta, o mueve el mapa con las flechas y pulsa Enter</p></div></div><label for="canasta-dir">La dirección, tal como la escribirías</label><input id="canasta-dir" type="text" autocomplete="street-address" placeholder="Calle y número"><p class="canasta-aviso" role="alert" hidden>Escribe la dirección para poder llevarlo.</p><div class="dir-detalle"><div><label for="canasta-piso">Piso, departamento u oficina</label><input id="canasta-piso" type="text" autocomplete="address-line2" placeholder="Torre B, piso 3, dpto. 302"></div><div><label for="canasta-ref">Una referencia para encontrarlo</label><input id="canasta-ref" type="text" placeholder="Portón verde, frente a la cancha"></div></div><label for="canasta-notas">Indicaciones para quien entrega <small>(opcional)</small></label><textarea id="canasta-notas" rows="2" maxlength="300" placeholder="Timbre dañado, llamar al llegar. Hay perro."></textarea></div></fieldset>' + piezas.metodos + piezas.factura + '</div><aside class="checkout-resumen"><div class="pedido-resumen"><div class="resumen-cabeza"><h3 class="recibo-titulo">Tu pedido</h3><p class="resumen-cuenta"></p></div><ul class="recibo-lista resumen-lista"></ul><button class="resumen-editar" type="button">Editar la canasta</button></div><dl class="canasta-desglose"><div><dt>Subtotal</dt><dd class="desglose-subtotal">$0.00</dd></div><div><dt>Envío</dt><dd class="desglose-envio">Gratis</dd></div><div class="desglose-suma"><dt>Total</dt><dd class="desglose-total">$0.00</dd></div></dl>' + piezas.canal + piezas.pie + '</aside></div></div><div class="checkout-paso" data-checkout="comprobante" hidden>' + comprobanteHtml() + "</div></div>";
+  vista.innerHTML = '<div class="container"><div class="vista-cabeza checkout-cabeza"><button class="vista-volver checkout-volver" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver a la tienda</button><h2 class="vista-titulo checkout-titulo" tabindex="-1">Confirmar el pedido</h2></div><div class="checkout-paso" data-checkout="pedido"><div class="checkout-grid"><div class="checkout-datos">' + piezas.aviso + '<fieldset class="canasta-entrega"><legend>¿Cómo lo quieres?</legend><div class="canasta-opciones"><label><input type="radio" name="canasta-entrega" value="retiro" checked><span>Paso retirando<small>Gratis</small></span></label><label><input type="radio" name="canasta-entrega" value="domicilio"><span>A domicilio<small>' + dinero(ENVIO) + '</small></span></label></div><div class="canasta-local"><p class="canasta-local-titulo">Esquina de Eloy Alfaro y Gabriel Espinosa</p><p class="canasta-local-dato">Tena, Napo. Te esperamos en el mostrador.</p><a class="mapa-ruta" href="https://www.google.com/maps/dir/?api=1&destination=-1.004033,-77.812690" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21.4c0 0-6.6-5.3-6.6-10.1a6.6 6.6 0 0 1 13.2 0c0 4.8-6.6 10.1-6.6 10.1Z"/><circle cx="12" cy="11" r="2.4"/></svg>Cómo llegar <span aria-hidden="true">↗</span><span class="sr-only"> (abre en una pestaña nueva)</span></a><p class="canasta-local-hora"></p></div><div class="canasta-direccion" hidden><label for="canasta-dir">¿A dónde lo llevamos?</label><input id="canasta-dir" type="text" autocomplete="street-address" placeholder="Calle, número y barrio"><p class="canasta-aviso" role="alert" hidden>Escribe la dirección para poder llevarlo.</p><div class="dir-detalle"><div><label for="canasta-piso">Piso, departamento u oficina</label><input id="canasta-piso" type="text" autocomplete="address-line2" placeholder="Torre B, piso 3, dpto. 302"></div><div><label for="canasta-ref">Una referencia para encontrarlo</label><input id="canasta-ref" type="text" placeholder="Portón verde, frente a la cancha"></div></div><label for="canasta-notas">Indicaciones para quien entrega <small>(opcional)</small></label><textarea id="canasta-notas" rows="2" maxlength="300" placeholder="Timbre dañado, llamar al llegar. Hay perro."></textarea></div></fieldset>' + piezas.metodos + piezas.factura + '</div><aside class="checkout-resumen"><div class="pedido-resumen"><div class="resumen-cabeza"><h3 class="recibo-titulo">Tu pedido</h3><p class="resumen-cuenta"></p></div><ul class="recibo-lista resumen-lista"></ul><button class="resumen-editar" type="button">Editar la canasta</button></div><dl class="canasta-desglose"><div><dt>Subtotal</dt><dd class="desglose-subtotal">$0.00</dd></div><div><dt>Envío</dt><dd class="desglose-envio">Gratis</dd></div><div class="desglose-suma"><dt>Total</dt><dd class="desglose-total">$0.00</dd></div></dl>' + piezas.canal + piezas.pie + '</aside></div></div><div class="checkout-paso" data-checkout="comprobante" hidden>' + comprobanteHtml() + "</div></div>";
   document.querySelector("#contenido")?.append(vista);
   var barraDeshacer = document.createElement("div");
   barraDeshacer.className = "deshacer-barra";
@@ -1794,11 +1592,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var campoRef = vista.querySelector("#canasta-ref");
   var campoNotas = vista.querySelector("#canasta-notas");
   var avisoDir = vista.querySelector(".canasta-direccion .canasta-aviso");
-  var mapaZona = vista.querySelector(".canasta-direccion .mapa-zona");
-  var buscaCampo = vista.querySelector("#canasta-busca");
-  var buscaLista = vista.querySelector(".dir-resultados");
-  var buscaEstado = vista.querySelector(".dir-busca-estado");
-  var buscaAMano = vista.querySelector(".dir-a-mano");
   var resumenLista = vista.querySelector(".resumen-lista");
   var resumenCuenta = vista.querySelector(".resumen-cuenta");
   var resumenEditar = vista.querySelector(".resumen-editar");
@@ -1952,9 +1745,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     if (abierto()) cerrar();
     history.pushState({ checkout: "pedido" }, "", "#confirmar");
     verVista("pedido");
-    if (entrega.modo === "domicilio") {
-      if (entrega.punto) mostrarMapa();
-    } else armarMapaLocal();
   };
   var verComprobante = () => {
     history.replaceState({ checkout: "comprobante" }, "", "#comprobante");
@@ -2011,139 +1801,12 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     entrega.modo = radio.value === "domicilio" ? "domicilio" : "retiro";
     avisoDir.hidden = true;
     pintarPie();
-    if (entrega.modo === "domicilio") {
-      if (entrega.punto) mostrarMapa();
-      buscaCampo.focus();
-    } else {
-      armarMapaLocal();
-    }
+    if (entrega.modo === "domicilio") campoDir.focus();
   }));
-  var mostrarMapa = () => {
-    if (mapaZona.hidden) mapaZona.hidden = false;
-    armarMapa();
-  };
   campoDir.addEventListener("input", () => {
     entrega.direccion = campoDir.value.trim().slice(0, 200);
     if (entrega.direccion) avisoDir.hidden = true;
     pintarPie();
-  });
-  var cerrarResultados = () => {
-    buscaLista.hidden = true;
-    buscaLista.textContent = "";
-    buscaCampo.setAttribute("aria-expanded", "false");
-    buscaCampo.removeAttribute("aria-activedescendant");
-  };
-  var tomarResultado = (sitio) => {
-    entrega.direccion = sitio.nombre.slice(0, 200);
-    campoDir.value = entrega.direccion;
-    buscaCampo.value = sitio.nombre;
-    avisoDir.hidden = true;
-    cerrarResultados();
-    mostrarMapa();
-    irAlPunto(sitio.punto);
-    buscaEstado.textContent = "Arrastra la aguja hasta la puerta si hace falta.";
-    pintarPie();
-    guardar();
-  };
-  var pintarResultados = (sitios) => {
-    buscaLista.textContent = "";
-    sitios.forEach((sitio, i) => {
-      const li = document.createElement("li");
-      li.id = `dir-resultado-${i}`;
-      li.className = "dir-resultado";
-      li.setAttribute("role", "option");
-      li.setAttribute("aria-selected", "false");
-      li.tabIndex = -1;
-      li.textContent = sitio.nombre;
-      li.addEventListener("click", () => tomarResultado(sitio));
-      li.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          tomarResultado(sitio);
-        }
-      });
-      buscaLista.append(li);
-    });
-    buscaLista.hidden = sitios.length === 0;
-    buscaCampo.setAttribute("aria-expanded", String(sitios.length > 0));
-  };
-  var relojBusca = 0;
-  var ultimaBusca = "";
-  var PAUSA_BUSCA = 650;
-  var lanzarBusqueda = (texto) => {
-    if (texto === ultimaBusca) return;
-    ultimaBusca = texto;
-    buscaEstado.textContent = "Buscando…";
-    buscarDireccion(texto).then((sitios) => {
-      if (buscaCampo.value.trim() !== texto) return;
-      pintarResultados(sitios);
-      buscaEstado.textContent = sitios.length ? `${sitios.length} resultado${sitios.length === 1 ? "" : "s"}. Elige el más cercano.` : "No se encontró. Escribe la dirección abajo y márcala en el mapa.";
-    }).catch(() => {
-      cerrarResultados();
-      buscaEstado.textContent = "No se pudo buscar ahora. Márcalo en el mapa.";
-      mostrarMapa();
-    });
-  };
-  buscaCampo?.addEventListener("input", () => {
-    const texto = buscaCampo.value.trim();
-    window.clearTimeout(relojBusca);
-    if (texto.length < 4) {
-      cerrarResultados();
-      ultimaBusca = "";
-      buscaEstado.textContent = "";
-      return;
-    }
-    relojBusca = window.setTimeout(() => lanzarBusqueda(texto), PAUSA_BUSCA);
-  });
-  buscaCampo?.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !buscaLista.hidden) {
-      e.preventDefault();
-      e.stopPropagation();
-      cerrarResultados();
-      return;
-    }
-    if (e.key === "ArrowDown" && !buscaLista.hidden) {
-      e.preventDefault();
-      buscaLista.firstElementChild?.focus();
-      return;
-    }
-    if (e.key === "Enter") {
-      e.preventDefault();
-      const texto = buscaCampo.value.trim();
-      window.clearTimeout(relojBusca);
-      if (texto.length >= 4) lanzarBusqueda(texto);
-    }
-  });
-  buscaLista?.addEventListener("keydown", (e) => {
-    const opciones = [...buscaLista.children];
-    const i = opciones.indexOf(document.activeElement);
-    if (e.key === "ArrowDown") {
-      e.preventDefault();
-      (opciones[i + 1] || opciones[0]).focus();
-    } else if (e.key === "ArrowUp") {
-      e.preventDefault();
-      if (i <= 0) buscaCampo.focus();
-      else opciones[i - 1].focus();
-    } else if (e.key === "Escape") {
-      e.preventDefault();
-      e.stopPropagation();
-      cerrarResultados();
-      buscaCampo.focus();
-    }
-  });
-  buscaLista?.addEventListener("focusout", () => {
-    window.setTimeout(() => {
-      if (!buscaLista.contains(document.activeElement) && document.activeElement !== buscaCampo) {
-        cerrarResultados();
-      }
-    }, 0);
-  });
-  buscaAMano?.addEventListener("click", () => {
-    cerrarResultados();
-    mostrarMapa();
-    buscaEstado.textContent = "Mueve el mapa y marca el punto de entrega.";
-    const lienzo = vista.querySelector(".mapa-lienzo");
-    (lienzo?.isConnected && lienzo.tabIndex >= 0 ? lienzo : vista.querySelector(".mapa-centro"))?.focus();
   });
   [[campoPiso, "piso", 120], [campoRef, "referencia", 200], [campoNotas, "notas", 300]].forEach(([campo, llave, tope]) => campo?.addEventListener("input", () => {
     entrega[llave] = campo.value.trim().slice(0, tope);
@@ -2264,7 +1927,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       }
     });
   }
-  montarMapa(vista);
   montarPago(vista);
   enterAvanza([
     "#canasta-dir",
@@ -2397,8 +2059,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     cargarFactura();
     pintar();
   };
-  puente.pintarDesglose = pintarDesglose;
-  puente.mostrarMapa = () => mostrarMapa();
   puente.guardar = guardar;
   puente.borrarGuardado = borrarGuardado;
   puente.enfocarTitulo = () => tituloVista.focus();

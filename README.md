@@ -21,12 +21,11 @@ js/
   cart.js             la canasta: panel, lineas y control de cantidad
   checkout.js         pago simulado y comprobante
   account.js          crear cuenta, verificar el correo y entrar
-  map.js              mapa del reparto (Leaflet, se trae solo si hace falta)
   mail.js             envio de correo por EmailJS
   ui.js               barra, foco, cuadritos de ayuda, animaciones y horario
   state.js            lo que comparten los modulos, y el puente entre ellos
   storage.js          los cuatro sitios donde se guarda: local, session, IDB y cookie
-  sin-servidor.js     los 11 modulos en un solo archivo, con el catalogo dentro
+  sin-servidor.js     los 10 modulos en un solo archivo, con el catalogo dentro
                       (generado; es lo que corre al abrir index.html con doble clic)
 herramientas/
   empaquetar.mjs      genera js/sin-servidor.js
@@ -46,14 +45,12 @@ sin servidor (ver abajo).
 - **JavaScript ES6+** en modulos nativos (`<script type="module">`): `import`
   y `export`, `async`/`await`, desestructuracion, plantillas, `Map`, spread y
   encadenamiento opcional.
-- **Leaflet** y **OpenStreetMap** para el mapa del reparto, traidos por CDN y
-  solo cuando se elige envio a domicilio.
 - **EmailJS** para el codigo de verificacion y el comprobante.
 
 Las fotos estan en el repositorio y no en un CDN, asi que el catalogo entero se
 ve sin conexion. Lo unico que sale por red es lo que no se puede traer de otra
-forma, y solo cuando hace falta: el mapa al elegir envio a domicilio, y el
-correo al pedir el codigo o el comprobante. Sin internet el sitio se usa igual
+forma, y solo cuando hace falta: el correo al pedir el codigo o el
+comprobante. Sin internet el sitio se usa igual
 de principio a fin; el pago es simulado y no necesita a nadie.
 
 ## Para verlo en tu maquina
@@ -108,7 +105,7 @@ funciones estan juntas en `js/storage.js`.
 
 | Donde | Que guarda | Por que ahi |
 | --- | --- | --- |
-| `localStorage` | El pedido a medias (lineas, modo de entrega, direccion, punto del mapa y datos de la factura) y la cuenta del cliente. | Tiene que seguir ahi manana. Es el unico sitio que no se vacia al cerrar. |
+| `localStorage` | El pedido a medias (lineas, modo de entrega, direccion y datos de la factura) y la cuenta del cliente. | Tiene que seguir ahi manana. Es el unico sitio que no se vacia al cerrar. |
 | `sessionStorage` | Por donde ibas mirando el catalogo: categoria, orden y filtro. | Dura lo que dura la pestana. Recargar no te mueve de sitio, pero volver otro dia empieza limpio: quien dejo puesto "solo los disponibles" no deberia volver una semana despues a un catalogo a medias sin acordarse de por que. |
 | `IndexedDB` | Los pedidos ya pagados, con su recibo entero. Base `eltradicional`, almacen `pedidos`, clave el numero de pedido. | Son registros que se acumulan y se buscan por numero. En `localStorage` habria que guardar la lista entera en una sola clave y reescribirla completa cada vez. |
 | Cookie | La marca de cuando se guardo por ultima vez (`eltradicional-guardado`, un mes de vida, `SameSite=Lax`). | Es un dato corto que caduca solo y que se lee sin tener que abrir el pedido entero. |

@@ -1,15 +1,14 @@
 // ---- La canasta -------------------------------------------------------
 // El pedido en pantalla: el panel con sus cuatro pasos, la lista de lineas, la
 // barra de deshacer y el control de cantidad que llevan las fichas. Los dos
-// ultimos pasos del panel -pago y comprobante- los pone checkout.js, y el mapa
-// del reparto, map.js; aqui se arma el panel entero y se reparte.
+// ultimos pasos del panel -pago y comprobante- los pone checkout.js; aqui se
+// arma el panel entero y se reparte.
 import { avisos, anexosDeFoco, atraparFoco, apagarDetras, enterAvanza, horarioDeHoy } from './ui.js';
 import {
   CLAVE, pedido, entrega, sesion, cobro, factura, puente,
-  MAX_UNIDADES, ENVIO_BASE, dinero, idDe,
+  MAX_UNIDADES, ENVIO, dinero, idDe,
   subtotal, envio, total, unidades,
 } from './state.js';
-import { montarMapa, armarMapa, armarMapaLocal, buscarDireccion, irAlPunto } from './map.js';
 import { marcarActualizacion, olvidarMarca } from './storage.js';
 import {
   montarPago, piezasDePago, comprobanteHtml, pintarPago,
@@ -43,13 +42,6 @@ const leerGuardado = () => {
         if (typeof f.correo === 'string') factura.correo = f.correo.slice(0, 120);
         if (typeof f.direccion === 'string') factura.direccion = f.direccion.slice(0, 160);
       }
-      // El punto del mapa viene de lo que haya en este navegador: se mira que
-      // sean dos numeros de verdad antes de cobrar una distancia con ellos.
-      const p = dato.punto;
-      if (p && Number.isFinite(p.lat) && Number.isFinite(p.lng)
-        && Math.abs(p.lat) <= 90 && Math.abs(p.lng) <= 180) {
-        entrega.punto = { lat: p.lat, lng: p.lng };
-      }
     }
   } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza vacio */ }
 };
@@ -67,7 +59,6 @@ const guardar = () => {
       piso: entrega.piso,
       referencia: entrega.referencia,
       notas: entrega.notas,
-      punto: entrega.punto,
       factura: { ...factura },
       guardado: cuando.toISOString(),
     }));
@@ -145,17 +136,12 @@ vista.innerHTML =
   + '<label><input type="radio" name="canasta-entrega" value="retiro" checked>'
   + '<span>Paso retirando<small>Gratis</small></span></label>'
   + '<label><input type="radio" name="canasta-entrega" value="domicilio">'
-  + '<span>A domicilio<small>Desde ' + dinero(ENVIO_BASE) + '</small></span></label></div>'
-  // Quien pasa a retirar tambien necesita ver donde esta el local, no solo
-  // leer la calle. Este mapa es de referencia y nada mas: no se marca nada en
-  // el, asi que no se arrastra ni captura la rueda del raton, y para llegar de
-  // verdad esta el enlace, que abre la aplicacion de mapas con la ruta.
+  + '<span>A domicilio<small>' + dinero(ENVIO) + '</small></span></label></div>'
+  // Quien pasa a retirar necesita saber donde esta el local: la calle escrita
+  // y un enlace que abre la aplicacion de mapas con la ruta.
   + '<div class="canasta-local">'
   + '<p class="canasta-local-titulo">Esquina de Eloy Alfaro y Gabriel Espinosa</p>'
   + '<p class="canasta-local-dato">Tena, Napo. Te esperamos en el mostrador.</p>'
-  + '<div class="mapa-caja mapa-caja-local"><div class="mapa-local-lienzo"></div>'
-  + '<p class="mapa-fallo mapa-local-fallo" hidden>No se pudo cargar el mapa, '
-  + 'pero la dirección de arriba es la buena</p></div>'
   + '<a class="mapa-ruta" '
   + 'href="https://www.google.com/maps/dir/?api=1&destination=-1.004033,-77.812690" '
   + 'target="_blank" rel="noopener">'
@@ -168,51 +154,11 @@ vista.innerHTML =
   + '<p class="canasta-local-hora"></p></div>'
 
   + '<div class="canasta-direccion" hidden>'
-  // Primero se pregunta donde, y solo despues se afina. Pedir el punto en el
-  // mapa de entrada obliga a buscar a mano un sitio que el usuario sabe decir
-  // con palabras; escribirlo es mas rapido y el mapa queda para precisar.
-  + '<label for="canasta-busca">¿A dónde lo llevamos?</label>'
-  + '<div class="dir-busca">'
-  + '<input id="canasta-busca" class="dir-busca-campo" type="search" '
-  + 'autocomplete="off" role="combobox" aria-expanded="false" '
-  + 'aria-controls="canasta-busca-lista" aria-autocomplete="list" '
-  + 'placeholder="Calle, barrio o un sitio conocido">'
-  + '<button class="dir-busca-aqui mapa-aqui" type="button">'
-  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
-  + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
-  + '<circle cx="12" cy="12" r="3.3"/><path d="M12 2v3.2M12 18.8V22M22 12h-3.2M5.2 12H2"/>'
-  + '<circle cx="12" cy="12" r="8"/></svg>Usar mi ubicación</button>'
-  + '</div>'
-  + '<ul id="canasta-busca-lista" class="dir-resultados" role="listbox" '
-  + 'aria-label="Direcciones encontradas" hidden></ul>'
-  + '<p class="dir-busca-estado" role="status"></p>'
-  // Si el buscador no encuentra el sitio -y en Tena pasa, porque no todas las
-  // calles estan en el mapa de OpenStreetMap-, hay que poder seguir igual.
-  + '<button class="dir-a-mano text-link" type="button">Prefiero marcarlo en el mapa</button>'
-
-  + '<div class="mapa-zona" hidden>'
-  + '<div class="mapa-caja"><div class="mapa-lienzo"></div>'
-  + '<p class="mapa-fallo" hidden>No se pudo cargar el mapa. '
-  + 'Escribe la dirección y cobramos la tarifa de salida</p></div>'
-  + '<div class="mapa-pie">'
-  // Marcar el punto no puede depender de acertarle con el raton: este boton
-  // deja la aguja en el centro de lo que se esta mirando, y el mapa se mueve
-  // con las flechas. Es el camino de quien va solo con teclado, y de paso el
-  // de quien en el telefono no quiere pelearse con el pulgar.
-  + '<button class="mapa-centro" type="button">'
-  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" '
-  + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
-  + '<path d="M12 21.4c0 0-6.6-5.3-6.6-10.1a6.6 6.6 0 0 1 13.2 0c0 4.8-6.6 10.1-6.6 10.1Z"/>'
-  + '<circle cx="12" cy="11" r="2.4"/></svg>Marcar el centro del mapa</button>'
-  + '<p class="mapa-dato">Arrastra la aguja hasta la puerta, o mueve el mapa '
-  + 'con las flechas y pulsa Enter</p>'
-  + '</div></div>'
-
-  + '<label for="canasta-dir">La dirección, tal como la escribirías</label>'
+  + '<label for="canasta-dir">¿A dónde lo llevamos?</label>'
   + '<input id="canasta-dir" type="text" autocomplete="street-address" '
-  + 'placeholder="Calle y número">'
+  + 'placeholder="Calle, número y barrio">'
   + '<p class="canasta-aviso" role="alert" hidden>Escribe la dirección para poder llevarlo.</p>'
-  // Lo que no sale de ningun mapa: en que puerta hay que golpear. Son
+  // Lo que no dice la calle: en que puerta hay que golpear. Son
   // opcionales porque una casa en la esquina no tiene piso ni torre, y pedir
   // un campo que no aplica se contesta con un guion.
   + '<div class="dir-detalle">'
@@ -295,11 +241,6 @@ const campoPiso = vista.querySelector('#canasta-piso');
 const campoRef = vista.querySelector('#canasta-ref');
 const campoNotas = vista.querySelector('#canasta-notas');
 const avisoDir = vista.querySelector('.canasta-direccion .canasta-aviso');
-const mapaZona = vista.querySelector('.canasta-direccion .mapa-zona');
-const buscaCampo = vista.querySelector('#canasta-busca');
-const buscaLista = vista.querySelector('.dir-resultados');
-const buscaEstado = vista.querySelector('.dir-busca-estado');
-const buscaAMano = vista.querySelector('.dir-a-mano');
 const resumenLista = vista.querySelector('.resumen-lista');
 const resumenCuenta = vista.querySelector('.resumen-cuenta');
 const resumenEditar = vista.querySelector('.resumen-editar');
@@ -531,12 +472,6 @@ const abrirCheckout = () => {
   if (abierto()) cerrar();
   history.pushState({ checkout: 'pedido' }, '', '#confirmar');
   verVista('pedido');
-  // El mapa que toque, al llegar: el de referencia si se pasa a retirar -que es
-  // lo que viene marcado- y el de marcar el punto solo si ya habia uno guardado
-  // de un pedido anterior. Aqui y no al armar el panel, porque el panel se crea
-  // al cargar la pagina y entonces descargar Leaflet seria para nada.
-  if (entrega.modo === 'domicilio') { if (entrega.punto) mostrarMapa(); }
-  else armarMapaLocal();
 };
 
 // El comprobante sustituye a confirmar en el historial en vez de apilarse: el
@@ -611,185 +546,13 @@ radios.forEach((radio) => radio.addEventListener('change', () => {
   entrega.modo = radio.value === 'domicilio' ? 'domicilio' : 'retiro';
   avisoDir.hidden = true;
   pintarPie();
-  // Cada modo trae su mapa, y ninguno se descarga antes de hacer falta: el de
-  // referencia al retirar, el de marcar el punto al pedir a domicilio. Ese
-  // segundo se arma solo si ya habia un punto guardado; si no, espera a que el
-  // buscador o el boton de a mano lo pidan.
-  if (entrega.modo === 'domicilio') {
-    if (entrega.punto) mostrarMapa();
-    buscaCampo.focus();
-  } else {
-    armarMapaLocal();
-  }
+  if (entrega.modo === 'domicilio') campoDir.focus();
 }));
-
-// El mapa de marcar vive escondido hasta que hay algo que precisar. Esto lo
-// descubre y lo arma; llamarlo dos veces no cuesta nada porque armarMapa ya se
-// protege de repetirse.
-const mostrarMapa = () => {
-  if (mapaZona.hidden) mapaZona.hidden = false;
-  armarMapa();
-};
 
 campoDir.addEventListener('input', () => {
   entrega.direccion = campoDir.value.trim().slice(0, 200);
   if (entrega.direccion) avisoDir.hidden = true;
   pintarPie();
-});
-
-// ---- El buscador de direcciones ---------------------------------------
-// Escribir, elegir de una lista y acabar de precisar en el mapa, que es el
-// orden en que lo hace quien ya ha pedido comida por una aplicacion.
-
-// Se cierra la lista y se devuelve el campo a su estado de reposo. Vive aparte
-// porque la cierran cuatro cosas: elegir, Escape, perder el foco y vaciar.
-const cerrarResultados = () => {
-  buscaLista.hidden = true;
-  buscaLista.textContent = '';
-  buscaCampo.setAttribute('aria-expanded', 'false');
-  buscaCampo.removeAttribute('aria-activedescendant');
-};
-
-// Elegir un resultado no termina nada: rellena la calle, lleva el mapa ahi y
-// deja la aguja puesta para que se arrastre hasta la puerta. El buscador
-// acierta la cuadra; la puerta la sabe el usuario.
-const tomarResultado = (sitio) => {
-  entrega.direccion = sitio.nombre.slice(0, 200);
-  campoDir.value = entrega.direccion;
-  buscaCampo.value = sitio.nombre;
-  avisoDir.hidden = true;
-  cerrarResultados();
-  mostrarMapa();
-  irAlPunto(sitio.punto);
-  buscaEstado.textContent = 'Arrastra la aguja hasta la puerta si hace falta.';
-  pintarPie();
-  guardar();
-};
-
-const pintarResultados = (sitios) => {
-  buscaLista.textContent = '';
-  sitios.forEach((sitio, i) => {
-    const li = document.createElement('li');
-    li.id = `dir-resultado-${i}`;
-    li.className = 'dir-resultado';
-    li.setAttribute('role', 'option');
-    li.setAttribute('aria-selected', 'false');
-    li.tabIndex = -1;
-    li.textContent = sitio.nombre;
-    li.addEventListener('click', () => tomarResultado(sitio));
-    // Enter sobre la opcion enfocada: lo mismo que el clic. Las flechas mueven
-    // el foco de verdad, asi que no hace falta llevar un indice aparte.
-    li.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); tomarResultado(sitio); }
-    });
-    buscaLista.append(li);
-  });
-  buscaLista.hidden = sitios.length === 0;
-  buscaCampo.setAttribute('aria-expanded', String(sitios.length > 0));
-};
-
-// Nominatim pide no abusar, asi que no se consulta en cada tecla: se espera a
-// que la mano pare. Cuatro letras es el minimo con el que una busqueda devuelve
-// algo util en una ciudad pequena.
-let relojBusca = 0;
-let ultimaBusca = '';
-const PAUSA_BUSCA = 650;
-
-const lanzarBusqueda = (texto) => {
-  if (texto === ultimaBusca) return;
-  ultimaBusca = texto;
-  buscaEstado.textContent = 'Buscando…';
-  buscarDireccion(texto).then((sitios) => {
-    // Puede haber llegado la respuesta de una busqueda que ya no es la que esta
-    // escrita: si el campo cambio mientras tanto, esta respuesta no vale.
-    if (buscaCampo.value.trim() !== texto) return;
-    pintarResultados(sitios);
-    buscaEstado.textContent = sitios.length
-      ? `${sitios.length} resultado${sitios.length === 1 ? '' : 's'}. Elige el más cercano.`
-      : 'No se encontró. Escribe la dirección abajo y márcala en el mapa.';
-  }).catch(() => {
-    cerrarResultados();
-    buscaEstado.textContent = 'No se pudo buscar ahora. Márcalo en el mapa.';
-    mostrarMapa();
-  });
-};
-
-buscaCampo?.addEventListener('input', () => {
-  const texto = buscaCampo.value.trim();
-  window.clearTimeout(relojBusca);
-  if (texto.length < 4) {
-    cerrarResultados();
-    ultimaBusca = '';
-    buscaEstado.textContent = '';
-    return;
-  }
-  relojBusca = window.setTimeout(() => lanzarBusqueda(texto), PAUSA_BUSCA);
-});
-
-// Abajo desde el campo entra en la lista; Escape la cierra sin tocar nada.
-// Ese Escape se queda aqui, igual que el de la pregunta de quitar una linea: si
-// subiera, el vigilante de la pagina lo entiende como "cierra lo que haya
-// abierto" y se lleva el foco al boton de la tienda, que es lo ultimo que
-// quiere quien solo estaba descartando una lista de direcciones.
-buscaCampo?.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && !buscaLista.hidden) {
-    e.preventDefault();
-    e.stopPropagation();
-    cerrarResultados();
-    return;
-  }
-  if (e.key === 'ArrowDown' && !buscaLista.hidden) {
-    e.preventDefault();
-    buscaLista.firstElementChild?.focus();
-    return;
-  }
-  // Enter sin haber elegido nada busca ya, sin esperar la pausa.
-  if (e.key === 'Enter') {
-    e.preventDefault();
-    const texto = buscaCampo.value.trim();
-    window.clearTimeout(relojBusca);
-    if (texto.length >= 4) lanzarBusqueda(texto);
-  }
-});
-
-// Dentro de la lista, las flechas recorren y Escape vuelve al campo. El foco se
-// mueve de verdad en lugar de simularse con aria-activedescendant: son opciones
-// que ya son elementos, y asi Enter y Tab hacen lo que se espera.
-buscaLista?.addEventListener('keydown', (e) => {
-  const opciones = [...buscaLista.children];
-  const i = opciones.indexOf(document.activeElement);
-  if (e.key === 'ArrowDown') { e.preventDefault(); (opciones[i + 1] || opciones[0]).focus(); }
-  else if (e.key === 'ArrowUp') {
-    e.preventDefault();
-    if (i <= 0) buscaCampo.focus();
-    else opciones[i - 1].focus();
-  } else if (e.key === 'Escape') {
-    e.preventDefault();
-    e.stopPropagation();
-    cerrarResultados();
-    buscaCampo.focus();
-  }
-});
-
-// Al salir del buscador se cierra la lista, pero no si el foco se fue a una de
-// sus opciones: eso es justo lo contrario de haberse ido.
-buscaLista?.addEventListener('focusout', () => {
-  window.setTimeout(() => {
-    if (!buscaLista.contains(document.activeElement) && document.activeElement !== buscaCampo) {
-      cerrarResultados();
-    }
-  }, 0);
-});
-
-buscaAMano?.addEventListener('click', () => {
-  cerrarResultados();
-  mostrarMapa();
-  buscaEstado.textContent = 'Mueve el mapa y marca el punto de entrega.';
-  // El lienzo de Leaflet es tabulable, asi que se le puede dar el foco; si
-  // todavia se esta descargando, el foco va al boton de marcar el centro, que
-  // ya esta ahi y explica el camino sin raton.
-  const lienzo = vista.querySelector('.mapa-lienzo');
-  (lienzo?.isConnected && lienzo.tabIndex >= 0 ? lienzo : vista.querySelector('.mapa-centro'))?.focus();
 });
 
 // Los tres campos de detalle se guardan igual, asi que se cablean en bucle.
@@ -974,9 +737,8 @@ if (boton) {
   boton.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
 }
 
-// La vista ya esta armada y en la pagina: el mapa y el cobro pueden buscar sus
-// trozos dentro de ella.
-montarMapa(vista);
+// La vista ya esta armada y en la pagina: el cobro puede buscar sus trozos
+// dentro de ella.
 montarPago(vista);
 
 // Enter recorre la direccion, la tarjeta y la factura en el orden en que se
@@ -1134,15 +896,9 @@ const iniciarCanasta = () => {
 };
 
 // Lo que los demas modulos pueden pedirle a la canasta. Va por el puente porque
-// ellos tambien se llaman desde aqui: el cobro ensena el comprobante, el mapa
-// pide el desglose. Las entradas de las vistas
-// -verCheckout, ocultarCheckout y verComprobante- se apuntan mas arriba, donde
-// se declaran.
-puente.pintarDesglose = pintarDesglose;
-// El boton de "usar mi ubicacion" vive junto al buscador y lo atiende map.js,
-// pero el mapa esta escondido hasta que hay algo que precisar y descubrirlo es
-// cosa de aqui, que es donde esta el panel.
-puente.mostrarMapa = () => mostrarMapa();
+// ellos tambien se llaman desde aqui: el cobro ensena el comprobante. Las
+// entradas de las vistas -verCheckout, ocultarCheckout y verComprobante- se
+// apuntan mas arriba, donde se declaran.
 puente.guardar = guardar;
 puente.borrarGuardado = borrarGuardado;
 puente.enfocarTitulo = () => tituloVista.focus();

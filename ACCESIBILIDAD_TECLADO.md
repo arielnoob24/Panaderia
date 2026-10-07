@@ -15,7 +15,7 @@ Este archivo es la guía práctica para recorrer el sitio **sin tocar el ratón*
 | `Enter` | Activa enlaces y botones |
 | `Enter` en un campo de formulario | Pasa al siguiente campo. En el último de crear cuenta o entrar, envía; en el de confirmar el pedido, lleva el foco al botón "Confirmar el pedido" sin pulsarlo. En las indicaciones (varias líneas) hace un salto de línea |
 | `Espacio` | Activa botones y marca casillas (en un enlace no hace nada: desplaza la página) |
-| `↑ ↓ ← →` | Se mueve **dentro** de un grupo: radios de tamaño, desplegables de la barra, el mapa |
+| `↑ ↓ ← →` | Se mueve **dentro** de un grupo: radios de tamaño, desplegables de la barra |
 | `Esc` | Cierra lo último que se abrió y devuelve el foco a donde estaba |
 
 Regla general del sitio: **`Tab` entra y sale de los grupos, las flechas se mueven por dentro, `Esc` siempre cierra.**
@@ -130,45 +130,11 @@ Los pasos ocultos del panel (pago, comprobante) están con `hidden`, así que su
 
 Los errores de formulario se anuncian con `role="alert"` y **el foco va al primer campo que falta**, no a un mensaje genérico arriba.
 
-### La dirección de entrega: primero se busca, después se precisa
+### La dirección de entrega
 
-Al elegir "A domicilio" el mapa **no sale de entrada**. Lo primero es un buscador, porque decir a dónde con palabras es más rápido que encontrarlo a mano en un mapa. Es un `combobox` de verdad:
+Al elegir "A domicilio" el foco va directo al campo de la dirección. Son cuatro campos, todos paradas normales de `Tab` (y `Enter` también pasa al siguiente): la dirección, piso o departamento, una referencia, e indicaciones para quien entrega. No hay mapa: el envío a domicilio cuesta una tarifa fija.
 
-| Tecla | Qué hace |
-|---|---|
-| Escribir cuatro letras | Busca solo, al parar de teclear. Menos de cuatro no consulta nada |
-| `Enter` en el campo | Busca ya, sin esperar la pausa |
-| `↓` | Entra en la lista de resultados |
-| `↓` `↑` dentro de la lista | Recorren. Desde el primero, `↑` vuelve al campo |
-| `Enter` sobre un resultado | Lo toma: rellena la dirección, **aparece el mapa** y la aguja queda puesta ahí |
-| `Esc` | Cierra la lista y devuelve el foco al campo, **y no cierra nada más** |
-
-Ese último punto es un arreglo, no un detalle. El vigilante de la página entiende `Esc` como "cierra lo que haya abierto" y se lleva el foco al botón de la tienda; el `Esc` del buscador se queda donde está para que descartar una lista de direcciones no te saque del pedido. Es lo mismo que ya se hacía con la pregunta de quitar una línea de la canasta.
-
-Dos salidas más, para cuando el buscador no sirve:
-
-- **"Usar mi ubicación"**, al lado del campo: una parada de `Tab`. Trae la zona y enseña el mapa para precisar, porque el GPS acierta la manzana y no la puerta.
-- **"Prefiero marcarlo en el mapa"**: enseña el mapa y mete el foco en él. Hace falta porque en Tena no todas las calles están en OpenStreetMap, así que hay direcciones que el buscador no encuentra.
-
-Después del mapa vienen tres campos más, todos opcionales y todos paradas normales de `Tab`: piso o departamento, una referencia, e indicaciones para quien entrega.
-
-### El mapa del reparto
-
-Esta era la única parte **imposible de usar sin ratón**, y es el arreglo de fondo de esta ronda. Antes el punto de entrega se marcaba solo con un clic en el mapa o arrastrando la aguja: dos cosas que un teclado no puede hacer.
-
-Ahora hay tres caminos, y dos funcionan sin ratón:
-
-| Camino | Cómo |
-|---|---|
-| **Botón "Marcar el centro del mapa"** | `Tab` hasta él, `Enter`. Deja la aguja en el centro de lo que se está viendo |
-| **Enter sobre el mapa** | `Tab` hasta el mapa, `↑ ↓ ← →` para moverlo, `+` y `−` para acercar y alejar, `Enter` para soltar la aguja en el centro |
-| Clic o arrastrar | Solo ratón y dedo |
-
-El mapa lleva `role="application"` y un `aria-label` que dice en voz alta qué teclas lo mueven; sin eso, al tabular hasta ahí solo se oye "mapa" y no hay forma de adivinar que hace algo. Y el recuadro del mapa se ilumina con el mismo anillo que el resto cuando recibe foco, porque Leaflet no marca su lienzo.
-
-El texto de debajo también lo dice por escrito: *"Arrastra la aguja hasta la puerta, o mueve el mapa con las flechas y pulsa Enter"*. Antes decía solo "Toca el mapa", que para quien no toca nada no era una instrucción.
-
-**El mapa de quien pasa a retirar es otro, y a propósito no se tabula.** Enseña dónde está el local y no hay nada que marcar en él, así que no se arrastra, no captura la rueda del ratón y no recibe foco: está declarado como imagen. Lo útil se hace con el enlace "Cómo llegar" que tiene debajo, que sí es una parada de `Tab` y abre la aplicación de mapas con la ruta.
+Al elegir "Paso retirando" se ve la dirección del local y el enlace "Cómo llegar", que es una parada de `Tab` y abre la aplicación de mapas con la ruta.
 
 ### Los cuadritos de ayuda
 
@@ -199,7 +165,6 @@ Los botones que son solo un dibujo (las flechas de la fila, la papelera, el cír
 - **El mostrador son 18 paradas de tabulación** antes de llegar al pie. No es un fallo (hay un "Saltar al contenido" y los encabezados dan estructura a un lector de pantalla), pero quien vaya solo con `Tab` tiene un trecho largo. La solución real sería un segundo enlace de salto, "Saltar el mostrador"; no está puesto.
 - **Dos enlaces abren pestaña nueva sin avisarlo**, el botón flotante y el `order-button` de reserva. Está recogido en [AUDITORIA.md](AUDITORIA.md) y afecta al teclado: pulsas, el foco desaparece a otra ventana y el botón "atrás" deja de funcionar. Sigue pendiente.
 - **El botón flotante de la canasta es un enlace, no un `<button>`.** Funciona con `Enter` y `Espacio` porque se le escribieron los dos a mano, y un botón de verdad no necesitaría eso. Es deuda, no fallo: sin JavaScript ese mismo elemento sigue siendo el enlace de WhatsApp, que funciona solo.
-- **La aguja del mapa no se mueve con las flechas.** Se marca el centro y ya; para corregir el punto hay que mover el mapa y volver a marcar. Arrastrarla sigue siendo solo de ratón.
 
 ---
 
@@ -208,7 +173,7 @@ Los botones que son solo un dibujo (las flechas de la fila, la papelera, el cír
 Sin instalar nada:
 
 1. Abre la página y pulsa `Tab` desde el principio, sin tocar el ratón **en ningún momento**. Si en algún momento no sabes dónde está el foco, eso es el fallo.
-2. Intenta hacer un pedido completo: elegir un producto, abrir la canasta, marcar domicilio, poner el punto en el mapa, escribir la dirección, pasar al pago, rellenar la tarjeta de prueba (`4242 4242 4242 4242`, cualquier vencimiento futuro, CVV `123`) y confirmar.
+2. Intenta hacer un pedido completo: elegir un producto, abrir la canasta, marcar domicilio, escribir la dirección, pasar al pago, rellenar la tarjeta de prueba (`4242 4242 4242 4242`, cualquier vencimiento futuro, CVV `123`) y confirmar.
 3. En cada panel abierto, pulsa `Tab` quince veces seguidas. Si el foco sale del panel, hay un agujero en el cerco.
 4. Pulsa `Esc` en cada cosa que hayas abierto. Debería cerrarse y devolver el foco de donde salió.
 

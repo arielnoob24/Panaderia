@@ -20,7 +20,7 @@ Las piezas son tres tipos de archivo:
 |---|---|---|
 | Estructura | `index.html` | El esqueleto de la página: cabecera, portada, catálogo vacío, historia y pie |
 | Aspecto | `assets/styles.css` | Colores, tipografía, distribución, animaciones y adaptación al teléfono |
-| Comportamiento | `js/*.js` (11 módulos) | Todo lo que se mueve: pintar productos, canasta, cuenta, mapa, pago |
+| Comportamiento | `js/*.js` (10 módulos) | Todo lo que se mueve: pintar productos, canasta, cuenta, pago |
 | Datos | `data/productos.json` | La lista de productos con su precio, foto y categoría |
 
 Hay mucho HTML que **no está** en `index.html`: el panel de la canasta, la
@@ -35,7 +35,7 @@ cada uno importa lo que necesita de los otros con `import` / `export`.
 
 La excepción es cuando `index.html` se abre con doble clic: ahí el navegador
 bloquea los módulos, y un pequeño script al final del HTML carga en su lugar
-`js/sin-servidor.js`. Es el mismo código de los 11 módulos juntado en un solo
+`js/sin-servidor.js`. Es el mismo código de los 10 módulos juntado en un solo
 archivo, con el catálogo ya metido dentro, y lo genera
 `herramientas/empaquetar.mjs`.
 
@@ -45,8 +45,7 @@ index.html
          ├── repo.js      lee data/productos.json
          ├── view.js      pinta las fichas y maneja el catálogo
          ├── cart.js      la canasta y la pantalla de confirmar
-         │     ├── checkout.js   pago simulado y comprobante
-         │     └── map.js        mapa del reparto
+         │     └── checkout.js   pago simulado y comprobante
          ├── account.js   la cuenta del cliente
          └── ui.js        piezas comunes (menú, foco, horario, animaciones)
 
@@ -244,23 +243,16 @@ Aquí viven los datos que leen y modifican varios módulos a la vez:
 - **`pedido`**: un `Map` donde cada clave es el id del producto y el valor es
   `{ nombre, precio, cantidad }`. Se usa `Map` porque mantiene el orden y
   permite buscar, añadir y borrar por clave fácilmente.
-- **`entrega`**: si se retira o va a domicilio, la dirección, piso, referencia,
-  notas y el punto marcado en el mapa (`punto: { lat, lng }`).
+- **`entrega`**: si se retira o va a domicilio, la dirección, piso, referencia
+  y notas.
 - **`sesion`**: los datos de la cuenta y si está dentro y verificada.
 - **`tarjeta`**, **`cobro`** y **`factura`**: lo del pago.
-- **Constantes**: `MAX_UNIDADES` (100 por producto), las tarifas de envío
-  (`ENVIO`, `ENVIO_BASE`, `ENVIO_POR_KM`, `ENVIO_TECHO`) y `LOCAL`, las
-  coordenadas de la panadería.
+- **Constantes**: `MAX_UNIDADES` (100 por producto) y `ENVIO`, la tarifa fija
+  del envío a domicilio ($1,50).
 
 Funciones de cálculo:
-- **`kmEntre(a, b)`**: distancia en línea recta entre dos puntos usando la
-  fórmula del semiverseno (*haversine*), que tiene en cuenta que la Tierra es
-  esférica.
-- **`tarifaPara(km)`**: $1,00 de salida + $0,35 por km, redondeado a 5 centavos
-  y con un tope de $6,00.
 - **`subtotal()`**, **`envio()`**, **`total()`**, **`unidades()`**: suman a
-  partir del `pedido`. Si no hay un punto marcado, el envío a domicilio cuesta
-  la tarifa fija `ENVIO`.
+  partir del `pedido`. El envío es `ENVIO` a domicilio y 0 al retirar.
 - **`dinero(n)`**: da formato `$1.50`.
 - **`idDe(nombre)`**: convierte un nombre en un identificador sin tildes ni
   espacios (`"Empanada de queso"` → `empanada-de-queso`).
@@ -427,8 +419,9 @@ confirmar.
 **La pantalla de confirmar** (`<section id="confirmar">`)
 No es un panel: es otra "página" dentro de `<main>`, con dirección propia
 (`#confirmar` y luego `#comprobante`) y botón de volver. Tiene dos columnas:
-- **Izquierda**: cómo lo quieres (retiro o domicilio), el mapa del local o el
-  buscador de dirección, cómo pagas y los datos de la factura.
+- **Izquierda**: cómo lo quieres (retiro o domicilio), la dirección del local
+  con su enlace "Cómo llegar" o los campos de tu dirección, cómo pagas y los
+  datos de la factura.
 - **Derecha** (`.checkout-resumen`): lo que llevas (solo lectura), el desglose
   (subtotal, envío, total), a dónde llega el comprobante y el botón de
   confirmar.
@@ -437,15 +430,6 @@ Funciones de navegación: `verVista(paso)`, `abrirCheckout()`,
 `verComprobante()` (usa `replaceState` para que Atrás no vuelva al pago de un
 pedido ya hecho), `cerrarCheckout()` y `recogerCheckout()`, que limpia lo
 necesario se salga por donde se salga.
-
-**El buscador de dirección**
-- Al escribir 4 letras o más, espera a que pares de teclear (650 ms) y consulta
-  **Nominatim**, el buscador gratuito de OpenStreetMap (`lanzarBusqueda`).
-- Los resultados salen en una lista (`role="listbox"`) que se recorre con las
-  flechas.
-- Al elegir uno (`tomarResultado`) se rellena la calle y se lleva el mapa a ese
-  punto para afinar la puerta.
-- "Prefiero marcarlo en el mapa" abre el mapa directamente.
 
 **El control de cantidad de las fichas**
 `montarControlesDeFicha()` recorre las fichas y cambia el enlace "Pedir" por
@@ -544,31 +528,7 @@ Registrarse". Dentro de sesión muestra las iniciales y abre directamente la
 ficha con tus datos y tus últimos pedidos (`pintarPedidos`, que los lee de
 IndexedDB).
 
-### 5.10 `map.js` — el mapa del reparto
-
-Usa **Leaflet** (una librería de mapas) con los mapas de **OpenStreetMap**.
-
-- **`traerLeaflet()`**: descarga Leaflet **solo cuando hace falta**, añadiendo
-  su `<script>` y su `<link>` a la página en ese momento. Quien pasa a retirar
-  y no mira el mapa no lo descarga. Guarda la promesa para no descargarlo dos
-  veces.
-- **`armarMapaLocal()`**: el mapa de referencia de quien retira: muestra el
-  local, sin poder moverlo ni hacer zoom.
-- **`armarMapa()`**: el mapa de domicilio. Tiene una aguja arrastrable; al
-  soltarla, al hacer clic o al pulsar Enter se guarda el punto
-  (`ponerAguja`), se recalcula la distancia (`contarDistancia`) y se actualiza
-  el precio del envío.
-- **`marcarCentro()`**: el botón "Marcar el centro del mapa" deja la aguja en
-  el centro, para poder marcar sin ratón (moviendo el mapa con las flechas).
-- **`buscarDireccion(texto)`**: consulta Nominatim limitado a Ecuador y centrado
-  en Tena (`CAJA_TENA`), para que "Eloy Alfaro" no devuelva calles de todo el
-  país.
-- **"Usar mi ubicación"**: pide la posición al navegador con
-  `navigator.geolocation` y lleva la aguja ahí.
-- Si Leaflet no carga (sin internet), se esconde el mapa y se muestra un aviso;
-  el pedido sigue funcionando con la dirección escrita y la tarifa fija.
-
-### 5.11 `mail.js` — el correo
+### 5.10 `mail.js` — el correo
 
 El único canal de mensajes que se puede usar gratis y sin servidor.
 
@@ -590,7 +550,7 @@ Cada vez que se sube un cambio a `main`, GitHub ejecuta este flujo antes de
 publicar:
 
 1. Comprueba que existan los archivos principales.
-2. Comprueba que los 11 módulos tengan la sintaxis correcta (`node --check`).
+2. Comprueba que los 10 módulos tengan la sintaxis correcta (`node --check`).
 3. Vuelve a generar `js/sin-servidor.js` y falla si no coincide con el subido,
    para que la versión de doble clic nunca se quede atrás.
 4. Comprueba que todo lo que se importa exista con el nombre exacto
@@ -628,4 +588,4 @@ Si alguna comprobación falla, el sitio publicado **no cambia** y se queda con l
 - **`IntersectionObserver`**: avisa cuando un elemento entra en pantalla, sin
   tener que revisar la posición en cada desplazamiento.
 - **Promesas y `async` / `await`**: para lo que tarda (leer el JSON, enviar un
-  correo, abrir IndexedDB, descargar Leaflet) sin congelar la página.
+  correo, abrir IndexedDB) sin congelar la página.
