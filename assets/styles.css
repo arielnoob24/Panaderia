@@ -157,10 +157,10 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 .nav-grupo.is-open .nav-submenu a:nth-child(2) { transition-delay: 0ms, 0ms, 115ms, 115ms; }
 .nav-grupo.is-open .nav-submenu a:nth-child(3) { transition-delay: 0ms, 0ms, 180ms, 180ms; }
 .nav-submenu a:hover, .nav-submenu a:focus-visible { background: rgba(255, 255, 255, .1); color: var(--ambar); }
-/* El JavaScript ya abre al pasar el cursor, pero solo si matchMedia reconoce el
-   raton; en un portatil con pantalla tactil no siempre lo hace. Esto lo abre
-   igual, sin depender de nadie. Va con min-width porque en el telefono el
-   desplegable es una sangria y no un panel flotante. */
+/* Al pasar el cursor lo abre el JavaScript, que mira si lo que entra es un
+   raton. Esto es el respaldo para cuando el JavaScript no ha cargado. Va con
+   min-width porque en el telefono el desplegable es una sangria y no un panel
+   flotante. */
 @media (hover: hover) and (pointer: fine) and (min-width: 681px) {
   .nav-grupo:hover .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
   .nav-grupo:hover .nav-grupo-flecha { transform: rotate(180deg); }

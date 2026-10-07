@@ -176,10 +176,15 @@ if (grupo && grupoBoton) {
     fijada = !fijada;
     abrirGrupo(fijada);
   });
-  if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
-    grupo.addEventListener('mouseenter', () => abrirGrupo(true));
-    grupo.addEventListener('mouseleave', () => { if (!fijada) abrirGrupo(false); });
-  }
+  // Se mira quien entra cada vez, no una vez al cargar: en un portatil con
+  // pantalla tactil el navegador dice que no hay raton aunque lo haya, y con
+  // la pregunta de una sola vez el desplegable nunca se asomaba. El dedo no
+  // asoma nada: en el telefono la lista se abre con la flecha.
+  const esRaton = (e) => e.pointerType === 'mouse' || e.pointerType === 'pen';
+  // En el telefono la lista vive dentro del menu de hamburguesa y no se asoma.
+  const hayBarra = () => window.innerWidth > 680;
+  grupo.addEventListener('pointerenter', (e) => { if (esRaton(e) && hayBarra()) abrirGrupo(true); });
+  grupo.addEventListener('pointerleave', (e) => { if (esRaton(e) && !fijada) abrirGrupo(false); });
   // Si el clic o el foco se van a otra parte, el desplegable ya no pinta nada.
   document.addEventListener('click', (event) => {
     if (grupo.contains(event.target)) return;

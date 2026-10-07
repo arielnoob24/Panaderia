@@ -191,12 +191,14 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       fijada = !fijada;
       abrirGrupo(fijada);
     });
-    if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
-      grupo.addEventListener("mouseenter", () => abrirGrupo(true));
-      grupo.addEventListener("mouseleave", () => {
-        if (!fijada) abrirGrupo(false);
-      });
-    }
+    const esRaton = (e) => e.pointerType === "mouse" || e.pointerType === "pen";
+    const hayBarra = () => window.innerWidth > 680;
+    grupo.addEventListener("pointerenter", (e) => {
+      if (esRaton(e) && hayBarra()) abrirGrupo(true);
+    });
+    grupo.addEventListener("pointerleave", (e) => {
+      if (esRaton(e) && !fijada) abrirGrupo(false);
+    });
     document.addEventListener("click", (event) => {
       if (grupo.contains(event.target)) return;
       fijada = false;
