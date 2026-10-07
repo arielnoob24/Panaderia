@@ -1001,14 +1001,34 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* Los pedidos ya pagados que quedan en IndexedDB. Cada uno en dos renglones:
    arriba el numero y el total, que es lo que se busca, y debajo cuando fue y
    que llevaba, que es lo que lo distingue de los demas. */
-.cuenta-pedidos { margin-top: 1.1rem; padding-top: .9rem; border-top: 1px solid var(--masa-linea); }
-.cuenta-pedidos h3 { margin: 0 0 .6rem; color: var(--horno); font: 700 .85rem/1.4 Arial, sans-serif; }
-.cuenta-pedidos-lista { margin: 0; padding: 0; list-style: none; }
-.cuenta-pedidos-lista li { display: grid; grid-template-columns: 1fr auto; gap: .1rem .8rem; padding: .55rem 0; border-bottom: 1px solid var(--masa-linea); }
+/* Los dos botones de la ficha, uno al lado del otro y bajando si no caben. */
+.cuenta-acciones { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+.cuenta-acciones .cuenta-editar { margin-top: 0; }
+/* El historial. Cada pedido es un <details>: el resumen va en dos renglones,
+   numero y total arriba, fecha y que llevaba debajo, con una flecha a la
+   derecha que gira al abrirlo. */
+.cuenta-historial { margin: 0; padding: 0; list-style: none; }
+.cuenta-historial-vacio { margin: 1.5rem 0; color: var(--horno-suave); font: .9rem/1.5 Arial, sans-serif; text-align: center; }
+.cuenta-historial-vacio[hidden] { display: none; }
+.cuenta-pedido { border-bottom: 1px solid var(--masa-linea); }
+.cuenta-pedido summary { position: relative; display: grid; grid-template-columns: 1fr auto; gap: .1rem .8rem; padding: .75rem 1.9rem .75rem .2rem; cursor: pointer; list-style: none; }
+.cuenta-pedido summary::-webkit-details-marker { display: none; }
+.cuenta-pedido summary::after { position: absolute; top: 50%; right: .45rem; width: .5rem; height: .5rem; border-right: 2px solid var(--horno-suave); border-bottom: 2px solid var(--horno-suave); content: ""; transform: translateY(-70%) rotate(45deg); transition: transform var(--dur-fast) var(--ease-ui); }
+.cuenta-pedido[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+.cuenta-pedido summary:hover { background: var(--masa); }
+.cuenta-pedido summary:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .cuenta-pedido-numero { color: var(--horno); font: 700 .82rem/1.4 Arial, sans-serif; }
-.cuenta-pedidos-lista strong { color: var(--horno); font: 700 .82rem/1.4 Arial, sans-serif; text-align: right; }
+.cuenta-pedido summary strong { color: var(--horno); font: 700 .82rem/1.4 Arial, sans-serif; text-align: right; }
 .cuenta-pedido-fecha, .cuenta-pedido-detalle { color: var(--horno-suave); font: .72rem/1.45 Arial, sans-serif; }
 .cuenta-pedido-detalle { text-align: right; }
+/* Abierto: lo que llevaba, y debajo las cuentas, en una caja crema. */
+.cuenta-pedido-cuerpo { margin: 0 0 .8rem; padding: .7rem .8rem; background: var(--masa); border-radius: var(--r-btn); }
+.cuenta-pedido-lineas { margin: 0 0 .5rem; padding: 0 0 .5rem; border-bottom: 1px solid var(--masa-linea); list-style: none; }
+.cuenta-pedido-lineas li { display: flex; justify-content: space-between; gap: .8rem; padding: .2rem 0; color: var(--horno); font: .8rem/1.4 Arial, sans-serif; }
+.cuenta-pedido-cuentas { margin: 0; }
+.cuenta-pedido-cuentas div { display: flex; justify-content: space-between; gap: .8rem; padding: .15rem 0; }
+.cuenta-pedido-cuentas dt { color: var(--horno-suave); font: .76rem/1.4 Arial, sans-serif; }
+.cuenta-pedido-cuentas dd { margin: 0; color: var(--horno); font: 700 .78rem/1.4 Arial, sans-serif; text-align: right; word-break: break-word; }
 .canasta-nota, .cuenta-nota { margin: .7rem 0 0; color: var(--horno-suave); font: .75rem/1.45 Arial, sans-serif; text-align: center; }
 .canasta-enviar, .canasta-pagar { width: 100%; justify-content: center; }
 .canasta-enviar[aria-disabled="true"], .canasta-pagar[aria-disabled="true"] { opacity: .45; pointer-events: none; }

@@ -150,16 +150,13 @@ panelC.innerHTML =
   + '<div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div>'
   + '</dl>'
   + '<p class="cuenta-hecho" role="status" hidden></p>'
+  // Los pedidos no se listan aqui: la ficha es para tus datos, y el historial
+  // tiene su propia pantalla, con todos los pedidos y lo que llevaba cada uno.
+  + '<div class="cuenta-acciones">'
   + '<button class="cuenta-editar" type="button">Editar mis datos</button>'
+  + '<button class="cuenta-editar cuenta-ver-pedidos" type="button">Ver mis pedidos</button>'
+  + '</div>'
   + '<p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p>'
-  // Los pedidos ya pagados. Nace oculto: quien entra por primera vez no tiene
-  // ninguno, y un titulo sobre una lista vacia es peor que no poner nada.
-  + '<section class="cuenta-pedidos" hidden>'
-  + '<h3>Tus últimos pedidos</h3>'
-  + '<ul class="cuenta-pedidos-lista"></ul>'
-  + '<p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra '
-  + 'parte: desde otro equipo no se ven.</p>'
-  + '</section>'
   + '</div>'
   + '<div class="cuenta-pie">'
   + '<button class="cuenta-salir" type="button">Cerrar sesión</button>'
@@ -185,6 +182,20 @@ panelC.innerHTML =
   + '<p class="cuenta-aviso" role="alert" hidden></p>'
   + '<button class="button button-yellow cuenta-guardar" type="button">Guardar los cambios</button>'
   + '<button class="cuenta-cambiar" type="button" data-va="sesion">Cancelar</button>'
+  + '</div></section>'
+
+  // El historial: todos los pedidos de este navegador, el mas nuevo arriba.
+  // Cada uno se despliega para ver lo que llevaba.
+  + '<section class="cuenta-paso" data-paso="pedidos" hidden>'
+  + '<div class="cuenta-cuerpo">'
+  + '<p class="cuenta-historial-vacio" hidden>Todavía no has hecho ningún pedido desde este navegador. '
+  + 'Cuando pagues uno, aparecerá aquí.</p>'
+  + '<ul class="cuenta-historial"></ul>'
+  + '<p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra '
+  + 'parte: desde otro equipo no se ven.</p>'
+  + '</div>'
+  + '<div class="cuenta-pie">'
+  + '<button class="cuenta-salir" type="button" data-va="sesion">Volver a tu cuenta</button>'
   + '</div></section>';
 document.body.append(fondoC, panelC);
 
@@ -221,7 +232,7 @@ const claveEntrar = panelC.querySelector('#cuenta-entrar-clave');
 const errorEntrarClave = panelC.querySelector('#cuenta-entrar-clave-error');
 
 const TITULOS_CUENTA = { crear: 'Crear cuenta', verificar: 'Verificar tu correo',
-  entrar: 'Entrar', sesion: 'Tu cuenta', editar: 'Editar tus datos' };
+  entrar: 'Entrar', sesion: 'Tu cuenta', editar: 'Editar tus datos', pedidos: 'Tus pedidos' };
 
 // El codigo nace en el navegador y de ahi sale por correo. Conviene decir en
 // voz alta lo que eso significa y lo que no: prueba que el correo escrito
@@ -322,10 +333,11 @@ const verPaso = (nombre, hecho = '') => {
   cartel.hidden = !hecho;
   cartel.textContent = hecho;
   tituloC.textContent = TITULOS_CUENTA[nombre];
-  // El historial se relee al entrar al paso de la sesion y no una sola vez al
-  // cargar: entre una apertura y otra puede haberse pagado un pedido, y la
-  // lista tendria que ensenarlo sin recargar la pagina.
-  if (nombre === 'sesion') pintarPedidos();
+  // El historial se relee cada vez y no una sola vez al cargar: entre una
+  // apertura y otra puede haberse pagado un pedido, y tendria que verse sin
+  // recargar la pagina. En la ficha solo hace falta cuantos hay.
+  if (nombre === 'sesion') contarPedidos();
+  if (nombre === 'pedidos') pintarHistorial();
 };
 
 // Mismo trato que en la tarjeta: un campo solo se marca cuando ya lo tocaste
@@ -538,37 +550,82 @@ const pintarSesion = () => {
 // El historial sale de IndexedDB, que se lee con promesas, asi que esto va
 // aparte de pintarSesion: lo demas del panel se pinta de golpe y no tiene por
 // que esperar a una base de datos para ensenar un nombre.
-const pintarPedidos = async () => {
-  const zona = panelC.querySelector('.cuenta-pedidos');
-  const lista = zona?.querySelector('.cuenta-pedidos-lista');
-  if (!lista) return;
-  const pedidos = await pedidosGuardados();
-  zona.hidden = !pedidos.length;
-  if (!pedidos.length) return;
+// Todo se arma con createElement y textContent: los nombres de los productos
+// vienen de un archivo de datos y no tienen por que leerse como etiquetas.
+const nodo = (etiqueta, clase, texto) => {
+  const el = document.createElement(etiqueta);
+  if (clase) el.className = clase;
+  if (texto !== undefined) el.textContent = texto;
+  return el;
+};
+const todosLosPedidos = () => pedidosGuardados(Infinity);
+
+// En la ficha, el boton dice cuantos hay: asi se sabe si vale la pena abrirlo.
+const botonPedidos = panelC.querySelector('.cuenta-ver-pedidos');
+const contarPedidos = async () => {
+  const n = (await todosLosPedidos()).length;
+  botonPedidos.textContent = n ? `Ver mis pedidos (${n})` : 'Ver mis pedidos';
+};
+
+// Cada pedido es un <details>: cerrado ensena numero, total, fecha y cuantas
+// cosas llevaba; abierto, lo que llevaba linea a linea y como se pago y se
+// recibio. El navegador ya sabe abrirlo y cerrarlo con raton, dedo y teclado,
+// y el lector de pantalla dice si esta abierto o cerrado.
+const pintarHistorial = async () => {
+  const lista = panelC.querySelector('.cuenta-historial');
+  const vacio = panelC.querySelector('.cuenta-historial-vacio');
+  const pedidos = await todosLosPedidos();
+  vacio.hidden = pedidos.length > 0;
   lista.textContent = '';
   pedidos.forEach((p) => {
-    const fila = document.createElement('li');
-    const numero = document.createElement('span');
-    numero.className = 'cuenta-pedido-numero';
-    numero.textContent = p.numero;
-    const cuando = document.createElement('span');
-    cuando.className = 'cuenta-pedido-fecha';
-    cuando.textContent = marcaBonita(new Date(p.fecha));
-    const cuanto = document.createElement('strong');
-    cuanto.textContent = dinero(Number(p.total) || 0);
-    // Cuantas cosas llevaba, que es lo que distingue un pedido de otro cuando
-    // los numeros no dicen nada por si solos.
-    const cuantos = (p.lineas || []).reduce((s, l) => s + (Number(l.cantidad) || 0), 0);
-    const detalle = document.createElement('span');
-    detalle.className = 'cuenta-pedido-detalle';
-    detalle.textContent = `${cuantos} ${cuantos === 1 ? 'unidad' : 'unidades'}`
-      + (p.modo === 'domicilio' ? ' · a domicilio' : ' · para retirar');
+    const lineas = p.lineas || [];
+    const cuantos = lineas.reduce((s, l) => s + (Number(l.cantidad) || 0), 0);
+    const plegable = nodo('details', 'cuenta-pedido');
+    const resumen = nodo('summary');
     // En el orden en que se leen: numero y total arriba, cuando y que llevaba
     // debajo. Es tambien el orden en que los dice un lector de pantalla.
-    fila.append(numero, cuanto, cuando, detalle);
-    lista.append(fila);
+    resumen.append(
+      nodo('span', 'cuenta-pedido-numero', p.numero),
+      nodo('strong', '', dinero(Number(p.total) || 0)),
+      nodo('span', 'cuenta-pedido-fecha', marcaBonita(new Date(p.fecha))),
+      nodo('span', 'cuenta-pedido-detalle', `${cuantos} ${cuantos === 1 ? 'unidad' : 'unidades'}`
+        + (p.modo === 'domicilio' ? ' · a domicilio' : ' · para retirar')),
+    );
+    const cuerpo = nodo('div', 'cuenta-pedido-cuerpo');
+    const productos = nodo('ul', 'cuenta-pedido-lineas');
+    lineas.forEach((l) => {
+      const fila = nodo('li');
+      fila.append(nodo('span', '', `${l.cantidad} × ${l.nombre}`),
+        nodo('span', '', dinero((Number(l.precio) || 0) * (Number(l.cantidad) || 0))));
+      productos.append(fila);
+    });
+    const cuentas = nodo('dl', 'cuenta-pedido-cuentas');
+    const dato = (titulo, valor) => {
+      const par = nodo('div');
+      par.append(nodo('dt', '', titulo), nodo('dd', '', valor));
+      cuentas.append(par);
+    };
+    dato('Subtotal', dinero(Number(p.subtotal) || 0));
+    dato('Envío', Number(p.envio) ? dinero(Number(p.envio)) : 'Gratis');
+    dato('Total', dinero(Number(p.total) || 0));
+    if (p.metodo) dato('Pago', p.metodo);
+    dato('Entrega', p.modo === 'domicilio' ? (p.direccion || 'A domicilio') : 'Retiro en el local');
+    cuerpo.append(productos, cuentas);
+    plegable.append(resumen, cuerpo);
+    const item = nodo('li');
+    item.append(plegable);
+    lista.append(item);
   });
 };
+
+botonPedidos.addEventListener('click', () => {
+  verPaso('pedidos');
+  tituloC.focus();
+});
+panelC.querySelector('[data-paso="pedidos"] .cuenta-salir').addEventListener('click', () => {
+  verPaso('sesion');
+  botonPedidos.focus();
+});
 
 // Tener cuenta sirve para no volver a escribir lo mismo: la direccion pasa a la
 // canasta, pero solo si esta vacia. Lo que ya escribiste manda sobre la cuenta.

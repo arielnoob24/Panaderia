@@ -2208,7 +2208,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     "Contraseña",
     'type="password" autocomplete="new-password" maxlength="40"',
     { describe: "cuenta-clave-reglas", despues: reglasHtml }
-  ) + campoHtml("repite", "Repite la contraseña", 'type="password" autocomplete="new-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button><button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button></div></section><section class="cuenta-paso" data-paso="verificar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta cuenta-maqueta-codigo" hidden></p><p class="codigo-dicho">Escribe el código de 6 cifras que enviamos a <strong class="codigo-correo"></strong>.</p><p class="codigo-estado" role="status" hidden></p><div class="codigo-falso" hidden><p class="codigo-falso-de">Correo de El Tradicional</p><p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. No lo compartas con nadie.</p></div><div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label><input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="cuenta-codigo-error"><p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div><button class="codigo-reenviar" type="button">Enviar otro código</button></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-verificar" type="button">Verificar el correo</button><button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el correo</button></div></section><section class="cuenta-paso" data-paso="entrar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor, solo se puede entrar a la cuenta que creaste en este navegador.</p>' + campoHtml("entrar-correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + campoHtml("entrar-clave", "Contraseña", 'type="password" autocomplete="current-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-entrar" type="button">Entrar</button><button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button></div></section><section class="cuenta-paso" data-paso="sesion" hidden><div class="cuenta-cuerpo"><div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span><div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div><dl class="cuenta-datos"><div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div><div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div></dl><p class="cuenta-hecho" role="status" hidden></p><button class="cuenta-editar" type="button">Editar mis datos</button><p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p><section class="cuenta-pedidos" hidden><h3>Tus últimos pedidos</h3><ul class="cuenta-pedidos-lista"></ul><p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra parte: desde otro equipo no se ven.</p></section></div><div class="cuenta-pie"><button class="cuenta-salir" type="button">Cerrar sesión</button><p class="cuenta-nota">La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo y tu contraseña. No hay ningún otro lugar donde estuviera guardada.</p></div></section><section class="cuenta-paso" data-paso="editar" hidden><div class="cuenta-cuerpo">' + campoHtml("editar-nombre", "Nombre y apellido", 'type="text" autocomplete="name" maxlength="60"') + campoHtml("editar-telefono", "Teléfono", 'type="tel" inputmode="numeric" autocomplete="tel" maxlength="9" placeholder="990001122"', { prefijo: "+593" }) + campoHtml("editar-direccion", "Dirección", 'type="text" autocomplete="street-address" maxlength="200" placeholder="Calle, número y una referencia"', { opcional: true }) + '<p class="cuenta-nota cuenta-nota-izq">El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.</p></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-guardar" type="button">Guardar los cambios</button><button class="cuenta-cambiar" type="button" data-va="sesion">Cancelar</button></div></section>';
+  ) + campoHtml("repite", "Repite la contraseña", 'type="password" autocomplete="new-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button><button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button></div></section><section class="cuenta-paso" data-paso="verificar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta cuenta-maqueta-codigo" hidden></p><p class="codigo-dicho">Escribe el código de 6 cifras que enviamos a <strong class="codigo-correo"></strong>.</p><p class="codigo-estado" role="status" hidden></p><div class="codigo-falso" hidden><p class="codigo-falso-de">Correo de El Tradicional</p><p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. No lo compartas con nadie.</p></div><div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label><input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="cuenta-codigo-error"><p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div><button class="codigo-reenviar" type="button">Enviar otro código</button></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-verificar" type="button">Verificar el correo</button><button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el correo</button></div></section><section class="cuenta-paso" data-paso="entrar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor, solo se puede entrar a la cuenta que creaste en este navegador.</p>' + campoHtml("entrar-correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + campoHtml("entrar-clave", "Contraseña", 'type="password" autocomplete="current-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-entrar" type="button">Entrar</button><button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button></div></section><section class="cuenta-paso" data-paso="sesion" hidden><div class="cuenta-cuerpo"><div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span><div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div><dl class="cuenta-datos"><div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div><div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div></dl><p class="cuenta-hecho" role="status" hidden></p><div class="cuenta-acciones"><button class="cuenta-editar" type="button">Editar mis datos</button><button class="cuenta-editar cuenta-ver-pedidos" type="button">Ver mis pedidos</button></div><p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p></div><div class="cuenta-pie"><button class="cuenta-salir" type="button">Cerrar sesión</button><p class="cuenta-nota">La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo y tu contraseña. No hay ningún otro lugar donde estuviera guardada.</p></div></section><section class="cuenta-paso" data-paso="editar" hidden><div class="cuenta-cuerpo">' + campoHtml("editar-nombre", "Nombre y apellido", 'type="text" autocomplete="name" maxlength="60"') + campoHtml("editar-telefono", "Teléfono", 'type="tel" inputmode="numeric" autocomplete="tel" maxlength="9" placeholder="990001122"', { prefijo: "+593" }) + campoHtml("editar-direccion", "Dirección", 'type="text" autocomplete="street-address" maxlength="200" placeholder="Calle, número y una referencia"', { opcional: true }) + '<p class="cuenta-nota cuenta-nota-izq">El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.</p></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-guardar" type="button">Guardar los cambios</button><button class="cuenta-cambiar" type="button" data-va="sesion">Cancelar</button></div></section><section class="cuenta-paso" data-paso="pedidos" hidden><div class="cuenta-cuerpo"><p class="cuenta-historial-vacio" hidden>Todavía no has hecho ningún pedido desde este navegador. Cuando pagues uno, aparecerá aquí.</p><ul class="cuenta-historial"></ul><p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra parte: desde otro equipo no se ven.</p></div><div class="cuenta-pie"><button class="cuenta-salir" type="button" data-va="sesion">Volver a tu cuenta</button></div></section>';
   document.body.append(fondoC, panelC);
   var PERSONA = '<svg class="nav-cuenta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/></svg>';
   var navCuenta = document.createElement("button");
@@ -2237,7 +2237,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     verificar: "Verificar tu correo",
     entrar: "Entrar",
     sesion: "Tu cuenta",
-    editar: "Editar tus datos"
+    editar: "Editar tus datos",
+    pedidos: "Tus pedidos"
   };
   var codigoEsperado = "";
   var relojReenvio = 0;
@@ -2316,7 +2317,8 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     cartel.hidden = !hecho;
     cartel.textContent = hecho;
     tituloC.textContent = TITULOS_CUENTA[nombre];
-    if (nombre === "sesion") pintarPedidos();
+    if (nombre === "sesion") contarPedidos();
+    if (nombre === "pedidos") pintarHistorial();
   };
   var datos = { nombre: "", correo: "", telefono: "", direccion: "", clave: "", repite: "" };
   var campos = [
@@ -2494,32 +2496,71 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     panelC.querySelector(".cuenta-dato-telefono").textContent = telefonoBonito(sesion.telefono) || "—";
     panelC.querySelector(".cuenta-dato-direccion").textContent = sesion.direccion || "Sin dirección guardada";
   };
-  var pintarPedidos = async () => {
-    const zona = panelC.querySelector(".cuenta-pedidos");
-    const lista2 = zona?.querySelector(".cuenta-pedidos-lista");
-    if (!lista2) return;
-    const pedidos = await pedidosGuardados();
-    zona.hidden = !pedidos.length;
-    if (!pedidos.length) return;
+  var nodo = (etiqueta, clase, texto) => {
+    const el = document.createElement(etiqueta);
+    if (clase) el.className = clase;
+    if (texto !== void 0) el.textContent = texto;
+    return el;
+  };
+  var todosLosPedidos = () => pedidosGuardados(Infinity);
+  var botonPedidos = panelC.querySelector(".cuenta-ver-pedidos");
+  var contarPedidos = async () => {
+    const n = (await todosLosPedidos()).length;
+    botonPedidos.textContent = n ? `Ver mis pedidos (${n})` : "Ver mis pedidos";
+  };
+  var pintarHistorial = async () => {
+    const lista2 = panelC.querySelector(".cuenta-historial");
+    const vacio2 = panelC.querySelector(".cuenta-historial-vacio");
+    const pedidos = await todosLosPedidos();
+    vacio2.hidden = pedidos.length > 0;
     lista2.textContent = "";
     pedidos.forEach((p) => {
-      const fila = document.createElement("li");
-      const numero = document.createElement("span");
-      numero.className = "cuenta-pedido-numero";
-      numero.textContent = p.numero;
-      const cuando = document.createElement("span");
-      cuando.className = "cuenta-pedido-fecha";
-      cuando.textContent = marcaBonita(new Date(p.fecha));
-      const cuanto = document.createElement("strong");
-      cuanto.textContent = dinero(Number(p.total) || 0);
-      const cuantos = (p.lineas || []).reduce((s, l) => s + (Number(l.cantidad) || 0), 0);
-      const detalle = document.createElement("span");
-      detalle.className = "cuenta-pedido-detalle";
-      detalle.textContent = `${cuantos} ${cuantos === 1 ? "unidad" : "unidades"}` + (p.modo === "domicilio" ? " · a domicilio" : " · para retirar");
-      fila.append(numero, cuanto, cuando, detalle);
-      lista2.append(fila);
+      const lineas = p.lineas || [];
+      const cuantos = lineas.reduce((s, l) => s + (Number(l.cantidad) || 0), 0);
+      const plegable = nodo("details", "cuenta-pedido");
+      const resumen = nodo("summary");
+      resumen.append(
+        nodo("span", "cuenta-pedido-numero", p.numero),
+        nodo("strong", "", dinero(Number(p.total) || 0)),
+        nodo("span", "cuenta-pedido-fecha", marcaBonita(new Date(p.fecha))),
+        nodo("span", "cuenta-pedido-detalle", `${cuantos} ${cuantos === 1 ? "unidad" : "unidades"}` + (p.modo === "domicilio" ? " · a domicilio" : " · para retirar"))
+      );
+      const cuerpo = nodo("div", "cuenta-pedido-cuerpo");
+      const productos = nodo("ul", "cuenta-pedido-lineas");
+      lineas.forEach((l) => {
+        const fila = nodo("li");
+        fila.append(
+          nodo("span", "", `${l.cantidad} × ${l.nombre}`),
+          nodo("span", "", dinero((Number(l.precio) || 0) * (Number(l.cantidad) || 0)))
+        );
+        productos.append(fila);
+      });
+      const cuentas = nodo("dl", "cuenta-pedido-cuentas");
+      const dato = (titulo2, valor) => {
+        const par = nodo("div");
+        par.append(nodo("dt", "", titulo2), nodo("dd", "", valor));
+        cuentas.append(par);
+      };
+      dato("Subtotal", dinero(Number(p.subtotal) || 0));
+      dato("Envío", Number(p.envio) ? dinero(Number(p.envio)) : "Gratis");
+      dato("Total", dinero(Number(p.total) || 0));
+      if (p.metodo) dato("Pago", p.metodo);
+      dato("Entrega", p.modo === "domicilio" ? p.direccion || "A domicilio" : "Retiro en el local");
+      cuerpo.append(productos, cuentas);
+      plegable.append(resumen, cuerpo);
+      const item = nodo("li");
+      item.append(plegable);
+      lista2.append(item);
     });
   };
+  botonPedidos.addEventListener("click", () => {
+    verPaso("pedidos");
+    tituloC.focus();
+  });
+  panelC.querySelector('[data-paso="pedidos"] .cuenta-salir').addEventListener("click", () => {
+    verPaso("sesion");
+    botonPedidos.focus();
+  });
   var prellenarPedido = () => {
     if (!sesion.dentro || !sesion.direccion || entrega.direccion) return;
     puente.ponerDireccion(sesion.direccion);

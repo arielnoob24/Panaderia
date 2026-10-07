@@ -560,8 +560,16 @@ es con el que se entra y cambiarlo pediría verificarlo otra vez.
 **El botón de la cabecera** (`navCuenta`)
 Fuera de sesión muestra una silueta y despliega "Iniciar sesión /
 Registrarse". Dentro de sesión muestra las iniciales y abre directamente la
-ficha con tus datos y tus últimos pedidos (`pintarPedidos`, que los lee de
-IndexedDB).
+ficha con tus datos y dos botones: "Editar mis datos" y "Ver mis pedidos (N)"
+(`contarPedidos` pone el número).
+
+**El historial de pedidos**
+"Ver mis pedidos" abre el paso `pedidos` del panel, con todos los pedidos de
+este navegador, el más nuevo arriba (`pintarHistorial`, que los lee de
+IndexedDB con `pedidosGuardados(Infinity)`). Cada pedido es un `<details>`:
+cerrado muestra número, total, fecha y cuántas unidades llevaba; abierto, cada
+producto con su importe, el subtotal, el envío, el total, cómo se pagó y cómo se
+recibió. "Volver a tu cuenta" regresa a la ficha.
 
 ### 5.10 `mail.js` — el correo
 
