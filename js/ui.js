@@ -115,9 +115,11 @@ if (cabecera) {
   mirarScroll();
 }
 
-// "Tienda" agrupa las tres categorias del catalogo. Manda el clic, que es lo
-// que funciona con teclado y con el dedo; en raton, ademas, se abre al pasar
-// por encima, porque ahi si existe eso de pasar por encima.
+// "Tienda" agrupa las tres categorias del catalogo. La palabra lleva al
+// catalogo entero (eso lo pone view.js); la flecha de al lado abre la lista.
+// Manda el clic en la flecha, que es lo que funciona con teclado y con el
+// dedo; en raton, ademas, se abre al pasar por encima, porque ahi si existe
+// eso de pasar por encima.
 const grupo = document.querySelector('.nav-grupo');
 const grupoBoton = grupo?.querySelector('.nav-grupo-boton');
 const abrirGrupo = (abierto) => {

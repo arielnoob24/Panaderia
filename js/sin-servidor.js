@@ -994,6 +994,12 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       e.preventDefault();
       abrirCategoria("catalogo");
     });
+    document.querySelector(".nav-grupo-enlace")?.addEventListener("click", (e) => {
+      e.preventDefault();
+      grupo?.dispatchEvent(new CustomEvent("soltar"));
+      abrirGrupo(false);
+      abrirCategoria("catalogo");
+    });
     const deLaDireccion = () => {
       const m = location.hash.match(/^#tienda-(.+)$/);
       return m && NOMBRES[m[1]] ? m[1] : "todos";

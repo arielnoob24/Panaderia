@@ -37,7 +37,8 @@ Este es el orden real de tabulación en escritorio, medido sobre la página, no 
 | 1 | **Saltar al contenido** (invisible hasta que recibe foco) |
 | 2 | Logo / Ir al inicio |
 | 3 | Nosotros |
-| 4 | **Tienda** (botón desplegable) |
+| 4 | **Tienda** (enlace al catálogo entero) |
+| 4b | La flecha de Tienda (botón desplegable) |
 | 5 | Contáctanos |
 | 6 | **Círculo de la cuenta** |
 | 7 | Ver el menú ↓ |
@@ -53,7 +54,7 @@ Este es el orden real de tabulación en escritorio, medido sobre la página, no 
 1. **44 era el número de *controles*, no de paradas.** Un grupo de radios con el mismo `name` es **una sola parada**: `Tab` entra en el que está marcado y las flechas se mueven por dentro.
 2. **El 2026-10-04 se añadieron dos controles** en la cabeza del mostrador, "Ver todo el catálogo" y el botón de pausa, que entran después de "Encuentra tu local".
 
-Medido hoy: 42 controles alcanzables, de los que 11 son radios en 5 grupos, más las 2 flechas de la fila → **38 paradas**. Si lo citas en un informe, cita 38.
+Medido el 2026-10-07 tabulando en Edge: **38 paradas**. Ese día subieron dos: "Tienda" pasó a ser dos piezas (la palabra lleva al catálogo, la flecha abre las categorías) y la flecha `→` del mostrador ya no se apaga al final. Si lo citas en un informe, cita 38.
 
 Dos cosas a notar:
 
@@ -65,7 +66,7 @@ Dos cosas a notar:
 El recorrido más corto que enseña todo:
 
 1. `Tab` desde arriba → se ve el "Saltar al contenido" aparecer de la nada. Pulsa `Enter`.
-2. `Shift+Tab` hasta **Tienda**, `↓` → se abre el desplegable y el foco entra en "Panes". `↓` `↓` baja por las tres, `Esc` cierra y vuelve al botón.
+2. `Shift+Tab` hasta la **flecha de Tienda**, `↓` → se abre el desplegable y el foco entra en "Panes". `↓` `↓` baja por las tres, `Esc` cierra y vuelve a la flecha.
 3. `Tab` hasta un botón `+` de un producto, `Enter`. El número aparece.
 4. `Tab` hasta el **botón flotante**, `Enter`. Se abre la canasta y el foco cae en su "cerrar".
 5. Dentro: `Tab` da vueltas y **no se escapa** a la página de detrás. `Esc` cierra y el foco vuelve al botón flotante.
@@ -76,10 +77,11 @@ El recorrido más corto que enseña todo:
 
 ### La barra: desplegable "Tienda"
 
-- `Enter` o `Espacio` sobre **Tienda**: abre y cierra.
-- `↓`: abre y lleva el foco al primer enlace. `↑`: abre y lleva al último.
+- `Enter` sobre la palabra **Tienda**: es un enlace y abre la vista del catálogo entero, como "Ver el menú".
+- `Enter` o `Espacio` sobre la **flecha** de al lado: abre y cierra las tres categorías.
+- `↓` sobre la flecha: abre y lleva el foco al primer enlace. `↑`: abre y lleva al último.
 - Dentro: `↓` `↑` recorren, `Inicio` y `Fin` van a las puntas.
-- `Esc`: cierra y **devuelve el foco al botón Tienda**, no al principio de la página.
+- `Esc`: cierra y **devuelve el foco a la flecha de Tienda**, no al principio de la página.
 - `Tab` saliendo del último enlace: lo cierra solo, porque un desplegable abierto detrás del foco es un menú que ya no responde.
 
 Mientras está cerrado, el desplegable es `visibility: hidden`, y eso saca sus enlaces del recorrido del tabulador. Importa: si se hubiera escondido solo con `opacity: 0`, los tres enlaces seguirían siendo tabulables y habría tres paradas invisibles.

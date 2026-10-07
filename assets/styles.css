@@ -97,13 +97,14 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 .site-header.is-pegada.is-sobre-oscuro .brand-logo { filter: none; }
 .site-header.is-pegada.is-sobre-oscuro .mascot-brand { background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
 .site-header.is-pegada.is-sobre-oscuro .main-nav > a:hover,
+.site-header.is-pegada.is-sobre-oscuro .nav-grupo-enlace:hover,
 .site-header.is-pegada.is-sobre-oscuro .nav-grupo-boton:hover { color: var(--corteza-oscura); }
 .site-header.is-pegada.is-sobre-oscuro .nav-cuenta { border-color: rgba(58, 40, 34, .32); color: var(--horno); }
 /* El panadero no se invierte: es ilustracion a color y se arruinaria. Solo su
    halo cambia de tinte, para que se vea sobre el marron en vez de sobre crema. */
 .site-header.is-pegada .mascot-brand { background: radial-gradient(circle, rgba(215, 155, 74, .22) 62%, transparent 63%); }
 /* Sobre el marron el ambar si se lee: 5,8:1. Vuelve a ser el color del puntero. */
-.site-header.is-pegada .main-nav > a:hover, .site-header.is-pegada .nav-grupo-boton:hover { color: var(--ambar); }
+.site-header.is-pegada .main-nav > a:hover, .site-header.is-pegada .nav-grupo-enlace:hover, .site-header.is-pegada .nav-grupo-boton:hover { color: var(--ambar); }
 .site-header.is-pegada .nav-cuenta { border-color: rgba(255, 255, 255, .45); color: var(--sobre-horno); }
 .site-header.is-pegada .nav-cuenta:hover { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
 .site-header.is-pegada .nav-cuenta.is-dentro { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
@@ -124,14 +125,17 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 /* Al pasar el cursor solo cambia el color. Antes crecia ademas un subrayado
    desde la izquierda, que hacia la barra mas de menu de escritorio que de
    panaderia. */
-.main-nav > a, .nav-grupo-boton { transition: color var(--dur-fast) var(--ease-ui); }
-.main-nav > a:hover, .nav-grupo-boton:hover { color: var(--corteza-oscura); }
-/* "Tienda" no es un destino, es una puerta: agrupa las tres categorias del
-   catalogo. Es un boton y no un enlace porque no lleva a ningun sitio, solo
-   abre y cierra, y asi el teclado y los lectores de pantalla lo entienden.
-   Se ve igual que sus vecinos: hereda el subrayado que crece al pasar. */
-.nav-grupo { position: relative; padding: .8rem 0; margin: -.8rem 0; }
-.nav-grupo-boton { display: inline-flex; align-items: center; gap: .3rem; padding: 0; background: none; border: 0; color: inherit; cursor: pointer; font: inherit; }
+.main-nav > a, .nav-grupo-enlace, .nav-grupo-boton { transition: color var(--dur-fast) var(--ease-ui); }
+.main-nav > a:hover, .nav-grupo-enlace:hover, .nav-grupo-boton:hover { color: var(--corteza-oscura); }
+/* "Tienda" son dos piezas: la palabra es un enlace al catalogo entero, como
+   "Ver el menu", y la flecha es el boton que abre las tres categorias. Si
+   todo fuera un solo boton, o se llegaba al catalogo o se abria la lista: en
+   el telefono, donde no hay pasar por encima, una de las dos se perdia. */
+.nav-grupo { position: relative; display: inline-flex; align-items: center; padding: .8rem 0; margin: -.8rem 0; }
+.nav-grupo-enlace { color: inherit; }
+/* La flecha es pequena, pero el boton mide 24 px: el minimo de la WCAG 2.2
+   para lo que se pulsa. */
+.nav-grupo-boton { display: inline-grid; min-width: 24px; min-height: 24px; place-items: center; padding: 0; background: none; border: 0; color: inherit; cursor: pointer; font: inherit; }
 .nav-grupo-flecha { width: 15px; height: 15px; flex: 0 0 auto; transition: transform var(--dur-fast) var(--ease-ui); }
 .nav-grupo.is-open .nav-grupo-flecha { transform: rotate(180deg); }
 
@@ -141,7 +145,9 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 /* Entre el boton y el panel hay un hueco, y cruzarlo con el raton cerraria el
    desplegable a mitad de camino. Este puente invisible lo tapa. */
 .nav-submenu::before { position: absolute; top: -.3rem; right: 0; left: 0; height: .3rem; content: ""; }
-.nav-grupo.is-open .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
+/* Al abrir, visible al instante y no al final de la transicion: en su primer
+   cuadro seguia en hidden, y la flecha abajo no podia darle el foco a Panes. */
+.nav-grupo.is-open .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
 /* Las tres entran de una en una, no el panel entero de golpe: cada una sale
    un poco despues que la de arriba. Al cerrar no se escalonan, que esperar a
    que se vayan de una en una se siente lento. */
@@ -582,10 +588,12 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   /* Dentro del panel oscuro el texto vuelve a ser claro: si heredara el de
      la cabecera seria horno sobre horno. */
   .main-nav { color: var(--sobre-horno); }
-  .main-nav > a:hover, .nav-grupo-boton:hover { color: var(--ambar); }
+  .main-nav > a:hover, .nav-grupo-enlace:hover, .nav-grupo-boton:hover { color: var(--ambar); }
   .main-nav a { padding: .6rem .7rem; }
-  .nav-grupo { display: flex; flex-direction: column; }
-  .nav-grupo-boton { width: 100%; justify-content: space-between; padding: .6rem .7rem; }
+  .nav-grupo { display: flex; flex-wrap: wrap; align-items: center; }
+  .nav-grupo-enlace { flex: 1; }
+  .nav-grupo-boton { width: 44px; height: 44px; }
+  .nav-submenu { flex-basis: 100%; }
   .nav-submenu { position: static; display: grid; visibility: hidden; min-width: 0; max-height: 0; padding: 0 0 0 .8rem; overflow: hidden; opacity: 1; background: none; border: 0; border-radius: 0; box-shadow: none; transform: none; transition: max-height var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
   .nav-submenu::before { display: none; }
   .nav-grupo.is-open .nav-submenu { visibility: visible; max-height: 180px; transform: none; }
@@ -723,7 +731,8 @@ body.is-checkout .floating-whatsapp { display: none; }
 
 /* Las dos puertas de la cuenta, colgando de su circulo. */
 .cuenta-menu { position: absolute; top: calc(100% + .5rem); right: 0; z-index: 11; display: flex; visibility: hidden; min-width: 190px; flex-direction: column; gap: .1rem; padding: .5rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); color: var(--sobre-horno); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }
-.cuenta-menu.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
+/* Visible al instante, por lo mismo que el desplegable de Tienda. */
+.cuenta-menu.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
 .cuenta-menu button { padding: .6rem .75rem; background: none; border: 0; border-radius: var(--r-chip); color: inherit; cursor: pointer; font: 700 .9rem Arial, sans-serif; text-align: left; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
 .cuenta-menu button:hover { background: rgba(255, 255, 255, .1); color: var(--ambar); }
 

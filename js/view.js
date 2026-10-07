@@ -484,8 +484,9 @@ const montarCatalogo = (productos) => {
   const selSub = cabeza.querySelector('.vista-sub');
   const campoBusca = cabeza.querySelector('.vista-busca');
   const vacioVista = cabeza.querySelector('.vista-vacio');
-  // "Todo el catalogo" ya no esta en el menu Tienda (a el se llega con "Ver el
-  // menu"), pero sigue siendo una vista con nombre y direccion propia.
+  // "Todo el catalogo" no es una de las tres de Tienda (a el se llega con
+  // "Ver el menu" o con la palabra Tienda), pero es una vista con nombre y
+  // direccion propia.
   NOMBRES.catalogo = 'Todo el catálogo';
 
   selOrden?.addEventListener('change', () => {
@@ -552,12 +553,18 @@ const montarCatalogo = (productos) => {
   }));
   cabeza.querySelector('.vista-volver').addEventListener('click', () => abrirCategoria('todos'));
 
-  // "Ver el menu" de la portada es la unica puerta al catalogo entero. Antes
-  // solo bajaba a la seccion y dejaba el mostrador en fila, que es un resumen:
-  // quien pulsa "ver el menu" quiere verlo todo, no una muestra. Sin
-  // JavaScript sigue siendo el enlace de siempre, que baja ahi mismo.
+  // "Ver el menu" de la portada y la palabra Tienda de la barra llevan al
+  // catalogo entero. Antes solo bajaban a la seccion y dejaban el mostrador en
+  // fila, que es un resumen: quien pulsa ahi quiere verlo todo, no una muestra.
+  // Sin JavaScript siguen siendo enlaces normales, que bajan ahi mismo.
   document.querySelector('.hero-actions a[href="#catalogo"]')?.addEventListener('click', (e) => {
     e.preventDefault();
+    abrirCategoria('catalogo');
+  });
+  document.querySelector('.nav-grupo-enlace')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    grupo?.dispatchEvent(new CustomEvent('soltar'));
+    abrirGrupo(false);
     abrirCategoria('catalogo');
   });
 

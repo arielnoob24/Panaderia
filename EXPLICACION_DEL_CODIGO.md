@@ -88,7 +88,7 @@ y a los buscadores.
 1. **Enlace "Saltar al contenido"** (`.skip-link`): invisible hasta que se pulsa
    Tab; permite a quien usa teclado saltarse la navegación.
 2. **`<header class="site-header">`**: logo y mascota, la navegación
-   (`Nosotros`, el desplegable `Tienda` con sus tres categorías, `Contáctanos`)
+   (`Nosotros`, `Tienda` -la palabra lleva al catálogo entero y su flecha despliega las tres categorías-, `Contáctanos`)
    y el botón de hamburguesa (`.menu-toggle`) que solo se ve en el teléfono.
    Los enlaces de Tienda llevan `data-filtro="panes"` etc.: ese atributo es el
    que lee `view.js` para saber qué categoría abrir.
