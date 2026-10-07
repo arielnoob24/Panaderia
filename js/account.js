@@ -324,11 +324,24 @@ const tocadosC = new Set();
 let intentadoC = false;
 
 const CORREO = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-// El correo no se despacha con un "algo esta mal": se dice que le falta.
+// El correo no se despacha con un "algo esta mal": se dice que le falta, y
+// todo lo que le falta. Sin @ no basta con pedir el @, porque al ponerlo
+// saldria otro aviso pidiendo el resto; se pide de una vez todo lo que va
+// desde el @. Con el @ puesto, se va diciendo el trozo que queda.
 const fallaCorreo = (v) => {
   if (!v) return 'Escribe tu correo.';
-  if (!v.includes('@')) return 'Le falta el @.';
-  if (!/\.[a-z]{2,}$/i.test(v)) return 'Le falta el final, como .com o .ec.';
+  if (/\s/.test(v)) return 'El correo no lleva espacios.';
+  const arroba = v.indexOf('@');
+  if (arroba === -1) return 'Le falta el @ y todo lo que sigue, por ejemplo @gmail.com.';
+  if (arroba === 0) return 'Le falta tu usuario antes del @, como juan.perez@gmail.com.';
+  if (v.includes('@', arroba + 1)) return 'Tiene más de un @: el correo lleva solo uno.';
+  const dominio = v.slice(arroba + 1);
+  if (!dominio) return 'Le falta lo que va después del @, por ejemplo gmail.com u hotmail.com.';
+  if (dominio.startsWith('.')) return 'Le falta el nombre entre el @ y el punto, como gmail u outlook.';
+  if (dominio.includes('..')) return 'Tiene dos puntos seguidos: va solo uno.';
+  if (!dominio.includes('.')) return 'Le falta el final, por ejemplo .com, .ec o .es.';
+  if (dominio.endsWith('.')) return 'Le falta lo que va después del punto, como com o ec.';
+  if (!/\.[a-z]{2,}$/i.test(dominio)) return 'El final no está completo: suele ser .com, .ec o .es.';
   if (!CORREO.test(v)) return 'Revisa el correo, algo no cuadra.';
   return '';
 };
@@ -730,7 +743,7 @@ const entrar = async () => {
     input.setAttribute('aria-invalid', texto ? 'true' : 'false');
     input.classList.toggle('is-mal', Boolean(texto));
   };
-  const malCorreo = CORREO.test(escrito) ? '' : 'Revisa el correo, algo le falta.';
+  const malCorreo = fallaCorreo(escrito);
   const malClave = claveEntrar.value ? '' : 'Escribe tu contraseña.';
   marcar(correoEntrar, errorEntrarCorreo, malCorreo);
   marcar(claveEntrar, errorEntrarClave, malClave);
@@ -782,6 +795,16 @@ panelC.querySelector('.cuenta-entrar').addEventListener('click', entrar);
   e.preventDefault();
   entrar();
 }));
+// Si el correo ya salio marcado, el aviso sigue lo que se va escribiendo:
+// al poner el @ pasa a pedir lo que falta despues, y al completarlo se va.
+correoEntrar.addEventListener('input', () => {
+  if (errorEntrarCorreo.hidden) return;
+  const texto = fallaCorreo(correoEntrar.value.trim());
+  errorEntrarCorreo.hidden = !texto;
+  errorEntrarCorreo.textContent = texto;
+  correoEntrar.setAttribute('aria-invalid', texto ? 'true' : 'false');
+  correoEntrar.classList.toggle('is-mal', Boolean(texto));
+});
 
 panelC.querySelector('.cuenta-salir').addEventListener('click', () => {
   const nombre = sesion.nombre;

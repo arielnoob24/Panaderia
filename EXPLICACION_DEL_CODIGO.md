@@ -511,7 +511,9 @@ y se compara con la guardada.
   dibujar la lista bajo el campo (que se va marcando mientras escribes) y para
   comprobar si vale.
 - `fallosCuenta()` revisa nombre con apellido, correo (`fallaCorreo` dice
-  exactamente qué falta: el @, el .com...), teléfono de 9 cifras empezando por 9
+  exactamente qué falta: sin @ pide todo lo que va desde el @, con el @ pide
+  lo que va después, luego el .com...; "Iniciar sesión" usa la misma
+  función), teléfono de 9 cifras empezando por 9
   y que las dos contraseñas coincidan.
 - `soloNueve()` limpia el teléfono y quita el 0 inicial, porque el +593 ya está
   delante.
