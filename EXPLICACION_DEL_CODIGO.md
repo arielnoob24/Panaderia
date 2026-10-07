@@ -296,10 +296,11 @@ Es el módulo que dibuja los productos y controla cómo se ven.
   antes de meter un texto como HTML, para que un nombre no pueda convertirse en
   una etiqueta.
 - **`fichaHtml(p)`**: arma el HTML de una ficha (`<article class="product-card">`)
-  con la foto, la etiqueta, el nombre, los tamaños y el precio. La foto usa
+  con la foto, la etiqueta, la categoría, el nombre, los tamaños y el precio. La foto usa
   `srcset` y `sizes`, para que el navegador elija la de 420 px o la de 840 px
   según el tamaño de la pantalla.
-- Funciones auxiliares: `tamanosHtml` (los botones de tamaño, como *radio
+- Funciones auxiliares: `categoriaHtml` (el nombre de la categoría encima del
+  nombre del producto, leído del menú Tienda), `tamanosHtml` (los botones de tamaño, como *radio
   buttons*), `etiquetaHtml` (el sello o "Agotado") y `fondoHtml` (el botón
   "Pedir", o "Vuelve mañana" si está agotado).
 - **`pintarFichas(productos)`**: mete todas las fichas en `.product-grid`.

@@ -17,6 +17,12 @@ const escapar = (texto) => String(texto)
   .replace(/&/g, '&amp;').replace(/</g, '&lt;')
   .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
+// Como se llama cada categoria lo dice el menu Tienda, y de ahi lo leen la
+// ficha y la vista de categoria: un solo sitio donde cambiar "Bebidas".
+const enlacesTienda = [...document.querySelectorAll('.main-nav a[data-filtro]')];
+const NOMBRES = {};
+enlacesTienda.forEach((a) => { NOMBRES[a.dataset.filtro] = a.textContent.trim(); });
+
 // La misma foto en dos anchos: el navegador elige la que le cabe y no descarga
 // la grande en un telefono. El 'sizes' dice cuanto va a ocupar la ficha en
 // cada tamanio de pantalla, que es lo que no puede adivinar solo.
@@ -71,6 +77,11 @@ const etiquetaHtml = (p) => {
   return `<span class="product-tag ${escapar(p.etiqueta.color)}">${escapar(p.etiqueta.texto)}</span>`;
 };
 
+// La categoria va encima del nombre, en pequeno. Si el menu no la conoce no se
+// pone nada: mejor sin rotulo que con el identificador ('bebidas-frias') a la vista.
+const categoriaHtml = (p) => (NOMBRES[p.categoria]
+  ? `<span class="product-categoria">${escapar(NOMBRES[p.categoria])}</span>` : '');
+
 const fichaHtml = (p) => {
   const srcset = ANCHOS.map((w) => `${foto(p, w)} ${w}w`).join(', ');
   return `<article class="product-card"${p.disponible ? '' : ' data-available="false"'}`
@@ -83,6 +94,7 @@ const fichaHtml = (p) => {
     + etiquetaHtml(p)
     + '</div>'
     + '<div class="product-info">'
+    + categoriaHtml(p)
     + `<h3>${escapar(p.nombre)}</h3>`
     + tamanosHtml(p)
     + `<div class="product-bottom"><strong>${dinero(p.precio)}</strong>${fondoHtml(p)}</div>`
@@ -403,9 +415,6 @@ const montarCatalogo = (productos) => {
   // un filtro puesto: es otra vista. Se arma desde aqui porque sin JavaScript no
   // habria vista que abrir; ahi los enlaces bajan al catalogo, que sin la fila
   // sale como cuadricula entera, y eso ya es una respuesta valida.
-  const enlacesTienda = [...document.querySelectorAll('.main-nav a[data-filtro]')];
-  const NOMBRES = {};
-  enlacesTienda.forEach((a) => { NOMBRES[a.dataset.filtro] = a.textContent.trim(); });
 
   const cabeza = document.createElement('div');
   cabeza.className = 'vista-cabeza';

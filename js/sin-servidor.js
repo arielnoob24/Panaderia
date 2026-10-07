@@ -659,6 +659,11 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var catalogStatus = document.querySelector(".catalog-status");
   var productGrid = document.querySelector(".product-grid");
   var escapar = (texto) => String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  var enlacesTienda = [...document.querySelectorAll(".main-nav a[data-filtro]")];
+  var NOMBRES = {};
+  enlacesTienda.forEach((a) => {
+    NOMBRES[a.dataset.filtro] = a.textContent.trim();
+  });
   var ANCHOS = [420, 840];
   var SIZES_CUADRICULA = "(max-width: 680px) calc(50vw - 23px), (max-width: 900px) calc(50vw - 40px), 280px";
   var SIZES_FILA = "min(272px, 74vw)";
@@ -683,9 +688,10 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     if (!p.etiqueta) return "";
     return `<span class="product-tag ${escapar(p.etiqueta.color)}">${escapar(p.etiqueta.texto)}</span>`;
   };
+  var categoriaHtml = (p) => NOMBRES[p.categoria] ? `<span class="product-categoria">${escapar(NOMBRES[p.categoria])}</span>` : "";
   var fichaHtml = (p) => {
     const srcset = ANCHOS.map((w) => `${foto(p, w)} ${w}w`).join(", ");
-    return `<article class="product-card"${p.disponible ? "" : ' data-available="false"'} data-category="${escapar(p.categoria)}"><div class="product-image"><img src="${foto(p, 840)}" srcset="${srcset}" sizes="${SIZES_FILA}" alt="${escapar(p.alt)}" loading="lazy" width="840" height="630">` + etiquetaHtml(p) + `</div><div class="product-info"><h3>${escapar(p.nombre)}</h3>` + tamanosHtml(p) + `<div class="product-bottom"><strong>${dinero(p.precio)}</strong>${fondoHtml(p)}</div></div></article>`;
+    return `<article class="product-card"${p.disponible ? "" : ' data-available="false"'} data-category="${escapar(p.categoria)}"><div class="product-image"><img src="${foto(p, 840)}" srcset="${srcset}" sizes="${SIZES_FILA}" alt="${escapar(p.alt)}" loading="lazy" width="840" height="630">` + etiquetaHtml(p) + '</div><div class="product-info">' + categoriaHtml(p) + `<h3>${escapar(p.nombre)}</h3>` + tamanosHtml(p) + `<div class="product-bottom"><strong>${dinero(p.precio)}</strong>${fondoHtml(p)}</div></div></article>`;
   };
   var products = [];
   var pintarFichas = (productos) => {
@@ -908,11 +914,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       productGrid?.classList.add("is-filtering");
       window.setTimeout(() => applyFilter(true), 160);
     };
-    const enlacesTienda = [...document.querySelectorAll(".main-nav a[data-filtro]")];
-    const NOMBRES = {};
-    enlacesTienda.forEach((a) => {
-      NOMBRES[a.dataset.filtro] = a.textContent.trim();
-    });
     const cabeza = document.createElement("div");
     cabeza.className = "vista-cabeza";
     cabeza.hidden = true;
