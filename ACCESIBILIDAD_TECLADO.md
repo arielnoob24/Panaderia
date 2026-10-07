@@ -114,6 +114,7 @@ Tres controles, en este orden: `−` (o papelera), el número, `+`.
 
 - `Enter` / `Espacio` en `+` y `−`: suma y resta de uno.
 - Con una sola unidad, `−` es una papelera: quita el producto. Al desaparecer, **el foco salta al `+`** para no quedarse en el aire.
+- En la canasta, cada línea tiene además una **X** (una parada de `Tab` más, después del `+`) que quita el producto entero sin bajar de uno en uno. Pregunta antes; si se cancela, el foco vuelve a la X, y si se confirma, va a "Deshacer".
 - El número es un campo escribible: `↑` `↓` suben y bajan de uno, `Enter` lo confirma, `Esc` recupera el valor anterior. Se puede teclear 20 directamente en lugar de pulsar veinte veces.
 
 ### La canasta, el pago y la cuenta (los paneles)

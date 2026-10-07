@@ -280,6 +280,9 @@ const BASURERO = '<svg class="card-icono" viewBox="0 0 24 24" fill="none" stroke
 // rehace la lista entera en cada cambio: si la pregunta viviera en el DOM y
 // nada mas, tocar el "mas" de otro producto la borraria sin contestarla.
 let porConfirmar = null;
+// Y desde que boton se pregunto, para devolverle el foco si dice que no: la
+// pregunta la abren el basurero de la ultima unidad y la X de la linea.
+let preguntoDesde = '[data-menos]';
 
 const pintar = () => {
   lista.textContent = '';
@@ -294,7 +297,8 @@ const pintar = () => {
       li.classList.add('is-confirmando');
       li.innerHTML =
         `<div><h3>${l.nombre}</h3>`
-        + '<p class="canasta-confirma-dicho">¿Lo quitamos de la canasta?</p>'
+        + `<p class="canasta-confirma-dicho">${l.cantidad === 1
+          ? '¿Lo quitamos de la canasta?' : `¿Quitamos las ${l.cantidad} unidades?`}</p>`
         + '<div class="canasta-confirma">'
         + '<button class="canasta-confirma-si" type="button" '
         + `aria-label="Sí, quitar ${l.nombre} de la canasta">Sí, quitar</button>`
@@ -325,11 +329,16 @@ const pintar = () => {
       + `${ultima ? BASURERO : '−'}</button>`
       + `<output>${l.cantidad}</output>`
       + `<button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div></div>`
-      + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
+      // La X quita el producto entero, lleve las unidades que lleve: sin ella,
+      // para quitar doce panes habia que bajar uno a uno hasta el basurero.
+      + '<div class="canasta-lado"><button class="canasta-quitar" type="button" '
+      + `aria-label="Quitar ${l.nombre} de la canasta" data-tip="Quitar de la canasta">×</button>`
+      + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div>`;
     li.querySelector('[data-menos]').addEventListener('click', () => {
-      if (l.cantidad === 1) { pedirQuitar(id); return; }
+      if (l.cantidad === 1) { pedirQuitar(id, '[data-menos]'); return; }
       cambiar(id, -1);
     });
+    li.querySelector('.canasta-quitar').addEventListener('click', () => pedirQuitar(id, '.canasta-quitar'));
     li.querySelector('[data-mas]').addEventListener('click', () => cambiar(id, 1));
     lista.append(li);
   }
@@ -338,26 +347,29 @@ const pintar = () => {
 
 const lineaDe = (id) => [...lista.children].find((li) => li.dataset.id === id);
 
-const pedirQuitar = (id) => {
+const pedirQuitar = (id, desde) => {
   const l = pedido.get(id);
   if (!l) return;
   porConfirmar = id;
+  preguntoDesde = desde;
   pintar();
-  // El basurero que se acaba de pulsar ya no existe, asi que hay que recoger
-  // el foco. Va al "Si, quitar" y no al "Cancelar": quien pulso el basurero
-  // ya dijo lo que queria, y la pregunta esta para que lo vea, no para
+  // El boton que se acaba de pulsar ya no existe, asi que hay que recoger
+  // el foco. Va al "Si, quitar" y no al "Cancelar": quien pulso el basurero o
+  // la X ya dijo lo que queria, y la pregunta esta para que lo vea, no para
   // esconderle la salida. El clic de mas sigue estando ahi para el descuido.
   lineaDe(id)?.querySelector('.canasta-confirma-si')?.focus();
-  avisos.textContent = `¿Quitar ${l.nombre} de la canasta?`;
+  avisos.textContent = l.cantidad === 1
+    ? `¿Quitar ${l.nombre} de la canasta?`
+    : `¿Quitar las ${l.cantidad} unidades de ${l.nombre} de la canasta?`;
 };
 
 const cancelarQuitar = (id) => {
   if (porConfirmar !== id) return;
   porConfirmar = null;
   pintar();
-  // De vuelta al basurero del que salio la pregunta, que es donde estaba el
+  // De vuelta al boton del que salio la pregunta, que es donde estaba el
   // foco antes de preguntar.
-  lineaDe(id)?.querySelector('[data-menos]')?.focus();
+  lineaDe(id)?.querySelector(preguntoDesde)?.focus();
   avisos.textContent = `${pedido.get(id)?.nombre || 'El producto'} sigue en la canasta.`;
 };
 

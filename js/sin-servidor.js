@@ -1612,6 +1612,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var botonesMas = [];
   var BASURERO = '<svg class="card-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.8 7.1h14.4"/><path d="M9.7 7.1V5.3a1.4 1.4 0 0 1 1.4-1.4h1.8a1.4 1.4 0 0 1 1.4 1.4v1.8"/><path d="M6.5 7.1l.8 11.3a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-11.3"/><path d="M10.3 10.8v5.8"/><path d="M13.7 10.8v5.8"/></svg>';
   var porConfirmar = null;
+  var preguntoDesde = "[data-menos]";
   var pintar = () => {
     lista.textContent = "";
     for (const [id, l] of pedido) {
@@ -1620,7 +1621,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       li.dataset.id = id;
       if (id === porConfirmar) {
         li.classList.add("is-confirmando");
-        li.innerHTML = `<div><h3>${l.nombre}</h3><p class="canasta-confirma-dicho">¿Lo quitamos de la canasta?</p><div class="canasta-confirma"><button class="canasta-confirma-si" type="button" aria-label="Sí, quitar ${l.nombre} de la canasta">Sí, quitar</button><button class="canasta-confirma-no" type="button" aria-label="Cancelar, dejar ${l.nombre} en la canasta">Cancelar</button></div></div><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
+        li.innerHTML = `<div><h3>${l.nombre}</h3><p class="canasta-confirma-dicho">${l.cantidad === 1 ? "¿Lo quitamos de la canasta?" : `¿Quitamos las ${l.cantidad} unidades?`}</p><div class="canasta-confirma"><button class="canasta-confirma-si" type="button" aria-label="Sí, quitar ${l.nombre} de la canasta">Sí, quitar</button><button class="canasta-confirma-no" type="button" aria-label="Cancelar, dejar ${l.nombre} en la canasta">Cancelar</button></div></div><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
         li.querySelector(".canasta-confirma-si").addEventListener("click", () => confirmarQuitar(id));
         li.querySelector(".canasta-confirma-no").addEventListener("click", () => cancelarQuitar(id));
         li.addEventListener("keydown", (e) => {
@@ -1632,33 +1633,35 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         continue;
       }
       const ultima = l.cantidad === 1;
-      li.innerHTML = `<div><h3>${l.nombre}</h3><p class="canasta-precio">${dinero(l.precio)} la unidad</p><div class="canasta-cantidad"><button type="button" data-menos aria-label="${ultima ? `Quitar ${l.nombre} de la canasta` : `Quitar uno de ${l.nombre}`}">${ultima ? BASURERO : "−"}</button><output>${l.cantidad}</output><button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div></div><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
+      li.innerHTML = `<div><h3>${l.nombre}</h3><p class="canasta-precio">${dinero(l.precio)} la unidad</p><div class="canasta-cantidad"><button type="button" data-menos aria-label="${ultima ? `Quitar ${l.nombre} de la canasta` : `Quitar uno de ${l.nombre}`}">${ultima ? BASURERO : "−"}</button><output>${l.cantidad}</output><button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div></div><div class="canasta-lado"><button class="canasta-quitar" type="button" aria-label="Quitar ${l.nombre} de la canasta" data-tip="Quitar de la canasta">×</button><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div>`;
       li.querySelector("[data-menos]").addEventListener("click", () => {
         if (l.cantidad === 1) {
-          pedirQuitar(id);
+          pedirQuitar(id, "[data-menos]");
           return;
         }
         cambiar(id, -1);
       });
+      li.querySelector(".canasta-quitar").addEventListener("click", () => pedirQuitar(id, ".canasta-quitar"));
       li.querySelector("[data-mas]").addEventListener("click", () => cambiar(id, 1));
       lista.append(li);
     }
     pintarPie();
   };
   var lineaDe = (id) => [...lista.children].find((li) => li.dataset.id === id);
-  var pedirQuitar = (id) => {
+  var pedirQuitar = (id, desde) => {
     const l = pedido.get(id);
     if (!l) return;
     porConfirmar = id;
+    preguntoDesde = desde;
     pintar();
     lineaDe(id)?.querySelector(".canasta-confirma-si")?.focus();
-    avisos.textContent = `¿Quitar ${l.nombre} de la canasta?`;
+    avisos.textContent = l.cantidad === 1 ? `¿Quitar ${l.nombre} de la canasta?` : `¿Quitar las ${l.cantidad} unidades de ${l.nombre} de la canasta?`;
   };
   var cancelarQuitar = (id) => {
     if (porConfirmar !== id) return;
     porConfirmar = null;
     pintar();
-    lineaDe(id)?.querySelector("[data-menos]")?.focus();
+    lineaDe(id)?.querySelector(preguntoDesde)?.focus();
     avisos.textContent = `${pedido.get(id)?.nombre || "El producto"} sigue en la canasta.`;
   };
   var confirmarQuitar = (id) => {

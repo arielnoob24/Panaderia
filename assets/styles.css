@@ -858,6 +858,13 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-linea h3 { margin: 0; font: 500 1.05rem/1.25 Georgia, serif; }
 .canasta-precio { color: var(--horno-suave); font: .8rem/1.4 Arial, sans-serif; }
 .canasta-subtotal { align-self: center; font: 700 .95rem/1.3 Arial, sans-serif; font-variant-numeric: tabular-nums; }
+/* A la derecha de la linea, la X arriba y el importe abajo, a la altura del
+   control de cantidad. La X va en gris y sin fondo: es una salida a mano, no
+   algo que deba llamar la atencion por encima del + y el -. */
+.canasta-lado { display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; gap: .35rem; }
+.canasta-lado .canasta-subtotal { align-self: flex-end; }
+.canasta-quitar { display: grid; width: 32px; height: 32px; margin: -.35rem -.4rem 0 0; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno-suave); cursor: pointer; font: 1.35rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+.canasta-quitar:hover, .canasta-quitar:focus-visible { background: var(--masa); color: var(--corteza-oscura); }
 /* El mismo control que en la ficha del catalogo, al detalle: el "mas" en ambar
    relleno, el basurero en corteza y la pastilla con su pizca de aire. Es el
    mismo gesto sobre el mismo producto, y cambiarle el aspecto segun desde donde

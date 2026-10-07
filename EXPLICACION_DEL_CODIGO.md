@@ -402,7 +402,9 @@ botón "Ir a pagar". Funciones clave:
 - **`pintar()`**: rehace la lista. Cada línea tiene −, la cantidad y +. Cuando
   solo queda una unidad, el − se convierte en un basurero y pregunta "¿Lo
   quitamos?" antes de borrar (`pedirQuitar`, `confirmarQuitar`,
-  `cancelarQuitar`).
+  `cancelarQuitar`). Además cada línea lleva una X arriba a la derecha que
+  quita el producto entero, tenga las unidades que tenga, con la misma
+  pregunta ("¿Quitamos las 3 unidades?") y la misma barra de Deshacer.
 - **`pintarPie()`**: actualiza el subtotal, el contador del botón flotante y
   llama a `pintarDesglose`, `pintarResumen` y `pintarPago`, para que todo lo
   que depende del pedido quede al día. También llama a `guardar()`.
