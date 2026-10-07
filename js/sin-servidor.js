@@ -732,6 +732,14 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       cabezaFila.append(rotulo);
       zona.before(cabezaFila);
       zona.append(productGrid);
+      const pie = document.createElement("div");
+      pie.className = "fila-pie";
+      const barra = document.createElement("div");
+      barra.className = "fila-barra";
+      barra.setAttribute("aria-hidden", "true");
+      const avance = document.createElement("span");
+      avance.className = "fila-avance";
+      barra.append(avance);
       flechas = [-1, 1].map((ir) => {
         const b = document.createElement("button");
         b.type = "button";
@@ -750,13 +758,17 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
             behavior: reducedMotion.matches ? "auto" : "smooth"
           });
         });
-        zona.append(b);
         return b;
       });
+      pie.append(flechas[0], barra, flechas[1]);
+      zona.append(pie);
       const mirarPuntas = () => {
         const sobra = productGrid.scrollWidth - productGrid.clientWidth;
         const hayFila = productGrid.classList.contains("is-fila");
         const final = enElFinal();
+        pie.hidden = !hayFila || sobra < 24;
+        avance.style.width = `${productGrid.clientWidth / productGrid.scrollWidth * 100}%`;
+        avance.style.transform = `translateX(${productGrid.scrollLeft / productGrid.clientWidth * 100}%)`;
         flechas.forEach((b) => {
           b.hidden = !hayFila || sobra < 24;
           if (b.dataset.ir === "-1") {

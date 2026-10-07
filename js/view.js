@@ -167,6 +167,21 @@ const montarCatalogo = (productos) => {
     cabezaFila.append(rotulo);
     zona.before(cabezaFila);
     zona.append(productGrid);
+    // Las flechas van en un pie debajo de la fila, con una barra entre las dos
+    // que dice por donde se va. En la computadora el pie no pinta caja: las
+    // flechas siguen flotando a los lados de las fichas y la barra no sale.
+    // En el telefono si: ahi la fila se ve de dos en dos y sin la barra no se
+    // sabe cuanto queda.
+    const pie = document.createElement('div');
+    pie.className = 'fila-pie';
+    const barra = document.createElement('div');
+    barra.className = 'fila-barra';
+    // Es un dibujo de lo que ya cuentan las fichas y las flechas: el lector
+    // de pantalla no tiene nada que leer ahi.
+    barra.setAttribute('aria-hidden', 'true');
+    const avance = document.createElement('span');
+    avance.className = 'fila-avance';
+    barra.append(avance);
     flechas = [-1, 1].map((ir) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -187,9 +202,10 @@ const montarCatalogo = (productos) => {
           behavior: reducedMotion.matches ? 'auto' : 'smooth',
         });
       });
-      zona.append(b);
       return b;
     });
+    pie.append(flechas[0], barra, flechas[1]);
+    zona.append(pie);
     // Al principio se apaga la flecha de atras. La de adelante no se apaga: en
     // la ultima ficha cambia de nombre y lleva de vuelta a la primera, que
     // perderla ahi dejaba al raton sin manera de seguir.
@@ -197,6 +213,11 @@ const montarCatalogo = (productos) => {
       const sobra = productGrid.scrollWidth - productGrid.clientWidth;
       const hayFila = productGrid.classList.contains('is-fila');
       const final = enElFinal();
+      pie.hidden = !hayFila || sobra < 24;
+      // El trozo lleno mide lo que se ve de la fila y se corre lo que se ha
+      // avanzado. El translateX va en % de su propio ancho, de ahi /clientWidth.
+      avance.style.width = `${(productGrid.clientWidth / productGrid.scrollWidth) * 100}%`;
+      avance.style.transform = `translateX(${(productGrid.scrollLeft / productGrid.clientWidth) * 100}%)`;
       flechas.forEach((b) => {
         b.hidden = !hayFila || sobra < 24;
         if (b.dataset.ir === '-1') {

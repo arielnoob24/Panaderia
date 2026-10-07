@@ -308,6 +308,9 @@ Es el módulo que dibuja los productos y controla cómo se ven.
 **El mostrador en fila** (dentro de `montarCatalogo`)
 En la portada, los productos se ven en una sola fila que se desplaza de lado:
 - Crea el rótulo "Nuestro mostrador", las dos flechas y el botón de pausa.
+  Las flechas van en un pie (`.fila-pie`) con una barra de avance entre ellas
+  (`.fila-barra`). En la computadora el pie no pinta caja y las flechas flotan
+  a los lados; en el teléfono se ve debajo de la fila.
 - **`pasoFila()`** calcula cuánto mover para avanzar exactamente una ficha.
 - **`mirarPuntas()`** apaga la flecha de atrás al principio. La de adelante
   no se apaga: en el último producto (`enElFinal()`) vuelve al primero.

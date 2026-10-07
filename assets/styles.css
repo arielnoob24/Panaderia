@@ -262,8 +262,9 @@ body.is-vista .fila-pausa { display: none; }
 .product-grid.is-fila::-webkit-scrollbar-thumb { background: var(--masa-linea); border-radius: var(--r-pill); }
 .product-grid.is-fila::-webkit-scrollbar-track { background: transparent; }
 
-/* Las flechas son para el raton: con el dedo se arrastra y con el teclado se
-   tabula por las fichas, que el navegador trae solas a la vista. */
+/* Las flechas son sobre todo para el raton: con el teclado se tabula por las
+   fichas, que el navegador trae solas a la vista. En el telefono bajan al pie,
+   debajo de la fila, porque arrastrar con el dedo no todo el mundo lo adivina. */
 .fila-flecha { position: absolute; top: 118px; z-index: 3; display: grid; width: 44px; height: 44px; place-items: center; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: 50%; box-shadow: var(--shadow-lift); color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
 .fila-flecha:hover { background: var(--ambar); transform: scale(1.06); }
 .fila-flecha[data-ir="-1"] { left: 4px; }
@@ -273,6 +274,11 @@ body.is-vista .fila-pausa { display: none; }
    adelante no se apaga nunca: al final vuelve al primer producto. */
 .fila-flecha[disabled] { opacity: 0; pointer-events: none; }
 .fila-flecha[hidden] { display: none; }
+/* El pie que lleva las flechas. En la computadora no pinta caja, asi que las
+   flechas se colocan contra la zona como siempre; la barra solo sale en el
+   telefono. */
+.fila-pie { display: contents; }
+.fila-pie[hidden], .fila-barra { display: none; }
 
 .product-card[hidden] { display: none; }
 /* La ficha es una columna y el pie se va al fondo: en una fila de fichas
@@ -620,7 +626,17 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
      se veia de producto en producto. Sigue avanzando de uno en uno. */
   .product-grid.is-fila { gap: .9rem; }
   .product-grid.is-fila .product-card { width: calc(50% - .45rem); }
-  .fila-flecha { display: none; }
+  /* Debajo de la fila: flecha, barra de por donde se va, flecha. La barra hace
+     de barra de desplazamiento, asi que la del navegador sobra. */
+  .product-grid.is-fila { scrollbar-width: none; }
+  .product-grid.is-fila::-webkit-scrollbar { display: none; }
+  .fila-pie { display: flex; align-items: center; gap: .8rem; margin-top: .9rem; }
+  .fila-flecha { position: static; flex: 0 0 auto; box-shadow: none; }
+  /* Al principio la de atras se queda en su sitio, apagada: si desapareciera,
+     la barra cambiaria de largo de golpe. */
+  .fila-flecha[disabled] { opacity: .35; }
+  .fila-barra { display: block; flex: 1; height: 4px; overflow: hidden; background: var(--masa-linea); border-radius: var(--r-pill); }
+  .fila-avance { display: block; height: 100%; background: var(--corteza); border-radius: inherit; }
   .product-tag { width: 52px; height: 52px; padding: .25rem; font-size: .5rem; }
   .product-info { padding: .9rem; }
   .product-categoria { margin-bottom: .15rem; font-size: .7rem; }
