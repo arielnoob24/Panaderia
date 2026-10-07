@@ -41,13 +41,13 @@ Este es el orden real de tabulación en escritorio, medido sobre la página, no 
 | 4b | La flecha de Tienda (botón desplegable) |
 | 5 | Contáctanos |
 | 6 | **Círculo de la cuenta** |
+| 6b | **Botón de la canasta** (en la cabecera desde el 2026-10-07) |
 | 7 | Ver el menú ↓ |
 | 8 | Encuentra tu local |
 | 9–36 | El mostrador: por cada producto su botón `+`, y en las bebidas primero sus tamaños |
 | 37–38 | Las dos flechas de la fila (← →) |
 | 39 | Conoce nuestros locales |
 | 40–43 | Pie: logo, Ver en el mapa, Instagram, teléfono |
-| 44 | **Botón flotante de la canasta** |
 
 **Cuidado con ese 44, y la tabla ya no está al día.** Dos avisos:
 
@@ -68,8 +68,8 @@ El recorrido más corto que enseña todo:
 1. `Tab` desde arriba → se ve el "Saltar al contenido" aparecer de la nada. Pulsa `Enter`.
 2. `Shift+Tab` hasta la **flecha de Tienda**, `↓` → se abre el desplegable y el foco entra en "Panes". `↓` `↓` baja por las tres, `Esc` cierra y vuelve a la flecha.
 3. `Tab` hasta un botón `+` de un producto, `Enter`. El número aparece.
-4. `Tab` hasta el **botón flotante**, `Enter`. Se abre la canasta y el foco cae en su "cerrar".
-5. Dentro: `Tab` da vueltas y **no se escapa** a la página de detrás. `Esc` cierra y el foco vuelve al botón flotante.
+4. `Shift+Tab` hasta el **botón de la canasta**, arriba a la derecha, `Enter`. Se abre la canasta y el foco cae en su "cerrar".
+5. Dentro: `Tab` da vueltas y **no se escapa** a la página de detrás. `Esc` cierra y el foco vuelve al botón de la canasta.
 
 ---
 

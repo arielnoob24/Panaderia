@@ -1610,7 +1610,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   panel2.setAttribute("aria-modal", "true");
   panel2.setAttribute("aria-labelledby", "canasta-titulo");
   var piezas = piezasDePago();
-  panel2.innerHTML = '<div class="canasta-cabecera"><h2 id="canasta-titulo" tabindex="-1">Tu canasta</h2><button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div><div class="canasta-pasos"><section class="canasta-paso" data-paso="canasta"><div class="canasta-cuerpo"><ul class="canasta-lista"></ul><p class="canasta-vacio">Tu canasta está vacía.</p></div><div class="canasta-pie"><p class="canasta-aviso pide-cuenta" role="alert" hidden>Para pedir necesitas una cuenta con el correo verificado: ahí te llega el comprobante.<button class="pide-cuenta-boton" type="button">Crear cuenta o entrar</button></p><div class="canasta-total"><span>Subtotal</span><strong>$0.00</strong></div><button class="button button-yellow canasta-enviar" type="button">Ir a pagar <span aria-hidden="true">→</span></button><p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p></div></section></div>';
+  panel2.innerHTML = '<div class="canasta-cabecera"><h2 id="canasta-titulo" tabindex="-1">Tu canasta</h2><button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div><div class="canasta-pasos"><section class="canasta-paso" data-paso="canasta"><div class="canasta-cuerpo"><ul class="canasta-lista"></ul><p class="canasta-vacio">Tu canasta está vacía.</p><div class="canasta-vaciar-zona" hidden><button class="canasta-vaciar" type="button">Vaciar la canasta</button><div class="canasta-vaciar-pregunta" hidden><p class="canasta-confirma-dicho">¿Quitamos todo lo que hay en la canasta?</p><div class="canasta-confirma"><button class="canasta-confirma-si canasta-vaciar-si" type="button">Sí, vaciar</button><button class="canasta-confirma-no canasta-vaciar-no" type="button">Cancelar</button></div></div></div></div><div class="canasta-pie"><p class="canasta-aviso pide-cuenta" role="alert" hidden>Para pedir necesitas una cuenta con el correo verificado: ahí te llega el comprobante.<button class="pide-cuenta-boton" type="button">Crear cuenta o entrar</button></p><div class="canasta-total"><span>Subtotal</span><strong>$0.00</strong></div><button class="button button-yellow canasta-enviar" type="button">Ir a pagar <span aria-hidden="true">→</span></button><p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p></div></section></div>';
   var vista = document.createElement("section");
   vista.id = "confirmar";
   vista.className = "checkout section-pad";
@@ -1648,6 +1648,9 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var pideCuenta = panel2.querySelector(".pide-cuenta");
   var pideCuentaBoton = panel2.querySelector(".pide-cuenta-boton");
   var listo = vista.querySelector(".canasta-listo");
+  var zonaVaciar = panel2.querySelector(".canasta-vaciar-zona");
+  var botonVaciar = panel2.querySelector(".canasta-vaciar");
+  var preguntaVaciar = panel2.querySelector(".canasta-vaciar-pregunta");
   var boton = document.querySelector(".floating-whatsapp");
   if (boton) boton.dataset.tip = "Tu canasta";
   var cuenta = document.createElement("span");
@@ -1756,6 +1759,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var pintarPie = () => {
     const hayAlgo = pedido.size > 0;
     vacio.hidden = hayAlgo;
+    zonaVaciar.hidden = !hayAlgo;
     totalEl.textContent = dinero(subtotal());
     enviar.disabled = !hayAlgo;
     enviar.setAttribute("aria-disabled", String(!hayAlgo));
@@ -1890,7 +1894,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var relojDeshacer = 0;
   var olvidarBorrado = () => {
     const teniaFoco = barraDeshacer.contains(document.activeElement);
-    const id = borrado?.id;
+    const id = borrado?.lineas[0]?.[0];
     window.clearTimeout(relojDeshacer);
     relojDeshacer = 0;
     borrado = null;
@@ -1899,24 +1903,55 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     const destino = abierto() ? titulo : botonesMas.find(({ coincide }) => coincide(id))?.boton;
     destino?.focus();
   };
-  var anotarBorrado = (id, linea) => {
-    borrado = { id, linea: { ...linea } };
-    deshacerTexto.textContent = linea.cantidad === 1 ? `Quitaste ${linea.nombre}.` : `Quitaste ${linea.nombre} (${linea.cantidad} unidades).`;
+  var anotarLineas = (lineas, texto) => {
+    borrado = { lineas: lineas.map(([id, l]) => [id, { ...l }]) };
+    deshacerTexto.textContent = texto;
     barraDeshacer.hidden = false;
     window.clearTimeout(relojDeshacer);
     relojDeshacer = window.setTimeout(olvidarBorrado, ESPERA_DESHACER);
   };
+  var anotarBorrado = (id, linea) => anotarLineas([[id, linea]], linea.cantidad === 1 ? `Quitaste ${linea.nombre}.` : `Quitaste ${linea.nombre} (${linea.cantidad} unidades).`);
   var deshacerBorrado = () => {
     if (!borrado) return;
-    const { id, linea } = borrado;
-    pedido.set(id, { ...linea });
+    const repuestas = borrado.lineas;
+    repuestas.forEach(([idL, l]) => pedido.set(idL, { ...l }));
+    const [id, linea] = repuestas[0];
     olvidarBorrado();
     pintar();
-    avisos.textContent = `${linea.nombre} vuelve a la canasta. ${unidades()} producto${unidades() === 1 ? "" : "s"} en la canasta.`;
+    avisos.textContent = `${repuestas.length === 1 ? `${linea.nombre} vuelve` : "Todo vuelve"} a la canasta. ${unidades()} producto${unidades() === 1 ? "" : "s"} en la canasta.`;
     const destino = abierto() ? [...lista.querySelectorAll(".canasta-linea")].find((li) => li.querySelector("h3")?.textContent === linea.nombre)?.querySelector("[data-mas]") || panel2.querySelector(".canasta-cerrar") : botonesMas.find(({ coincide }) => coincide(id))?.boton;
     destino?.focus();
   };
   deshacerBoton.addEventListener("click", deshacerBorrado);
+  var preguntarVaciar = (si) => {
+    preguntaVaciar.hidden = !si;
+    botonVaciar.hidden = si;
+  };
+  botonVaciar.addEventListener("click", () => {
+    preguntarVaciar(true);
+    preguntaVaciar.querySelector(".canasta-vaciar-si").focus();
+    avisos.textContent = "¿Vaciar la canasta?";
+  });
+  preguntaVaciar.querySelector(".canasta-vaciar-no").addEventListener("click", () => {
+    preguntarVaciar(false);
+    botonVaciar.focus();
+  });
+  preguntaVaciar.querySelector(".canasta-vaciar-si").addEventListener("click", () => {
+    preguntarVaciar(false);
+    const n = unidades();
+    anotarLineas([...pedido], `Vaciaste la canasta (${n} producto${n === 1 ? "" : "s"}).`);
+    pedido.clear();
+    porConfirmar = null;
+    pintar();
+    avisos.textContent = "Vaciaste la canasta.";
+    deshacerBoton.focus();
+  });
+  preguntaVaciar.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    e.stopPropagation();
+    preguntarVaciar(false);
+    botonVaciar.focus();
+  });
   var cambiar = (id, delta) => {
     const l = pedido.get(id);
     if (!l) return;
@@ -1947,6 +1982,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       porConfirmar = null;
       pintar();
     }
+    preguntarVaciar(false);
     pideCuenta.hidden = true;
     ultimoFoco?.focus();
   };
@@ -1967,6 +2003,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       '<svg class="canasta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M7.6 9.4a4.4 4.4 0 0 1 8.8 0"/><path d="M3.6 9.4h16.8l-1.5 8.2a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z"/><path d="M9.7 12.7l.6 3.5"/><path d="M14.3 12.7l-.6 3.5"/></svg>'
     );
     boton.append(cuenta);
+    const acciones = document.querySelector(".nav-acciones");
+    if (acciones) acciones.insertBefore(boton, acciones.querySelector(".menu-toggle"));
     boton.addEventListener("click", abrir2);
     boton.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
@@ -2153,7 +2191,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var campoHtml = (id, etiqueta, extra, opciones = {}) => {
     const describe = (opciones.describe ? opciones.describe + " " : "") + `cuenta-${id}-error`;
     const campo = `<input id="cuenta-${id}" ${extra} aria-describedby="${describe}">`;
-    return `<div class="cuenta-campo"><label for="cuenta-${id}">${etiqueta}` + (opciones.opcional ? ' <span class="cuenta-campo-opcional">(opcional)</span>' : "") + "</label>" + (opciones.prefijo ? `<div class="cuenta-conprefijo"><span class="cuenta-prefijo">${opciones.prefijo}</span>${campo}</div>` : campo) + (opciones.despues || "") + `<p class="cuenta-campo-error" id="cuenta-${id}-error" hidden></p></div>`;
+    const esClave = extra.includes('type="password"');
+    return `<div class="cuenta-campo"><label for="cuenta-${id}">${etiqueta}` + (opciones.opcional ? ' <span class="cuenta-campo-opcional">(opcional)</span>' : "") + "</label>" + (opciones.prefijo ? `<div class="cuenta-conprefijo"><span class="cuenta-prefijo">${opciones.prefijo}</span>${campo}</div>` : esClave ? `<div class="cuenta-conclave">${campo}<button class="ver-clave" type="button" aria-controls="cuenta-${id}" aria-label="Mostrar la contraseña">Mostrar</button></div>` : campo) + (opciones.despues || "") + `<p class="cuenta-campo-error" id="cuenta-${id}-error" hidden></p></div>`;
   };
   var REGLAS = [
     { id: "largo", texto: "Al menos 8 caracteres", cumple: (v) => v.length >= 8 },
@@ -2169,7 +2208,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     "Contraseña",
     'type="password" autocomplete="new-password" maxlength="40"',
     { describe: "cuenta-clave-reglas", despues: reglasHtml }
-  ) + campoHtml("repite", "Repite la contraseña", 'type="password" autocomplete="new-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button><button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button></div></section><section class="cuenta-paso" data-paso="verificar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta cuenta-maqueta-codigo" hidden></p><p class="codigo-dicho">Escribe el código de 6 cifras que enviamos a <strong class="codigo-correo"></strong>.</p><p class="codigo-estado" role="status" hidden></p><div class="codigo-falso" hidden><p class="codigo-falso-de">Correo de El Tradicional</p><p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. No lo compartas con nadie.</p></div><div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label><input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="cuenta-codigo-error"><p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div><button class="codigo-reenviar" type="button">Enviar otro código</button></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-verificar" type="button">Verificar el correo</button><button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el correo</button></div></section><section class="cuenta-paso" data-paso="entrar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor, solo se puede entrar a la cuenta que creaste en este navegador.</p>' + campoHtml("entrar-correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + campoHtml("entrar-clave", "Contraseña", 'type="password" autocomplete="current-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-entrar" type="button">Entrar</button><button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button></div></section><section class="cuenta-paso" data-paso="sesion" hidden><div class="cuenta-cuerpo"><div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span><div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div><dl class="cuenta-datos"><div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div><div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div></dl><p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p><section class="cuenta-pedidos" hidden><h3>Tus últimos pedidos</h3><ul class="cuenta-pedidos-lista"></ul><p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra parte: desde otro equipo no se ven.</p></section></div><div class="cuenta-pie"><button class="cuenta-salir" type="button">Cerrar sesión</button><p class="cuenta-nota">La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo y tu contraseña. No hay ningún otro lugar donde estuviera guardada.</p></div></section>';
+  ) + campoHtml("repite", "Repite la contraseña", 'type="password" autocomplete="new-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button><button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button></div></section><section class="cuenta-paso" data-paso="verificar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta cuenta-maqueta-codigo" hidden></p><p class="codigo-dicho">Escribe el código de 6 cifras que enviamos a <strong class="codigo-correo"></strong>.</p><p class="codigo-estado" role="status" hidden></p><div class="codigo-falso" hidden><p class="codigo-falso-de">Correo de El Tradicional</p><p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. No lo compartas con nadie.</p></div><div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label><input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="cuenta-codigo-error"><p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div><button class="codigo-reenviar" type="button">Enviar otro código</button></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-verificar" type="button">Verificar el correo</button><button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el correo</button></div></section><section class="cuenta-paso" data-paso="entrar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor, solo se puede entrar a la cuenta que creaste en este navegador.</p>' + campoHtml("entrar-correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + campoHtml("entrar-clave", "Contraseña", 'type="password" autocomplete="current-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-entrar" type="button">Entrar</button><button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button></div></section><section class="cuenta-paso" data-paso="sesion" hidden><div class="cuenta-cuerpo"><div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span><div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div><dl class="cuenta-datos"><div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div><div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div></dl><p class="cuenta-hecho" role="status" hidden></p><button class="cuenta-editar" type="button">Editar mis datos</button><p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p><section class="cuenta-pedidos" hidden><h3>Tus últimos pedidos</h3><ul class="cuenta-pedidos-lista"></ul><p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra parte: desde otro equipo no se ven.</p></section></div><div class="cuenta-pie"><button class="cuenta-salir" type="button">Cerrar sesión</button><p class="cuenta-nota">La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo y tu contraseña. No hay ningún otro lugar donde estuviera guardada.</p></div></section><section class="cuenta-paso" data-paso="editar" hidden><div class="cuenta-cuerpo">' + campoHtml("editar-nombre", "Nombre y apellido", 'type="text" autocomplete="name" maxlength="60"') + campoHtml("editar-telefono", "Teléfono", 'type="tel" inputmode="numeric" autocomplete="tel" maxlength="9" placeholder="990001122"', { prefijo: "+593" }) + campoHtml("editar-direccion", "Dirección", 'type="text" autocomplete="street-address" maxlength="200" placeholder="Calle, número y una referencia"', { opcional: true }) + '<p class="cuenta-nota cuenta-nota-izq">El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.</p></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-guardar" type="button">Guardar los cambios</button><button class="cuenta-cambiar" type="button" data-va="sesion">Cancelar</button></div></section>';
   document.body.append(fondoC, panelC);
   var PERSONA = '<svg class="nav-cuenta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/></svg>';
   var navCuenta = document.createElement("button");
@@ -2197,7 +2236,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     crear: "Crear cuenta",
     verificar: "Verificar tu correo",
     entrar: "Entrar",
-    sesion: "Tu cuenta"
+    sesion: "Tu cuenta",
+    editar: "Editar tus datos"
   };
   var codigoEsperado = "";
   var relojReenvio = 0;
@@ -2268,10 +2308,13 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       codigoReenviar.textContent = "Enviar otro código";
     }
   };
-  var verPaso = (nombre) => {
+  var verPaso = (nombre, hecho = "") => {
     pasosC.forEach((paso) => {
       paso.hidden = paso.dataset.paso !== nombre;
     });
+    const cartel = panelC.querySelector(".cuenta-hecho");
+    cartel.hidden = !hecho;
+    cartel.textContent = hecho;
     tituloC.textContent = TITULOS_CUENTA[nombre];
     if (nombre === "sesion") pintarPedidos();
   };
@@ -2307,14 +2350,22 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     if (!CORREO.test(v)) return "Revisa el correo, algo no cuadra.";
     return "";
   };
+  var fallaNombre = (v) => {
+    if (v.length < 3) return "Escribe tu nombre.";
+    if (!v.includes(" ")) return "Falta el apellido.";
+    return "";
+  };
+  var fallaTelefono = (v) => {
+    if (!v) return "Escribe tu número.";
+    if (!/^9\d{8}$/.test(v)) return "Son 9 números después del +593, empezando por 9.";
+    return "";
+  };
   var fallosCuenta = () => {
     const f = {};
-    if (datos.nombre.length < 3) f.nombre = "Escribe tu nombre.";
-    else if (!datos.nombre.includes(" ")) f.nombre = "Falta el apellido.";
+    if (fallaNombre(datos.nombre)) f.nombre = fallaNombre(datos.nombre);
     const correo = fallaCorreo(datos.correo);
     if (correo) f.correo = correo;
-    if (!datos.telefono) f.telefono = "Escribe tu número.";
-    else if (!/^9\d{8}$/.test(datos.telefono)) f.telefono = "Son 9 números después del +593, empezando por 9.";
+    if (fallaTelefono(datos.telefono)) f.telefono = fallaTelefono(datos.telefono);
     if (REGLAS.some((r) => !r.cumple(datos.clave))) f.clave = "A la contraseña le falta algo de la lista.";
     if (datos.repite !== datos.clave) f.repite = "Las dos no son iguales.";
     return f;
@@ -2368,6 +2419,8 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     claveEntrar.value = "";
     errorEntrarClave.hidden = true;
     claveEntrar.classList.remove("is-mal");
+    taparClaves();
+    limpiarEditar();
   };
   var guardarCuenta = () => {
     try {
@@ -2721,6 +2774,98 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     tituloC.focus();
     avisos.textContent = `Cerraste la sesión de ${nombre}.`;
   });
+  var botonesVer = [...panelC.querySelectorAll(".ver-clave")];
+  var campoDeVer = (b) => panelC.querySelector(`#${b.getAttribute("aria-controls")}`);
+  var verClave = (b, ver) => {
+    campoDeVer(b).type = ver ? "text" : "password";
+    b.textContent = ver ? "Ocultar" : "Mostrar";
+    b.setAttribute("aria-label", ver ? "Ocultar la contraseña" : "Mostrar la contraseña");
+  };
+  botonesVer.forEach((b) => b.addEventListener("click", () => verClave(b, campoDeVer(b).type === "password")));
+  function taparClaves() {
+    botonesVer.forEach((b) => verClave(b, false));
+  }
+  var camposEditar = ["nombre", "telefono", "direccion"].map((clave) => ({
+    clave,
+    input: panelC.querySelector(`#cuenta-editar-${clave}`),
+    error: panelC.querySelector(`#cuenta-editar-${clave}-error`)
+  }));
+  var avisoEditar = panelC.querySelector('[data-paso="editar"] .cuenta-aviso');
+  var tocadosE = /* @__PURE__ */ new Set();
+  var intentadoE = false;
+  var valoresEditar = () => {
+    const v = {};
+    camposEditar.forEach(({ clave, input }) => {
+      v[clave] = input.value.trim();
+    });
+    return v;
+  };
+  var pintarEditar = () => {
+    const v = valoresEditar();
+    const f = {};
+    if (fallaNombre(v.nombre)) f.nombre = fallaNombre(v.nombre);
+    if (fallaTelefono(v.telefono)) f.telefono = fallaTelefono(v.telefono);
+    camposEditar.forEach(({ clave, input, error }) => {
+      const texto = intentadoE || tocadosE.has(clave) ? f[clave] : "";
+      error.hidden = !texto;
+      error.textContent = texto || "";
+      input.setAttribute("aria-invalid", texto ? "true" : "false");
+      input.classList.toggle("is-mal", Boolean(texto));
+    });
+    return f;
+  };
+  function limpiarEditar() {
+    tocadosE.clear();
+    intentadoE = false;
+    avisoEditar.hidden = true;
+    camposEditar.forEach(({ input, error }) => {
+      input.value = "";
+      error.hidden = true;
+      input.classList.remove("is-mal");
+      input.setAttribute("aria-invalid", "false");
+    });
+  }
+  camposEditar.forEach(({ clave, input }) => {
+    input.addEventListener("input", () => {
+      if (clave === "telefono") input.value = soloNueve(input.value);
+      pintarEditar();
+    });
+    input.addEventListener("blur", () => {
+      tocadosE.add(clave);
+      pintarEditar();
+    });
+  });
+  panelC.querySelector(".cuenta-editar").addEventListener("click", () => {
+    limpiarEditar();
+    camposEditar[0].input.value = sesion.nombre;
+    camposEditar[1].input.value = sesion.telefono;
+    camposEditar[2].input.value = sesion.direccion;
+    verPaso("editar");
+    tituloC.focus();
+  });
+  var guardarEdicion = () => {
+    intentadoE = true;
+    const fallos = Object.keys(pintarEditar());
+    if (fallos.length) {
+      avisoEditar.hidden = false;
+      avisoEditar.textContent = fallos.length === 1 ? "Falta corregir un campo." : `Faltan ${fallos.length} campos por corregir.`;
+      camposEditar.find(({ clave }) => clave === fallos[0])?.input.focus();
+      return;
+    }
+    const v = valoresEditar();
+    if (entrega.direccion && entrega.direccion === sesion.direccion) puente.ponerDireccion(v.direccion);
+    sesion.nombre = v.nombre;
+    sesion.telefono = v.telefono;
+    sesion.direccion = v.direccion;
+    guardarCuenta();
+    pintarSesion();
+    prellenarPedido();
+    limpiarEditar();
+    verPaso("sesion", "Guardamos tus cambios.");
+    tituloC.focus();
+  };
+  panelC.querySelector(".cuenta-guardar").addEventListener("click", guardarEdicion);
+  enterAvanza(camposEditar.map((c) => c.input), guardarEdicion);
   var iniciarCuenta = () => {
     leerCuenta();
     pintarSesion();

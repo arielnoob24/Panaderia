@@ -89,7 +89,17 @@ panel.innerHTML =
 
   + '<section class="canasta-paso" data-paso="canasta">'
   + '<div class="canasta-cuerpo"><ul class="canasta-lista"></ul>'
-  + '<p class="canasta-vacio">Tu canasta está vacía.</p></div>'
+  + '<p class="canasta-vacio">Tu canasta está vacía.</p>'
+  // Vaciar es quitar todo de una vez, asi que pregunta antes, como la X de
+  // cada linea, y despues deja deshacerlo.
+  + '<div class="canasta-vaciar-zona" hidden>'
+  + '<button class="canasta-vaciar" type="button">Vaciar la canasta</button>'
+  + '<div class="canasta-vaciar-pregunta" hidden>'
+  + '<p class="canasta-confirma-dicho">¿Quitamos todo lo que hay en la canasta?</p>'
+  + '<div class="canasta-confirma">'
+  + '<button class="canasta-confirma-si canasta-vaciar-si" type="button">Sí, vaciar</button>'
+  + '<button class="canasta-confirma-no canasta-vaciar-no" type="button">Cancelar</button>'
+  + '</div></div></div></div>'
   + '<div class="canasta-pie">'
   + '<p class="canasta-aviso pide-cuenta" role="alert" hidden>'
   + 'Para pedir necesitas una cuenta con el correo verificado: ahí te llega el comprobante.'
@@ -252,6 +262,9 @@ const bloqueLocal = vista.querySelector('.canasta-local');
 const pideCuenta = panel.querySelector('.pide-cuenta');
 const pideCuentaBoton = panel.querySelector('.pide-cuenta-boton');
 const listo = vista.querySelector('.canasta-listo');
+const zonaVaciar = panel.querySelector('.canasta-vaciar-zona');
+const botonVaciar = panel.querySelector('.canasta-vaciar');
+const preguntaVaciar = panel.querySelector('.canasta-vaciar-pregunta');
 
 const boton = document.querySelector('.floating-whatsapp');
 if (boton) boton.dataset.tip = 'Tu canasta';
@@ -434,6 +447,7 @@ const pintarHoraRetiro = () => {
 const pintarPie = () => {
   const hayAlgo = pedido.size > 0;
   vacio.hidden = hayAlgo;
+  zonaVaciar.hidden = !hayAlgo;
   totalEl.textContent = dinero(subtotal());
   enviar.disabled = !hayAlgo;
   enviar.setAttribute('aria-disabled', String(!hayAlgo));
@@ -635,7 +649,7 @@ const olvidarBorrado = () => {
   // los doce segundos con el foco dentro, se quedaria en el body y quien usa
   // teclado perderia el sitio, asi que hay que recogerlo.
   const teniaFoco = barraDeshacer.contains(document.activeElement);
-  const id = borrado?.id;
+  const id = borrado?.lineas[0]?.[0];
   window.clearTimeout(relojDeshacer);
   relojDeshacer = 0;
   borrado = null;
@@ -647,23 +661,27 @@ const olvidarBorrado = () => {
   destino?.focus();
 };
 
-const anotarBorrado = (id, linea) => {
-  borrado = { id, linea: { ...linea } };
-  deshacerTexto.textContent = linea.cantidad === 1
-    ? `Quitaste ${linea.nombre}.`
-    : `Quitaste ${linea.nombre} (${linea.cantidad} unidades).`;
+// Lo borrado es una lista de [id, linea]: una sola al quitar un producto,
+// todas al vaciar la canasta. Deshacer las repone todas.
+const anotarLineas = (lineas, texto) => {
+  borrado = { lineas: lineas.map(([id, l]) => [id, { ...l }]) };
+  deshacerTexto.textContent = texto;
   barraDeshacer.hidden = false;
   window.clearTimeout(relojDeshacer);
   relojDeshacer = window.setTimeout(olvidarBorrado, ESPERA_DESHACER);
 };
+const anotarBorrado = (id, linea) => anotarLineas([[id, linea]], linea.cantidad === 1
+  ? `Quitaste ${linea.nombre}.`
+  : `Quitaste ${linea.nombre} (${linea.cantidad} unidades).`);
 
 const deshacerBorrado = () => {
   if (!borrado) return;
-  const { id, linea } = borrado;
-  pedido.set(id, { ...linea });
+  const repuestas = borrado.lineas;
+  repuestas.forEach(([idL, l]) => pedido.set(idL, { ...l }));
+  const [id, linea] = repuestas[0];
   olvidarBorrado();
   pintar();
-  avisos.textContent = `${linea.nombre} vuelve a la canasta. ${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
+  avisos.textContent = `${repuestas.length === 1 ? `${linea.nombre} vuelve` : 'Todo vuelve'} a la canasta. ${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
   // La barra acaba de esconderse con el foco dentro, asi que hay que
   // recogerlo: si no, se va al body y quien usa teclado pierde el sitio.
   // Va al "mas" del producto repuesto, que es a donde manda tambien quitar
@@ -684,6 +702,39 @@ const deshacerBorrado = () => {
 };
 
 deshacerBoton.addEventListener('click', deshacerBorrado);
+
+const preguntarVaciar = (si) => {
+  preguntaVaciar.hidden = !si;
+  botonVaciar.hidden = si;
+};
+botonVaciar.addEventListener('click', () => {
+  preguntarVaciar(true);
+  // Como en la X de cada linea: el foco va al "Si", que es lo que se pidio.
+  preguntaVaciar.querySelector('.canasta-vaciar-si').focus();
+  avisos.textContent = '¿Vaciar la canasta?';
+});
+preguntaVaciar.querySelector('.canasta-vaciar-no').addEventListener('click', () => {
+  preguntarVaciar(false);
+  botonVaciar.focus();
+});
+preguntaVaciar.querySelector('.canasta-vaciar-si').addEventListener('click', () => {
+  preguntarVaciar(false);
+  const n = unidades();
+  anotarLineas([...pedido], `Vaciaste la canasta (${n} producto${n === 1 ? '' : 's'}).`);
+  pedido.clear();
+  porConfirmar = null;
+  pintar();
+  avisos.textContent = 'Vaciaste la canasta.';
+  deshacerBoton.focus();
+});
+// Escape contesta que no y se queda aqui, como en la pregunta de cada linea:
+// si subiera, cerraria el panel entero.
+preguntaVaciar.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  e.stopPropagation();
+  preguntarVaciar(false);
+  botonVaciar.focus();
+});
 
 const cambiar = (id, delta) => {
   const l = pedido.get(id);
@@ -717,6 +768,7 @@ const cerrar = () => {
   // ve entera otra vez y no con un "¿lo quitamos?" de la visita anterior.
   // Hay que repintar, no basta con olvidarla: la pregunta esta dibujada.
   if (porConfirmar) { porConfirmar = null; pintar(); }
+  preguntarVaciar(false);
   pideCuenta.hidden = true;
   ultimoFoco?.focus();
 };
@@ -745,6 +797,11 @@ if (boton) {
     + '<path d="M3.6 9.4h16.8l-1.5 8.2a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z"/>'
     + '<path d="M9.7 12.7l.6 3.5"/><path d="M14.3 12.7l-.6 3.5"/></svg>');
   boton.append(cuenta);
+  // Vive en la cabecera, al lado del circulo de la cuenta: en la computadora
+  // se ve ahi, arriba a la derecha, que es donde se busca la canasta de una
+  // tienda. En el telefono el CSS lo sigue dejando flotando abajo.
+  const acciones = document.querySelector('.nav-acciones');
+  if (acciones) acciones.insertBefore(boton, acciones.querySelector('.menu-toggle'));
   boton.addEventListener('click', abrir);
   boton.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
 }

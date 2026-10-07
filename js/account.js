@@ -44,15 +44,20 @@ panelC.setAttribute('aria-labelledby', 'cuenta-titulo');
 
 // opciones: opcional, prefijo (texto fijo pegado al campo), describe (ids que
 // se suman al aria-describedby) y despues (lo que va entre campo y error).
+// Los de contrasena llevan ademas el boton de verla, dentro del propio campo.
 const campoHtml = (id, etiqueta, extra, opciones = {}) => {
   const describe = (opciones.describe ? opciones.describe + ' ' : '') + `cuenta-${id}-error`;
   const campo = `<input id="cuenta-${id}" ${extra} aria-describedby="${describe}">`;
+  const esClave = extra.includes('type="password"');
   return `<div class="cuenta-campo"><label for="cuenta-${id}">${etiqueta}`
     + (opciones.opcional ? ' <span class="cuenta-campo-opcional">(opcional)</span>' : '')
     + '</label>'
     + (opciones.prefijo
       ? `<div class="cuenta-conprefijo"><span class="cuenta-prefijo">${opciones.prefijo}</span>${campo}</div>`
-      : campo)
+      : esClave
+        ? `<div class="cuenta-conclave">${campo}<button class="ver-clave" type="button" `
+          + `aria-controls="cuenta-${id}" aria-label="Mostrar la contraseña">Mostrar</button></div>`
+        : campo)
     + (opciones.despues || '')
     + `<p class="cuenta-campo-error" id="cuenta-${id}-error" hidden></p></div>`;
 };
@@ -144,6 +149,8 @@ panelC.innerHTML =
   + '<div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div>'
   + '<div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div>'
   + '</dl>'
+  + '<p class="cuenta-hecho" role="status" hidden></p>'
+  + '<button class="cuenta-editar" type="button">Editar mis datos</button>'
   + '<p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p>'
   // Los pedidos ya pagados. Nace oculto: quien entra por primera vez no tiene
   // ninguno, y un titulo sobre una lista vacia es peor que no poner nada.
@@ -159,6 +166,25 @@ panelC.innerHTML =
   + '<p class="cuenta-nota">La cuenta se queda guardada en este navegador: '
   + 'puedes volver a entrar con tu correo y tu contraseña. No hay ningún otro lugar donde '
   + 'estuviera guardada.</p>'
+  + '</div></section>'
+
+  // Lo que se puede cambiar de la cuenta sin volver a verificar nada. El
+  // correo no: es con el que se entra y a donde llega el comprobante, y
+  // cambiarlo pediria probar otra vez que el nuevo es suyo.
+  + '<section class="cuenta-paso" data-paso="editar" hidden>'
+  + '<div class="cuenta-cuerpo">'
+  + campoHtml('editar-nombre', 'Nombre y apellido', 'type="text" autocomplete="name" maxlength="60"')
+  + campoHtml('editar-telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel" '
+    + 'maxlength="9" placeholder="990001122"', { prefijo: '+593' })
+  + campoHtml('editar-direccion', 'Dirección', 'type="text" autocomplete="street-address" maxlength="200" '
+    + 'placeholder="Calle, número y una referencia"', { opcional: true })
+  + '<p class="cuenta-nota cuenta-nota-izq">El correo no se cambia aquí: es con el que entras '
+  + 'y adonde te llega el comprobante.</p>'
+  + '</div>'
+  + '<div class="cuenta-pie">'
+  + '<p class="cuenta-aviso" role="alert" hidden></p>'
+  + '<button class="button button-yellow cuenta-guardar" type="button">Guardar los cambios</button>'
+  + '<button class="cuenta-cambiar" type="button" data-va="sesion">Cancelar</button>'
   + '</div></section>';
 document.body.append(fondoC, panelC);
 
@@ -195,7 +221,7 @@ const claveEntrar = panelC.querySelector('#cuenta-entrar-clave');
 const errorEntrarClave = panelC.querySelector('#cuenta-entrar-clave-error');
 
 const TITULOS_CUENTA = { crear: 'Crear cuenta', verificar: 'Verificar tu correo',
-  entrar: 'Entrar', sesion: 'Tu cuenta' };
+  entrar: 'Entrar', sesion: 'Tu cuenta', editar: 'Editar tus datos' };
 
 // El codigo nace en el navegador y de ahi sale por correo. Conviene decir en
 // voz alta lo que eso significa y lo que no: prueba que el correo escrito
@@ -288,8 +314,13 @@ const pararCuentaAtras = () => {
     codigoReenviar.textContent = 'Enviar otro código';
   }
 };
-const verPaso = (nombre) => {
+// hecho: un renglon que confirma lo que se acaba de hacer, como "Guardamos tus
+// cambios". Se va solo al pasar a otro paso.
+const verPaso = (nombre, hecho = '') => {
   pasosC.forEach((paso) => { paso.hidden = paso.dataset.paso !== nombre; });
+  const cartel = panelC.querySelector('.cuenta-hecho');
+  cartel.hidden = !hecho;
+  cartel.textContent = hecho;
   tituloC.textContent = TITULOS_CUENTA[nombre];
   // El historial se relee al entrar al paso de la sesion y no una sola vez al
   // cargar: entre una apertura y otra puede haberse pagado un pedido, y la
@@ -345,16 +376,25 @@ const fallaCorreo = (v) => {
   if (!CORREO.test(v)) return 'Revisa el correo, algo no cuadra.';
   return '';
 };
+// Nombre y telefono se comprueban igual al crear la cuenta y al editarla.
+const fallaNombre = (v) => {
+  if (v.length < 3) return 'Escribe tu nombre.';
+  if (!v.includes(' ')) return 'Falta el apellido.';
+  return '';
+};
+// Tras el +593 el numero va sin el cero: los celulares de aqui son 09...,
+// asi que quedan nueve cifras que empiezan en 9.
+const fallaTelefono = (v) => {
+  if (!v) return 'Escribe tu número.';
+  if (!/^9\d{8}$/.test(v)) return 'Son 9 números después del +593, empezando por 9.';
+  return '';
+};
 const fallosCuenta = () => {
   const f = {};
-  if (datos.nombre.length < 3) f.nombre = 'Escribe tu nombre.';
-  else if (!datos.nombre.includes(' ')) f.nombre = 'Falta el apellido.';
+  if (fallaNombre(datos.nombre)) f.nombre = fallaNombre(datos.nombre);
   const correo = fallaCorreo(datos.correo);
   if (correo) f.correo = correo;
-  // Tras el +593 el numero va sin el cero: los celulares de aqui son 09...,
-  // asi que quedan nueve cifras que empiezan en 9.
-  if (!datos.telefono) f.telefono = 'Escribe tu número.';
-  else if (!/^9\d{8}$/.test(datos.telefono)) f.telefono = 'Son 9 números después del +593, empezando por 9.';
+  if (fallaTelefono(datos.telefono)) f.telefono = fallaTelefono(datos.telefono);
   if (REGLAS.some((r) => !r.cumple(datos.clave))) f.clave = 'A la contraseña le falta algo de la lista.';
   if (datos.repite !== datos.clave) f.repite = 'Las dos no son iguales.';
   return f;
@@ -413,6 +453,8 @@ const olvidarFormulario = () => {
   claveEntrar.value = '';
   errorEntrarClave.hidden = true;
   claveEntrar.classList.remove('is-mal');
+  taparClaves();
+  limpiarEditar();
 };
 
 const guardarCuenta = () => {
@@ -825,6 +867,108 @@ panelC.querySelector('.cuenta-salir').addEventListener('click', () => {
   tituloC.focus();
   avisos.textContent = `Cerraste la sesión de ${nombre}.`;
 });
+
+// --- Ver la contrasena ------------------------------------------------
+// Escribir a ciegas es donde mas se equivoca uno, sobre todo en el telefono.
+// El boton cambia el campo de password a texto y vuelta; el foco se queda en
+// el boton, y con un Tab hacia atras se sigue escribiendo.
+const botonesVer = [...panelC.querySelectorAll('.ver-clave')];
+const campoDeVer = (b) => panelC.querySelector(`#${b.getAttribute('aria-controls')}`);
+const verClave = (b, ver) => {
+  campoDeVer(b).type = ver ? 'text' : 'password';
+  b.textContent = ver ? 'Ocultar' : 'Mostrar';
+  b.setAttribute('aria-label', ver ? 'Ocultar la contraseña' : 'Mostrar la contraseña');
+};
+botonesVer.forEach((b) => b.addEventListener('click', () => verClave(b, campoDeVer(b).type === 'password')));
+// Al cerrar el panel todas vuelven a taparse: quien abra despues el mismo
+// navegador no tiene por que encontrarse una contrasena a la vista.
+function taparClaves() { botonesVer.forEach((b) => verClave(b, false)); }
+
+// --- Editar los datos --------------------------------------------------
+const camposEditar = ['nombre', 'telefono', 'direccion'].map((clave) => ({
+  clave,
+  input: panelC.querySelector(`#cuenta-editar-${clave}`),
+  error: panelC.querySelector(`#cuenta-editar-${clave}-error`),
+}));
+const avisoEditar = panelC.querySelector('[data-paso="editar"] .cuenta-aviso');
+const tocadosE = new Set();
+let intentadoE = false;
+const valoresEditar = () => {
+  const v = {};
+  camposEditar.forEach(({ clave, input }) => { v[clave] = input.value.trim(); });
+  return v;
+};
+// Mismas reglas y mismo momento que al crear la cuenta: un campo se marca
+// cuando ya lo dejaste o cuando intentaste guardar.
+const pintarEditar = () => {
+  const v = valoresEditar();
+  const f = {};
+  if (fallaNombre(v.nombre)) f.nombre = fallaNombre(v.nombre);
+  if (fallaTelefono(v.telefono)) f.telefono = fallaTelefono(v.telefono);
+  camposEditar.forEach(({ clave, input, error }) => {
+    const texto = (intentadoE || tocadosE.has(clave)) ? f[clave] : '';
+    error.hidden = !texto;
+    error.textContent = texto || '';
+    input.setAttribute('aria-invalid', texto ? 'true' : 'false');
+    input.classList.toggle('is-mal', Boolean(texto));
+  });
+  return f;
+};
+function limpiarEditar() {
+  tocadosE.clear();
+  intentadoE = false;
+  avisoEditar.hidden = true;
+  camposEditar.forEach(({ input, error }) => {
+    input.value = '';
+    error.hidden = true;
+    input.classList.remove('is-mal');
+    input.setAttribute('aria-invalid', 'false');
+  });
+}
+camposEditar.forEach(({ clave, input }) => {
+  input.addEventListener('input', () => {
+    if (clave === 'telefono') input.value = soloNueve(input.value);
+    pintarEditar();
+  });
+  input.addEventListener('blur', () => { tocadosE.add(clave); pintarEditar(); });
+});
+
+panelC.querySelector('.cuenta-editar').addEventListener('click', () => {
+  limpiarEditar();
+  // El formulario arranca con lo que ya hay: se corrige, no se reescribe.
+  camposEditar[0].input.value = sesion.nombre;
+  camposEditar[1].input.value = sesion.telefono;
+  camposEditar[2].input.value = sesion.direccion;
+  verPaso('editar');
+  tituloC.focus();
+});
+
+const guardarEdicion = () => {
+  intentadoE = true;
+  const fallos = Object.keys(pintarEditar());
+  if (fallos.length) {
+    avisoEditar.hidden = false;
+    avisoEditar.textContent = fallos.length === 1
+      ? 'Falta corregir un campo.' : `Faltan ${fallos.length} campos por corregir.`;
+    camposEditar.find(({ clave }) => clave === fallos[0])?.input.focus();
+    return;
+  }
+  const v = valoresEditar();
+  // Si la direccion del pedido era la de la cuenta, cambia con ella. Si en el
+  // pedido se escribio otra, esa manda, igual que al entrar.
+  if (entrega.direccion && entrega.direccion === sesion.direccion) puente.ponerDireccion(v.direccion);
+  sesion.nombre = v.nombre;
+  sesion.telefono = v.telefono;
+  sesion.direccion = v.direccion;
+  guardarCuenta();
+  pintarSesion();
+  prellenarPedido();
+  limpiarEditar();
+  verPaso('sesion', 'Guardamos tus cambios.');
+  tituloC.focus();
+};
+panelC.querySelector('.cuenta-guardar').addEventListener('click', guardarEdicion);
+enterAvanza(camposEditar.map((c) => c.input), guardarEdicion);
 
 const iniciarCuenta = () => {
   leerCuenta();

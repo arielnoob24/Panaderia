@@ -107,7 +107,9 @@ y a los buscadores.
    abierto/cerrado (`.open-label`), el aviso de que los contactos son de
    ejemplo y `.footer-guardado`, donde se escribe cuándo se guardó el pedido.
 5. **`.floating-whatsapp`**: el botón flotante. Sin JavaScript es un enlace a
-   WhatsApp; con JavaScript, `cart.js` lo convierte en el botón de la canasta.
+   WhatsApp; con JavaScript, `cart.js` lo convierte en el botón de la canasta
+   y lo mueve a la cabecera (`.nav-acciones`): en la computadora se ve arriba a
+   la derecha, junto a la cuenta, y en el teléfono el CSS lo deja flotando abajo.
 6. **El script del final**: mira si la página se abrió como archivo
    (`file:`). Si es así carga `js/sin-servidor.js`; si no, carga `js/app.js`
    como módulo. Cualquiera de los dos arranca todo.
@@ -419,13 +421,17 @@ botón "Ir a pagar". Funciones clave:
   `cancelarQuitar`). Además cada línea lleva una X arriba a la derecha que
   quita el producto entero, tenga las unidades que tenga, con la misma
   pregunta ("¿Quitamos las 3 unidades?") y la misma barra de Deshacer.
-- **`pintarPie()`**: actualiza el subtotal, el contador del botón flotante y
+- **`pintarPie()`**: actualiza el subtotal, el contador del botón de la canasta y
   llama a `pintarDesglose`, `pintarResumen` y `pintarPago`, para que todo lo
   que depende del pedido quede al día. También llama a `guardar()`.
 - **`abrir()` / `cerrar()`**: muestran el panel, bloquean el desplazamiento de
   la página y devuelven el foco a donde estaba.
 - **Deshacer**: al quitar un producto aparece una barra con "Deshacer" durante
-  12 segundos (`anotarBorrado`, `deshacerBorrado`, `olvidarBorrado`).
+  12 segundos (`anotarBorrado`, `deshacerBorrado`, `olvidarBorrado`). La barra
+  guarda una lista de líneas (`anotarLineas`), así que sirve también para vaciar.
+- **Vaciar la canasta**: debajo de la lista hay un "Vaciar la canasta". Pregunta
+  antes ("¿Quitamos todo lo que hay en la canasta?") y, si dices que sí, quita
+  todo y deja "Deshacer", que lo repone entero.
 
 **Ir a pagar**
 Si no hay una cuenta con el correo verificado (`puedePedir()`), se muestra un
@@ -454,9 +460,9 @@ directamente. Si el producto tiene tamaños, cada tamaño es una línea distinta
 en la canasta. Cada ficha deja una función en `refrescos` para repintarse
 cuando el pedido cambia desde el panel.
 
-**El botón flotante**
+**El botón de la canasta**
 Se le quita el enlace de WhatsApp, se le pone el ícono de canasta y un contador
-de productos.
+de productos, y se mete en la cabecera, antes del botón de menú del teléfono.
 
 ### 5.8 `checkout.js` — pago simulado y comprobante
 
@@ -537,6 +543,19 @@ y se compara con la guardada.
 - `entrarEnSesion()` guarda la cuenta, pinta el botón con tus iniciales y pasa
   tu dirección a la canasta si estaba vacía (`prellenarPedido`).
 - Cerrar sesión no borra la cuenta: solo marca `sesionAbierta: false`.
+
+**Ver la contraseña**
+Los tres campos de contraseña (crear, repetir y entrar) llevan dentro un botón
+"Mostrar" (`.ver-clave`) que cambia el campo de `password` a `text` y vuelta.
+Al cerrar el panel todas se vuelven a tapar (`taparClaves`).
+
+**Editar los datos**
+En la ficha de la sesión, "Editar mis datos" abre el paso `editar` con el
+nombre, el teléfono y la dirección ya escritos. Se comprueban con las mismas
+reglas que al crear la cuenta (`fallaNombre`, `fallaTelefono`). Al guardar se
+actualiza la cuenta en `localStorage`, el círculo con las iniciales y, si la
+dirección del pedido era la de la cuenta, también esa. El correo no se edita:
+es con el que se entra y cambiarlo pediría verificarlo otra vez.
 
 **El botón de la cabecera** (`navCuenta`)
 Fuera de sesión muestra una silueta y despliega "Iniciar sesión /
