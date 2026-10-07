@@ -13,6 +13,7 @@ Este archivo es la guía práctica para recorrer el sitio **sin tocar el ratón*
 | `Tab` | Avanza al siguiente control |
 | `Shift + Tab` | Retrocede al anterior |
 | `Enter` | Activa enlaces y botones |
+| `Enter` en un campo de formulario | Pasa al siguiente campo. En el último de crear cuenta o entrar, envía; en el de confirmar el pedido, lleva el foco al botón "Confirmar el pedido" sin pulsarlo. En las indicaciones (varias líneas) hace un salto de línea |
 | `Espacio` | Activa botones y marca casillas (en un enlace no hace nada: desplaza la página) |
 | `↑ ↓ ← →` | Se mueve **dentro** de un grupo: radios de tamaño, desplegables de la barra, el mapa |
 | `Esc` | Cierra lo último que se abrió y devuelve el foco a donde estaba |

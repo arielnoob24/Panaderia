@@ -422,6 +422,21 @@ const updateOpeningStatus = () => {
   }
 };
 
+// Enter en un campo pasa al siguiente de la lista, como haria Tab, y se salta
+// los que estan escondidos (la tarjeta si se paga en efectivo, por ejemplo).
+// En el ultimo, 'alFinal' decide que pasa. En un textarea Enter sigue siendo
+// un salto de linea: ahi se escriben indicaciones de varias lineas.
+const enterAvanza = (campos, alFinal) => {
+  const visible = (c) => c && !c.disabled && !c.closest('[hidden]');
+  campos.forEach((campo, i) => campo?.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' || e.isComposing || campo.tagName === 'TEXTAREA') return;
+    e.preventDefault();
+    const siguiente = campos.slice(i + 1).find(visible);
+    if (siguiente) siguiente.focus();
+    else alFinal?.();
+  }));
+};
+
 // Mientras un panel esta abierto el foco no puede escaparse a la pagina de
 // detras, y Escape lo cierra. Lo mismo hace falta en la canasta y en la cuenta,
 // asi que vive una sola vez aqui.
@@ -532,7 +547,7 @@ if (heroImage) {
 
 export {
   menuToggle, reducedMotion, avisos,
-  anexosDeFoco, apagarDetras, atraparFoco,
+  anexosDeFoco, apagarDetras, atraparFoco, enterAvanza,
   flechasEnMenu, closeMenu, grupo, abrirGrupo,
   updateOpeningStatus, horarioDeHoy, vigilarImagenes,
 };

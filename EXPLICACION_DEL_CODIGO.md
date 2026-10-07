@@ -362,6 +362,9 @@ Lo que no pertenece a una pantalla concreta y usan todas.
   - `focosDe(caja)` lista los elementos alcanzables con Tab dentro de una caja.
   - `atraparFoco(panel, ...)` impide que el Tab salga de un panel abierto y
     hace que Escape lo cierre.
+  - `enterAvanza(campos, alFinal)` hace que Enter en un campo pase al
+    siguiente que se vea; en el último llama a `alFinal` (en las cuentas,
+    lo mismo que el botón; en el pedido, solo llevar el foco a "Confirmar").
   - `apagarDetras(panel, true)` pone el atributo `inert` a todo lo que está
     detrás de un panel: ni se puede tabular ni se lee.
   - `flechasEnMenu(...)` permite recorrer un desplegable con las flechas,

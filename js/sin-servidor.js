@@ -411,6 +411,16 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       notaDato.textContent = `Mañana abrimos a las ${opening}`;
     }
   };
+  var enterAvanza = (campos2, alFinal) => {
+    const visible = (c) => c && !c.disabled && !c.closest("[hidden]");
+    campos2.forEach((campo, i) => campo?.addEventListener("keydown", (e) => {
+      if (e.key !== "Enter" || e.isComposing || campo.tagName === "TEXTAREA") return;
+      e.preventDefault();
+      const siguiente = campos2.slice(i + 1).find(visible);
+      if (siguiente) siguiente.focus();
+      else alFinal?.();
+    }));
+  };
   var atraparFoco = (panel3, abierto2, cerrar2) => {
     document.addEventListener("keydown", (e) => {
       if (!abierto2()) return;
@@ -2256,6 +2266,20 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   }
   montarMapa(vista);
   montarPago(vista);
+  enterAvanza([
+    "#canasta-dir",
+    "#canasta-piso",
+    "#canasta-ref",
+    "#canasta-notas",
+    "#pago-numero",
+    "#pago-vence",
+    "#pago-cvv",
+    "#pago-titular",
+    "#factura-nombre",
+    "#factura-ident",
+    "#factura-correo",
+    "#factura-dir"
+  ].map((id) => vista.querySelector(id)), () => vista.querySelector(".canasta-pagar")?.focus());
   var montarControlesDeFicha = () => {
     document.querySelectorAll(".product-card .order-button").forEach((enlace) => {
       const ficha = enlace.closest(".product-card");
@@ -2619,6 +2643,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       pintarCampos();
     });
   });
+  enterAvanza(campos.map((c) => c.input), () => panelC.querySelector(".cuenta-crear").click());
   var olvidarFormulario = () => {
     campos.forEach(({ clave, input }) => {
       datos[clave] = "";
@@ -2965,11 +2990,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     entrarEnSesion(`Entraste como ${sesion.nombre}.`);
   };
   panelC.querySelector(".cuenta-entrar").addEventListener("click", entrar);
-  [correoEntrar, claveEntrar].forEach((input) => input.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter") return;
-    e.preventDefault();
-    entrar();
-  }));
+  enterAvanza([correoEntrar, claveEntrar], entrar);
   correoEntrar.addEventListener("input", () => {
     if (errorEntrarCorreo.hidden) return;
     const texto = fallaCorreo(correoEntrar.value.trim());

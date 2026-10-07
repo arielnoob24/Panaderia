@@ -3,7 +3,7 @@
 // que le habla a la canasta de lejos: le pasa la direccion guardada para no
 // tener que escribirla otra vez, y eso va por el puente.
 import {
-  avisos, menuToggle, closeMenu, flechasEnMenu, apagarDetras, atraparFoco,
+  avisos, menuToggle, closeMenu, flechasEnMenu, apagarDetras, atraparFoco, enterAvanza,
 } from './ui.js';
 import { sesion, entrega, puente, dinero } from './state.js';
 import { buzonListo, enviarCorreo } from './mail.js';
@@ -395,6 +395,8 @@ campos.forEach(({ clave, input }) => {
   });
   input.addEventListener('blur', () => { tocadosC.add(clave); pintarCampos(); });
 });
+// Enter va de un campo al siguiente; en el ultimo hace lo del boton.
+enterAvanza(campos.map((c) => c.input), () => panelC.querySelector('.cuenta-crear').click());
 
 // Las contrasenas no se quedan escritas al cerrar: ni en el campo ni en la
 // variable. Es lo unico de aqui que no debe sobrevivir al panel.
@@ -790,11 +792,8 @@ const entrar = async () => {
   entrarEnSesion(`Entraste como ${sesion.nombre}.`);
 };
 panelC.querySelector('.cuenta-entrar').addEventListener('click', entrar);
-[correoEntrar, claveEntrar].forEach((input) => input.addEventListener('keydown', (e) => {
-  if (e.key !== 'Enter') return;
-  e.preventDefault();
-  entrar();
-}));
+// Enter en el correo pasa a la contrasena; en la contrasena, entra.
+enterAvanza([correoEntrar, claveEntrar], entrar);
 // Si el correo ya salio marcado, el aviso sigue lo que se va escribiendo:
 // al poner el @ pasa a pedir lo que falta despues, y al completarlo se va.
 correoEntrar.addEventListener('input', () => {

@@ -3,7 +3,7 @@
 // barra de deshacer y el control de cantidad que llevan las fichas. Los dos
 // ultimos pasos del panel -pago y comprobante- los pone checkout.js, y el mapa
 // del reparto, map.js; aqui se arma el panel entero y se reparte.
-import { avisos, anexosDeFoco, atraparFoco, apagarDetras, horarioDeHoy } from './ui.js';
+import { avisos, anexosDeFoco, atraparFoco, apagarDetras, enterAvanza, horarioDeHoy } from './ui.js';
 import {
   CLAVE, pedido, entrega, sesion, cobro, factura, puente,
   MAX_UNIDADES, ENVIO_BASE, dinero, idDe,
@@ -978,6 +978,14 @@ if (boton) {
 // trozos dentro de ella.
 montarMapa(vista);
 montarPago(vista);
+
+// Enter recorre la direccion, la tarjeta y la factura en el orden en que se
+// ven. Del ultimo campo solo lleva al boton de confirmar, sin pulsarlo: un
+// Enter de mas no tiene que bastar para hacer un pedido.
+enterAvanza(['#canasta-dir', '#canasta-piso', '#canasta-ref', '#canasta-notas',
+  '#pago-numero', '#pago-vence', '#pago-cvv', '#pago-titular',
+  '#factura-nombre', '#factura-ident', '#factura-correo', '#factura-dir',
+].map((id) => vista.querySelector(id)), () => vista.querySelector('.canasta-pagar')?.focus());
 
 // Sin JavaScript cada "Pedir" sigue siendo un enlace a WhatsApp que funciona.
 // Con JS se cambia por el control de cantidad: mientras no hay nada pedido solo
