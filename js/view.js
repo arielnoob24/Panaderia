@@ -446,11 +446,12 @@ const montarCatalogo = (productos) => {
     window.setTimeout(() => applyFilter(true), 160);
   };
 
-  // ---- La vista de categoria -------------------------------------------
-  // A una categoria se entra desde Tienda, y lo que se abre no es el inicio con
-  // un filtro puesto: es otra vista. Se arma desde aqui porque sin JavaScript no
-  // habria vista que abrir; ahi los enlaces bajan al catalogo, que sin la fila
-  // sale como cuadricula entera, y eso ya es una respuesta valida.
+  // ---- La vista del catalogo --------------------------------------------
+  // "Ver el menu", Tienda y sus tres categorias abren todos la misma vista: el
+  // catalogo entero, que no es el inicio con un filtro puesto sino otra
+  // pantalla. Se arma desde aqui porque sin JavaScript no habria vista que
+  // abrir; ahi los enlaces bajan al catalogo, que sin la fila sale como
+  // cuadricula entera, y eso ya es una respuesta valida.
 
   const cabeza = document.createElement('div');
   cabeza.className = 'vista-cabeza';
@@ -540,7 +541,21 @@ const montarCatalogo = (productos) => {
       : 'El Tradicional | Panadería & Pastelería';
   };
 
+  // Panes, Dulces y Bebidas no abren una vista suya: abren el catalogo entero,
+  // el mismo de "Ver el menu", con "Filtrar por" ya puesto en esa categoria.
+  // Asi hay una sola pantalla de catalogo y quien entra por Panes tiene a mano
+  // quitar el filtro y ver lo demas. La direccion si guarda la categoria
+  // (#tienda-panes), para que recargar o volver atras la deje puesta.
+  const esDeTienda = (cat) => cat !== 'todos' && cat !== 'catalogo';
+  const vistaDe = (cat) => (esDeTienda(cat) ? 'catalogo' : cat);
+  const filtroDe = (cat) => (esDeTienda(cat) ? cat : 'todas');
+  const ponerFiltro = (sub) => {
+    subcategoria = sub;
+    if (selSub) selSub.value = sub;
+  };
+
   const abrirCategoria = (cat, conHistorial = true) => {
+    const vista = vistaDe(cat);
     // La vista de confirmar el pedido se ve con la barra puesta, asi que desde
     // alli se puede pulsar una categoria: eso es irse del checkout.
     puente.ocultarCheckout?.();
@@ -550,21 +565,28 @@ const montarCatalogo = (productos) => {
     soloDisponibles = false;
     if (selOrden) selOrden.value = 'recomendados';
     if (selFiltro) selFiltro.value = 'todos';
-    subcategoria = 'todas';
+    ponerFiltro(filtroDe(cat));
     busqueda = '';
-    if (selSub) selSub.value = 'todas';
     if (campoBusca) campoBusca.value = '';
-    // Volver a la misma vista no la cambia, pero si la limpia.
-    if (cat === categoria) applyFilter(false);
-    cambiarCategoria(cat);
-    pintarVista(cat);
+    // Volver a la misma vista no la cambia, pero si la limpia (y le pone el
+    // filtro nuevo: de Panes a Bebidas la vista es la misma).
+    if (vista === categoria) applyFilter(false);
+    cambiarCategoria(vista);
+    pintarVista(vista);
     if (conHistorial) {
       const destino = cat === 'todos' ? location.pathname + location.search : '#tienda-' + cat;
       history.pushState({ cat }, '', destino);
     }
     window.scrollTo({ top: 0, behavior: reducedMotion.matches ? 'auto' : 'smooth' });
-    if (cat !== 'todos') tituloVista.focus({ preventScroll: true });
+    if (vista !== 'todos') tituloVista.focus({ preventScroll: true });
   };
+  // Cambiar el filtro a mano tambien cambia la direccion, pero sin apuntar un
+  // paso en el historial: Atras tiene que llevar fuera del catalogo, no
+  // deshacer los filtros de uno en uno.
+  selSub?.addEventListener('change', () => {
+    if (categoria !== 'catalogo') return;
+    history.replaceState(history.state, '', '#tienda-' + (subcategoria === 'todas' ? 'catalogo' : subcategoria));
+  });
 
   enlacesTienda.forEach((a) => a.addEventListener('click', (e) => {
     e.preventDefault();
@@ -596,8 +618,13 @@ const montarCatalogo = (productos) => {
   };
   const pintarRuta = () => {
     const cat = deLaDireccion();
-    cambiarCategoria(cat);
-    pintarVista(cat);
+    const vista = vistaDe(cat);
+    ponerFiltro(filtroDe(cat));
+    // Entre #tienda-panes y #tienda-catalogo la vista es la misma y
+    // cambiarCategoria no haria nada: el filtro nuevo se aplica aqui.
+    if (vista === categoria) applyFilter(false);
+    cambiarCategoria(vista);
+    pintarVista(vista);
   };
   // Al salir del checkout, la pagina vuelve a lo que diga la direccion: la
   // categoria que hubiera puesta y su titulo.
@@ -610,11 +637,11 @@ const montarCatalogo = (productos) => {
     pintarRuta();
   });
 
-  categoria = deLaDireccion();
-  // La categoria la dice la direccion, que es la que manda y la que se puede
-  // compartir. El orden y el filtro los dice la pestana, y solo si lo que
-  // recordaba es de esta misma categoria: recargar en "dulces" te deja donde
-  // estabas, pero lo que elegiste alli no tiene que aparecer puesto en panes.
+  const deEntrada = deLaDireccion();
+  categoria = vistaDe(deEntrada);
+  // La vista y su filtro de categoria los dice la direccion, que es la que
+  // manda y la que se puede compartir. El orden y "solo disponibles" los dice
+  // la pestana, si lo que recordaba es de esta misma vista.
   const antes = vistaRecordada();
   if (antes && antes.categoria === categoria) {
     // Lo recordado se comprueba contra las opciones que existen de verdad. Es
@@ -625,10 +652,10 @@ const montarCatalogo = (productos) => {
     soloDisponibles = antes.soloDisponibles === true;
     if (selOrden) selOrden.value = orden;
     if (selFiltro) selFiltro.value = soloDisponibles ? 'disponibles' : 'todos';
-    const subs = [...(selSub?.options || [])].map((o) => o.value);
-    if (subs.includes(antes.subcategoria)) subcategoria = antes.subcategoria;
-    if (selSub) selSub.value = subcategoria;
   }
+  // El filtro de categoria no se recuerda: lo dice la direccion, que ahora lo
+  // lleva siempre.
+  ponerFiltro(filtroDe(deEntrada));
   pintarVista(categoria);
   applyFilter();
 

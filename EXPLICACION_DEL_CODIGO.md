@@ -332,9 +332,10 @@ En la portada, los productos se ven en una sola fila que se desplaza de lado:
   luego entran las nuevas, con un retraso en diagonal calculado por
   `diagonalDelay`).
 
-**La vista de categoría**
-Al pulsar una categoría en Tienda, o "Ver el menú", la página cambia a otra
-"vista":
+**La vista del catálogo**
+Al pulsar "Ver el menú", la palabra Tienda o una de sus tres categorías, la
+página cambia a otra "vista": el catálogo completo. Si se entró por una
+categoría, "Filtrar por" ya viene puesto en ella.
 - Se crea una cabecera (`.vista-cabeza`) con "Volver al inicio", el título y la
   barra: buscador, "Filtrar por", "Ordenar por" y "Mostrar". El buscador y
   "Filtrar por" llevan la clase `solo-catalogo`.
@@ -342,11 +343,16 @@ Al pulsar una categoría en Tienda, o "Ver el menú", la página cambia a otra
   pestaña y pone `es-catalogo` cuando es el catálogo completo.
 - **`abrirCategoria(cat)`** reinicia los filtros y usa
   **`history.pushState`** para cambiar la dirección a `#tienda-panes`,
-  `#tienda-catalogo`, etc. Eso hace que el botón **Atrás** del navegador
-  funcione: el evento `popstate` llama a `pintarRuta()`, que lee la dirección
-  y vuelve a la vista que corresponda.
-- Al cargar, se recupera de `sessionStorage` el orden y el filtro que tenías,
-  siempre que sigas en la misma categoría.
+  `#tienda-catalogo`, etc. Con `panes`, `dulces` o `bebidas-frias` abre el
+  catálogo (`vistaDe`) con ese filtro puesto (`filtroDe`). Eso hace que el
+  botón **Atrás** del navegador funcione: el evento `popstate` llama a
+  `pintarRuta()`, que lee la dirección y vuelve a la vista y al filtro que
+  correspondan.
+- Cambiar "Filtrar por" a mano también cambia la dirección, con
+  `history.replaceState`: así recargar la página deja el mismo filtro, pero
+  no se añade un paso al historial por cada cambio.
+- Al cargar, el filtro de categoría sale de la dirección; el orden y "Mostrar"
+  se recuperan de `sessionStorage`.
 
 ### 5.6 `ui.js` — piezas comunes
 

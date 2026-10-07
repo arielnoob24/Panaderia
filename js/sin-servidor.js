@@ -975,26 +975,37 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       if (enVista) tituloVista2.textContent = NOMBRES[cat] || "Catálogo";
       document.title = enVista ? `${NOMBRES[cat] || "Catálogo"} | El Tradicional` : "El Tradicional | Panadería & Pastelería";
     };
+    const esDeTienda = (cat) => cat !== "todos" && cat !== "catalogo";
+    const vistaDe = (cat) => esDeTienda(cat) ? "catalogo" : cat;
+    const filtroDe = (cat) => esDeTienda(cat) ? cat : "todas";
+    const ponerFiltro = (sub) => {
+      subcategoria = sub;
+      if (selSub) selSub.value = sub;
+    };
     const abrirCategoria = (cat, conHistorial = true) => {
+      const vista2 = vistaDe(cat);
       puente.ocultarCheckout?.();
       orden = "recomendados";
       soloDisponibles = false;
       if (selOrden) selOrden.value = "recomendados";
       if (selFiltro) selFiltro.value = "todos";
-      subcategoria = "todas";
+      ponerFiltro(filtroDe(cat));
       busqueda = "";
-      if (selSub) selSub.value = "todas";
       if (campoBusca) campoBusca.value = "";
-      if (cat === categoria) applyFilter(false);
-      cambiarCategoria(cat);
-      pintarVista(cat);
+      if (vista2 === categoria) applyFilter(false);
+      cambiarCategoria(vista2);
+      pintarVista(vista2);
       if (conHistorial) {
         const destino = cat === "todos" ? location.pathname + location.search : "#tienda-" + cat;
         history.pushState({ cat }, "", destino);
       }
       window.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
-      if (cat !== "todos") tituloVista2.focus({ preventScroll: true });
+      if (vista2 !== "todos") tituloVista2.focus({ preventScroll: true });
     };
+    selSub?.addEventListener("change", () => {
+      if (categoria !== "catalogo") return;
+      history.replaceState(history.state, "", "#tienda-" + (subcategoria === "todas" ? "catalogo" : subcategoria));
+    });
     enlacesTienda.forEach((a) => a.addEventListener("click", (e) => {
       e.preventDefault();
       grupo?.dispatchEvent(new CustomEvent("soltar"));
@@ -1018,15 +1029,19 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     };
     const pintarRuta = () => {
       const cat = deLaDireccion();
-      cambiarCategoria(cat);
-      pintarVista(cat);
+      const vista2 = vistaDe(cat);
+      ponerFiltro(filtroDe(cat));
+      if (vista2 === categoria) applyFilter(false);
+      cambiarCategoria(vista2);
+      pintarVista(vista2);
     };
     puente.pintarRuta = pintarRuta;
     window.addEventListener("popstate", () => {
       if (puente.verCheckout?.()) return;
       pintarRuta();
     });
-    categoria = deLaDireccion();
+    const deEntrada = deLaDireccion();
+    categoria = vistaDe(deEntrada);
     const antes = vistaRecordada();
     if (antes && antes.categoria === categoria) {
       const ordenes = [...selOrden?.options || []].map((o) => o.value);
@@ -1034,10 +1049,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       soloDisponibles = antes.soloDisponibles === true;
       if (selOrden) selOrden.value = orden;
       if (selFiltro) selFiltro.value = soloDisponibles ? "disponibles" : "todos";
-      const subs = [...selSub?.options || []].map((o) => o.value);
-      if (subs.includes(antes.subcategoria)) subcategoria = antes.subcategoria;
-      if (selSub) selSub.value = subcategoria;
     }
+    ponerFiltro(filtroDe(deEntrada));
     pintarVista(categoria);
     applyFilter();
     reducedMotion.addEventListener("change", (event) => {
