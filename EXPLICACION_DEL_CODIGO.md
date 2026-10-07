@@ -337,8 +337,11 @@ Al pulsar "Ver el menú", la palabra Tienda o una de sus tres categorías, la
 página cambia a otra "vista": el catálogo completo. Si se entró por una
 categoría, "Filtrar por" ya viene puesto en ella.
 - Se crea una cabecera (`.vista-cabeza`) con "Volver al inicio", el título y la
-  barra: buscador, "Filtrar por", "Ordenar por" y "Mostrar". El buscador y
-  "Filtrar por" llevan la clase `solo-catalogo`.
+  barra: "Filtrar por" en su propia fila y debajo el buscador, "Ordenar por" y
+  "Mostrar". "Filtrar por" no es un desplegable: son cuatro botones (Todas y
+  las tres categorías del menú Tienda), hechos con radios escondidos y su
+  etiqueta pintada encima, como los tamaños de las fichas (`.vista-chips`,
+  `.chip`). El buscador y "Filtrar por" llevan la clase `solo-catalogo`.
 - **`pintarVista(cat)`** muestra u oculta esa cabecera, cambia el título de la
   pestaña y pone `es-catalogo` cuando es el catálogo completo.
 - **`abrirCategoria(cat)`** reinicia los filtros y usa

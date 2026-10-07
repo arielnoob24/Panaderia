@@ -941,14 +941,14 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     const cabeza = document.createElement("div");
     cabeza.className = "vista-cabeza";
     cabeza.hidden = true;
-    cabeza.innerHTML = '<button class="vista-volver" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver al inicio</button><h2 class="vista-titulo" tabindex="-1"></h2><div class="vista-barra"><div class="vista-mandos"><label class="vista-mando vista-buscar solo-catalogo"><span class="sr-only">Buscar en el catálogo</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input class="vista-busca" type="search" placeholder="Buscar un producto" autocomplete="off"></label><label class="vista-mando solo-catalogo"><span>Filtrar por</span><select class="vista-sub"><option value="todas">Todas las categorías</option><option value="panes">Panes</option><option value="dulces">Dulces y pasteles</option><option value="bebidas-frias">Bebidas</option></select></label><label class="vista-mando"><span>Ordenar por</span><select class="vista-orden"><option value="recomendados">Recomendados</option><option value="precio-asc">Precio: de menor a mayor</option><option value="precio-desc">Precio: de mayor a menor</option><option value="nombre">Nombre: de la A a la Z</option></select></label><label class="vista-mando"><span>Mostrar</span><select class="vista-filtro"><option value="todos">Todos</option><option value="disponibles">Solo los disponibles</option></select></label></div><p class="vista-cuenta" aria-hidden="true"></p></div><p class="vista-vacio" role="status" hidden></p>';
+    cabeza.innerHTML = '<button class="vista-volver" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver al inicio</button><h2 class="vista-titulo" tabindex="-1"></h2><div class="vista-barra"><div class="vista-mandos"><div class="vista-mando vista-chips solo-catalogo" role="radiogroup" aria-labelledby="vista-sub-rotulo"><span id="vista-sub-rotulo">Filtrar por</span>' + [["todas", "Todas"], ...enlacesTienda.map((a) => [a.dataset.filtro, a.textContent.trim()])].map(([valor, texto], i) => `<input class="chip-input" type="radio" name="vista-sub" id="vista-sub-${escapar(valor)}" value="${escapar(valor)}"${i === 0 ? " checked" : ""}><label class="chip" for="vista-sub-${escapar(valor)}">${escapar(texto)}</label>`).join("") + '</div><label class="vista-mando vista-buscar solo-catalogo"><span class="sr-only">Buscar en el catálogo</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input class="vista-busca" type="search" placeholder="Buscar un producto" autocomplete="off"></label><label class="vista-mando"><span>Ordenar por</span><select class="vista-orden"><option value="recomendados">Recomendados</option><option value="precio-asc">Precio: de menor a mayor</option><option value="precio-desc">Precio: de mayor a menor</option><option value="nombre">Nombre: de la A a la Z</option></select></label><label class="vista-mando"><span>Mostrar</span><select class="vista-filtro"><option value="todos">Todos</option><option value="disponibles">Solo los disponibles</option></select></label></div><p class="vista-cuenta" aria-hidden="true"></p></div><p class="vista-vacio" role="status" hidden></p>';
     const encabezado = document.querySelector(".catalog .section-heading");
     encabezado?.parentElement.insertBefore(cabeza, encabezado);
     const tituloVista2 = cabeza.querySelector(".vista-titulo");
     const selOrden = cabeza.querySelector(".vista-orden");
     const selFiltro = cabeza.querySelector(".vista-filtro");
     const cuentaVista = cabeza.querySelector(".vista-cuenta");
-    const selSub = cabeza.querySelector(".vista-sub");
+    const cajaSub = cabeza.querySelector(".vista-chips");
     const campoBusca = cabeza.querySelector(".vista-busca");
     const vacioVista = cabeza.querySelector(".vista-vacio");
     NOMBRES.catalogo = "Todo el catálogo";
@@ -960,8 +960,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       soloDisponibles = selFiltro.value === "disponibles";
       applyFilter(true);
     });
-    selSub?.addEventListener("change", () => {
-      subcategoria = selSub.value;
+    cajaSub?.addEventListener("change", (e) => {
+      subcategoria = e.target.value;
       applyFilter(true);
     });
     campoBusca?.addEventListener("input", () => {
@@ -982,7 +982,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     const filtroDe = (cat) => esDeTienda(cat) ? cat : "todas";
     const ponerFiltro = (sub) => {
       subcategoria = sub;
-      if (selSub) selSub.value = sub;
+      const boton2 = cajaSub?.querySelector(`input[value="${sub}"]`);
+      if (boton2) boton2.checked = true;
     };
     const abrirCategoria = (cat, conHistorial = true) => {
       const vista2 = vistaDe(cat);
@@ -1004,7 +1005,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       window.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
       if (vista2 !== "todos") tituloVista2.focus({ preventScroll: true });
     };
-    selSub?.addEventListener("change", () => {
+    cajaSub?.addEventListener("change", () => {
       if (categoria !== "catalogo") return;
       history.replaceState(history.state, "", "#tienda-" + (subcategoria === "todas" ? "catalogo" : subcategoria));
     });

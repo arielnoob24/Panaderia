@@ -417,6 +417,16 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 .vista-mando select { padding: .42rem 1.9rem .42rem .65rem; appearance: none; background: var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233a2822' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9.5l6 5.5 6-5.5'/%3E%3C/svg%3E") no-repeat right .55rem center/13px; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .8rem Arial, sans-serif; transition: border-color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui); }
 .vista-mando select:hover { border-color: var(--corteza); }
 .vista-mando select:focus-visible { outline: 2px solid var(--ambar); outline-offset: 2px; }
+/* Los botones de categoria. Mismo apaño que los tamanios de las fichas: el
+   radio de verdad queda escondido y lo que se ve y se pulsa es su etiqueta. */
+.vista-chips { flex-basis: 100%; flex-wrap: wrap; }
+.chip-input { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; pointer-events: none; }
+.chip { position: relative; padding: .42rem .85rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .8rem/1.2 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+/* Se toca en 44 px de alto aunque se vea mas bajo, como los tamanios. */
+.chip::before { position: absolute; inset: min(0px, calc((100% - 44px) / 2)) -2px; content: ""; }
+.chip:hover { border-color: var(--corteza); }
+.chip-input:checked + .chip { background: var(--horno); border-color: var(--horno); color: var(--papel); }
+.chip-input:focus-visible + .chip { outline: 2px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 4px var(--ambar); }
 .vista-cuenta { margin: 0; color: var(--horno-suave); font: .82rem Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .vista-cuenta:empty { display: none; }
 .vista-cabeza:not(.es-catalogo) .solo-catalogo { display: none; }
@@ -431,6 +441,10 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
   .vista-mandos { flex-direction: column; align-items: stretch; }
   .vista-mando { justify-content: space-between; }
   .vista-mando select { flex: 0 0 62%; }
+  /* En el telefono el rotulo va encima y los botones debajo, en las filas
+     que hagan falta. */
+  .vista-chips { justify-content: flex-start; }
+  .vista-chips > span { flex-basis: 100%; }
   .vista-buscar input { width: 100%; }
 }
 

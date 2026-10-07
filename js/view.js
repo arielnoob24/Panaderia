@@ -465,6 +465,18 @@ const montarCatalogo = (productos) => {
     // es un escaparate de seis, y ordenar seis no le hace falta a nadie.
     + '<div class="vista-barra">'
     + '<div class="vista-mandos">'
+    // La categoria va primero y en su propia fila. Se elige de un vistazo, con
+    // un boton por cada una, y no abriendo un desplegable: son cuatro y caben.
+    // Por dentro son radios, como los tamanios de las fichas, asi que Tab entra
+    // una vez en el grupo y las flechas cambian de categoria. Los nombres
+    // salen del menu Tienda.
+    + '<div class="vista-mando vista-chips solo-catalogo" role="radiogroup" aria-labelledby="vista-sub-rotulo">'
+    + '<span id="vista-sub-rotulo">Filtrar por</span>'
+    + [['todas', 'Todas'], ...enlacesTienda.map((a) => [a.dataset.filtro, a.textContent.trim()])]
+      .map(([valor, texto], i) => `<input class="chip-input" type="radio" name="vista-sub"`
+        + ` id="vista-sub-${escapar(valor)}" value="${escapar(valor)}"${i === 0 ? ' checked' : ''}>`
+        + `<label class="chip" for="vista-sub-${escapar(valor)}">${escapar(texto)}</label>`).join('')
+    + '</div>'
     // Buscar y filtrar por categoria salen solo en el catalogo entero, que es
     // donde hay tanto que hace falta.
     + '<label class="vista-mando vista-buscar solo-catalogo"><span class="sr-only">Buscar en el catálogo</span>'
@@ -472,13 +484,6 @@ const montarCatalogo = (productos) => {
     + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
     + '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>'
     + '<input class="vista-busca" type="search" placeholder="Buscar un producto" autocomplete="off"></label>'
-    + '<label class="vista-mando solo-catalogo"><span>Filtrar por</span>'
-    + '<select class="vista-sub">'
-    + '<option value="todas">Todas las categorías</option>'
-    + '<option value="panes">Panes</option>'
-    + '<option value="dulces">Dulces y pasteles</option>'
-    + '<option value="bebidas-frias">Bebidas</option>'
-    + '</select></label>'
     + '<label class="vista-mando"><span>Ordenar por</span>'
     + '<select class="vista-orden">'
     + '<option value="recomendados">Recomendados</option>'
@@ -503,7 +508,7 @@ const montarCatalogo = (productos) => {
   const selOrden = cabeza.querySelector('.vista-orden');
   const selFiltro = cabeza.querySelector('.vista-filtro');
   const cuentaVista = cabeza.querySelector('.vista-cuenta');
-  const selSub = cabeza.querySelector('.vista-sub');
+  const cajaSub = cabeza.querySelector('.vista-chips');
   const campoBusca = cabeza.querySelector('.vista-busca');
   const vacioVista = cabeza.querySelector('.vista-vacio');
   // "Todo el catalogo" no es una de las tres de Tienda (a el se llega con
@@ -519,8 +524,8 @@ const montarCatalogo = (productos) => {
     soloDisponibles = selFiltro.value === 'disponibles';
     applyFilter(true);
   });
-  selSub?.addEventListener('change', () => {
-    subcategoria = selSub.value;
+  cajaSub?.addEventListener('change', (e) => {
+    subcategoria = e.target.value;
     applyFilter(true);
   });
   // Mientras se escribe no se anima: las fichas entrando a cada tecla marean.
@@ -551,7 +556,8 @@ const montarCatalogo = (productos) => {
   const filtroDe = (cat) => (esDeTienda(cat) ? cat : 'todas');
   const ponerFiltro = (sub) => {
     subcategoria = sub;
-    if (selSub) selSub.value = sub;
+    const boton = cajaSub?.querySelector(`input[value="${sub}"]`);
+    if (boton) boton.checked = true;
   };
 
   const abrirCategoria = (cat, conHistorial = true) => {
@@ -583,7 +589,7 @@ const montarCatalogo = (productos) => {
   // Cambiar el filtro a mano tambien cambia la direccion, pero sin apuntar un
   // paso en el historial: Atras tiene que llevar fuera del catalogo, no
   // deshacer los filtros de uno en uno.
-  selSub?.addEventListener('change', () => {
+  cajaSub?.addEventListener('change', () => {
     if (categoria !== 'catalogo') return;
     history.replaceState(history.state, '', '#tienda-' + (subcategoria === 'todas' ? 'catalogo' : subcategoria));
   });
