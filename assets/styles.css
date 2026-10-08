@@ -945,17 +945,22 @@ body.is-checkout .floating-whatsapp { display: none; }
 .nav-cuenta-iniciales { font: 700 .88rem/1 Arial, sans-serif; letter-spacing: .01em; }
 
 /* Telefono estrecho: el control abierto mide mas que la mitad de la ficha, asi que
-   el precio se queda en su linea y la cantidad pasa debajo, alineada a la izquierda.
-   Al abrirse crece a lo ancho sin mover nada de sitio. */
+   sale del pie y se pone sobre la foto. En el pie se queda el precio solo. */
 @media (max-width: 420px) {
-  /* El precio a la izquierda y el mas a su derecha, en la misma linea. Abierto,
-     el control no cabe al lado del precio en una ficha de media pantalla, asi
-     que baja de linea; pero sigue pegado a la derecha. */
   .product-bottom { align-items: center; flex-wrap: wrap; gap: .45rem; }
-  .card-cantidad, .card-agotado { margin-left: auto; }
+  .card-agotado { margin-left: auto; }
   /* Con el precio mas grande, el aviso a su tamano normal ya no cabia al lado
      y bajaba de linea, dejando el filete mas alto que en la ficha vecina. */
-  .card-agotado { font-size: .72rem; white-space: nowrap; }
+  .card-agotado { min-height: 0; font-size: .72rem; white-space: nowrap; }
+  /* Abierto, el control (quitar, cuenta, sumar) no cabe al lado del precio en
+     una ficha de media pantalla: bajaba de linea y la ficha crecia al anadir.
+     Aqui va sobre la esquina de la foto, fuera del flujo, y la ficha mide lo
+     mismo con cero que con veinte. El margen en % se mide sobre el ancho de
+     la ficha, y la foto es 4:3, asi que el 75% es justo donde acaba. */
+  .card-cantidad, .card-cantidad.is-lleno { position: absolute; top: 0; right: .55rem; z-index: 1; margin: calc(75% - 34px - .55rem) 0 0; }
+  .card-cantidad.is-lleno { margin-top: calc(75% - 34px - .7rem); background: var(--papel); box-shadow: var(--shadow-contact); }
+  .card-cantidad .card-mas { box-shadow: inset 0 0 0 1px var(--corteza), 0 2px 6px rgba(43, 28, 22, .25); }
+  .card-cantidad.is-lleno .card-mas { box-shadow: inset 0 0 0 1px var(--corteza); }
 }
 
 @media (prefers-reduced-motion: reduce) {
