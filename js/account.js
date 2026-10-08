@@ -34,6 +34,27 @@ const calcularHuella = async (clave, salHex) => {
   return { sal: aHex(sal), hash: aHex(bits) };
 };
 
+// Los dibujos del menu de la cuenta y de los metodos de pago, con el mismo
+// trazo fino que los iconos del pie.
+const icono = (trazos) => '<svg class="cuenta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" '
+  + 'stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+  + trazos + '</svg>';
+const ICONOS = {
+  cuenta: icono('<circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/>'),
+  pedidos: icono('<path d="M6 3.5h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3Z"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/>'),
+  tarjeta: icono('<rect x="3" y="5.5" width="18" height="13" rx="2.2"/><path d="M3 10h18"/><path d="M6.5 15h3.5"/>'),
+  efectivo: icono('<rect x="2.8" y="6.5" width="18.4" height="11" rx="1.8"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/>'),
+  salir: icono('<path d="M14 4.5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h7"/><path d="M11 12h9"/><path d="M17 8.5l3.5 3.5-3.5 3.5"/>'),
+};
+// Las formas de pago que hay en el cobro, contadas para la cuenta.
+const METODOS_CUENTA = [
+  { valor: 'efectivo', nombre: 'Efectivo', icono: ICONOS.efectivo,
+    dicho: 'Al retirar en el local o al recibir en tu puerta.' },
+  { valor: 'tarjeta', nombre: 'Tarjeta', icono: ICONOS.tarjeta,
+    dicho: 'Crédito o débito. La escribes al pagar.' },
+];
+const nombreMetodo = (valor) => METODOS_CUENTA.find((m) => m.valor === valor)?.nombre || 'Efectivo';
+
 const fondoC = document.createElement('div');
 fondoC.className = 'cuenta-fondo';
 const panelC = document.createElement('aside');
@@ -148,6 +169,7 @@ panelC.innerHTML =
   + '<dl class="cuenta-datos">'
   + '<div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div>'
   + '<div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div>'
+  + '<div><dt>Pago preferido</dt><dd class="cuenta-dato-metodo"></dd></div>'
   + '</dl>'
   + '<p class="cuenta-hecho" role="status" hidden></p>'
   // Los pedidos no se listan aqui: la ficha es para tus datos, y el historial
@@ -155,6 +177,7 @@ panelC.innerHTML =
   + '<div class="cuenta-acciones">'
   + '<button class="cuenta-editar" type="button">Editar mis datos</button>'
   + '<button class="cuenta-editar cuenta-ver-pedidos" type="button">Ver mis pedidos</button>'
+  + '<button class="cuenta-editar cuenta-ver-pagos" type="button">Métodos de pago</button>'
   + '</div>'
   + '<p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p>'
   + '</div>'
@@ -196,6 +219,28 @@ panelC.innerHTML =
   + '</div>'
   + '<div class="cuenta-pie">'
   + '<button class="cuenta-salir" type="button" data-va="sesion">Volver a tu cuenta</button>'
+  + '</div></section>'
+
+  // Como prefieres pagar. Es una preferencia y nada mas: se deja marcada al
+  // confirmar cada pedido, y ahi se puede cambiar. Numeros de tarjeta no se
+  // guardan: sin un servidor seguro no hay donde tenerlos bien guardados.
+  + '<section class="cuenta-paso" data-paso="pagos" hidden>'
+  + '<div class="cuenta-cuerpo">'
+  + '<p class="cuenta-pagos-dicho">Elige cómo prefieres pagar. Lo dejamos marcado en cada '
+  + 'pedido, y al confirmarlo puedes cambiarlo.</p>'
+  + '<fieldset class="cuenta-metodos"><legend class="sr-only">Forma de pago preferida</legend>'
+  + METODOS_CUENTA.map((m) => '<label class="cuenta-metodo">'
+    + `<input type="radio" name="cuenta-metodo" value="${m.valor}">`
+    + `<span class="cuenta-metodo-caja">${m.icono}`
+    + `<span><strong>${m.nombre}</strong><small>${m.dicho}</small></span></span></label>`).join('')
+  + '</fieldset>'
+  + '<p class="cuenta-hecho cuenta-pagos-hecho" role="status" hidden></p>'
+  + '<p class="cuenta-maqueta"><strong>No guardamos tarjetas.</strong> Sin un servidor seguro '
+  + 'no hay dónde tenerlas bien guardadas, así que la tarjeta se escribe en cada pago y se '
+  + 'borra al terminar.</p>'
+  + '</div>'
+  + '<div class="cuenta-pie">'
+  + '<button class="cuenta-salir" type="button" data-va="sesion">Volver a tu cuenta</button>'
   + '</div></section>';
 document.body.append(fondoC, panelC);
 
@@ -208,10 +253,10 @@ const PERSONA = '<svg class="nav-cuenta-icono" viewBox="0 0 24 24" fill="none" s
 const navCuenta = document.createElement('button');
 navCuenta.type = 'button';
 navCuenta.className = 'nav-cuenta';
-// Va en el grupo de acciones, no dentro de la navegacion: asi puede quedarse
-// a la derecha mientras los enlaces se centran, y en el telefono se ve
-// siempre, sin tener que abrir el menu.
-document.querySelector('.nav-acciones')?.prepend(navCuenta);
+// Va a la izquierda del logo, fuera de la navegacion: asi se ve siempre, tambien
+// en el telefono, sin tener que abrir el menu, y su desplegable cae hacia la
+// pagina en vez de salirse por el borde.
+document.querySelector('.nav-izquierda')?.prepend(navCuenta);
 
 const tituloC = panelC.querySelector('#cuenta-titulo');
 const pasosC = [...panelC.querySelectorAll('.cuenta-paso')];
@@ -232,7 +277,8 @@ const claveEntrar = panelC.querySelector('#cuenta-entrar-clave');
 const errorEntrarClave = panelC.querySelector('#cuenta-entrar-clave-error');
 
 const TITULOS_CUENTA = { crear: 'Crear cuenta', verificar: 'Verificar tu correo',
-  entrar: 'Entrar', sesion: 'Tu cuenta', editar: 'Editar tus datos', pedidos: 'Tus pedidos' };
+  entrar: 'Entrar', sesion: 'Tu cuenta', editar: 'Editar tus datos', pedidos: 'Tus pedidos',
+  pagos: 'Métodos de pago' };
 
 // El codigo nace en el navegador y de ahi sale por correo. Conviene decir en
 // voz alta lo que eso significa y lo que no: prueba que el correo escrito
@@ -338,6 +384,7 @@ const verPaso = (nombre, hecho = '') => {
   // recargar la pagina. En la ficha solo hace falta cuantos hay.
   if (nombre === 'sesion') contarPedidos();
   if (nombre === 'pedidos') pintarHistorial();
+  if (nombre === 'pagos') pintarPagos();
 };
 
 // Mismo trato que en la tarjeta: un campo solo se marca cuando ya lo tocaste
@@ -477,7 +524,7 @@ const guardarCuenta = () => {
       nombre: sesion.nombre, correo: sesion.correo,
       telefono: sesion.telefono, direccion: sesion.direccion,
       verificado: sesion.verificado, sesionAbierta: sesion.dentro,
-      clave: huellaClave,
+      metodo: sesion.metodo, clave: huellaClave,
     }));
   } catch (e) { /* en ventana privada no se puede guardar; la sesion sigue viva en memoria */ }
 };
@@ -505,6 +552,7 @@ const leerCuenta = () => {
     sesion.telefono = soloNueve(String(dato.telefono || ''));
     sesion.direccion = String(dato.direccion || '').slice(0, 200);
     sesion.verificado = dato.verificado === true;
+    sesion.metodo = dato.metodo === 'tarjeta' ? 'tarjeta' : 'efectivo';
     // Una cuenta guardada antes de que existiera este dato no trae el campo, y
     // entonces se entra como siempre: solo un cierre expreso deja fuera.
     sesion.dentro = dato.sesionAbierta !== false;
@@ -528,6 +576,7 @@ const pintarSesion = () => {
     navCuenta.classList.remove('is-dentro');
     navCuenta.innerHTML = PERSONA;
     nombrarBoton('Entrar o crear una cuenta');
+    pintarMenu();
     return;
   }
   navCuenta.classList.add('is-dentro');
@@ -545,6 +594,8 @@ const pintarSesion = () => {
   panelC.querySelector('.cuenta-sesion-correo').textContent = sesion.correo;
   panelC.querySelector('.cuenta-dato-telefono').textContent = telefonoBonito(sesion.telefono) || '—';
   panelC.querySelector('.cuenta-dato-direccion').textContent = sesion.direccion || 'Sin dirección guardada';
+  panelC.querySelector('.cuenta-dato-metodo').textContent = nombreMetodo(sesion.metodo);
+  pintarMenu();
 };
 
 // El historial sale de IndexedDB, que se lee con promesas, asi que esto va
@@ -565,6 +616,12 @@ const botonPedidos = panelC.querySelector('.cuenta-ver-pedidos');
 const contarPedidos = async () => {
   const n = (await todosLosPedidos()).length;
   botonPedidos.textContent = n ? `Ver mis pedidos (${n})` : 'Ver mis pedidos';
+  // Y en el menu de la cabecera, el mismo numero en su pastilla.
+  const pastilla = menuCuenta.querySelector('.cuenta-menu-numero');
+  if (pastilla) {
+    pastilla.hidden = !n;
+    pastilla.textContent = n;
+  }
 };
 
 // Cada pedido es un <details>: cerrado ensena numero, total, fecha y cuantas
@@ -627,6 +684,35 @@ panelC.querySelector('[data-paso="pedidos"] .cuenta-salir').addEventListener('cl
   botonPedidos.focus();
 });
 
+// --- Metodos de pago -----------------------------------------------------
+// Elegir guarda al momento, sin boton de guardar: es una sola decision, y un
+// segundo paso para confirmarla seria pedir dos veces lo mismo.
+const botonPagos = panelC.querySelector('.cuenta-ver-pagos');
+const radiosMetodo = [...panelC.querySelectorAll('input[name="cuenta-metodo"]')];
+const hechoPagos = panelC.querySelector('.cuenta-pagos-hecho');
+function pintarPagos() {
+  radiosMetodo.forEach((r) => { r.checked = r.value === sesion.metodo; });
+  hechoPagos.hidden = true;
+}
+radiosMetodo.forEach((r) => r.addEventListener('change', () => {
+  if (!r.checked) return;
+  sesion.metodo = r.value;
+  guardarCuenta();
+  pintarSesion();
+  // El cobro lo deja marcado ya, por si el pedido esta a medio confirmar.
+  puente.elegirMetodo?.(sesion.metodo);
+  hechoPagos.hidden = false;
+  hechoPagos.textContent = `Listo: tus pedidos saldrán marcados con ${nombreMetodo(sesion.metodo).toLowerCase()}.`;
+}));
+botonPagos.addEventListener('click', () => {
+  verPaso('pagos');
+  tituloC.focus();
+});
+panelC.querySelector('[data-paso="pagos"] .cuenta-salir').addEventListener('click', () => {
+  verPaso('sesion');
+  botonPagos.focus();
+});
+
 // Tener cuenta sirve para no volver a escribir lo mismo: la direccion pasa a la
 // canasta, pero solo si esta vacia. Lo que ya escribiste manda sobre la cuenta.
 const prellenarPedido = () => {
@@ -636,10 +722,15 @@ const prellenarPedido = () => {
 
 let ultimoFocoC = null;
 const abiertoC = () => panelC.classList.contains('is-open');
+// Lo que se puede abrir estando dentro: con sesion abierta no hay formulario
+// de entrar que ensenar.
+const PASOS_DENTRO = ['sesion', 'pedidos', 'pagos'];
 const abrirC = (paso) => {
   ultimoFocoC = document.activeElement;
-  // Con sesion abierta se entra a la ficha; sin ella, al paso que se pidio.
-  verPaso(sesion.dentro ? 'sesion' : (paso || 'entrar'));
+  // Con sesion abierta se va a lo que se pidio del menu, o a la ficha; sin
+  // ella, al paso que se pidio.
+  if (sesion.dentro) verPaso(PASOS_DENTRO.includes(paso) ? paso : 'sesion');
+  else verPaso(paso || 'entrar');
   fondoC.classList.add('is-open');
   panelC.classList.add('is-open');
   document.body.style.overflow = 'hidden';
@@ -661,15 +752,39 @@ const cerrarC = () => {
   else ultimoFocoC?.focus();
 };
 
-// Pulsar el circulo no lanza al formulario de crear cuenta: despliega las dos
-// puertas, entrar o registrarse, y cada una abre su paso. Estando dentro no
-// hay nada que elegir, asi que va directo a la ficha de la sesion.
+// Pulsar el circulo no lanza a ningun formulario: despliega un menu. Fuera de
+// sesion trae las dos puertas, entrar o crear la cuenta. Dentro, quien eres y
+// lo que puedes hacer con tu cuenta, cada cosa a un clic.
 const menuCuenta = document.createElement('div');
 menuCuenta.className = 'cuenta-menu';
 menuCuenta.id = 'cuenta-menu';
-menuCuenta.innerHTML = '<button type="button" data-va="entrar">Iniciar sesión</button>'
-  + '<button type="button" data-va="crear">Registrarse</button>';
 navCuenta.insertAdjacentElement('afterend', menuCuenta);
+
+const opcionMenu = (va, dibujo, texto, extra = '') => `<button class="cuenta-menu-opcion" type="button" data-va="${va}">`
+  + `${dibujo}<span>${texto}</span>${extra}</button>`;
+function pintarMenu() {
+  if (!sesion.dentro) {
+    menuCuenta.innerHTML = '<div class="cuenta-menu-cabeza">'
+      + '<p class="cuenta-menu-hola">¡Hola!</p>'
+      + '<p class="cuenta-menu-dicho">Entra para pedir más rápido y ver tus pedidos.</p></div>'
+      + '<button class="cuenta-menu-principal" type="button" data-va="entrar">Iniciar sesión</button>'
+      + '<button class="cuenta-menu-secundario" type="button" data-va="crear">Crear una cuenta</button>';
+    return;
+  }
+  menuCuenta.innerHTML = '<div class="cuenta-menu-cabeza is-dentro">'
+    + '<span class="cuenta-menu-avatar" aria-hidden="true"></span>'
+    + '<div><p class="cuenta-menu-nombre"></p><p class="cuenta-menu-correo"></p></div></div>'
+    + opcionMenu('sesion', ICONOS.cuenta, 'Mi cuenta')
+    + opcionMenu('pedidos', ICONOS.pedidos, 'Mis pedidos', '<span class="cuenta-menu-numero" hidden></span>')
+    + opcionMenu('pagos', ICONOS.tarjeta, 'Métodos de pago')
+    + '<hr class="cuenta-menu-raya">'
+    + opcionMenu('salir', ICONOS.salir, 'Cerrar sesión');
+  // Nombre y correo los escribe quien usa el sitio: van como texto.
+  menuCuenta.querySelector('.cuenta-menu-avatar').textContent = iniciales(sesion.nombre);
+  menuCuenta.querySelector('.cuenta-menu-nombre').textContent = sesion.nombre;
+  menuCuenta.querySelector('.cuenta-menu-correo').textContent = sesion.correo;
+  menuCuenta.querySelector('[data-va="salir"]').classList.add('is-salir');
+}
 
 const abrirMenuCuenta = (abierto) => {
   menuCuenta.classList.toggle('is-open', abierto);
@@ -685,13 +800,24 @@ flechasEnMenu(navCuenta, menuCuenta, abrirMenuCuenta,
 
 navCuenta.addEventListener('click', () => {
   closeMenu();
-  if (sesion.dentro) { abrirC(); return; }
-  abrirMenuCuenta(!menuCuenta.classList.contains('is-open'));
+  const abrir = !menuCuenta.classList.contains('is-open');
+  // Al abrirlo se cuentan los pedidos: puede haberse pagado uno desde la ultima vez.
+  if (abrir && sesion.dentro) contarPedidos();
+  abrirMenuCuenta(abrir);
 });
-menuCuenta.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+// El menu se rehace al entrar y al salir, asi que se escucha en la caja y no
+// en cada boton: los botones de antes ya no existen.
+menuCuenta.addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
   abrirMenuCuenta(false);
+  if (b.dataset.va === 'salir') {
+    cerrarSesion();
+    navCuenta.focus();
+    return;
+  }
   abrirC(b.dataset.va);
-}));
+});
 const fueraDeCuenta = (destino) => !navCuenta.contains(destino) && !menuCuenta.contains(destino);
 document.addEventListener('click', (e) => {
   if (!fueraDeCuenta(e.target)) return;
@@ -728,6 +854,7 @@ const entrarEnSesion = (aviso) => {
   guardarCuenta();
   pintarSesion();
   prellenarPedido();
+  puente.elegirMetodo?.(sesion.metodo);
   olvidarFormulario();
   verPaso('sesion');
   tituloC.focus();
@@ -925,7 +1052,7 @@ claveEntrar.addEventListener('input', () => {
   if (!errorEntrarClave.hidden) marcarEntrar(claveEntrar, errorEntrarClave, '');
 });
 
-panelC.querySelector('.cuenta-salir').addEventListener('click', () => {
+function cerrarSesion() {
   const nombre = sesion.nombre;
   // Lo que se cierra es la sesion, no la cuenta: los datos se quedan en este
   // navegador para poder volver a entrar con el correo, que es justo lo que
@@ -940,10 +1067,14 @@ panelC.querySelector('.cuenta-salir').addEventListener('click', () => {
   sesion.telefono = '';
   sesion.direccion = '';
   sesion.verificado = false;
+  sesion.metodo = 'efectivo';
   pintarSesion();
+  avisos.textContent = `Cerraste la sesión de ${nombre}.`;
+}
+panelC.querySelector('.cuenta-salir').addEventListener('click', () => {
+  cerrarSesion();
   verPaso('entrar');
   tituloC.focus();
-  avisos.textContent = `Cerraste la sesión de ${nombre}.`;
 });
 
 // --- Ver la contrasena ------------------------------------------------
@@ -1052,6 +1183,7 @@ const iniciarCuenta = () => {
   leerCuenta();
   pintarSesion();
   prellenarPedido();
+  if (sesion.dentro) puente.elegirMetodo?.(sesion.metodo);
 };
 
 // Lo que la canasta puede pedirle a la cuenta: abrir el panel y saber si en

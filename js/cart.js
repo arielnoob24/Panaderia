@@ -83,13 +83,20 @@ panel.setAttribute('aria-modal', 'true');
 panel.setAttribute('aria-labelledby', 'canasta-titulo');
 const piezas = piezasDePago();
 panel.innerHTML =
-  '<div class="canasta-cabecera"><h2 id="canasta-titulo" tabindex="-1">Tu canasta</h2>'
+  '<div class="canasta-cabecera"><div class="canasta-cabecera-titulo">'
+  + '<h2 id="canasta-titulo" tabindex="-1">Tu canasta</h2>'
+  + '<span class="canasta-cabecera-cuenta" hidden></span></div>'
   + '<button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div>'
   + '<div class="canasta-pasos">'
 
   + '<section class="canasta-paso" data-paso="canasta">'
   + '<div class="canasta-cuerpo"><ul class="canasta-lista"></ul>'
-  + '<p class="canasta-vacio">Tu canasta está vacía.</p>'
+  // Vacia no se queda en un renglon gris: dice que hacer y lleva a hacerlo.
+  + '<div class="canasta-vacio">'
+  + '<span class="canasta-vacio-dibujo" aria-hidden="true"></span>'
+  + '<p class="canasta-vacio-titulo">Tu canasta está vacía</p>'
+  + '<p class="canasta-vacio-dicho">Elige algo de la vitrina y aparecerá aquí.</p>'
+  + '<button class="canasta-vacio-ir" type="button">Ver la vitrina</button></div>'
   // Vaciar es quitar todo de una vez, asi que pregunta antes, como la X de
   // cada linea, y despues deja deshacerlo.
   + '<div class="canasta-vaciar-zona" hidden>'
@@ -104,7 +111,8 @@ panel.innerHTML =
   + '<p class="canasta-aviso pide-cuenta" role="alert" hidden>'
   + 'Para pedir necesitas una cuenta con el correo verificado: ahí te llega el comprobante.'
   + '<button class="pide-cuenta-boton" type="button">Crear cuenta o entrar</button></p>'
-  + '<div class="canasta-total"><span>Subtotal</span><strong>$0.00</strong></div>'
+  + '<div class="canasta-total"><span>Subtotal <small class="canasta-total-cuenta"></small></span>'
+  + '<strong>$0.00</strong></div>'
   + '<button class="button button-yellow canasta-enviar" type="button">'
   + 'Ir a pagar <span aria-hidden="true">→</span></button>'
   + '<p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p>'
@@ -243,6 +251,8 @@ const titulo = panel.querySelector('#canasta-titulo');
 const lista = panel.querySelector('.canasta-lista');
 const vacio = panel.querySelector('.canasta-vacio');
 const totalEl = panel.querySelector('[data-paso="canasta"] .canasta-total strong');
+const totalCuenta = panel.querySelector('.canasta-total-cuenta');
+const cabeceraCuenta = panel.querySelector('.canasta-cabecera-cuenta');
 const enviar = panel.querySelector('.canasta-enviar');
 const radios = [...vista.querySelectorAll('input[name="canasta-entrega"]')];
 const bloqueDir = vista.querySelector('.canasta-direccion');
@@ -289,6 +299,24 @@ const BASURERO = '<svg class="card-icono" viewBox="0 0 24 24" fill="none" stroke
   + '<path d="M6.5 7.1l.8 11.3a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-11.3"/>'
   + '<path d="M10.3 10.8v5.8"/><path d="M13.7 10.8v5.8"/></svg>';
 
+// La foto pequena de cada producto, para que en la canasta se reconozca de un
+// vistazo y no solo por el nombre. La apunta cada ficha al montarse; una linea
+// que viene con tamanio ("Torta de 1 libra") usa la de su producto.
+const fotos = new Map();
+const fotoDe = (nombre) => {
+  for (const [base, src] of fotos) {
+    if (nombre === base || nombre.startsWith(`${base} `)) return src;
+  }
+  return '';
+};
+const fotoHtml = (nombre) => {
+  const src = fotoDe(nombre);
+  // Sin alt: el nombre va justo al lado, y leerlo dos veces no ayuda a nadie.
+  return '<span class="canasta-foto">'
+    + (src ? `<img src="${src}" alt="" width="64" height="64" loading="lazy">` : '')
+    + '</span>';
+};
+
 // Que linea esta esperando un si o un no. Vive fuera de pintar porque pintar
 // rehace la lista entera en cada cambio: si la pregunta viviera en el DOM y
 // nada mas, tocar el "mas" de otro producto la borraria sin contestarla.
@@ -308,8 +336,8 @@ const pintar = () => {
     li.dataset.id = id;
     if (id === porConfirmar) {
       li.classList.add('is-confirmando');
-      li.innerHTML =
-        `<div><h3>${l.nombre}</h3>`
+      li.innerHTML = fotoHtml(l.nombre)
+        + `<div class="canasta-info"><h3>${l.nombre}</h3>`
         + `<p class="canasta-confirma-dicho">${l.cantidad === 1
           ? '¿Lo quitamos de la canasta?' : `¿Quitamos las ${l.cantidad} unidades?`}</p>`
         + '<div class="canasta-confirma">'
@@ -317,8 +345,7 @@ const pintar = () => {
         + `aria-label="Sí, quitar ${l.nombre} de la canasta">Sí, quitar</button>`
         + '<button class="canasta-confirma-no" type="button" '
         + `aria-label="Cancelar, dejar ${l.nombre} en la canasta">Cancelar</button>`
-        + '</div></div>'
-        + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
+        + '</div></div>';
       li.querySelector('.canasta-confirma-si').addEventListener('click', () => confirmarQuitar(id));
       li.querySelector('.canasta-confirma-no').addEventListener('click', () => cancelarQuitar(id));
       // Escape dice que no, y se queda aqui: sin esto subiria hasta el
@@ -335,18 +362,23 @@ const pintar = () => {
     // Con una sola unidad, quitarla es borrar el producto: el boton lo dice
     // con un basurero, igual que en la ficha del catalogo, y ademas pregunta.
     const ultima = l.cantidad === 1;
-    li.innerHTML =
-      `<div><h3>${l.nombre}</h3><p class="canasta-precio">${dinero(l.precio)} la unidad</p>`
+    // Foto a la izquierda; a su lado el nombre con la X en la misma linea, el
+    // precio por unidad debajo y, abajo del todo, la cantidad y lo que suma.
+    li.innerHTML = fotoHtml(l.nombre)
+      + '<div class="canasta-info">'
+      + `<div class="canasta-fila"><h3>${l.nombre}</h3>`
+      // La X quita el producto entero, lleve las unidades que lleve: sin ella,
+      // para quitar doce panes habia que bajar uno a uno hasta el basurero.
+      + '<button class="canasta-quitar" type="button" '
+      + `aria-label="Quitar ${l.nombre} de la canasta" data-tip="Quitar de la canasta">×</button></div>`
+      + `<p class="canasta-precio">${dinero(l.precio)} c/u</p>`
+      + '<div class="canasta-fila canasta-fila-baja">'
       + '<div class="canasta-cantidad"><button type="button" data-menos '
       + `aria-label="${ultima ? `Quitar ${l.nombre} de la canasta` : `Quitar uno de ${l.nombre}`}">`
       + `${ultima ? BASURERO : '−'}</button>`
       + `<output>${l.cantidad}</output>`
-      + `<button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div></div>`
-      // La X quita el producto entero, lleve las unidades que lleve: sin ella,
-      // para quitar doce panes habia que bajar uno a uno hasta el basurero.
-      + '<div class="canasta-lado"><button class="canasta-quitar" type="button" '
-      + `aria-label="Quitar ${l.nombre} de la canasta" data-tip="Quitar de la canasta">×</button>`
-      + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div>`;
+      + `<button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div>`
+      + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div></div>`;
     li.querySelector('[data-menos]').addEventListener('click', () => {
       if (l.cantidad === 1) { pedirQuitar(id, '[data-menos]'); return; }
       cambiar(id, -1);
@@ -449,6 +481,11 @@ const pintarPie = () => {
   vacio.hidden = hayAlgo;
   zonaVaciar.hidden = !hayAlgo;
   totalEl.textContent = dinero(subtotal());
+  const cuantos = unidades();
+  const cuantosTexto = `${cuantos} producto${cuantos === 1 ? '' : 's'}`;
+  totalCuenta.textContent = hayAlgo ? `(${cuantosTexto})` : '';
+  cabeceraCuenta.hidden = !hayAlgo;
+  cabeceraCuenta.textContent = cuantosTexto;
   enviar.disabled = !hayAlgo;
   enviar.setAttribute('aria-disabled', String(!hayAlgo));
   pintarDesglose();
@@ -776,6 +813,10 @@ const abierto = () => panel.classList.contains('is-open');
 
 fondo.addEventListener('click', cerrar);
 panel.querySelector('.canasta-cerrar').addEventListener('click', cerrar);
+panel.querySelector('.canasta-vacio-ir').addEventListener('click', () => {
+  cerrar();
+  document.querySelector('#catalogo')?.scrollIntoView({ behavior: 'smooth' });
+});
 atraparFoco(panel, abierto, cerrar);
 
 // El boton flotante pasa a ser el acceso al pedido. El contacto general de
@@ -838,6 +879,10 @@ const montarControlesDeFicha = () => {
     const precioDe = () => (tamanos.length ? Number(elegido().dataset.precio) : precio);
     const idDeAhora = () => idDe(nombreDe());
     const importe = ficha.querySelector('.product-bottom strong');
+    // La foto mas chica del srcset, que es la que basta para la canasta.
+    const img = ficha.querySelector('.product-image img');
+    const chica = img?.getAttribute('srcset')?.split(',')[0].trim().split(' ')[0] || img?.getAttribute('src');
+    if (chica) fotos.set(nombre, chica);
 
     const grupo = document.createElement('div');
     grupo.className = 'card-cantidad';

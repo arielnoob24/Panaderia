@@ -16,8 +16,9 @@ const pedido = new Map();
 // las notas antes de bajarse de la moto.
 const entrega = { modo: 'retiro', direccion: '', piso: '', referencia: '', notas: '' };
 // La cuenta es una maqueta sin servidor; la rellena account.js.
+// metodo es la forma de pago preferida, la que el cobro deja marcada.
 const sesion = { nombre: '', correo: '', telefono: '', direccion: '',
-  dentro: false, verificado: false };
+  dentro: false, verificado: false, metodo: 'efectivo' };
 // El numero con el prefijo delante, tal como lo veria quien lo marca. Ya no
 // es un canal de aviso -eso es el correo-, pero sigue siendo el telefono al
 // que llamarian si hay un problema con la entrega, asi que va escrito en el

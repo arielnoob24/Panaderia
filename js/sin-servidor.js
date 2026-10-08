@@ -526,7 +526,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     telefono: "",
     direccion: "",
     dentro: false,
-    verificado: false
+    verificado: false,
+    metodo: "efectivo"
   };
   var telefonoLargo = (n) => `+593 ${String(n || "").replace(/(\d{2})(\d{3})(\d{4})/, "$1 $2 $3")}`;
   var tarjeta = { numero: "", vence: "", cvv: "", titular: "" };
@@ -1365,10 +1366,15 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var limpiarCopiados = () => {
     if (reciboCopiado) reciboCopiado.hidden = true;
   };
-  var reiniciarMetodo = () => {
+  var elegirMetodo = (valor) => {
     metodos.forEach((m) => {
-      m.checked = m.value === "efectivo";
+      m.checked = m.value === valor;
     });
+    if (pagoEfectivo) pintarPago();
+  };
+  puente.elegirMetodo = elegirMetodo;
+  var reiniciarMetodo = () => {
+    elegirMetodo(sesion.dentro ? sesion.metodo : "efectivo");
   };
   var mandarComprobante = async () => {
     const decir = (texto, bien2) => {
@@ -1610,7 +1616,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   panel2.setAttribute("aria-modal", "true");
   panel2.setAttribute("aria-labelledby", "canasta-titulo");
   var piezas = piezasDePago();
-  panel2.innerHTML = '<div class="canasta-cabecera"><h2 id="canasta-titulo" tabindex="-1">Tu canasta</h2><button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div><div class="canasta-pasos"><section class="canasta-paso" data-paso="canasta"><div class="canasta-cuerpo"><ul class="canasta-lista"></ul><p class="canasta-vacio">Tu canasta está vacía.</p><div class="canasta-vaciar-zona" hidden><button class="canasta-vaciar" type="button">Vaciar la canasta</button><div class="canasta-vaciar-pregunta" hidden><p class="canasta-confirma-dicho">¿Quitamos todo lo que hay en la canasta?</p><div class="canasta-confirma"><button class="canasta-confirma-si canasta-vaciar-si" type="button">Sí, vaciar</button><button class="canasta-confirma-no canasta-vaciar-no" type="button">Cancelar</button></div></div></div></div><div class="canasta-pie"><p class="canasta-aviso pide-cuenta" role="alert" hidden>Para pedir necesitas una cuenta con el correo verificado: ahí te llega el comprobante.<button class="pide-cuenta-boton" type="button">Crear cuenta o entrar</button></p><div class="canasta-total"><span>Subtotal</span><strong>$0.00</strong></div><button class="button button-yellow canasta-enviar" type="button">Ir a pagar <span aria-hidden="true">→</span></button><p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p></div></section></div>';
+  panel2.innerHTML = '<div class="canasta-cabecera"><div class="canasta-cabecera-titulo"><h2 id="canasta-titulo" tabindex="-1">Tu canasta</h2><span class="canasta-cabecera-cuenta" hidden></span></div><button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div><div class="canasta-pasos"><section class="canasta-paso" data-paso="canasta"><div class="canasta-cuerpo"><ul class="canasta-lista"></ul><div class="canasta-vacio"><span class="canasta-vacio-dibujo" aria-hidden="true"></span><p class="canasta-vacio-titulo">Tu canasta está vacía</p><p class="canasta-vacio-dicho">Elige algo de la vitrina y aparecerá aquí.</p><button class="canasta-vacio-ir" type="button">Ver la vitrina</button></div><div class="canasta-vaciar-zona" hidden><button class="canasta-vaciar" type="button">Vaciar la canasta</button><div class="canasta-vaciar-pregunta" hidden><p class="canasta-confirma-dicho">¿Quitamos todo lo que hay en la canasta?</p><div class="canasta-confirma"><button class="canasta-confirma-si canasta-vaciar-si" type="button">Sí, vaciar</button><button class="canasta-confirma-no canasta-vaciar-no" type="button">Cancelar</button></div></div></div></div><div class="canasta-pie"><p class="canasta-aviso pide-cuenta" role="alert" hidden>Para pedir necesitas una cuenta con el correo verificado: ahí te llega el comprobante.<button class="pide-cuenta-boton" type="button">Crear cuenta o entrar</button></p><div class="canasta-total"><span>Subtotal <small class="canasta-total-cuenta"></small></span><strong>$0.00</strong></div><button class="button button-yellow canasta-enviar" type="button">Ir a pagar <span aria-hidden="true">→</span></button><p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p></div></section></div>';
   var vista = document.createElement("section");
   vista.id = "confirmar";
   vista.className = "checkout section-pad";
@@ -1629,6 +1635,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var lista = panel2.querySelector(".canasta-lista");
   var vacio = panel2.querySelector(".canasta-vacio");
   var totalEl = panel2.querySelector('[data-paso="canasta"] .canasta-total strong');
+  var totalCuenta = panel2.querySelector(".canasta-total-cuenta");
+  var cabeceraCuenta = panel2.querySelector(".canasta-cabecera-cuenta");
   var enviar = panel2.querySelector(".canasta-enviar");
   var radios = [...vista.querySelectorAll('input[name="canasta-entrega"]')];
   var bloqueDir = vista.querySelector(".canasta-direccion");
@@ -1659,6 +1667,17 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var refrescos = [];
   var botonesMas = [];
   var BASURERO = '<svg class="card-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4.8 7.1h14.4"/><path d="M9.7 7.1V5.3a1.4 1.4 0 0 1 1.4-1.4h1.8a1.4 1.4 0 0 1 1.4 1.4v1.8"/><path d="M6.5 7.1l.8 11.3a2 2 0 0 0 2 1.9h5.4a2 2 0 0 0 2-1.9l.8-11.3"/><path d="M10.3 10.8v5.8"/><path d="M13.7 10.8v5.8"/></svg>';
+  var fotos = /* @__PURE__ */ new Map();
+  var fotoDe = (nombre) => {
+    for (const [base, src] of fotos) {
+      if (nombre === base || nombre.startsWith(`${base} `)) return src;
+    }
+    return "";
+  };
+  var fotoHtml = (nombre) => {
+    const src = fotoDe(nombre);
+    return '<span class="canasta-foto">' + (src ? `<img src="${src}" alt="" width="64" height="64" loading="lazy">` : "") + "</span>";
+  };
   var porConfirmar = null;
   var preguntoDesde = "[data-menos]";
   var pintar = () => {
@@ -1669,7 +1688,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       li.dataset.id = id;
       if (id === porConfirmar) {
         li.classList.add("is-confirmando");
-        li.innerHTML = `<div><h3>${l.nombre}</h3><p class="canasta-confirma-dicho">${l.cantidad === 1 ? "¿Lo quitamos de la canasta?" : `¿Quitamos las ${l.cantidad} unidades?`}</p><div class="canasta-confirma"><button class="canasta-confirma-si" type="button" aria-label="Sí, quitar ${l.nombre} de la canasta">Sí, quitar</button><button class="canasta-confirma-no" type="button" aria-label="Cancelar, dejar ${l.nombre} en la canasta">Cancelar</button></div></div><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span>`;
+        li.innerHTML = fotoHtml(l.nombre) + `<div class="canasta-info"><h3>${l.nombre}</h3><p class="canasta-confirma-dicho">${l.cantidad === 1 ? "¿Lo quitamos de la canasta?" : `¿Quitamos las ${l.cantidad} unidades?`}</p><div class="canasta-confirma"><button class="canasta-confirma-si" type="button" aria-label="Sí, quitar ${l.nombre} de la canasta">Sí, quitar</button><button class="canasta-confirma-no" type="button" aria-label="Cancelar, dejar ${l.nombre} en la canasta">Cancelar</button></div></div>`;
         li.querySelector(".canasta-confirma-si").addEventListener("click", () => confirmarQuitar(id));
         li.querySelector(".canasta-confirma-no").addEventListener("click", () => cancelarQuitar(id));
         li.addEventListener("keydown", (e) => {
@@ -1681,7 +1700,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         continue;
       }
       const ultima = l.cantidad === 1;
-      li.innerHTML = `<div><h3>${l.nombre}</h3><p class="canasta-precio">${dinero(l.precio)} la unidad</p><div class="canasta-cantidad"><button type="button" data-menos aria-label="${ultima ? `Quitar ${l.nombre} de la canasta` : `Quitar uno de ${l.nombre}`}">${ultima ? BASURERO : "−"}</button><output>${l.cantidad}</output><button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div></div><div class="canasta-lado"><button class="canasta-quitar" type="button" aria-label="Quitar ${l.nombre} de la canasta" data-tip="Quitar de la canasta">×</button><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div>`;
+      li.innerHTML = fotoHtml(l.nombre) + `<div class="canasta-info"><div class="canasta-fila"><h3>${l.nombre}</h3><button class="canasta-quitar" type="button" aria-label="Quitar ${l.nombre} de la canasta" data-tip="Quitar de la canasta">×</button></div><p class="canasta-precio">${dinero(l.precio)} c/u</p><div class="canasta-fila canasta-fila-baja"><div class="canasta-cantidad"><button type="button" data-menos aria-label="${ultima ? `Quitar ${l.nombre} de la canasta` : `Quitar uno de ${l.nombre}`}">${ultima ? BASURERO : "−"}</button><output>${l.cantidad}</output><button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div></div>`;
       li.querySelector("[data-menos]").addEventListener("click", () => {
         if (l.cantidad === 1) {
           pedirQuitar(id, "[data-menos]");
@@ -1761,6 +1780,11 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     vacio.hidden = hayAlgo;
     zonaVaciar.hidden = !hayAlgo;
     totalEl.textContent = dinero(subtotal());
+    const cuantos = unidades();
+    const cuantosTexto = `${cuantos} producto${cuantos === 1 ? "" : "s"}`;
+    totalCuenta.textContent = hayAlgo ? `(${cuantosTexto})` : "";
+    cabeceraCuenta.hidden = !hayAlgo;
+    cabeceraCuenta.textContent = cuantosTexto;
     enviar.disabled = !hayAlgo;
     enviar.setAttribute("aria-disabled", String(!hayAlgo));
     pintarDesglose();
@@ -1989,6 +2013,10 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var abierto = () => panel2.classList.contains("is-open");
   fondo.addEventListener("click", cerrar);
   panel2.querySelector(".canasta-cerrar").addEventListener("click", cerrar);
+  panel2.querySelector(".canasta-vacio-ir").addEventListener("click", () => {
+    cerrar();
+    document.querySelector("#catalogo")?.scrollIntoView({ behavior: "smooth" });
+  });
   atraparFoco(panel2, abierto, cerrar);
   if (boton) {
     boton.removeAttribute("href");
@@ -2040,6 +2068,9 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       const precioDe = () => tamanos.length ? Number(elegido().dataset.precio) : precio;
       const idDeAhora = () => idDe(nombreDe());
       const importe = ficha.querySelector(".product-bottom strong");
+      const img = ficha.querySelector(".product-image img");
+      const chica = img?.getAttribute("srcset")?.split(",")[0].trim().split(" ")[0] || img?.getAttribute("src");
+      if (chica) fotos.set(nombre, chica);
       const grupo2 = document.createElement("div");
       grupo2.className = "card-cantidad";
       grupo2.innerHTML = '<button class="card-menos" type="button" hidden></button><input class="card-numero" type="text" inputmode="numeric" autocomplete="off" maxlength="3" value="0" hidden><button class="card-mas" type="button">+</button>';
@@ -2181,6 +2212,29 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     );
     return { sal: aHex(sal), hash: aHex(bits) };
   };
+  var icono = (trazos) => '<svg class="cuenta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">' + trazos + "</svg>";
+  var ICONOS = {
+    cuenta: icono('<circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/>'),
+    pedidos: icono('<path d="M6 3.5h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3Z"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/>'),
+    tarjeta: icono('<rect x="3" y="5.5" width="18" height="13" rx="2.2"/><path d="M3 10h18"/><path d="M6.5 15h3.5"/>'),
+    efectivo: icono('<rect x="2.8" y="6.5" width="18.4" height="11" rx="1.8"/><circle cx="12" cy="12" r="2.6"/><path d="M6 9.5v5M18 9.5v5"/>'),
+    salir: icono('<path d="M14 4.5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h7"/><path d="M11 12h9"/><path d="M17 8.5l3.5 3.5-3.5 3.5"/>')
+  };
+  var METODOS_CUENTA = [
+    {
+      valor: "efectivo",
+      nombre: "Efectivo",
+      icono: ICONOS.efectivo,
+      dicho: "Al retirar en el local o al recibir en tu puerta."
+    },
+    {
+      valor: "tarjeta",
+      nombre: "Tarjeta",
+      icono: ICONOS.tarjeta,
+      dicho: "Crédito o débito. La escribes al pagar."
+    }
+  ];
+  var nombreMetodo = (valor) => METODOS_CUENTA.find((m) => m.valor === valor)?.nombre || "Efectivo";
   var fondoC = document.createElement("div");
   fondoC.className = "cuenta-fondo";
   var panelC = document.createElement("aside");
@@ -2208,13 +2262,13 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     "Contraseña",
     'type="password" autocomplete="new-password" maxlength="40"',
     { describe: "cuenta-clave-reglas", despues: reglasHtml }
-  ) + campoHtml("repite", "Repite la contraseña", 'type="password" autocomplete="new-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button><button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button></div></section><section class="cuenta-paso" data-paso="verificar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta cuenta-maqueta-codigo" hidden></p><p class="codigo-dicho">Escribe el código de 6 cifras que enviamos a <strong class="codigo-correo"></strong>.</p><p class="codigo-estado" role="status" hidden></p><div class="codigo-falso" hidden><p class="codigo-falso-de">Correo de El Tradicional</p><p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. No lo compartas con nadie.</p></div><div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label><input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="cuenta-codigo-error"><p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div><button class="codigo-reenviar" type="button">Enviar otro código</button></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-verificar" type="button">Verificar el correo</button><button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el correo</button></div></section><section class="cuenta-paso" data-paso="entrar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor, solo se puede entrar a la cuenta que creaste en este navegador.</p>' + campoHtml("entrar-correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + campoHtml("entrar-clave", "Contraseña", 'type="password" autocomplete="current-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-entrar" type="button">Entrar</button><button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button></div></section><section class="cuenta-paso" data-paso="sesion" hidden><div class="cuenta-cuerpo"><div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span><div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div><dl class="cuenta-datos"><div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div><div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div></dl><p class="cuenta-hecho" role="status" hidden></p><div class="cuenta-acciones"><button class="cuenta-editar" type="button">Editar mis datos</button><button class="cuenta-editar cuenta-ver-pedidos" type="button">Ver mis pedidos</button></div><p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p></div><div class="cuenta-pie"><button class="cuenta-salir" type="button">Cerrar sesión</button><p class="cuenta-nota">La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo y tu contraseña. No hay ningún otro lugar donde estuviera guardada.</p></div></section><section class="cuenta-paso" data-paso="editar" hidden><div class="cuenta-cuerpo">' + campoHtml("editar-nombre", "Nombre y apellido", 'type="text" autocomplete="name" maxlength="60"') + campoHtml("editar-telefono", "Teléfono", 'type="tel" inputmode="numeric" autocomplete="tel" maxlength="9" placeholder="990001122"', { prefijo: "+593" }) + campoHtml("editar-direccion", "Dirección", 'type="text" autocomplete="street-address" maxlength="200" placeholder="Calle, número y una referencia"', { opcional: true }) + '<p class="cuenta-nota cuenta-nota-izq">El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.</p></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-guardar" type="button">Guardar los cambios</button><button class="cuenta-cambiar" type="button" data-va="sesion">Cancelar</button></div></section><section class="cuenta-paso" data-paso="pedidos" hidden><div class="cuenta-cuerpo"><p class="cuenta-historial-vacio" hidden>Todavía no has hecho ningún pedido desde este navegador. Cuando pagues uno, aparecerá aquí.</p><ul class="cuenta-historial"></ul><p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra parte: desde otro equipo no se ven.</p></div><div class="cuenta-pie"><button class="cuenta-salir" type="button" data-va="sesion">Volver a tu cuenta</button></div></section>';
+  ) + campoHtml("repite", "Repite la contraseña", 'type="password" autocomplete="new-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-crear" type="button">Crear la cuenta</button><button class="cuenta-cambiar" type="button" data-va="entrar">Ya tengo cuenta, quiero entrar</button></div></section><section class="cuenta-paso" data-paso="verificar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta cuenta-maqueta-codigo" hidden></p><p class="codigo-dicho">Escribe el código de 6 cifras que enviamos a <strong class="codigo-correo"></strong>.</p><p class="codigo-estado" role="status" hidden></p><div class="codigo-falso" hidden><p class="codigo-falso-de">Correo de El Tradicional</p><p class="codigo-falso-texto">Tu código es <b class="codigo-valor"></b>. No lo compartas con nadie.</p></div><div class="cuenta-campo"><label for="cuenta-codigo">Código de verificación</label><input id="cuenta-codigo" class="campo-codigo" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="000000" aria-describedby="cuenta-codigo-error"><p class="cuenta-campo-error" id="cuenta-codigo-error" hidden></p></div><button class="codigo-reenviar" type="button">Enviar otro código</button></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-verificar" type="button">Verificar el correo</button><button class="cuenta-cambiar" type="button" data-va="crear">Cambiar el correo</button></div></section><section class="cuenta-paso" data-paso="entrar" hidden><div class="cuenta-cuerpo"><p class="cuenta-maqueta"><strong>Maqueta académica.</strong> Sin servidor, solo se puede entrar a la cuenta que creaste en este navegador.</p>' + campoHtml("entrar-correo", "Correo", 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"') + campoHtml("entrar-clave", "Contraseña", 'type="password" autocomplete="current-password" maxlength="40"') + '</div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-entrar" type="button">Entrar</button><button class="cuenta-cambiar" type="button" data-va="crear">No tengo cuenta, quiero crear una</button></div></section><section class="cuenta-paso" data-paso="sesion" hidden><div class="cuenta-cuerpo"><div class="cuenta-sesion"><span class="cuenta-avatar" aria-hidden="true"></span><div><p class="cuenta-sesion-nombre"></p><p class="cuenta-sesion-correo"></p></div></div><dl class="cuenta-datos"><div><dt>Teléfono</dt><dd class="cuenta-dato-telefono"></dd></div><div><dt>Dirección</dt><dd class="cuenta-dato-direccion"></dd></div><div><dt>Pago preferido</dt><dd class="cuenta-dato-metodo"></dd></div></dl><p class="cuenta-hecho" role="status" hidden></p><div class="cuenta-acciones"><button class="cuenta-editar" type="button">Editar mis datos</button><button class="cuenta-editar cuenta-ver-pedidos" type="button">Ver mis pedidos</button><button class="cuenta-editar cuenta-ver-pagos" type="button">Métodos de pago</button></div><p class="cuenta-nota">Tu pedido ya sale a tu nombre y con tu dirección escrita.</p></div><div class="cuenta-pie"><button class="cuenta-salir" type="button">Cerrar sesión</button><p class="cuenta-nota">La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo y tu contraseña. No hay ningún otro lugar donde estuviera guardada.</p></div></section><section class="cuenta-paso" data-paso="editar" hidden><div class="cuenta-cuerpo">' + campoHtml("editar-nombre", "Nombre y apellido", 'type="text" autocomplete="name" maxlength="60"') + campoHtml("editar-telefono", "Teléfono", 'type="tel" inputmode="numeric" autocomplete="tel" maxlength="9" placeholder="990001122"', { prefijo: "+593" }) + campoHtml("editar-direccion", "Dirección", 'type="text" autocomplete="street-address" maxlength="200" placeholder="Calle, número y una referencia"', { opcional: true }) + '<p class="cuenta-nota cuenta-nota-izq">El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.</p></div><div class="cuenta-pie"><p class="cuenta-aviso" role="alert" hidden></p><button class="button button-yellow cuenta-guardar" type="button">Guardar los cambios</button><button class="cuenta-cambiar" type="button" data-va="sesion">Cancelar</button></div></section><section class="cuenta-paso" data-paso="pedidos" hidden><div class="cuenta-cuerpo"><p class="cuenta-historial-vacio" hidden>Todavía no has hecho ningún pedido desde este navegador. Cuando pagues uno, aparecerá aquí.</p><ul class="cuenta-historial"></ul><p class="cuenta-nota">Quedan guardados en este navegador y en ninguna otra parte: desde otro equipo no se ven.</p></div><div class="cuenta-pie"><button class="cuenta-salir" type="button" data-va="sesion">Volver a tu cuenta</button></div></section><section class="cuenta-paso" data-paso="pagos" hidden><div class="cuenta-cuerpo"><p class="cuenta-pagos-dicho">Elige cómo prefieres pagar. Lo dejamos marcado en cada pedido, y al confirmarlo puedes cambiarlo.</p><fieldset class="cuenta-metodos"><legend class="sr-only">Forma de pago preferida</legend>' + METODOS_CUENTA.map((m) => `<label class="cuenta-metodo"><input type="radio" name="cuenta-metodo" value="${m.valor}"><span class="cuenta-metodo-caja">${m.icono}<span><strong>${m.nombre}</strong><small>${m.dicho}</small></span></span></label>`).join("") + '</fieldset><p class="cuenta-hecho cuenta-pagos-hecho" role="status" hidden></p><p class="cuenta-maqueta"><strong>No guardamos tarjetas.</strong> Sin un servidor seguro no hay dónde tenerlas bien guardadas, así que la tarjeta se escribe en cada pago y se borra al terminar.</p></div><div class="cuenta-pie"><button class="cuenta-salir" type="button" data-va="sesion">Volver a tu cuenta</button></div></section>';
   document.body.append(fondoC, panelC);
   var PERSONA = '<svg class="nav-cuenta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/></svg>';
   var navCuenta = document.createElement("button");
   navCuenta.type = "button";
   navCuenta.className = "nav-cuenta";
-  document.querySelector(".nav-acciones")?.prepend(navCuenta);
+  document.querySelector(".nav-izquierda")?.prepend(navCuenta);
   var tituloC = panelC.querySelector("#cuenta-titulo");
   var pasosC = [...panelC.querySelectorAll(".cuenta-paso")];
   var avisoCrear = panelC.querySelector('[data-paso="crear"] .cuenta-aviso');
@@ -2238,7 +2292,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     entrar: "Entrar",
     sesion: "Tu cuenta",
     editar: "Editar tus datos",
-    pedidos: "Tus pedidos"
+    pedidos: "Tus pedidos",
+    pagos: "Métodos de pago"
   };
   var codigoEsperado = "";
   var relojReenvio = 0;
@@ -2319,6 +2374,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     tituloC.textContent = TITULOS_CUENTA[nombre];
     if (nombre === "sesion") contarPedidos();
     if (nombre === "pedidos") pintarHistorial();
+    if (nombre === "pagos") pintarPagos();
   };
   var datos = { nombre: "", correo: "", telefono: "", direccion: "", clave: "", repite: "" };
   var campos = [
@@ -2433,6 +2489,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
         direccion: sesion.direccion,
         verificado: sesion.verificado,
         sesionAbierta: sesion.dentro,
+        metodo: sesion.metodo,
         clave: huellaClave
       }));
     } catch (e) {
@@ -2466,6 +2523,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       sesion.telefono = soloNueve(String(dato.telefono || ""));
       sesion.direccion = String(dato.direccion || "").slice(0, 200);
       sesion.verificado = dato.verificado === true;
+      sesion.metodo = dato.metodo === "tarjeta" ? "tarjeta" : "efectivo";
       sesion.dentro = dato.sesionAbierta !== false;
     } catch (e) {
     }
@@ -2480,6 +2538,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       navCuenta.classList.remove("is-dentro");
       navCuenta.innerHTML = PERSONA;
       nombrarBoton("Entrar o crear una cuenta");
+      pintarMenu();
       return;
     }
     navCuenta.classList.add("is-dentro");
@@ -2495,6 +2554,8 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     panelC.querySelector(".cuenta-sesion-correo").textContent = sesion.correo;
     panelC.querySelector(".cuenta-dato-telefono").textContent = telefonoBonito(sesion.telefono) || "—";
     panelC.querySelector(".cuenta-dato-direccion").textContent = sesion.direccion || "Sin dirección guardada";
+    panelC.querySelector(".cuenta-dato-metodo").textContent = nombreMetodo(sesion.metodo);
+    pintarMenu();
   };
   var nodo = (etiqueta, clase, texto) => {
     const el = document.createElement(etiqueta);
@@ -2507,6 +2568,11 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
   var contarPedidos = async () => {
     const n = (await todosLosPedidos()).length;
     botonPedidos.textContent = n ? `Ver mis pedidos (${n})` : "Ver mis pedidos";
+    const pastilla = menuCuenta.querySelector(".cuenta-menu-numero");
+    if (pastilla) {
+      pastilla.hidden = !n;
+      pastilla.textContent = n;
+    }
   };
   var pintarHistorial = async () => {
     const lista2 = panelC.querySelector(".cuenta-historial");
@@ -2561,15 +2627,43 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     verPaso("sesion");
     botonPedidos.focus();
   });
+  var botonPagos = panelC.querySelector(".cuenta-ver-pagos");
+  var radiosMetodo = [...panelC.querySelectorAll('input[name="cuenta-metodo"]')];
+  var hechoPagos = panelC.querySelector(".cuenta-pagos-hecho");
+  function pintarPagos() {
+    radiosMetodo.forEach((r) => {
+      r.checked = r.value === sesion.metodo;
+    });
+    hechoPagos.hidden = true;
+  }
+  radiosMetodo.forEach((r) => r.addEventListener("change", () => {
+    if (!r.checked) return;
+    sesion.metodo = r.value;
+    guardarCuenta();
+    pintarSesion();
+    puente.elegirMetodo?.(sesion.metodo);
+    hechoPagos.hidden = false;
+    hechoPagos.textContent = `Listo: tus pedidos saldrán marcados con ${nombreMetodo(sesion.metodo).toLowerCase()}.`;
+  }));
+  botonPagos.addEventListener("click", () => {
+    verPaso("pagos");
+    tituloC.focus();
+  });
+  panelC.querySelector('[data-paso="pagos"] .cuenta-salir').addEventListener("click", () => {
+    verPaso("sesion");
+    botonPagos.focus();
+  });
   var prellenarPedido = () => {
     if (!sesion.dentro || !sesion.direccion || entrega.direccion) return;
     puente.ponerDireccion(sesion.direccion);
   };
   var ultimoFocoC = null;
   var abiertoC = () => panelC.classList.contains("is-open");
+  var PASOS_DENTRO = ["sesion", "pedidos", "pagos"];
   var abrirC = (paso) => {
     ultimoFocoC = document.activeElement;
-    verPaso(sesion.dentro ? "sesion" : paso || "entrar");
+    if (sesion.dentro) verPaso(PASOS_DENTRO.includes(paso) ? paso : "sesion");
+    else verPaso(paso || "entrar");
     fondoC.classList.add("is-open");
     panelC.classList.add("is-open");
     document.body.style.overflow = "hidden";
@@ -2590,8 +2684,19 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
   var menuCuenta = document.createElement("div");
   menuCuenta.className = "cuenta-menu";
   menuCuenta.id = "cuenta-menu";
-  menuCuenta.innerHTML = '<button type="button" data-va="entrar">Iniciar sesión</button><button type="button" data-va="crear">Registrarse</button>';
   navCuenta.insertAdjacentElement("afterend", menuCuenta);
+  var opcionMenu = (va, dibujo, texto, extra = "") => `<button class="cuenta-menu-opcion" type="button" data-va="${va}">${dibujo}<span>${texto}</span>${extra}</button>`;
+  function pintarMenu() {
+    if (!sesion.dentro) {
+      menuCuenta.innerHTML = '<div class="cuenta-menu-cabeza"><p class="cuenta-menu-hola">¡Hola!</p><p class="cuenta-menu-dicho">Entra para pedir más rápido y ver tus pedidos.</p></div><button class="cuenta-menu-principal" type="button" data-va="entrar">Iniciar sesión</button><button class="cuenta-menu-secundario" type="button" data-va="crear">Crear una cuenta</button>';
+      return;
+    }
+    menuCuenta.innerHTML = '<div class="cuenta-menu-cabeza is-dentro"><span class="cuenta-menu-avatar" aria-hidden="true"></span><div><p class="cuenta-menu-nombre"></p><p class="cuenta-menu-correo"></p></div></div>' + opcionMenu("sesion", ICONOS.cuenta, "Mi cuenta") + opcionMenu("pedidos", ICONOS.pedidos, "Mis pedidos", '<span class="cuenta-menu-numero" hidden></span>') + opcionMenu("pagos", ICONOS.tarjeta, "Métodos de pago") + '<hr class="cuenta-menu-raya">' + opcionMenu("salir", ICONOS.salir, "Cerrar sesión");
+    menuCuenta.querySelector(".cuenta-menu-avatar").textContent = iniciales(sesion.nombre);
+    menuCuenta.querySelector(".cuenta-menu-nombre").textContent = sesion.nombre;
+    menuCuenta.querySelector(".cuenta-menu-correo").textContent = sesion.correo;
+    menuCuenta.querySelector('[data-va="salir"]').classList.add("is-salir");
+  }
   var abrirMenuCuenta = (abierto2) => {
     menuCuenta.classList.toggle("is-open", abierto2);
     navCuenta.setAttribute("aria-expanded", String(abierto2));
@@ -2608,16 +2713,21 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
   );
   navCuenta.addEventListener("click", () => {
     closeMenu();
-    if (sesion.dentro) {
-      abrirC();
+    const abrir3 = !menuCuenta.classList.contains("is-open");
+    if (abrir3 && sesion.dentro) contarPedidos();
+    abrirMenuCuenta(abrir3);
+  });
+  menuCuenta.addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    if (!b) return;
+    abrirMenuCuenta(false);
+    if (b.dataset.va === "salir") {
+      cerrarSesion();
+      navCuenta.focus();
       return;
     }
-    abrirMenuCuenta(!menuCuenta.classList.contains("is-open"));
-  });
-  menuCuenta.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => {
-    abrirMenuCuenta(false);
     abrirC(b.dataset.va);
-  }));
+  });
   var fueraDeCuenta = (destino) => !navCuenta.contains(destino) && !menuCuenta.contains(destino);
   document.addEventListener("click", (e) => {
     if (!fueraDeCuenta(e.target)) return;
@@ -2647,6 +2757,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     guardarCuenta();
     pintarSesion();
     prellenarPedido();
+    puente.elegirMetodo?.(sesion.metodo);
     olvidarFormulario();
     verPaso("sesion");
     tituloC.focus();
@@ -2807,7 +2918,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
   claveEntrar.addEventListener("input", () => {
     if (!errorEntrarClave.hidden) marcarEntrar(claveEntrar, errorEntrarClave, "");
   });
-  panelC.querySelector(".cuenta-salir").addEventListener("click", () => {
+  function cerrarSesion() {
     const nombre = sesion.nombre;
     sesion.dentro = false;
     guardarCuenta();
@@ -2816,10 +2927,14 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     sesion.telefono = "";
     sesion.direccion = "";
     sesion.verificado = false;
+    sesion.metodo = "efectivo";
     pintarSesion();
+    avisos.textContent = `Cerraste la sesión de ${nombre}.`;
+  }
+  panelC.querySelector(".cuenta-salir").addEventListener("click", () => {
+    cerrarSesion();
     verPaso("entrar");
     tituloC.focus();
-    avisos.textContent = `Cerraste la sesión de ${nombre}.`;
   });
   var botonesVer = [...panelC.querySelectorAll(".ver-clave")];
   var campoDeVer = (b) => panelC.querySelector(`#${b.getAttribute("aria-controls")}`);
@@ -2917,6 +3032,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     leerCuenta();
     pintarSesion();
     prellenarPedido();
+    if (sesion.dentro) puente.elegirMetodo?.(sesion.metodo);
   };
   puente.abrirC = abrirC;
   puente.correoGuardado = correoGuardado;

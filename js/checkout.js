@@ -462,9 +462,18 @@ const limpiarCopiados = () => {
   if (reciboCopiado) reciboCopiado.hidden = true;
 };
 
-// Pedido cumplido: el proximo empieza en efectivo, como la primera vez.
+// Marca una forma de pago y repinta lo que depende de ella. La cuenta lo usa
+// para dejar puesta la que se prefiere.
+const elegirMetodo = (valor) => {
+  metodos.forEach((m) => { m.checked = m.value === valor; });
+  if (pagoEfectivo) pintarPago();
+};
+puente.elegirMetodo = elegirMetodo;
+
+// Pedido cumplido: el proximo empieza en la forma de pago preferida, o en
+// efectivo, como la primera vez.
 const reiniciarMetodo = () => {
-  metodos.forEach((m) => { m.checked = m.value === 'efectivo'; });
+  elegirMetodo(sesion.dentro ? sesion.metodo : 'efectivo');
 };
 
 // El correo del comprobante sale aqui, no antes: el pedido ya tiene numero y
