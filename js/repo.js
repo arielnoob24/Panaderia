@@ -38,6 +38,9 @@ const revisar = (p, i) => {
       throw new Error(`un tamano de ${donde} esta incompleto`);
     }
   });
+  if (p.destacado !== undefined && typeof p.destacado !== 'boolean') {
+    throw new Error(`"destacado" de ${donde} tiene que ser true o false`);
+  }
   // El precio que se ve en la ficha es el del primer tamano; si no coincidieran,
   // la ficha diria un precio y la canasta cobraria otro.
   if (p.tamanos && p.tamanos[0].precio !== p.precio) {
@@ -55,6 +58,9 @@ const normalizar = (p) => ({
   foto: p.foto,
   alt: p.alt.trim(),
   disponible: p.disponible !== false,
+  // Si sale en "Los mas pedidos" de la portada. Lo marca la panaderia, que es
+  // quien sabe que se vende mas: el sitio no tiene datos de ventas.
+  destacado: p.destacado === true,
   etiqueta: p.etiqueta && p.etiqueta.texto ? p.etiqueta : null,
   tamanos: p.tamanos || [],
 });

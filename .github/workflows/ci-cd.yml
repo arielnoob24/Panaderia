@@ -100,6 +100,13 @@ jobs:
             for (const h of ["assets/img/hero-900.jpg", "assets/img/hero-1600.jpg", "assets/img/hero-1200.jpg"]) {
               if (!existsSync(h)) throw new Error(`falta ${h}`);
             }
+            // La fila de la portada son los marcados como destacados y que se
+            // pueden pedir. Con menos de cuatro la fila se queda coja en la
+            // computadora, que ensena cuatro a la vez.
+            const destacados = productos.filter((p) => p.destacado === true && p.disponible !== false);
+            if (destacados.length < 4) {
+              throw new Error(`solo ${destacados.length} destacados disponibles: la portada necesita al menos 4`);
+            }
             console.log(`${productos.length} productos en ${categorias.size} categorias, todas alcanzables.`);
             console.log(`${productos.length * ANCHOS.length + 3} fotos en su sitio.`);
           '

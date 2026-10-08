@@ -266,6 +266,14 @@ body.is-vista .fila-cabeza { display: none; }
 body.is-vista .fila-pausa { display: none; }
 
 .fila-zona { position: relative; }
+/* "Ver todo el catalogo", junto al titulo de la fila y antes de la pausa. */
+.fila-ver-todo { color: var(--corteza-oscura); font: 700 .88rem Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; white-space: nowrap; }
+.fila-ver-todo:hover { color: var(--horno); }
+.fila-ver-todo > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
+.fila-ver-todo:hover > span[aria-hidden] { transform: translateX(3px); }
+/* En el telefono no caben titulo, enlace y pausa en una linea: el enlace se
+   queda en "Ver todo". */
+@media (max-width: 680px) { .fila-ver-todo-largo { display: none; } }
 .product-grid.is-fila { display: flex; gap: 1.3rem; overflow-x: auto; padding-bottom: .4rem; scroll-snap-type: x proximity; scroll-padding: 0 4px; scrollbar-width: thin; scrollbar-color: var(--masa-linea) transparent; }
 .product-grid.is-fila .product-card { width: min(272px, 74vw); flex: 0 0 auto; scroll-snap-align: start; }
 .product-grid.is-fila::-webkit-scrollbar { height: 8px; }
@@ -667,6 +675,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
      se veia de producto en producto. Sigue avanzando de uno en uno. */
   .product-grid.is-fila { gap: .9rem; }
   .product-grid.is-fila .product-card { width: calc(50% - .45rem); }
+  /* La altura la pone view.js con las dos fichas que se ven: las demas no se
+     estiran, y la que es mas alta que la fila se corta mientras no se ve. */
+  .product-grid.is-fila { align-items: flex-start; overflow-y: hidden; transition: height var(--dur-fast) var(--ease-ui); }
   /* Debajo de la fila: flecha, barra de por donde se va, flecha. La barra hace
      de barra de desplazamiento, asi que la del navegador sobra. */
   .product-grid.is-fila { scrollbar-width: none; }

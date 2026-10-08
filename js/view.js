@@ -85,6 +85,7 @@ const categoriaHtml = (p) => (NOMBRES[p.categoria]
 const fichaHtml = (p) => {
   const srcset = ANCHOS.map((w) => `${foto(p, w)} ${w}w`).join(', ');
   return `<article class="product-card"${p.disponible ? '' : ' data-available="false"'}`
+    + (p.destacado ? ' data-destacado="true"' : '')
     + ` data-category="${escapar(p.categoria)}">`
     + '<div class="product-image">'
     // El src es el de reserva, para el navegador que no entienda srcset: va el
@@ -160,11 +161,22 @@ const montarCatalogo = (productos) => {
     cabezaFila.className = 'fila-cabeza';
     const rotulo = document.createElement('h3');
     rotulo.className = 'fila-rotulo';
-    // Decia "Los mas pedidos" y debajo estaban los dieciocho productos, sin
-    // ningun dato de ventas detras: un rotulo afirmando lo que el sitio no
-    // sabe. Ahora nombra lo que hay.
-    rotulo.textContent = 'Nuestro mostrador';
-    cabezaFila.append(rotulo);
+    // La fila ya no es el catalogo puesto de lado: son los que la panaderia
+    // marca como mas pedidos en data/productos.json. Todo lo demas esta en el
+    // catalogo entero, y el enlace de al lado lleva ahi.
+    rotulo.textContent = 'Los más pedidos';
+    const verTodo = document.createElement('a');
+    verTodo.className = 'fila-ver-todo';
+    verTodo.href = '#catalogo';
+    verTodo.innerHTML = 'Ver todo<span class="fila-ver-todo-largo"> el catálogo</span> '
+      + '<span aria-hidden="true">→</span>';
+    // En el telefono se ve solo "Ver todo", pero se nombra entero para todos.
+    verTodo.setAttribute('aria-label', 'Ver todo el catálogo');
+    verTodo.addEventListener('click', (e) => {
+      e.preventDefault();
+      abrirCategoria('catalogo');
+    });
+    cabezaFila.append(rotulo, verTodo);
     zona.before(cabezaFila);
     zona.append(productGrid);
     // Las flechas van en un pie debajo de la fila, con una barra entre las dos
@@ -206,6 +218,54 @@ const montarCatalogo = (productos) => {
     });
     pie.append(flechas[0], barra, flechas[1]);
     zona.append(pie);
+    // Una fila de lado mide lo que su ficha mas alta, aunque este al otro
+    // extremo: en el telefono, con dos a la vista, los panes quedaban estirados
+    // a la altura del cheesecake o de las bebidas con tamanios, con un hueco en
+    // blanco encima del precio. Ahi la fila mide lo que piden las que se ven, y
+    // esas dos se igualan entre si, como en la cuadricula.
+    const telefono = window.matchMedia('(max-width: 680px)');
+    // Lo que mide la ficha sin estirar: el aire que el margen automatico mete
+    // encima del precio es justo lo que sobra.
+    const altoPropio = (ficha) => {
+      const fondo = ficha.querySelector('.product-bottom');
+      const antes = fondo?.previousElementSibling;
+      if (!antes) return ficha.offsetHeight;
+      const sobra = fondo.getBoundingClientRect().top - antes.getBoundingClientRect().bottom
+        - (parseFloat(getComputedStyle(antes).marginBottom) || 0);
+      return ficha.offsetHeight - Math.max(0, sobra);
+    };
+    let midiendo = 0;
+    const medirFila = () => {
+      if (midiendo) return;
+      midiendo = requestAnimationFrame(() => {
+        midiendo = 0;
+        const fichas = products.filter((p) => !p.hidden);
+        if (!telefono.matches || !productGrid.classList.contains('is-fila')) {
+          productGrid.style.height = '';
+          fichas.forEach((p) => { p.style.minHeight = ''; });
+          return;
+        }
+        const caja = productGrid.getBoundingClientRect();
+        const vistas = fichas.filter((p) => {
+          const r = p.getBoundingClientRect();
+          return r.right > caja.left + 1 && r.left < caja.right - 1;
+        });
+        const alto = Math.ceil(Math.max(0, ...vistas.map(altoPropio)));
+        if (!alto) return;
+        fichas.forEach((p) => { p.style.minHeight = vistas.includes(p) ? `${alto}px` : ''; });
+        const estilo = getComputedStyle(productGrid);
+        productGrid.style.height = `${alto + parseFloat(estilo.paddingTop) + parseFloat(estilo.paddingBottom)}px`;
+      });
+    };
+    telefono.addEventListener('change', medirFila);
+    document.fonts?.ready.then(medirFila);
+    // Al anadir, en el telefono estrecho la cantidad baja de linea y la ficha
+    // crece: hay que volver a medir para no cortarle el pie.
+    if ('ResizeObserver' in window) {
+      const vigia = new ResizeObserver(medirFila);
+      productGrid.querySelectorAll('.product-bottom').forEach((f) => vigia.observe(f));
+    }
+
     // Al principio se apaga la flecha de atras. La de adelante no se apaga: en
     // la ultima ficha cambia de nombre y lleva de vuelta a la primera, que
     // perderla ahi dejaba al raton sin manera de seguir.
@@ -227,6 +287,7 @@ const montarCatalogo = (productos) => {
           b.dataset.tip = final ? 'Volver al principio' : 'Siguiente';
         }
       });
+      medirFila();
     };
     productGrid.addEventListener('scroll', mirarPuntas, { passive: true });
     window.addEventListener('resize', mirarPuntas, { passive: true });
@@ -237,7 +298,15 @@ const montarCatalogo = (productos) => {
     // se quede parada en seco dando la impresion de que se rompio.
     const CADA = 4200;
     let reloj = null;
-    let quieta = false;
+    // Que senales de "hay alguien eligiendo" estan en pie. Antes era un solo
+    // si/no para las tres, y la que se iba borraba a las otras: al soltar el
+    // dedo del + o sacar el raton, la fila arrancaba con el foco todavia en la
+    // ficha, en medio de estar anadiendo.
+    const cerca = new Set();
+    // Y la ultima vez que se toco algo dentro: anadir, quitar, elegir tamanio,
+    // escribir la cantidad. Hasta que pase un buen rato sin tocarla, quieta.
+    const RESPIRO = CADA * 2;
+    let tocada = 0;
     const puedeAndar = () => productGrid.classList.contains('is-fila')
       && !reducedMotion.matches
       && !document.hidden
@@ -245,7 +314,7 @@ const montarCatalogo = (productos) => {
       && productGrid.scrollWidth - productGrid.clientWidth > 24;
 
     const avanzar = () => {
-      if (quieta || !puedeAndar()) return;
+      if (cerca.size || Date.now() - tocada < RESPIRO || !puedeAndar()) return;
       if (enElFinal()) {
         productGrid.scrollTo({ left: 0, behavior: 'smooth' });
         return;
@@ -258,26 +327,30 @@ const montarCatalogo = (productos) => {
       if (!reloj) reloj = setInterval(avanzar, CADA);
     };
     const parar = () => { clearInterval(reloj); reloj = null; };
-    // Tras tocarla a mano se le da un respiro largo: seguir empujando mientras
-    // alguien decide que lleva es la forma mas rapida de molestar.
-    const respiro = () => { parar(); setTimeout(arrancar, CADA * 2); };
 
     // Mientras se la mira de cerca no se mueve: el raton encima, un dedo, o el
-    // foco en alguna ficha son todas senales de que hay alguien eligiendo.
+    // foco en alguna ficha son todas senales de que hay alguien eligiendo. Al
+    // irse la senal tampoco arranca en seguida: se cuenta como un toque mas.
     const vigilar = (entra, sale) => {
-      zona.addEventListener(entra, () => { quieta = true; });
-      zona.addEventListener(sale, () => { quieta = false; });
+      zona.addEventListener(entra, () => { cerca.add(entra); }, { passive: true });
+      zona.addEventListener(sale, () => { cerca.delete(entra); tocada = Date.now(); }, { passive: true });
     };
     vigilar('mouseenter', 'mouseleave');
     vigilar('focusin', 'focusout');
     vigilar('touchstart', 'touchend');
+    // touchcancel tambien suelta el dedo: el navegador lo manda en vez de
+    // touchend cuando el toque se convierte en desplazar la fila.
+    zona.addEventListener('touchcancel', () => { cerca.delete('touchstart'); tocada = Date.now(); }, { passive: true });
+    // Tras tocarla a mano se le da un respiro largo: seguir empujando mientras
+    // alguien decide que lleva es la forma mas rapida de molestar. Vale para
+    // las flechas y para todo lo de las fichas; el boton de pausa queda fuera,
+    // en la cabecera, porque pulsarlo ya dice por si solo lo que se quiere.
+    ['pointerdown', 'click', 'input', 'change', 'keydown'].forEach((ev) => {
+      zona.addEventListener(ev, () => { tocada = Date.now(); }, { passive: true });
+    });
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) parar(); else arrancar();
     });
-    // El boton de pausa queda fuera de la vigilancia del foco: si entrar en el
-    // lo marcase como "hay alguien eligiendo", pulsarlo no se distinguiria de
-    // pasar por encima.
-    flechas.forEach((b) => b.addEventListener('click', respiro));
 
     // La fila se adelanta sola, y eso necesita un boton que la pare: no vale
     // que se detenga al pasar el raton o al entrar el foco, porque eso es un
@@ -296,7 +369,7 @@ const montarCatalogo = (productos) => {
     const pintarPausa = () => {
       botonPausa.innerHTML = PAUSA_ICONO(parada);
       botonPausa.setAttribute('aria-pressed', String(parada));
-      const dice = parada ? 'Reanudar el avance del mostrador' : 'Detener el avance del mostrador';
+      const dice = parada ? 'Reanudar el avance de los más pedidos' : 'Detener el avance de los más pedidos';
       botonPausa.setAttribute('aria-label', dice);
       botonPausa.dataset.tip = parada ? 'Reanudar' : 'Pausar';
     };
@@ -305,8 +378,8 @@ const montarCatalogo = (productos) => {
       pintarPausa();
       if (parada) parar(); else arrancar();
       avisos.textContent = parada
-        ? 'Mostrador detenido. No se moverá hasta que lo reanudes.'
-        : 'Mostrador en marcha otra vez.';
+        ? 'Los más pedidos, detenidos. No se moverán hasta que lo reanudes.'
+        : 'Los más pedidos, en marcha otra vez.';
     });
     pintarPausa();
     cabezaFila.append(botonPausa);
@@ -354,7 +427,14 @@ const montarCatalogo = (productos) => {
     // Cuantos hay en la categoria antes de filtrar nada: es el "de cuantos".
     const todoJunto = category === 'todos' || category === 'catalogo';
     const enCatalogo = category === 'catalogo';
-    const deLaCategoria = products.filter((p) => todoJunto || p.dataset.category === category);
+    // En la portada solo los mas pedidos y que se puedan pedir hoy: es un
+    // escaparate, y uno agotado ahi es ensenar lo que no se puede llevar. Si
+    // no hubiera ninguno marcado, salen todos, que una fila vacia no ayuda.
+    const hayDestacados = products.some((p) => p.dataset.destacado === 'true');
+    const enPortada = (p) => !hayDestacados
+      || (p.dataset.destacado === 'true' && p.dataset.available !== 'false');
+    const deLaCategoria = products.filter((p) => (category === 'todos' ? enPortada(p)
+      : todoJunto || p.dataset.category === category));
     const total = deLaCategoria.length;
 
     // Ordenar se hace con la propiedad order y no moviendo nodos: las fichas
@@ -369,7 +449,8 @@ const montarCatalogo = (productos) => {
     porOrden.forEach((p, i) => { p.style.order = String(i); });
 
     products.forEach((product) => {
-      const deAqui = todoJunto || product.dataset.category === category;
+      const deAqui = category === 'todos' ? enPortada(product)
+        : todoJunto || product.dataset.category === category;
       // El filtro solo manda dentro de una categoria; en el mostrador no hay
       // barra con que tocarlo, asi que ahi se sale todo como siempre.
       const pasaFiltro = category === 'todos' || !soloDisponibles
@@ -413,10 +494,10 @@ const montarCatalogo = (productos) => {
       const cuantos = agotados
         ? `${visibleCount} producto${plural}, ${agotados} agotado${agotados === 1 ? '' : 's'}`
         : `${visibleCount} producto${plural} disponible${plural}`;
-      // En el mostrador, el aviso dice ademas por donde se ve todo: si no, la
+      // En la portada, el aviso dice ademas cuantos hay en total: si no, la
       // fila parece el catalogo entero y la cuadricula no la encuentra nadie.
       catalogStatus.textContent = category === 'todos'
-        ? `${cuantos} en el mostrador.`
+        ? `Los ${visibleCount} más pedidos. En todo el catálogo hay ${products.length}.`
         : `${dice}. ${cuantos} en esta categoría.`;
     }
     productGrid?.mirarPuntas?.();

@@ -4,6 +4,7 @@
       "nombre": "Pan redondo",
       "categoria": "panes",
       "precio": 0.25,
+      "destacado": true,
       "foto": "assets/img/productos/pan-redondo",
       "alt": "Pan redondo de corteza dorada y brillante sobre papel blanco",
       "etiqueta": {
@@ -30,6 +31,7 @@
       "nombre": "Empanada de queso",
       "categoria": "panes",
       "precio": 0.75,
+      "destacado": true,
       "foto": "assets/img/productos/pan-con-queso",
       "alt": "Empanada de queso con borde repulgado y azúcar glas",
       "etiqueta": {
@@ -41,6 +43,7 @@
       "nombre": "Pan de chocolate",
       "categoria": "panes",
       "precio": 0.85,
+      "destacado": true,
       "foto": "assets/img/productos/pan-de-chocolate",
       "alt": "Pan de chocolate partido por la mitad, con el relleno de chocolate a la vista"
     },
@@ -48,6 +51,7 @@
       "nombre": "Pan redondo dulce",
       "categoria": "panes",
       "precio": 0.4,
+      "destacado": true,
       "foto": "assets/img/productos/pan-redondo-dulce",
       "alt": "Pan redondo dulce y brillante con grageas de colores encima",
       "etiqueta": {
@@ -67,6 +71,7 @@
       "nombre": "Galletas",
       "categoria": "dulces",
       "precio": 1,
+      "destacado": true,
       "foto": "assets/img/productos/galletas",
       "alt": "Galleta con chispas de chocolate sobre papel blanco"
     },
@@ -74,6 +79,7 @@
       "nombre": "Rebanada de pastel de chocolate",
       "categoria": "dulces",
       "precio": 1.75,
+      "destacado": true,
       "foto": "assets/img/productos/rebanada-de-pastel-de-chocolate",
       "alt": "Rebanada de pastel de chocolate de tres capas con cobertura de chocolate"
     },
@@ -88,6 +94,7 @@
       "nombre": "Rebanada de cheesecake de limón",
       "categoria": "dulces",
       "precio": 2,
+      "destacado": true,
       "foto": "assets/img/productos/rebanada-de-cheesecake-de-limon",
       "alt": "Rebanada de cheesecake de limón con base de galleta, una rodaja de limón y ralladura encima"
     },
@@ -95,6 +102,7 @@
       "nombre": "Coca-Cola",
       "categoria": "bebidas-frias",
       "precio": 0.85,
+      "destacado": true,
       "foto": "assets/img/productos/coca-cola",
       "alt": "Botella de vidrio de Coca-Cola sobre papel blanco",
       "etiqueta": {
