@@ -62,7 +62,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   avisos.setAttribute("aria-live", "polite");
   document.body.append(avisos);
   var FOCOS = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-  var focosDe = (caja) => [...caja.querySelectorAll(FOCOS)].filter((el) => el.offsetParent !== null && !el.disabled && el.getAttribute("aria-disabled") !== "true");
+  var focosDe = (caja) => [...caja.querySelectorAll(FOCOS)].filter((el) => el.offsetParent !== null && !el.disabled && el.getAttribute("aria-disabled") !== "true" && !el.closest("[inert]"));
   var anexosDeFoco = /* @__PURE__ */ new Set();
   var panelesAbiertos = /* @__PURE__ */ new Set();
   var detras = () => [
@@ -1616,7 +1616,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   panel2.setAttribute("aria-modal", "true");
   panel2.setAttribute("aria-labelledby", "canasta-titulo");
   var piezas = piezasDePago();
-  panel2.innerHTML = '<div class="canasta-cabecera"><div class="canasta-cabecera-titulo"><h2 id="canasta-titulo" tabindex="-1">Tu canasta</h2><span class="canasta-cabecera-cuenta" hidden></span></div><button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div><div class="canasta-pasos"><section class="canasta-paso" data-paso="canasta"><div class="canasta-cuerpo"><ul class="canasta-lista"></ul><div class="canasta-vacio"><span class="canasta-vacio-dibujo" aria-hidden="true"></span><p class="canasta-vacio-titulo">Tu canasta está vacía</p><p class="canasta-vacio-dicho">Elige algo de la vitrina y aparecerá aquí.</p><button class="canasta-vacio-ir" type="button">Ver la vitrina</button></div><div class="canasta-vaciar-zona" hidden><button class="canasta-vaciar" type="button">Vaciar la canasta</button><div class="canasta-vaciar-pregunta" hidden><p class="canasta-confirma-dicho">¿Quitamos todo lo que hay en la canasta?</p><div class="canasta-confirma"><button class="canasta-confirma-si canasta-vaciar-si" type="button">Sí, vaciar</button><button class="canasta-confirma-no canasta-vaciar-no" type="button">Cancelar</button></div></div></div></div><div class="canasta-pie"><p class="canasta-aviso pide-cuenta" role="alert" hidden>Para pedir necesitas una cuenta con el correo verificado: ahí te llega el comprobante.<button class="pide-cuenta-boton" type="button">Crear cuenta o entrar</button></p><div class="canasta-total"><span>Subtotal <small class="canasta-total-cuenta"></small></span><strong>$0.00</strong></div><button class="button button-yellow canasta-enviar" type="button">Ir a pagar <span aria-hidden="true">→</span></button><p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p></div></section></div>';
+  panel2.innerHTML = '<div class="canasta-cabecera"><div class="canasta-cabecera-titulo"><h2 id="canasta-titulo" tabindex="-1">Tu canasta</h2><span class="canasta-cabecera-cuenta" hidden></span></div><button class="canasta-cerrar" type="button" aria-label="Cerrar la canasta">×</button></div><div class="canasta-pasos"><section class="canasta-paso" data-paso="canasta"><div class="canasta-cuerpo"><ul class="canasta-lista"></ul><div class="canasta-vacio"><span class="canasta-vacio-dibujo" aria-hidden="true"></span><p class="canasta-vacio-titulo">Tu canasta está vacía</p><p class="canasta-vacio-dicho">Elige algo de la vitrina y aparecerá aquí.</p><button class="canasta-vacio-ir" type="button">Ver la vitrina</button></div><div class="canasta-vaciar-zona" hidden><button class="canasta-vaciar" type="button">Vaciar la canasta</button><div class="canasta-vaciar-pregunta" hidden><p class="canasta-confirma-dicho">¿Quitamos todo lo que hay en la canasta?</p><div class="canasta-confirma"><button class="canasta-confirma-si canasta-vaciar-si" type="button">Sí, vaciar</button><button class="canasta-confirma-no canasta-vaciar-no" type="button">Cancelar</button></div></div></div></div><div class="canasta-pie"><div class="canasta-total"><span>Subtotal <small class="canasta-total-cuenta"></small></span><strong>$0.00</strong></div><button class="button button-yellow canasta-enviar" type="button">Ir a pagar <span aria-hidden="true">→</span></button><p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p></div></section></div><div class="pide-cuenta" role="alertdialog" aria-modal="true" aria-labelledby="pide-cuenta-titulo" aria-describedby="pide-cuenta-dicho" hidden><div class="pide-cuenta-hoja"><span class="pide-cuenta-dibujo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" focusable="false"><circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/></svg></span><h3 id="pide-cuenta-titulo">Entra a tu cuenta para pagar</h3><p id="pide-cuenta-dicho">El comprobante del pedido te llega al correo, así que necesitas una cuenta con el correo verificado. <strong>Tu canasta se queda tal como está.</strong></p><button class="button button-yellow pide-cuenta-principal" type="button"></button><button class="pide-cuenta-otra" type="button"></button><button class="pide-cuenta-volver" type="button">Seguir viendo la canasta</button></div></div>';
   var vista = document.createElement("section");
   vista.id = "confirmar";
   vista.className = "checkout section-pad";
@@ -1654,7 +1654,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var desgloseTotal = vista.querySelector(".desglose-total");
   var bloqueLocal = vista.querySelector(".canasta-local");
   var pideCuenta = panel2.querySelector(".pide-cuenta");
-  var pideCuentaBoton = panel2.querySelector(".pide-cuenta-boton");
+  var pidePrincipal = panel2.querySelector(".pide-cuenta-principal");
+  var pideOtra = panel2.querySelector(".pide-cuenta-otra");
   var listo = vista.querySelector(".canasta-listo");
   var zonaVaciar = panel2.querySelector(".canasta-vaciar-zona");
   var botonVaciar = panel2.querySelector(".canasta-vaciar");
@@ -1792,7 +1793,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     cuenta.hidden = n === 0;
     cuenta.textContent = n;
     if (boton) boton.setAttribute("aria-label", n ? `Ver la canasta, ${n} producto${n === 1 ? "" : "s"}` : "Ver la canasta, vacía");
-    if (pideCuenta && sesion.dentro && sesion.verificado) pideCuenta.hidden = true;
+    if (sesion.dentro && sesion.verificado) verPideCuenta(false);
     pintarResumen();
     pintarPago();
     refrescos.forEach((refrescar) => refrescar());
@@ -1892,19 +1893,43 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   enviar.addEventListener("click", () => {
     if (!pedido.size) return;
     if (!puedePedir()) {
-      pideCuenta.hidden = false;
-      pideCuentaBoton.focus();
-      avisos.textContent = "Para pedir hace falta una cuenta con el correo verificado.";
+      verPideCuenta(true);
+      pidePrincipal.focus();
       return;
     }
-    pideCuenta.hidden = true;
+    verPideCuenta(false);
     pintarDesglose();
     abrirCheckout();
   });
-  pideCuentaBoton.addEventListener("click", () => {
-    pideCuenta.hidden = true;
+  function verPideCuenta(ver) {
+    if (ver) {
+      const tiene = Boolean(puente.correoGuardado?.());
+      pidePrincipal.dataset.va = tiene ? "entrar" : "crear";
+      pidePrincipal.textContent = tiene ? "Iniciar sesión" : "Crear una cuenta";
+      pideOtra.dataset.va = tiene ? "crear" : "entrar";
+      pideOtra.textContent = tiene ? "No tengo cuenta, crear una" : "Ya tengo cuenta, iniciar sesión";
+    }
+    pideCuenta.hidden = !ver;
+    panel2.querySelector(".canasta-cabecera").inert = ver;
+    panel2.querySelector(".canasta-pasos").inert = ver;
+  }
+  [pidePrincipal, pideOtra].forEach((b) => b.addEventListener("click", () => {
+    verPideCuenta(false);
     cerrar();
-    puente.abrirC(puente.correoGuardado() ? "entrar" : "crear");
+    puente.abrirC(b.dataset.va);
+  }));
+  var volverDePide = () => {
+    verPideCuenta(false);
+    enviar.focus();
+  };
+  panel2.querySelector(".pide-cuenta-volver").addEventListener("click", volverDePide);
+  pideCuenta.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    e.stopPropagation();
+    volverDePide();
+  });
+  pideCuenta.addEventListener("click", (e) => {
+    if (e.target === pideCuenta) volverDePide();
   });
   resumenEditar?.addEventListener("click", () => abrir2());
   puente.faltaDireccion = () => {
@@ -2007,7 +2032,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       pintar();
     }
     preguntarVaciar(false);
-    pideCuenta.hidden = true;
+    verPideCuenta(false);
     ultimoFoco?.focus();
   };
   var abierto = () => panel2.classList.contains("is-open");
@@ -2268,7 +2293,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var navCuenta = document.createElement("button");
   navCuenta.type = "button";
   navCuenta.className = "nav-cuenta";
-  document.querySelector(".nav-izquierda")?.prepend(navCuenta);
+  document.querySelector(".nav-acciones")?.prepend(navCuenta);
   var tituloC = panelC.querySelector("#cuenta-titulo");
   var pasosC = [...panelC.querySelectorAll(".cuenta-paso")];
   var avisoCrear = panelC.querySelector('[data-paso="crear"] .cuenta-aviso');

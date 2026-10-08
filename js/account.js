@@ -253,10 +253,10 @@ const PERSONA = '<svg class="nav-cuenta-icono" viewBox="0 0 24 24" fill="none" s
 const navCuenta = document.createElement('button');
 navCuenta.type = 'button';
 navCuenta.className = 'nav-cuenta';
-// Va a la izquierda del logo, fuera de la navegacion: asi se ve siempre, tambien
-// en el telefono, sin tener que abrir el menu, y su desplegable cae hacia la
-// pagina en vez de salirse por el borde.
-document.querySelector('.nav-izquierda')?.prepend(navCuenta);
+// Va en el grupo de acciones, no dentro de la navegacion: asi puede quedarse
+// a la derecha mientras los enlaces se centran, y en el telefono se ve
+// siempre, sin tener que abrir el menu.
+document.querySelector('.nav-acciones')?.prepend(navCuenta);
 
 const tituloC = panelC.querySelector('#cuenta-titulo');
 const pasosC = [...panelC.querySelectorAll('.cuenta-paso')];

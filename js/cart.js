@@ -108,9 +108,6 @@ panel.innerHTML =
   + '<button class="canasta-confirma-no canasta-vaciar-no" type="button">Cancelar</button>'
   + '</div></div></div></div>'
   + '<div class="canasta-pie">'
-  + '<p class="canasta-aviso pide-cuenta" role="alert" hidden>'
-  + 'Para pedir necesitas una cuenta con el correo verificado: ahí te llega el comprobante.'
-  + '<button class="pide-cuenta-boton" type="button">Crear cuenta o entrar</button></p>'
   + '<div class="canasta-total"><span>Subtotal <small class="canasta-total-cuenta"></small></span>'
   + '<strong>$0.00</strong></div>'
   + '<button class="button button-yellow canasta-enviar" type="button">'
@@ -118,7 +115,25 @@ panel.innerHTML =
   + '<p class="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p>'
   + '</div></section>'
 
-  + '</div>';
+  + '</div>'
+
+  // "Para pagar hace falta cuenta". Antes era un renglon encima del boton y
+  // casi nadie lo veia: ahora es una hoja que sube sobre la canasta, la
+  // oscurece y no deja seguir sin contestar. Lo de detras queda apagado.
+  + '<div class="pide-cuenta" role="alertdialog" aria-modal="true" '
+  + 'aria-labelledby="pide-cuenta-titulo" aria-describedby="pide-cuenta-dicho" hidden>'
+  + '<div class="pide-cuenta-hoja">'
+  + '<span class="pide-cuenta-dibujo" aria-hidden="true">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" '
+  + 'stroke-linecap="round" stroke-linejoin="round" focusable="false">'
+  + '<circle cx="12" cy="8.2" r="3.6"/><path d="M5.2 20.2a6.8 6.8 0 0 1 13.6 0"/></svg></span>'
+  + '<h3 id="pide-cuenta-titulo">Entra a tu cuenta para pagar</h3>'
+  + '<p id="pide-cuenta-dicho">El comprobante del pedido te llega al correo, así que necesitas '
+  + 'una cuenta con el correo verificado. <strong>Tu canasta se queda tal como está.</strong></p>'
+  + '<button class="button button-yellow pide-cuenta-principal" type="button"></button>'
+  + '<button class="pide-cuenta-otra" type="button"></button>'
+  + '<button class="pide-cuenta-volver" type="button">Seguir viendo la canasta</button>'
+  + '</div></div>';
 
 
 // ---- La vista de confirmar el pedido ---------------------------------
@@ -270,7 +285,8 @@ const desgloseEnvio = vista.querySelector('.desglose-envio');
 const desgloseTotal = vista.querySelector('.desglose-total');
 const bloqueLocal = vista.querySelector('.canasta-local');
 const pideCuenta = panel.querySelector('.pide-cuenta');
-const pideCuentaBoton = panel.querySelector('.pide-cuenta-boton');
+const pidePrincipal = panel.querySelector('.pide-cuenta-principal');
+const pideOtra = panel.querySelector('.pide-cuenta-otra');
 const listo = vista.querySelector('.canasta-listo');
 const zonaVaciar = panel.querySelector('.canasta-vaciar-zona');
 const botonVaciar = panel.querySelector('.canasta-vaciar');
@@ -493,7 +509,7 @@ const pintarPie = () => {
   cuenta.hidden = n === 0;
   cuenta.textContent = n;
   if (boton) boton.setAttribute('aria-label', n ? `Ver la canasta, ${n} producto${n === 1 ? '' : 's'}` : 'Ver la canasta, vacía');
-  if (pideCuenta && sesion.dentro && sesion.verificado) pideCuenta.hidden = true;
+  if (sesion.dentro && sesion.verificado) verPideCuenta(false);
   // El importe y el resumen de la pantalla de confirmar se recalculan aqui:
   // volver atras y cambiar la canasta tiene que verse reflejado al seguir.
   pintarResumen();
@@ -638,28 +654,55 @@ enviar.addEventListener('click', () => {
   // aviso se queda dentro de la canasta y no echa al usuario a otra parte sin
   // explicar por que.
   if (!puedePedir()) {
-    pideCuenta.hidden = false;
-    pideCuentaBoton.focus();
-    avisos.textContent = 'Para pedir hace falta una cuenta con el correo verificado.';
+    verPideCuenta(true);
+    pidePrincipal.focus();
     return;
   }
-  pideCuenta.hidden = true;
+  verPideCuenta(false);
   pintarDesglose();
   abrirCheckout();
 });
 
+// Mientras la hoja esta arriba, lo de detras se apaga: ni se pulsa ni se
+// llega con el tabulador, y el cerco de foco del panel la recorre solo a ella.
+function verPideCuenta(ver) {
+  if (ver) {
+    // Quien llega aqui casi nunca tiene cuenta: el aviso sale justo porque no
+    // la hay, asi que la puerta grande es crearla. Si en este navegador ya hay
+    // una cuenta guardada, lo probable es lo contrario y la grande es entrar.
+    const tiene = Boolean(puente.correoGuardado?.());
+    pidePrincipal.dataset.va = tiene ? 'entrar' : 'crear';
+    pidePrincipal.textContent = tiene ? 'Iniciar sesión' : 'Crear una cuenta';
+    pideOtra.dataset.va = tiene ? 'crear' : 'entrar';
+    pideOtra.textContent = tiene ? 'No tengo cuenta, crear una' : 'Ya tengo cuenta, iniciar sesión';
+  }
+  pideCuenta.hidden = !ver;
+  panel.querySelector('.canasta-cabecera').inert = ver;
+  panel.querySelector('.canasta-pasos').inert = ver;
+}
+
 // Saltar a la cuenta no pierde el pedido: la canasta se queda como esta y al
 // volver se sigue donde se estaba. La cuenta vive en account.js, asi que se la
 // llama por el puente; al pulsar ya esta cargada.
-pideCuentaBoton.addEventListener('click', () => {
-  pideCuenta.hidden = true;
+[pidePrincipal, pideOtra].forEach((b) => b.addEventListener('click', () => {
+  verPideCuenta(false);
   cerrar();
-  // Quien llega aqui casi nunca tiene cuenta: el aviso sale justo porque no
-  // la hay. Aterrizar en "Entrar" le costaria un clic de mas para llegar a
-  // "Registrarse". Si en este navegador ya hay una cuenta guardada, lo
-  // probable es lo contrario y entonces si abre en "Entrar".
-  puente.abrirC(puente.correoGuardado() ? 'entrar' : 'crear');
+  puente.abrirC(b.dataset.va);
+}));
+const volverDePide = () => {
+  verPideCuenta(false);
+  enviar.focus();
+};
+panel.querySelector('.pide-cuenta-volver').addEventListener('click', volverDePide);
+// Escape cierra la hoja y se queda aqui: si subiera hasta el panel, cerraria
+// la canasta entera por contestar a un aviso.
+pideCuenta.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  e.stopPropagation();
+  volverDePide();
 });
+// Tocar lo oscuro de alrededor es lo mismo que "Seguir viendo la canasta".
+pideCuenta.addEventListener('click', (e) => { if (e.target === pideCuenta) volverDePide(); });
 
 // El resumen es de solo lectura, asi que necesita una puerta de vuelta a donde
 // si se puede cambiar la cantidad.
@@ -806,7 +849,7 @@ const cerrar = () => {
   // Hay que repintar, no basta con olvidarla: la pregunta esta dibujada.
   if (porConfirmar) { porConfirmar = null; pintar(); }
   preguntarVaciar(false);
-  pideCuenta.hidden = true;
+  verPideCuenta(false);
   ultimoFoco?.focus();
 };
 const abierto = () => panel.classList.contains('is-open');

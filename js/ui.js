@@ -24,7 +24,8 @@ document.body.append(avisos);
 // los pasos ocultos del panel no se cuelan en el recorrido.
 const FOCOS = 'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
 const focosDe = (caja) => [...caja.querySelectorAll(FOCOS)]
-  .filter((el) => el.offsetParent !== null && !el.disabled && el.getAttribute('aria-disabled') !== 'true');
+  .filter((el) => el.offsetParent !== null && !el.disabled && el.getAttribute('aria-disabled') !== 'true'
+    && !el.closest('[inert]'));
 
 // Mientras un panel esta abierto, la pagina de detras se apaga del todo con
 // 'inert': ni el tabulador la recorre ni el lector de pantalla la lee. El
