@@ -3,7 +3,9 @@
 // barra de deshacer y el control de cantidad que llevan las fichas. Los dos
 // ultimos pasos del panel -pago y comprobante- los pone checkout.js; aqui se
 // arma el panel entero y se reparte.
-import { avisos, anexosDeFoco, atraparFoco, apagarDetras, enterAvanza, horarioDeHoy } from './ui.js';
+import {
+  avisos, anexosDeFoco, atraparFoco, apagarDetras, enterAvanza, horarioDeHoy, reducedMotion,
+} from './ui.js';
 import {
   CLAVE, pedido, entrega, sesion, cobro, factura, puente,
   MAX_UNIDADES, ENVIO, dinero, idDe,
@@ -331,6 +333,46 @@ const fotoHtml = (nombre) => {
   return '<span class="canasta-foto">'
     + (src ? `<img src="${src}" alt="" width="64" height="64" loading="lazy">` : '')
     + '</span>';
+};
+
+// ---- "Ya esta en la canasta" ---------------------------------------------
+// Al pulsar el mas de una ficha, la foto del producto vuela hasta el boton de
+// la canasta, y la canasta da un saltito al recibirla. Cambiar solo la forma
+// del boton no bastaba: nadie miraba ahi. Asi se ve adonde fue el producto
+// sin leer nada, y sin tapar nada. El lector de pantalla ya lo oye por avisos.
+const latido = () => {
+  if (!boton) return;
+  // Quitar y volver a poner la clase reinicia la animacion aunque se pulse
+  // varias veces seguidas.
+  boton.classList.remove('is-latido');
+  void boton.offsetWidth;
+  boton.classList.add('is-latido');
+};
+const volarALaCanasta = (ficha) => {
+  const img = ficha.querySelector('.product-image img');
+  const destino = boton?.getBoundingClientRect();
+  if (reducedMotion.matches || !img || !destino?.width) { latido(); return; }
+  const origen = img.getBoundingClientRect();
+  const lado = 76;
+  const bolita = document.createElement('span');
+  bolita.className = 'vuela-canasta';
+  bolita.setAttribute('aria-hidden', 'true');
+  bolita.style.backgroundImage = `url("${img.currentSrc || img.src}")`;
+  bolita.style.left = `${origen.left + origen.width / 2 - lado / 2}px`;
+  bolita.style.top = `${origen.top + origen.height / 2 - lado / 2}px`;
+  document.body.append(bolita);
+  const dx = destino.left + destino.width / 2 - (origen.left + origen.width / 2);
+  const dy = destino.top + destino.height / 2 - (origen.top + origen.height / 2);
+  // Tres puntos: sale un poco hacia arriba, como lanzada, y cae en la canasta
+  // haciendose pequena.
+  const vuelo = bolita.animate([
+    { transform: 'translate(0, 0) scale(.6)', opacity: 0 },
+    { transform: 'translate(0, -24px) scale(1.1)', opacity: 1, offset: .18 },
+    { transform: `translate(${dx * .55}px, ${dy * .55 - 70}px) scale(.75)`, opacity: 1, offset: .6 },
+    { transform: `translate(${dx}px, ${dy}px) scale(.25)`, opacity: .7 },
+  ], { duration: 750, easing: 'cubic-bezier(.45, 0, .55, 1)' });
+  vuelo.onfinish = () => { bolita.remove(); latido(); };
+  vuelo.oncancel = () => bolita.remove();
 };
 
 // Que linea esta esperando un si o un no. Vive fuera de pintar porque pintar
@@ -974,6 +1016,7 @@ const montarControlesDeFicha = () => {
       l.cantidad = Math.min(l.cantidad + 1, MAX_UNIDADES);
       pedido.set(idDeAhora(), l);
       pintar();
+      volarALaCanasta(ficha);
       avisos.textContent = `${comoSeLlama} añadido. ${cuantosQuedan()}`;
     });
     // Mientras teclea solo se limpia lo que no son cifras; el numero no se
