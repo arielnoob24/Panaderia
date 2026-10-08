@@ -66,7 +66,17 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
      telefono. 24 px no bastaban; el boton ocupa unos 68 contando su margen. */
   scroll-margin-bottom: 92px;
 }
-.container { width: min(1180px, calc(100% - 48px)); margin: auto; }
+:root {
+  /* Lo que queda entre el contenido y el borde de la pantalla. Crece con la
+     pantalla pero poco: antes el contenido se quedaba en 1180px y en un
+     monitor ancho sobraban cientos de pixeles a cada lado. */
+  --borde: clamp(16px, 3vw, 48px);
+  --borde-barra: clamp(16px, 2vw, 32px);
+}
+.container { width: min(1440px, calc(100% - 2 * var(--borde))); margin: auto; }
+/* La barra de arriba va de borde a borde: el logo pegado a la izquierda y la
+   cuenta y la canasta a la derecha, donde se buscan. */
+.site-header .nav-wrap { width: calc(100% - 2 * var(--borde-barra)); }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .skip-link { position: absolute; top: -5rem; left: 1rem; z-index: 20; padding: .7rem 1rem; background: var(--ambar); color: var(--horno); border-radius: 0 0 var(--r-btn) var(--r-btn); }
 .skip-link:focus { top: 1rem; }
@@ -209,7 +219,7 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 .hero-actions .text-link:hover, .hero-actions .text-link:focus-visible { background-size: 100% 100%; color: var(--papel); }
 .hero-actions .text-link:hover .link-icon { animation: pin-salta .5s var(--ease-ui); }
 @keyframes pin-salta { 0%, 100% { transform: none; } 45% { transform: translateY(-4px); } }
-.hero-note { position: absolute; right: max(24px, calc((100% - 1180px) / 2)); bottom: 3.2rem; z-index: 1; display: flex; gap: .7rem; align-items: flex-start; padding: 1rem 1.2rem; color: var(--horno); background: rgba(255, 253, 248, .92); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-card) var(--r-card) 0; box-shadow: var(--shadow-lift); font: .8rem Arial, sans-serif; }
+.hero-note { position: absolute; right: max(var(--borde), calc((100% - 1440px) / 2)); bottom: 3.2rem; z-index: 1; display: flex; gap: .7rem; align-items: flex-start; padding: 1rem 1.2rem; color: var(--horno); background: rgba(255, 253, 248, .92); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-card) var(--r-card) 0; box-shadow: var(--shadow-lift); font: .8rem Arial, sans-serif; }
 .status-dot { display: inline-block; width: 8px; height: 8px; margin-top: .38rem; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 0 4px rgba(215, 155, 74, .2); }
 .status-dot.is-closed { background: var(--corteza-oscura); box-shadow: 0 0 0 4px rgba(168, 95, 69, .22); }
 /* Unico bucle infinito del sitio. Solo en el aviso del hero, no en la etiqueta de locales:
