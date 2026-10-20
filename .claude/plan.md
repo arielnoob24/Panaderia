@@ -35,6 +35,7 @@ Proyecto de la materia Desarrollo de Plataformas.
 | El CI rechaza las palabras de cafetería, café y cóctel, **también en comentarios** | Es una panadería; lo revisa `ci-cd.yml` |
 | `main` es lo que se presentó y lo que sirve GitHub Pages; las mejoras van en la rama **`mejoras`** y se commitean y pushean ahí sin preguntar | El proyecto ya se entregó: lo publicado no cambia hasta fusionar `mejoras` en `main` |
 | Los informes de clase admiten **máximo 5% de texto de IA** | Pasarse cuesta la mitad de la nota; lo que escribe Claude es referencia |
+| La base de datos (`bd/`) cumple las **reglas del modelo** de la sección 8 | Las pusieron el usuario y el profesor |
 
 ## 3. Cómo está repartido
 
@@ -228,17 +229,25 @@ El sitio sigue guardando como dice la tabla de arriba. El script crea la base
 relacional que va a reemplazar ese guardado cuando se conecte. Motor:
 **PostgreSQL** (Supabase usa el mismo y tiene plan gratis sin tarjeta).
 
-- **Nombres**: tablas en plural y mayúsculas (`PRODUCTOS`); atributos con el
-  prefijo de 3 letras de su tabla (`PRO_Nombre`); la PK de cada tabla fuerte
-  es su código (`PRO_Codigo`) y una FK conserva el nombre de la PK que
-  referencia. Sin comillas, así que PostgreSQL los guarda en minúsculas.
-- **Códigos**: texto con prefijo que pone una secuencia (`PRO001`,
-  `PED0000001`): 3 dígitos en catálogos, 7 en lo que crece. Excepciones con
-  código oficial: provincias y cantones (INEC) y tipos de identificación (SRI).
-  Las secuencias dejan huecos cuando un insert falla; es normal.
-- **Reglas del profesor**: sin N:N (se resuelven con una débil cuya PK es la
-  unión de las PK de las dos fuertes), sin 1:1, sin herencia; todas las tablas
-  con al menos una relación y en un solo grupo; en 3FN.
+#### Reglas del modelo (las pusieron el usuario y el profesor; no se rompen)
+
+Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
+
+| Regla | Detalle |
+|---|---|
+| **Relacional y en un solo `.sql`** | El entregable es un script que crea la base desde cero: base, tablas, reglas, vistas y datos iniciales. Vive en `bd/` |
+| **Motor PostgreSQL** | Lo eligió el usuario el 20 de octubre de 2026 |
+| **Nombres `ENTIDAD` y `ENT_Atributo`** | Tabla en plural y mayúsculas (`ESTUDIANTES`). Cada atributo lleva el prefijo de 3 letras de su tabla (`EST_Nombre`), y el prefijo no se repite entre tablas. Una FK conserva el nombre de la PK que referencia. Sin comillas, así que PostgreSQL los guarda en minúsculas |
+| **La PK es un código** | Cada tabla fuerte tiene `XXX_Codigo`, en texto con prefijo, que pone una secuencia: `PRO001` (3 dígitos en catálogos), `PED0000001` (7 en lo que crece). Excepción: si ya existe un código oficial (INEC, SRI), se usa ese. Las secuencias dejan huecos cuando un insert falla, y es normal; solo el secuencial de factura no puede tener huecos (el SRI) |
+| **Sin N:N** | Se resuelve con una entidad débil entre las dos |
+| **PK de una débil** | Es la unión de las PK de las fuertes que relaciona, sin un código propio. Si una de ellas es otra débil, entra su PK compuesta (`DETALLES_PEDIDO`): falta confirmar con el profesor si eso vale |
+| **Sin 1:1** | Si dos tablas quedarían 1:1, se juntan o se rehace la relación |
+| **Sin herencia** | Nada de supertipo y subtipos |
+| **Todo conectado** | Cada tabla tiene al menos una relación. No puede haber un par o grupo de tablas aislado del resto. Solo autenticación y autorización podrían quedar aparte, pero hoy también están conectadas (USUARIOS → PEDIDOS, DIRECCIONES) |
+| **Autenticación y autorización con al menos 3 tablas** | Lo dijo el profesor. Hoy son 5: ROLES, PERMISOS, ROLES_PERMISOS, USUARIOS, VERIFICACIONES |
+| **Normalizada (hasta 3FN)** | Valores atómicos (nombres y apellidos separados). Lo que se calcula no se guarda: va en una vista. El precio y el IVA del día en cada línea sí se guardan, porque cambian |
+| **Tipos según el contexto ecuatoriano** | Dinero en dólares `NUMERIC(…,2)`. Fechas `TIMESTAMPTZ` con zona `America/Guayaquil`. Cédula `CHAR(10)` con módulo 10, RUC de 13 dígitos, celular `CHAR(10)` `09XXXXXXXX`. Provincias y cantones con su código del INEC; tipo de identificación, forma de pago y tarifa de IVA con su código del SRI. Número de factura `001-001-000000001`. Cada tipo con su `CHECK` |
+| **Varias tablas, no 3 o 4** | El modelo cubre lo que hace el sitio: cuenta, catálogo, canasta, entrega, factura y pago |
 - **25 tablas en 5 grupos**: autenticación y autorización (ROLES, PERMISOS,
   ROLES_PERMISOS, USUARIOS, VERIFICACIONES), ubicación (PROVINCIAS, CANTONES,
   DIRECCIONES), catálogo (CATEGORIAS, ETIQUETAS, TARIFAS_IVA, PRODUCTOS,
@@ -364,7 +373,7 @@ Los agentes viven en `.claude/agents/` y todos leen este plan primero.
 | Agente | Se encarga de | Cambia archivos | Skills cargadas |
 |---|---|---|---|
 | `frontend` | `index.html`, `assets/css/styles.css`, `js/catalogo/view.js`, `js/comun/ui.js`, maquetación, responsive, animaciones | Sí | `verificar-sitio`, `wcag-audit-patterns`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` |
-| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` (+ sigue `nuevo-producto`) |
+| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo, la base de datos (`bd/`) | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` (+ sigue `nuevo-producto`) |
 | `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | `wcag-audit-patterns`, `nielsen-usability-heuristics` (+ `.claude/herramientas/axe.mjs`) |
 | `calidad-publicacion` | Revisión de código y seguridad, CI, empaquetar, subir a la rama | Solo lo de publicar | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
 
