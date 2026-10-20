@@ -878,10 +878,19 @@ Pendiente de la fase 5:
       pantalla."), el error del código se anuncia una vez, "abrir la página"
       lo marca `comun/apertura.js` (no la clave `default`) y el foco vuelve
       al `h1` con Atrás, y `aria-current="page"` en la ficha.
-- [ ] Al volver con Atrás/Adelante entre vistas, arriba del todo (hoy el
-      navegador recupera el desplazamiento y el `h1` con el foco queda
-      fuera); y el buscador y "Ordenar por" del catálogo con el mismo borde
-      y foco que los campos. Los dos, `frontend`.
+- [x] Desplazamiento con Atrás/Adelante (`429b1de`, solo React hasta la
+      fase 7): lo decide la página (`history.scrollRestoration = 'manual'`
+      tras `load`, `auto` otra vez en `pagehide`). **Entre vistas, arriba
+      del todo** con el foco en el `h1`; **entre categorías de la tienda,
+      donde se estaba** (un `Map` por clave de entrada en
+      `comun/apertura.js`). El buscador y "Ordenar por" con el borde y el
+      foco de los campos, en los dos sitios.
+- [ ] `frontend`: Atrás a una entrada de la tienda abierta con un enlace
+      limpia orden, "Mostrar" y búsqueda (`Catalogo.jsx` mira
+      `state.entrar` sin mirar si es Atrás); no debe limpiarlos.
+- [ ] Tras recargar, la tienda no recuerda el desplazamiento de las
+      entradas de antes (Atrás entre categorías da arriba). Se arreglaría
+      guardándolo en `sessionStorage`; no urge.
 - [x] "Iniciar sesión" en todas partes en React (`994f4e7`); el sitio actual
       sigue con "Entrar" en su panel.
 - [x] Aviso en Crear si ya hay una cuenta ("a…@dominio"), y pedidos
