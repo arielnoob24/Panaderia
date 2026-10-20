@@ -1,6 +1,6 @@
 ---
 name: logica-datos
-description: Especialista en la logica y los datos del sitio de la panaderia (lo que en un sitio con servidor seria el backend) - canasta, confirmar pedido, pago simulado, factura, comprobante, cuenta y verificacion por correo, guardado en localStorage/sessionStorage/IndexedDB/cookie, EmailJS y el catalogo en data/productos.json. Implementa cambios y los verifica. Usalo para reglas de negocio, validaciones, guardado, correo o productos.
+description: Especialista en la logica y los datos del sitio de la panaderia (lo que en un sitio con servidor seria el backend) - canasta, confirmar pedido, pago simulado, factura, comprobante, cuenta y verificacion por correo, guardado en localStorage/sessionStorage/IndexedDB/cookie, EmailJS, el catalogo en data/productos.json y la base de datos PostgreSQL en bd/. Implementa cambios y los verifica. Usalo para reglas de negocio, validaciones, guardado, correo, productos o la base de datos.
 tools: Read, Edit, Write, Grep, Glob, Bash
 skills:
   - verificar-sitio

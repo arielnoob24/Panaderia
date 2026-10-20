@@ -6,11 +6,19 @@
 // el puente, porque la canasta tambien llama aqui.
 import { avisos } from '../comun/ui.js';
 import {
-  pedido, entrega, sesion, tarjeta, cobro, factura, puente, direccionEntera,
-  dinero, telefonoLargo, subtotal, envio, total,
+  pedido, entrega, sesion, tarjeta, cobro, factura, puente, dinero, total,
 } from '../comun/state.js';
 import { buzonListo, enviarCorreo } from '../comun/mail.js';
 import { guardarPedido } from '../comun/storage.js';
+// Las reglas (factura, tarjeta, numero, recibo y correo) viven en cobro.js,
+// sin DOM, porque la version en React usa las mismas.
+import {
+  fallosFactura, avisoFactura, fallosTarjeta, avisoTarjeta,
+  reformatear as reformatearTexto, grupos4, mmaa, tresCifras,
+  textoEfectivo, textoBotonPagar, numeroDePedido, armarRecibo, reciboParaGuardar,
+  textoModo, textoEnvio, saludoComprobante, cuerpoComprobante, asuntoComprobante,
+  textoCorreo, avisoAprobado,
+} from './cobro.js';
 
 // Las piezas que pone este modulo dentro de la pantalla de confirmar el pedido.
 // No son un paso propio: la canasta las intercala entre la entrega y el
@@ -159,28 +167,10 @@ let facturaMia = null;
 let facturaOtra = null;
 
 // ---- Datos para la factura ----
-// Dos reglas y nada mas, porque la factura de verdad no se emite aqui: el nombre
-// no puede estar vacio y el documento tiene que tener forma de cedula o de RUC.
-// No se comprueba el digito verificador: eso valida que el numero exista, no que
-// sea de quien dice, y en una maqueta sin SRI detras daria una falsa sensacion de
-// haberlo verificado.
+// Que se pide y que se acepta lo dice fallosFactura() de cobro.js.
 const facturaAOtro = () => facturaRadios.find((r) => r.checked)?.value === 'otro';
 
-const revisarFactura = () => {
-  const fallos = {};
-  if (!facturaAOtro()) return fallos;
-  if (!factura.nombre) fallos.nombre = 'Escribe a nombre de quién va la factura.';
-  const digitos = factura.ident.replace(/\D/g, '');
-  if (!digitos) fallos.ident = 'Escribe la cédula o el RUC.';
-  else if (digitos.length !== 10 && digitos.length !== 13) {
-    fallos.ident = 'La cédula tiene 10 dígitos y el RUC 13.';
-  } else if (Number(digitos.slice(0, 2)) < 1 || Number(digitos.slice(0, 2)) > 24) {
-    // Los dos primeros digitos son la provincia, del 01 al 24. Es la unica
-    // comprobacion que se puede hacer sin inventarse una validacion completa.
-    fallos.ident = 'Los dos primeros dígitos no son de una provincia del Ecuador.';
-  }
-  return fallos;
-};
+const revisarFactura = () => fallosFactura({ ...factura, aOtro: facturaAOtro() });
 
 // Los errores solo salen cuando ya se intento confirmar o cuando el campo se
 // dejo atras: avisar mientras alguien escribe su cedula es regañarle a medias.
@@ -219,6 +209,12 @@ const olvidarFactura = () => {
     error.hidden = true;
     input.removeAttribute('aria-invalid');
   });
+  // Los dos opcionales tambien: antes se quedaban escritos en pantalla con la
+  // factura ya vacia por dentro.
+  ['#factura-correo', '#factura-dir'].forEach((sel) => {
+    const campo = panel?.querySelector(sel);
+    if (campo) campo.value = '';
+  });
   tocadosFactura.clear();
   intentadoFactura = false;
   pintarFactura();
@@ -236,16 +232,9 @@ const cargarFactura = () => {
   pintarFactura();
 };
 
-// Como se escribe en el comprobante y en el correo. A nombre propio no hace
-// falta repetir el nombre de la cuenta, que ya esta arriba en el saludo.
-const facturaTexto = () => (factura.aOtro
-  ? `${factura.nombre} · ${factura.ident.replace(/\D/g, '')}`
-  : 'A tu nombre');
-
 // ---- Pago simulado ----
 // El proyecto es academico: la gracia es enseñar el recorrido completo, no
 // cobrar. Cada pantalla lo dice en voz alta para que nadie crea otra cosa.
-const METODOS = { efectivo: 'Efectivo', tarjeta: 'Tarjeta' };
 const metodoActual = () => metodos.find((m) => m.checked)?.value || 'efectivo';
 let procesando = false;
 let temporizador = 0;
@@ -253,9 +242,7 @@ let temporizador = 0;
 
 const pintarPago = () => {
   const metodo = metodoActual();
-  pagoEfectivo.textContent = entrega.modo === 'domicilio'
-    ? 'Pagas en efectivo al recibir el pedido en tu puerta.'
-    : 'Pagas en efectivo al retirar el pedido en el local.';
+  pagoEfectivo.textContent = textoEfectivo(entrega.modo);
   detalles.forEach((d) => { d.hidden = d.dataset.detalle !== metodo; });
   if (canalCorreo) canalCorreo.textContent = sesion.correo;
   // El nombre y el correo de la cuenta pueden haber cambiado desde la ultima
@@ -269,59 +256,20 @@ const pintarPago = () => {
   const vacia = pedido.size === 0;
   pagar.disabled = vacia;
   pagar.setAttribute('aria-disabled', String(vacia));
-  if (vacia) {
-    pagar.textContent = 'Tu canasta está vacía';
-    return;
-  }
-  // El importe va escrito en el boton: es lo ultimo que se mira antes de
-  // pulsarlo, y teniendo el pedido entero en una pantalla que se desplaza, el
-  // desglose puede haberse quedado arriba fuera de la vista. En efectivo no se
-  // cobra nada ahora, asi que ahi el boton no promete un pago.
-  pagar.textContent = metodo === 'efectivo'
-    ? `Confirmar el pedido · ${dinero(total())}`
-    : `Pagar ${dinero(total())}`;
-};
-
-// Luhn: es la comprobacion que hace cualquier pasarela antes de mandar nada,
-// y es lo que separa un numero inventado de uno con forma de tarjeta.
-const luhn = (digitos) => {
-  let suma = 0;
-  let doble = false;
-  for (let i = digitos.length - 1; i >= 0; i -= 1) {
-    let n = Number(digitos[i]);
-    if (doble) { n *= 2; if (n > 9) n -= 9; }
-    suma += n;
-    doble = !doble;
-  }
-  return digitos.length > 0 && suma % 10 === 0;
+  // El importe va escrito en el boton: teniendo el pedido entero en una
+  // pantalla que se desplaza, el desglose puede haberse quedado arriba.
+  pagar.textContent = textoBotonPagar(metodo, total(), vacia);
 };
 
 const tocados = new Set();
 let intentado = false;
 
-const fallosTarjeta = () => {
-  const fallos = {};
-  const num = tarjeta.numero.replace(/\D/g, '');
-  if (num.length < 16) fallos.numero = 'Faltan dígitos: son 16.';
-  else if (!luhn(num)) fallos.numero = 'Ese número no es válido. Prueba con 4242 4242 4242 4242.';
-  const partes = /^(\d{2})\/(\d{2})$/.exec(tarjeta.vence);
-  if (!partes) fallos.vence = 'Escríbelo como MM/AA.';
-  else {
-    const mes = Number(partes[1]);
-    const anio = 2000 + Number(partes[2]);
-    const hoy = new Date();
-    if (mes < 1 || mes > 12) fallos.vence = 'El mes va entre 01 y 12.';
-    else if (anio < hoy.getFullYear() || (anio === hoy.getFullYear() && mes < hoy.getMonth() + 1)) fallos.vence = 'Esa tarjeta ya venció.';
-  }
-  if (!/^\d{3}$/.test(tarjeta.cvv)) fallos.cvv = 'Son los 3 dígitos del reverso.';
-  if (tarjeta.titular.length < 3) fallos.titular = 'Escribe el nombre del titular.';
-  return fallos;
-};
+// Que se acepta de la tarjeta lo dice fallosTarjeta() de cobro.js.
 
 // Un campo solo se marca cuando ya lo tocaste o cuando ya intentaste pagar:
 // avisar de un error antes de escribir nada no ayuda a nadie.
 const pintarTarjeta = () => {
-  const fallos = fallosTarjeta();
+  const fallos = fallosTarjeta(tarjeta);
   camposTarjeta.forEach(({ clave, input, error }) => {
     const texto = (intentado || tocados.has(clave)) ? fallos[clave] : '';
     error.hidden = !texto;
@@ -332,22 +280,13 @@ const pintarTarjeta = () => {
   return fallos;
 };
 
-// El cursor vuelve a la misma posicion contada en digitos, no en caracteres:
-// si no, al reformatear salta al final y no se puede corregir en medio.
+// El texto se reescribe con su forma (cobro.js) y el cursor vuelve a donde
+// estaba, contado en digitos.
 const reformatear = (input, agrupar) => {
-  const corte = input.selectionStart === null ? input.value.length : input.selectionStart;
-  const antes = input.value.slice(0, corte).replace(/\D/g, '').length;
-  input.value = agrupar(input.value.replace(/\D/g, ''));
-  let pos = 0;
-  let vistos = 0;
-  while (pos < input.value.length && vistos < antes) {
-    if (/\d/.test(input.value[pos])) vistos += 1;
-    pos += 1;
-  }
-  try { input.setSelectionRange(pos, pos); } catch (e) { /* el campo puede no estar enfocado */ }
+  const { valor, cursor } = reformatearTexto(input.value, input.selectionStart, agrupar);
+  input.value = valor;
+  try { input.setSelectionRange(cursor, cursor); } catch (e) { /* el campo puede no estar enfocado */ }
 };
-const grupos4 = (d) => d.slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ');
-const mmaa = (d) => (d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2, 4)}` : d);
 
 const olvidarTarjeta = () => {
   camposTarjeta.forEach(({ clave, input }) => { tarjeta[clave] = ''; input.value = ''; });
@@ -371,33 +310,26 @@ const respaldoCopiar = (texto) => {
   return hecho;
 };
 
-// Sin caracteres que se confundan al dictar el numero por telefono.
-const ALFABETO = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
-const numeroDePedido = () => 'ET-' + Array.from({ length: 4 }, () => ALFABETO[Math.floor(Math.random() * ALFABETO.length)]).join('');
-
-const detalleDe = (metodo) => {
-  if (metodo === 'efectivo') return entrega.modo === 'domicilio' ? 'Efectivo al recibir' : 'Efectivo al retirar';
-  if (metodo === 'tarjeta') return `Tarjeta terminada en ${tarjeta.numero.replace(/\D/g, '').slice(-4)}`;
-  return METODOS[metodo];
-};
-
+// El comprobante sale del recibo armado al aprobar (cobro.recibo), que es el
+// mismo del correo y del historial: los tres dicen lo mismo.
 const pintarComprobante = () => {
-  panel.querySelector('.recibo-numero').textContent = cobro.numero;
-  panel.querySelector('.recibo-subtotal').textContent = dinero(subtotal());
-  panel.querySelector('.recibo-envio').textContent = envio() ? dinero(envio()) : 'Gratis';
-  panel.querySelector('.recibo-total').textContent = dinero(total());
-  panel.querySelector('.recibo-metodo').textContent = cobro.detalle;
-  panel.querySelector('.recibo-modo').textContent = entrega.modo === 'domicilio' ? 'A domicilio' : 'Paso retirando por el local';
-  panel.querySelector('.recibo-factura').textContent = facturaTexto();
-  panel.querySelector('.recibo-linea-dir').hidden = entrega.modo !== 'domicilio';
-  panel.querySelector('.recibo-direccion').textContent = direccionEntera();
+  const r = cobro.recibo;
+  panel.querySelector('.recibo-numero').textContent = r.numero;
+  panel.querySelector('.recibo-subtotal').textContent = dinero(r.subtotal);
+  panel.querySelector('.recibo-envio').textContent = textoEnvio(r.envio);
+  panel.querySelector('.recibo-total').textContent = dinero(r.total);
+  panel.querySelector('.recibo-metodo').textContent = r.detalle;
+  panel.querySelector('.recibo-modo').textContent = textoModo(r.modo);
+  panel.querySelector('.recibo-factura').textContent = r.factura;
+  panel.querySelector('.recibo-linea-dir').hidden = r.modo !== 'domicilio';
+  panel.querySelector('.recibo-direccion').textContent = r.direccion;
   // Las indicaciones solo salen si hay alguna: una fila "Indicaciones: —" no
   // informa de nada y alarga el comprobante.
-  panel.querySelector('.recibo-linea-notas').hidden = entrega.modo !== 'domicilio' || !entrega.notas;
-  panel.querySelector('.recibo-notas').textContent = entrega.notas;
+  panel.querySelector('.recibo-linea-notas').hidden = !r.notas;
+  panel.querySelector('.recibo-notas').textContent = r.notas;
   const recibo = panel.querySelector('.recibo-lista');
   recibo.textContent = '';
-  for (const l of pedido.values()) {
+  for (const l of r.lineas) {
     // Con textContent: el nombre viene de lo guardado y no se lee como HTML.
     const li = document.createElement('li');
     const que = document.createElement('span');
@@ -407,44 +339,8 @@ const pintarComprobante = () => {
     li.append(que, cuanto);
     recibo.append(li);
   }
-  reciboEnviadoDe.textContent = `Correo de El Tradicional · para ${sesion.correo}`;
-  reciboEnviadoTexto.textContent = saludoComprobante();
-};
-
-// El saludo del comprobante se escribe una vez y se usa dos: en el recuadro
-// del panel y como primer parrafo del correo. Si fueran dos textos distintos,
-// el recuadro estaria ensenando un mensaje que nadie recibio.
-const saludoComprobante = () => `Hola ${sesion.nombre.split(' ')[0]}: tu pedido `
-  + `${cobro.numero} quedó registrado por ${dinero(total())}. `
-  + `${entrega.modo === 'domicilio' ? 'Te lo llevamos a ' + direccionEntera() : 'Pasa a retirarlo por el local'}. `
-  + 'Gracias por comprar en El Tradicional.';
-
-// El correo si puede llevar el detalle entero, que en un SMS no cabria. Va en
-// texto plano porque la plantilla de EmailJS lo inserta tal cual.
-const cuerpoComprobante = () => {
-  const lineas = [...pedido.values()]
-    .map((l) => `  ${l.cantidad} × ${l.nombre} — ${dinero(l.precio * l.cantidad)}`);
-  return [
-    saludoComprobante(),
-    '',
-    'LO QUE PEDISTE',
-    ...lineas,
-    '',
-    `Subtotal: ${dinero(subtotal())}`,
-    `Envío: ${envio() ? dinero(envio()) : 'Gratis'}`,
-    `Total: ${dinero(total())}`,
-    `Pago: ${cobro.detalle}`,
-    `Factura: ${facturaTexto()}`,
-    ...(factura.aOtro && factura.direccion ? [`Dirección de la factura: ${factura.direccion}`] : []),
-    `Entrega: ${entrega.modo === 'domicilio' ? 'A domicilio — ' + direccionEntera() : 'Paso retirando por el local'}`,
-    // Quien reparte lee esto antes de bajarse de la moto, asi que va en su
-    // propia linea y no pegado a la direccion.
-    ...(entrega.modo === 'domicilio' && entrega.notas ? [`Indicaciones: ${entrega.notas}`] : []),
-    `Te llamamos al ${telefonoLargo(sesion.telefono)} si hace falta.`,
-    '',
-    'Este pedido es parte de un proyecto académico: el cobro está simulado y',
-    'no se descontó ningún dinero. El correo, en cambio, es real.',
-  ].join('\n');
+  reciboEnviadoDe.textContent = `Correo de El Tradicional · para ${r.correo}`;
+  reciboEnviadoTexto.textContent = saludoComprobante(r);
 };
 
 const restablecerPagar = () => {
@@ -487,56 +383,38 @@ const reiniciarMetodo = () => {
 // alguien por un correo seria castigarlo por la red que tenga-, asi que el
 // recuadro sale al momento diciendo que va en camino y se corrige cuando el
 // envio responde.
-const mandarComprobante = async () => {
-  const decir = (texto, bien) => {
-    reciboEnvioEstado.textContent = texto;
-    reciboEnvioEstado.classList.toggle('is-bien', Boolean(bien));
+const mandarComprobante = async (r) => {
+  const decir = (estado) => {
+    reciboEnvioEstado.textContent = textoCorreo(estado, r);
+    reciboEnvioEstado.classList.toggle('is-bien', estado === 'enviado');
   };
-  if (!buzonListo()) {
-    decir('Mensaje simulado: el envío de correo no está configurado en esta copia '
-      + 'del sitio, así que no salió nada. El recuadro de arriba es el mensaje que '
-      + 'habría llegado.');
-    return;
-  }
-  const numero = cobro.numero;
-  const para = sesion.correo;
-  decir('Enviando el comprobante a tu correo…');
-  const bien = await enviarCorreo(para, sesion.nombre,
-    `Pedido ${numero} · El Tradicional`, cuerpoComprobante());
+  if (!buzonListo()) { decir('simulado'); return; }
+  decir('enviando');
+  const bien = await enviarCorreo(r.correo, r.nombre, asuntoComprobante(r), cuerpoComprobante(r));
   // Si mientras el correo viajaba se confirmo otro pedido, el recuadro ya no
   // habla de este: entonces el aviso sobra y escribirlo seria mentir sobre el
   // recibo que se esta mirando.
-  if (cobro.numero !== numero) return;
-  decir(bien
-    ? `Comprobante enviado a ${para}. Si no lo ves, mira en la carpeta de spam.`
-    : 'No se pudo enviar el correo (puede ser la red o la cuota del mes). Tu pedido '
-      + `quedó registrado igual: apunta el número ${numero}.`, bien);
+  if (cobro.numero !== r.numero) return;
+  decir(bien ? 'enviado' : 'fallo');
 };
 
 const aprobar = (metodo) => {
   procesando = false;
   cobro.metodo = metodo;
   cobro.numero = numeroDePedido();
-  cobro.detalle = detalleDe(metodo);
+  // De la tarjeta, el recibo solo se lleva los cuatro ultimos digitos.
+  cobro.recibo = armarRecibo({
+    lineas: [...pedido], entrega, factura: { ...factura }, sesion, metodo,
+    numeroTarjeta: tarjeta.numero, numero: cobro.numero,
+  });
+  cobro.detalle = cobro.recibo.detalle;
   pintarComprobante();
-  mandarComprobante();
+  mandarComprobante(cobro.recibo);
   // El pedido pasa al historial de este navegador antes de vaciar nada. Es lo
   // unico que queda de el: el recibo de la pantalla se va al cerrar el panel y
   // el correo puede no haber salido, asi que sin esto no habria donde volver a
   // mirar que se pidio ni por cuanto.
-  guardarPedido({
-    numero: cobro.numero,
-    fecha: new Date().toISOString(),
-    modo: entrega.modo,
-    direccion: entrega.modo === 'domicilio' ? direccionEntera() : '',
-    metodo: cobro.detalle,
-    subtotal: subtotal(),
-    envio: envio(),
-    total: total(),
-    lineas: [...pedido].map(([id, l]) => ({
-      id, nombre: l.nombre, precio: l.precio, cantidad: l.cantidad,
-    })),
-  });
+  guardarPedido(reciboParaGuardar(cobro.recibo));
   // El comprobante ya esta emitido: la canasta guardada se borra para que no
   // reaparezca en la proxima visita, pero las lineas siguen en memoria para
   // poder leer el recibo y armar el mensaje hasta que se cierre el panel.
@@ -546,7 +424,7 @@ const aprobar = (metodo) => {
   olvidarFactura();
   restablecerPagar();
   puente.verComprobante();
-  avisos.textContent = `Pago aprobado. Pedido ${cobro.numero}. Es una simulación: no se cobró nada.`;
+  avisos.textContent = avisoAprobado(cobro.numero);
 };
 
 // La canasta llama a esto una vez, con el panel ya creado.
@@ -621,7 +499,7 @@ const montarPago = (elPanel) => {
     input.addEventListener('input', () => {
       if (clave === 'numero') reformatear(input, grupos4);
       if (clave === 'vence') reformatear(input, mmaa);
-      if (clave === 'cvv') reformatear(input, (d) => d.slice(0, 3));
+      if (clave === 'cvv') reformatear(input, tresCifras);
       tarjeta[clave] = clave === 'titular' ? input.value.trim().slice(0, 60) : input.value;
       pintarTarjeta();
     });
@@ -662,7 +540,7 @@ const montarPago = (elPanel) => {
     const faltaFactura = facturaCampos.filter(({ clave }) => malFactura[clave]);
     if (faltaFactura.length) {
       errorPago.hidden = false;
-      errorPago.textContent = `Para la factura, revisa ${faltaFactura.map((c) => c.nombre).join(' y ')}.`;
+      errorPago.textContent = avisoFactura(faltaFactura.map((c) => c.clave));
       faltaFactura[0].input.focus();
       return;
     }
@@ -673,7 +551,7 @@ const montarPago = (elPanel) => {
       const faltan = camposTarjeta.filter(({ clave }) => fallos[clave]);
       if (faltan.length) {
         errorPago.hidden = false;
-        errorPago.textContent = `Revisa ${faltan.map((c) => c.nombre).join(', ')} de la tarjeta.`;
+        errorPago.textContent = avisoTarjeta(faltan.map((c) => c.clave));
         faltan[0].input.focus();
         return;
       }
