@@ -38,6 +38,7 @@ usuario entienda y recuerde, **no** texto para pegar. Por eso:
 
 En el chat, salvo que el usuario pida guardarlas. Si las guarda, en un `.md` de
 la raiz con una primera linea que diga que es material de referencia y no texto
-para entregar. Antes de crear uno nuevo, mirar si `GUIA_PARA_EXPLICAR.md`,
-`EXPLICACION_DEL_CODIGO.md` o `ACCESIBILIDAD_TECLADO.md` ya cubren el tema y
-completar ese.
+para entregar. Antes de crear uno nuevo, mirar si `plan.md`,
+`ACCESIBILIDAD_TECLADO.md` u otro `.md` de la raiz ya cubren el tema y
+completar ese. `plan.md` dice como debe funcionar cada parte: es el primer
+sitio donde buscar.

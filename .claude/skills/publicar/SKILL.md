@@ -16,7 +16,7 @@ git status --short
 ```
 
 Solo entran los archivos del cambio. **No** commitear lo que no es tuyo ni del
-cambio: `.github/agents/*.agent.md` (los edita el usuario), PDFs de la clase,
+cambio: PDFs de la clase,
 `GUIA_PARA_EXPLICAR.md`, `auditoria*.md` u otros `.md` sueltos sin seguimiento.
 
 ## 2. Regenerar lo que depende del cambio
