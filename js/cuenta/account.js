@@ -4,10 +4,10 @@
 // tener que escribirla otra vez, y eso va por el puente.
 import {
   avisos, menuToggle, closeMenu, flechasEnMenu, apagarDetras, atraparFoco, enterAvanza,
-} from './ui.js';
-import { sesion, entrega, puente, dinero } from './state.js';
-import { buzonListo, enviarCorreo } from './mail.js';
-import { pedidosGuardados, marcaBonita } from './storage.js';
+} from '../comun/ui.js';
+import { sesion, entrega, puente, dinero } from '../comun/state.js';
+import { buzonListo, enviarCorreo } from '../comun/mail.js';
+import { pedidosGuardados, marcaBonita } from '../comun/storage.js';
 
 // Maqueta de cuentas. No hay servidor detras, asi que nada de esto viaja a
 // ninguna parte: la cuenta queda escrita en este navegador y en ningun otro

@@ -19,8 +19,8 @@ Las piezas son tres tipos de archivo:
 | Tipo | Archivo(s) | Qué pone |
 |---|---|---|
 | Estructura | `index.html` | El esqueleto de la página: cabecera, portada, catálogo vacío, historia y pie |
-| Aspecto | `assets/styles.css` | Colores, tipografía, distribución, animaciones y adaptación al teléfono |
-| Comportamiento | `js/*.js` (10 módulos) | Todo lo que se mueve: pintar productos, canasta, cuenta, pago |
+| Aspecto | `assets/css/styles.css` | Colores, tipografía, distribución, animaciones y adaptación al teléfono |
+| Comportamiento | `js/` (10 módulos en `comun/`, `catalogo/`, `pedido/` y `cuenta/`) | Todo lo que se mueve: pintar productos, canasta, cuenta, pago |
 | Datos | `data/productos.json` | La lista de productos con su precio, foto y categoría |
 
 Hay mucho HTML que **no está** en `index.html`: el panel de la canasta, la
@@ -42,14 +42,14 @@ archivo, con el catálogo ya metido dentro, y lo genera
 ```
 index.html
    └── app.js  (el arranque)
-         ├── repo.js      lee data/productos.json
-         ├── view.js      pinta las fichas y maneja el catálogo
-         ├── cart.js      la canasta y la pantalla de confirmar
-         │     └── checkout.js   pago simulado y comprobante
-         ├── account.js   la cuenta del cliente
-         └── ui.js        piezas comunes (menú, foco, horario, animaciones)
+         ├── catalogo/repo.js   lee data/productos.json
+         ├── catalogo/view.js   pinta las fichas y maneja el catálogo
+         ├── pedido/cart.js     la canasta y la pantalla de confirmar
+         │     └── pedido/checkout.js   pago simulado y comprobante
+         ├── cuenta/account.js  la cuenta del cliente
+         └── comun/ui.js        piezas comunes (menú, foco, horario, animaciones)
 
-   Todos usan además:
+   Todos usan además (en comun/):
          state.js    los datos compartidos (el pedido, la entrega, la sesión...)
          storage.js  dónde se guarda cada cosa en el navegador
          mail.js     el envío de correos
@@ -116,7 +116,7 @@ y a los buscadores.
 
 ---
 
-## 3. `assets/styles.css`
+## 3. `assets/css/styles.css`
 
 Un solo archivo de estilos, ordenado de lo general a lo particular.
 

@@ -3,9 +3,9 @@
 // en fila de la portada, la vista de cada categoria, el orden y el filtro.
 // Las fichas salen de aqui como HTML; el control de cantidad que llevan
 // dentro lo pone cart.js despues, porque eso ya es canasta.
-import { reducedMotion, avisos, grupo, abrirGrupo } from './ui.js';
-import { dinero, idDe, puente } from './state.js';
-import { recordarVista, vistaRecordada } from './storage.js';
+import { reducedMotion, avisos, grupo, abrirGrupo } from '../comun/ui.js';
+import { dinero, idDe, puente } from '../comun/state.js';
+import { recordarVista, vistaRecordada } from '../comun/storage.js';
 
 const catalogStatus = document.querySelector('.catalog-status');
 const productGrid = document.querySelector('.product-grid');

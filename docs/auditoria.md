@@ -138,8 +138,8 @@ imágenes cargan y se midió el peso real y el tamaño de cada botón.
 
 ## 6. Archivos relacionados
 
-- [ACCESIBILIDAD_TECLADO.md](ACCESIBILIDAD_TECLADO.md): cómo se maneja el sitio sin ratón,
+- [docs/accesibilidad-teclado.md](docs/accesibilidad-teclado.md): cómo se maneja el sitio sin ratón,
   tecla por tecla.
 - [README.md](README.md): cómo está repartido el proyecto y qué está simulado.
-- [EXPLICACION_DEL_CODIGO.md](EXPLICACION_DEL_CODIGO.md): el código explicado archivo por
+- [docs/explicacion-del-codigo.md](docs/explicacion-del-codigo.md): el código explicado archivo por
   archivo.

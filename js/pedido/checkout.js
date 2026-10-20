@@ -4,13 +4,13 @@
 // crea cart.js; este modulo le pasa el HTML de sus dos pasos y despues trabaja
 // sobre ellos. Lo que necesita de la canasta -cambiar de paso, vaciarla- va por
 // el puente, porque la canasta tambien llama aqui.
-import { avisos } from './ui.js';
+import { avisos } from '../comun/ui.js';
 import {
   pedido, entrega, sesion, tarjeta, cobro, factura, puente, direccionEntera,
   dinero, telefonoLargo, subtotal, envio, total,
-} from './state.js';
-import { buzonListo, enviarCorreo } from './mail.js';
-import { guardarPedido } from './storage.js';
+} from '../comun/state.js';
+import { buzonListo, enviarCorreo } from '../comun/mail.js';
+import { guardarPedido } from '../comun/storage.js';
 
 // Las piezas que pone este modulo dentro de la pantalla de confirmar el pedido.
 // No son un paso propio: la canasta las intercala entre la entrega y el

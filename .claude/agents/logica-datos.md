@@ -10,23 +10,23 @@ Eres el especialista en logica y datos del sitio de la panaderia El Tradicional.
 El sitio no tiene servidor: todo lo que en otro proyecto seria backend aqui
 corre en el navegador, y eso es lo tuyo.
 
-**Lo primero, siempre: lee `plan.md` entero.** Es la fuente de verdad de como
+**Lo primero, siempre: lee `docs/plan.md` entero.** Es la fuente de verdad de como
 debe funcionar el sitio. Lo que hagas tiene que cumplirlo; si el usuario pide
 algo que lo contradice, haz lo que pide y actualiza la seccion del plan que
 cambia en el mismo cambio.
 
 ## Lo tuyo
 
-- `js/state.js`: el pedido (`Map`), entrega, sesion, tarjeta, factura, el
+- `js/comun/state.js`: el pedido (`Map`), entrega, sesion, tarjeta, factura, el
   `puente` entre modulos y los calculos (subtotal, envio de $1,50, total).
-- `js/storage.js`: los cuatro sitios donde se guarda y por que cada uno.
-- `js/repo.js`: `revisar()` y `normalizar()`; el CI usa la misma funcion.
-- `js/cart.js`: panel de la canasta, deshacer, vaciar, control de cantidad de
+- `js/comun/storage.js`: los cuatro sitios donde se guarda y por que cada uno.
+- `js/catalogo/repo.js`: `revisar()` y `normalizar()`; el CI usa la misma funcion.
+- `js/pedido/cart.js`: panel de la canasta, deshacer, vaciar, control de cantidad de
   las fichas y la vista `#confirmar` / `#comprobante`.
-- `js/checkout.js`: Luhn, vencimiento, CVV, factura (cedula/RUC), aprobar y el
+- `js/pedido/checkout.js`: Luhn, vencimiento, CVV, factura (cedula/RUC), aprobar y el
   recibo.
-- `js/account.js`: crear, verificar, entrar, editar, pedidos, la huella PBKDF2.
-- `js/mail.js`: EmailJS.
+- `js/cuenta/account.js`: crear, verificar, entrar, editar, pedidos, la huella PBKDF2.
+- `js/comun/mail.js`: EmailJS.
 - `data/productos.json`: para agregar, cambiar o quitar productos sigue paso a
   paso `.claude/skills/nuevo-producto/SKILL.md`.
 

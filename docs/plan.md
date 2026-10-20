@@ -29,35 +29,61 @@ Proyecto de la materia Desarrollo de Plataformas.
 | **Sin dependencias** en el navegador: lo que está en el repo es lo que corre | Se abre igual por HTTP y con doble clic |
 | Tiene que funcionar **con doble clic** (`file://`) además de por HTTP | La profe puede abrirlo así |
 | El CI rechaza las palabras de cafetería, café y cóctel, **también en comentarios** | Es una panadería; lo revisa `ci-cd.yml` |
-| Todo cambio del sitio se **publica** en `main` sin preguntar | El usuario mira el sitio publicado, no el local |
+| `main` es lo que se presentó y lo que sirve GitHub Pages; las mejoras van en la rama **`mejoras`** y se commitean y pushean ahí sin preguntar | El proyecto ya se entregó: lo publicado no cambia hasta fusionar `mejoras` en `main` |
 | Los informes de clase admiten **máximo 5% de texto de IA** | Pasarse cuesta la mitad de la nota; lo que escribe Claude es referencia |
 
 ## 3. Cómo está repartido
 
 ```
-index.html              la única página (secciones semánticas)
-assets/styles.css       todos los estilos
-assets/img/             logo, mascota, iconos, portada (hero-900/1200/1600)
-assets/img/productos/   fotos del catálogo, cada una en -420.jpg y -840.jpg
-data/productos.json     el catálogo
-js/                     10 módulos ES + sin-servidor.js (generado)
-herramientas/empaquetar.mjs   genera js/sin-servidor.js
-.github/workflows/ci-cd.yml   valida y publica
+index.html              la unica pagina; tiene que estar en la raiz para GitHub Pages
+README.md               como verlo, tocarlo y publicarlo
+docs/                   la documentacion
+  plan.md               como debe funcionar todo (lo leen los agentes)
+  explicacion-del-codigo.md
+  accesibilidad-teclado.md
+  auditoria.md
+assets/
+  css/styles.css        todos los estilos
+  img/                  logo, mascota, iconos y la foto de portada
+    productos/          las fotos del catalogo, cada una en 420 y 840 px
+data/
+  productos.json        el catalogo: nombre, precio, foto, categoria y tamanos
+js/
+  app.js                el arranque: trae los datos y enciende lo demas
+  sin-servidor.js       todo junto, con el catalogo dentro (generado; es lo
+                        que corre al abrir index.html con doble clic)
+  comun/                lo que usan todas las zonas
+    state.js            lo que comparten los modulos, y el puente entre ellos
+    storage.js          los cuatro sitios donde se guarda: local, session, IDB y cookie
+    ui.js               barra, foco, cuadritos de ayuda, animaciones y horario
+    mail.js             envio de correo por EmailJS
+  catalogo/
+    repo.js             lee y revisa data/productos.json
+    view.js             pinta las fichas y manda el catalogo (orden, filtro, vistas)
+  pedido/
+    cart.js             la canasta: panel, lineas y control de cantidad
+    checkout.js         pago simulado y comprobante
+  cuenta/
+    account.js          crear cuenta, verificar el correo y entrar
+herramientas/
+  empaquetar.mjs        genera js/sin-servidor.js
+.github/workflows/      el CI: valida y publica
 .claude/                agentes, skills y herramientas de Claude Code
 ```
 
-### Los módulos de `js/`
+### Cómo se llaman los módulos
 
 ```
 index.html
   └── app.js  arranque
-        ├── repo.js      lee y valida data/productos.json
-        ├── view.js      fichas, mostrador, vista de catálogo, filtros, rutas
-        ├── cart.js      canasta, pantalla de confirmar, control de cantidad
-        │     └── checkout.js  pago simulado, factura, comprobante
-        ├── account.js   crear cuenta, verificar correo, entrar, datos, pedidos
-        └── ui.js        avisos aria-live, foco, menús, globo de ayuda, horario
-  Todos usan: state.js (datos compartidos y "puente"), storage.js, mail.js
+        ├── catalogo/repo.js     lee y valida data/productos.json
+        ├── catalogo/view.js     fichas, mostrador, vista de catálogo, filtros, rutas
+        ├── pedido/cart.js       canasta, pantalla de confirmar, control de cantidad
+        │     └── pedido/checkout.js  pago simulado, factura, comprobante
+        ├── cuenta/account.js    crear cuenta, verificar correo, entrar, datos, pedidos
+        └── comun/ui.js          avisos aria-live, foco, menús, globo de ayuda, horario
+  Todos usan comun/: state.js (datos compartidos y "puente"), storage.js, mail.js
+  Cada carpeta importa las otras con rutas relativas (`../comun/state.js`).
 ```
 
 - **El puente** (`state.js`): los módulos que se llaman en las dos direcciones
@@ -90,7 +116,7 @@ Hoy: **17 productos** en 3 categorías (`panes` 6, `dulces` 5,
 | `tamanos` | no | `[{ valor, precio }]`; cada tamaño es una línea distinta en la canasta |
 | `destacado` | no | `true` = entra en "Los más pedidos"; hacen falta al menos 4 disponibles |
 
-`revisar()` de `js/repo.js` valida cada producto; el sitio y el CI usan la
+`revisar()` de `js/catalogo/repo.js` valida cada producto; el sitio y el CI usan la
 misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
 
 ### Portada: "Los más pedidos"
@@ -171,7 +197,7 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
   `<details>`.
 - Enter en un campo pasa al siguiente; en el último, hace la acción.
 
-## 8. Dónde se guarda cada cosa (`js/storage.js`)
+## 8. Dónde se guarda cada cosa (`js/comun/storage.js`)
 
 | Dónde | Qué | Por qué |
 |---|---|---|
@@ -182,7 +208,7 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
 
 Todo va en `try/catch`: en ventana privada no puede tumbar la página.
 
-## 9. Correo (`js/mail.js`)
+## 9. Correo (`js/comun/mail.js`)
 
 EmailJS (gratis): una sola plantilla para el código y el comprobante. Las
 claves son públicas por diseño; las protege la lista de dominios del panel de
@@ -212,7 +238,7 @@ EmailJS. `enviarCorreo()` nunca lanza: si falla, el pedido sigue valiendo.
 - Contraste medido (texto 12,4:1; secundario 6,8:1; pie 11,1:1 y 8,7:1).
 - `prefers-reduced-motion` apaga entradas, velos y desplazamiento suave.
 - Objetivos táctiles de al menos 24 px (los botones de ficha, 44 px).
-- El recorrido de teclado está en `ACCESIBILIDAD_TECLADO.md`.
+- El recorrido de teclado está en `docs/accesibilidad-teclado.md`.
 
 ## 12. Calidad y publicación
 
@@ -222,7 +248,7 @@ EmailJS. `enviarCorreo()` nunca lanza: si falla, el pedido sigue valiendo.
    doble clic). `node --check` **no basta**.
 4. Commit solo de los archivos del cambio, mensaje en español.
 5. `bash .claude/skills/publicar/ci-local.sh`.
-6. Push a `main` y esperar a que `Validar y publicar sitio` salga en verde.
+6. Push a la rama en la que se trabaja (`mejoras`) y esperar a que `Validar y publicar sitio` salga en verde. Solo un push a `main` publica en Pages; para llevar `mejoras` al sitio se fusiona en `main` cuando el usuario lo pida.
 
 El CI comprueba: archivos principales, sintaxis de los módulos,
 `sin-servidor.js` al día, imports con la mayúscula exacta, el catálogo con

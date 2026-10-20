@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 Pedido: $ARGUMENTS
 
-El catalogo vive en `data/productos.json`. Lo valida `revisar()` de `js/repo.js`,
+El catalogo vive en `data/productos.json`. Lo valida `revisar()` de `js/catalogo/repo.js`,
 la misma funcion que usa el sitio al cargarlo y que corre el CI, asi que las
 reglas de abajo no son de estilo: si no se cumplen, el sitio no publica.
 

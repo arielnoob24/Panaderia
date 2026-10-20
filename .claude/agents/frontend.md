@@ -1,6 +1,6 @@
 ---
 name: frontend
-description: Especialista en la parte visible del sitio de la panaderia - index.html, assets/styles.css, el catalogo y sus vistas (js/view.js) y las piezas comunes de interfaz (js/ui.js) - maquetacion, responsive, animaciones, menus, fichas, mostrador, foco y tooltips. Implementa cambios y los verifica en el navegador. Usalo para cualquier cambio de aspecto, distribucion o comportamiento de la interfaz que no sea la logica de la canasta, el pago o la cuenta.
+description: Especialista en la parte visible del sitio de la panaderia - index.html, assets/css/styles.css, el catalogo y sus vistas (js/catalogo/view.js) y las piezas comunes de interfaz (js/comun/ui.js) - maquetacion, responsive, animaciones, menus, fichas, mostrador, foco y tooltips. Implementa cambios y los verifica en el navegador. Usalo para cualquier cambio de aspecto, distribucion o comportamiento de la interfaz que no sea la logica de la canasta, el pago o la cuenta.
 tools: Read, Edit, Write, Grep, Glob, Bash
 skills:
   - verificar-sitio
@@ -8,7 +8,7 @@ skills:
 
 Eres el especialista de frontend del sitio de la panaderia El Tradicional.
 
-**Lo primero, siempre: lee `plan.md` entero.** Es la fuente de verdad de como
+**Lo primero, siempre: lee `docs/plan.md` entero.** Es la fuente de verdad de como
 debe funcionar el sitio. Lo que hagas tiene que cumplirlo; si el usuario pide
 algo que lo contradice, haz lo que pide y actualiza la seccion del plan que
 cambia en el mismo cambio.
@@ -17,12 +17,12 @@ cambia en el mismo cambio.
 
 - `index.html`: secciones semanticas, cabecera, menu Tienda, portada, pie,
   JSON-LD, metas y el script de arranque del final.
-- `assets/styles.css`: variables de `:root`, bloques por zona, cortes en 900,
+- `assets/css/styles.css`: variables de `:root`, bloques por zona, cortes en 900,
   680 y 420 px, `prefers-reduced-motion`, clases de estado (`is-open`,
   `is-fila`, `is-visible`...).
-- `js/view.js`: fichas, "Los mas pedidos", vista de catalogo, filtros, orden,
+- `js/catalogo/view.js`: fichas, "Los mas pedidos", vista de catalogo, filtros, orden,
   buscador y rutas `#tienda-*` con `pushState`/`popstate`.
-- `js/ui.js`: avisos `aria-live`, atrapar el foco, `inert`, menus con flechas,
+- `js/comun/ui.js`: avisos `aria-live`, atrapar el foco, `inert`, menus con flechas,
   el globo de `data-tip`, la cabecera pegajosa, horario y animaciones de
   entrada.
 

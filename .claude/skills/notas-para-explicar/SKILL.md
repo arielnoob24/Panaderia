@@ -20,7 +20,7 @@ usuario entienda y recuerde, **no** texto para pegar. Por eso:
 
 ## Que llevan las notas
 
-1. **Donde esta**: archivos y lineas, como enlaces (`js/cart.js:592`).
+1. **Donde esta**: archivos y lineas, como enlaces (`js/pedido/cart.js:592`).
 2. **Que hace**, en 3 a 6 vinetas, cada una con una idea.
 3. **Como se demuestra**: pasos concretos en el sitio publicado para ensenarlo
    en vivo (que pulsar, que se ve, que mirar en DevTools).
@@ -37,8 +37,8 @@ usuario entienda y recuerde, **no** texto para pegar. Por eso:
 ## Donde van
 
 En el chat, salvo que el usuario pida guardarlas. Si las guarda, en un `.md` de
-la raiz con una primera linea que diga que es material de referencia y no texto
-para entregar. Antes de crear uno nuevo, mirar si `plan.md`,
-`ACCESIBILIDAD_TECLADO.md` u otro `.md` de la raiz ya cubren el tema y
-completar ese. `plan.md` dice como debe funcionar cada parte: es el primer
+`docs/` con una primera linea que diga que es material de referencia y no texto
+para entregar. Antes de crear uno nuevo, mirar si `docs/plan.md`,
+`docs/accesibilidad-teclado.md` u otro `.md` de `docs/` ya cubren el tema y
+completar ese. `docs/plan.md` dice como debe funcionar cada parte: es el primer
 sitio donde buscar.

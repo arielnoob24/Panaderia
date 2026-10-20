@@ -1,8 +1,9 @@
 name: Validar y publicar sitio
 
 on:
+  # Se valida en cualquier rama (tambien en mejoras); publicar, solo desde main.
   push:
-    branches: [main]
+    branches: ['**']
   pull_request:
     branches: [main]
 
@@ -21,20 +22,21 @@ jobs:
         run: |
           set -euo pipefail
           test -s index.html
-          test -s assets/styles.css
+          test -s assets/css/styles.css
           test -s assets/img/mascota.png
           test -s data/productos.json
           # Las rutas cambiaron al repartir el sitio en carpetas: si alguna se
           # queda atras, la pagina sale sin estilos o sin JavaScript y el HTML
           # por si solo parece correcto.
-          grep -q 'assets/styles.css' index.html
+          grep -q 'assets/css/styles.css' index.html
           grep -q 'assets/img/mascota.png' index.html
           grep -q 'js/app.js' index.html
 
           # Cada modulo tiene que parsear. Un error de sintaxis en uno solo
           # deja la pagina entera sin JavaScript, y eso no se ve en el HTML:
           # el sitio se publica igual y se rompe en el navegador.
-          for f in js/*.js; do
+          # Los modulos van en carpetas por zona (comun, catalogo, pedido, cuenta).
+          for f in $(find js -name '*.js'); do
             cp "$f" "$f.mjs"
             node --check "$f.mjs"
             rm "$f.mjs"
@@ -53,8 +55,11 @@ jobs:
           # Lo que un modulo importa tiene que existir con ese nombre exacto.
           # Una mayuscula de diferencia funciona en Windows y falla en el
           # servidor, que distingue, y entonces solo se rompe lo publicado.
-          grep -ho "from '\./[A-Za-z0-9_-]*\.js'" js/*.js | sed "s|.*/||; s|'||" | sort -u | while read -r m; do
-            test -s "js/$m" || { echo "Falta js/$m, que algun modulo importa."; exit 1; }
+          # La ruta se resuelve desde la carpeta del modulo que importa.
+          for f in $(find js -name '*.js' ! -name sin-servidor.js); do
+            grep -o "from '\.\.\{0,1\}/[A-Za-z0-9_/-]*\.js'" "$f" | sed "s|^from '||; s|'$||" | while read -r m; do
+              test -s "$(dirname "$f")/$m" || { echo "Falta $m, que importa $f."; exit 1; }
+            done
           done
 
           # El catalogo ya no esta en el HTML: vive en data/productos.json y lo
@@ -62,7 +67,7 @@ jobs:
           # comprueba con las reglas de verdad y no con una copia de ellas.
           node --input-type=module -e '
             import { readFileSync, existsSync } from "node:fs";
-            const { revisar } = await import("./js/repo.js");
+            const { revisar } = await import("./js/catalogo/repo.js");
             const datos = JSON.parse(readFileSync("data/productos.json", "utf8"));
             const productos = datos.productos;
             if (!Array.isArray(productos) || !productos.length) {
@@ -111,7 +116,7 @@ jobs:
             console.log(`${productos.length * ANCHOS.length + 3} fotos en su sitio.`);
           '
 
-          if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html assets/styles.css data/productos.json js/*.js; then
+          if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html assets/css/styles.css data/productos.json $(find js -name '*.js'); then
             echo 'Se encontro una referencia no permitida a cafeteria, cafe o cocteles.'
             exit 1
           fi

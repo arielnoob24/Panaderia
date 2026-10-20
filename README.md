@@ -7,28 +7,40 @@ GitHub Pages.
 ## Como esta repartido
 
 ```
-index.html            la pagina, con sus secciones semanticas
+index.html              la unica pagina; tiene que estar en la raiz para GitHub Pages
+README.md               como verlo, tocarlo y publicarlo
+docs/                   la documentacion
+  plan.md               como debe funcionar todo (lo leen los agentes)
+  explicacion-del-codigo.md
+  accesibilidad-teclado.md
+  auditoria.md
 assets/
-  styles.css          todos los estilos
-  img/                logo, mascota, iconos y la foto de portada
-    productos/        las fotos del catalogo, cada una en 420 y 840 px
+  css/styles.css        todos los estilos
+  img/                  logo, mascota, iconos y la foto de portada
+    productos/          las fotos del catalogo, cada una en 420 y 840 px
 data/
-  productos.json      el catalogo: nombre, precio, foto, categoria y tamanos
+  productos.json        el catalogo: nombre, precio, foto, categoria y tamanos
 js/
-  app.js              el arranque: trae los datos y enciende lo demas
-  repo.js             lee y revisa data/productos.json
-  view.js             pinta las fichas y manda el catalogo (orden, filtro, vistas)
-  cart.js             la canasta: panel, lineas y control de cantidad
-  checkout.js         pago simulado y comprobante
-  account.js          crear cuenta, verificar el correo y entrar
-  mail.js             envio de correo por EmailJS
-  ui.js               barra, foco, cuadritos de ayuda, animaciones y horario
-  state.js            lo que comparten los modulos, y el puente entre ellos
-  storage.js          los cuatro sitios donde se guarda: local, session, IDB y cookie
-  sin-servidor.js     los 10 modulos en un solo archivo, con el catalogo dentro
-                      (generado; es lo que corre al abrir index.html con doble clic)
+  app.js                el arranque: trae los datos y enciende lo demas
+  sin-servidor.js       todo junto, con el catalogo dentro (generado; es lo
+                        que corre al abrir index.html con doble clic)
+  comun/                lo que usan todas las zonas
+    state.js            lo que comparten los modulos, y el puente entre ellos
+    storage.js          los cuatro sitios donde se guarda: local, session, IDB y cookie
+    ui.js               barra, foco, cuadritos de ayuda, animaciones y horario
+    mail.js             envio de correo por EmailJS
+  catalogo/
+    repo.js             lee y revisa data/productos.json
+    view.js             pinta las fichas y manda el catalogo (orden, filtro, vistas)
+  pedido/
+    cart.js             la canasta: panel, lineas y control de cantidad
+    checkout.js         pago simulado y comprobante
+  cuenta/
+    account.js          crear cuenta, verificar el correo y entrar
 herramientas/
-  empaquetar.mjs      genera js/sin-servidor.js
+  empaquetar.mjs        genera js/sin-servidor.js
+.github/workflows/      el CI: valida y publica
+.claude/                agentes, skills y herramientas de Claude Code
 ```
 
 ## Con que esta hecho
@@ -101,7 +113,7 @@ quedan inalcanzables: el CI lo comprueba y no publica.
 Sin servidor, todo lo que sobrevive a cerrar la pagina se queda en el
 navegador. Se usan los cuatro mecanismos, y cada uno porque le toca: lo que
 decide donde va un dato es cuanto tiene que durar y que forma tiene. Las
-funciones estan juntas en `js/storage.js`.
+funciones estan juntas en `js/comun/storage.js`.
 
 | Donde | Que guarda | Por que ahi |
 | --- | --- | --- |
@@ -128,7 +140,7 @@ quien todavia no ha pedido nada.
 - **Teclado.** Todo se puede usar sin raton. Los dos dialogos -canasta y
   cuenta- atrapan el foco mientras estan abiertos, se cierran con `Escape` y lo
   devuelven al boton que los abrio. El menu de Tienda se recorre con las
-  flechas. Hay un enlace para saltar al contenido. En `ACCESIBILIDAD_TECLADO.md`
+  flechas. Hay un enlace para saltar al contenido. En `docs/accesibilidad-teclado.md`
   esta el recorrido completo.
 - **Foco visible.** Ningun `outline: none` sin reemplazo: el foco se marca con
   un anillo propio, y se usa `:focus-visible` para no ensenarlo al pulsar con
@@ -166,5 +178,5 @@ quien todavia no ha pedido nada.
 El cobro no existe: no se procesa ningun pago y los datos de la tarjeta no se
 guardan ni se envian. La cuenta se guarda solo en el navegador, y de la
 contrasena solo su huella (PBKDF2 con sal), con la que se comprueba al entrar.
-El correo del codigo y del comprobante si sale de verdad, por EmailJS: las tres claves van en `js/mail.js`, y mientras esten
+El correo del codigo y del comprobante si sale de verdad, por EmailJS: las tres claves van en `js/comun/mail.js`, y mientras esten
 vacias el codigo y el comprobante se ensenan en pantalla en vez de enviarse.

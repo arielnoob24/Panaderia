@@ -3,7 +3,7 @@
 // para que index.html funcione abierto con doble clic.
 var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes","precio":0.25,"destacado":true,"foto":"assets/img/productos/pan-redondo","alt":"Pan redondo de corteza dorada y brillante sobre papel blanco","etiqueta":{"color":"green","texto":"De la casa"}},{"nombre":"Pan enrollado","categoria":"panes","precio":0.35,"foto":"assets/img/productos/pan-enrollado","alt":"Pan enrollado en forma de media luna, dorado y hojaldrado"},{"nombre":"Palanqueta","categoria":"panes","precio":0.5,"foto":"assets/img/productos/palanqueta","alt":"Palanqueta alargada de corteza crujiente con cortes en la superficie","disponible":false},{"nombre":"Empanada de queso","categoria":"panes","precio":0.75,"destacado":true,"foto":"assets/img/productos/pan-con-queso","alt":"Empanada de queso con borde repulgado y azúcar glas","etiqueta":{"color":"yellow","texto":"Recién hecho"}},{"nombre":"Pan de chocolate","categoria":"panes","precio":0.85,"destacado":true,"foto":"assets/img/productos/pan-de-chocolate","alt":"Pan de chocolate partido por la mitad, con el relleno de chocolate a la vista"},{"nombre":"Pan redondo dulce","categoria":"panes","precio":0.4,"destacado":true,"foto":"assets/img/productos/pan-redondo-dulce","alt":"Pan redondo dulce y brillante con grageas de colores encima","etiqueta":{"color":"green","texto":"Dulce de siempre"}},{"nombre":"Suspiros","categoria":"dulces","precio":0.75,"foto":"assets/img/productos/suspiros","alt":"Suspiro de merengue blanco en espiral sobre papel","disponible":false},{"nombre":"Galletas","categoria":"dulces","precio":1,"destacado":true,"foto":"assets/img/productos/galletas","alt":"Galleta con chispas de chocolate sobre papel blanco"},{"nombre":"Rebanada de pastel de chocolate","categoria":"dulces","precio":1.75,"destacado":true,"foto":"assets/img/productos/rebanada-de-pastel-de-chocolate","alt":"Rebanada de pastel de chocolate de tres capas con cobertura de chocolate"},{"nombre":"Rebanada de pastel de vainilla","categoria":"dulces","precio":1.5,"foto":"assets/img/productos/rebanada-de-pastel-de-vainilla","alt":"Rebanada de pastel de vainilla de tres capas con crema blanca"},{"nombre":"Rebanada de cheesecake de limón","categoria":"dulces","precio":2,"destacado":true,"foto":"assets/img/productos/rebanada-de-cheesecake-de-limon","alt":"Rebanada de cheesecake de limón con base de galleta, una rodaja de limón y ralladura encima"},{"nombre":"Coca-Cola","categoria":"bebidas-frias","precio":0.85,"destacado":true,"foto":"assets/img/productos/coca-cola","alt":"Botella de vidrio de Coca-Cola sobre papel blanco","etiqueta":{"color":"yellow","texto":"Para llevar"},"tamanos":[{"valor":"500 ml","precio":0.85},{"valor":"1 L","precio":1.25},{"valor":"2 L","precio":2}]},{"nombre":"Fanta","categoria":"bebidas-frias","precio":0.85,"foto":"assets/img/productos/fanta","alt":"Botella de Fanta de naranja sobre papel blanco","tamanos":[{"valor":"500 ml","precio":0.85},{"valor":"1 L","precio":1.25}]},{"nombre":"Sprite","categoria":"bebidas-frias","precio":0.85,"foto":"assets/img/productos/sprite","alt":"Botella de Sprite sobre papel blanco","tamanos":[{"valor":"500 ml","precio":0.85},{"valor":"1 L","precio":1.25}]},{"nombre":"Agua","categoria":"bebidas-frias","precio":0.5,"foto":"assets/img/productos/agua","alt":"Botella de agua sin gas sobre papel blanco","tamanos":[{"valor":"500 ml","precio":0.5},{"valor":"1 L","precio":0.75}]},{"nombre":"Powerade","categoria":"bebidas-frias","precio":1.25,"foto":"assets/img/productos/powerade","alt":"Botella de Powerade azul de tapa negra","disponible":false,"tamanos":[{"valor":"500 ml","precio":1.25},{"valor":"1 L","precio":1.75}]},{"nombre":"Avena polaca","categoria":"bebidas-frias","precio":0.75,"foto":"assets/img/productos/avena-polaca","alt":"Vaso de Avena Polaca con su etiqueta roja y blanca","tamanos":[{"valor":"300 ml","precio":0.75},{"valor":"500 ml","precio":1.25}]}]};
 (() => {
-  // js/repo.js
+  // js/catalogo/repo.js
   var RUTA = "data/productos.json";
   var revisar = (p, i) => {
     const donde = p && p.nombre ? `"${p.nombre}"` : `el producto numero ${i + 1}`;
@@ -58,7 +58,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     return { productos };
   };
 
-  // js/ui.js
+  // js/comun/ui.js
   var menuToggle = document.querySelector(".menu-toggle");
   var navigation = document.querySelector("#main-nav");
   var reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -522,7 +522,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     heroPreload.src = getComputedStyle(heroImage).backgroundImage.match(/url\(["']?(.*?)["']?\)/)?.[1] || "";
   }
 
-  // js/state.js
+  // js/comun/state.js
   var CLAVE = "eltradicional-pedido";
   var pedido = /* @__PURE__ */ new Map();
   var entrega = { modo: "retiro", direccion: "", piso: "", referencia: "", notas: "" };
@@ -550,7 +550,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var unidades = () => [...pedido.values()].reduce((s, l) => s + l.cantidad, 0);
   var puente = {};
 
-  // js/storage.js
+  // js/comun/storage.js
   var COOKIE = "eltradicional-guardado";
   var UN_MES = 60 * 60 * 24 * 30;
   var marcarActualizacion = (cuando = /* @__PURE__ */ new Date()) => {
@@ -664,7 +664,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     }
   };
 
-  // js/view.js
+  // js/catalogo/view.js
   var catalogStatus = document.querySelector(".catalog-status");
   var productGrid = document.querySelector(".product-grid");
   var escapar = (texto) => String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -1130,7 +1130,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     });
   };
 
-  // js/mail.js
+  // js/comun/mail.js
   var BUZON = {
     servicio: "service_u77o0ad",
     plantilla: "template_76qhpup",
@@ -1156,7 +1156,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     }
   };
 
-  // js/checkout.js
+  // js/pedido/checkout.js
   var piezasDePago = () => ({
     aviso: '<p class="pago-demo"><strong>Esto es una demostración.</strong> Es un proyecto de clase: no se procesa ningún cobro real y los datos de la tarjeta no se guardan ni se envían.</p>',
     metodos: '<fieldset class="canasta-entrega pago-metodos"><legend>¿Cómo quieres pagar?</legend><div class="canasta-opciones"><label><input type="radio" name="canasta-metodo" value="efectivo" checked><span>Efectivo</span></label><label><input type="radio" name="canasta-metodo" value="tarjeta"><span>Tarjeta</span></label></div></fieldset><div class="pago-detalle" data-detalle="efectivo"><p class="pago-dato pago-efectivo">Pagas al retirar el pedido.</p></div><div class="pago-detalle" data-detalle="tarjeta" hidden><p class="pago-prueba">Tarjeta de prueba: <strong>4242 4242 4242 4242</strong>, cualquier vencimiento futuro y CVV 123. No escribas una tarjeta de verdad.</p><div class="pago-campo"><label for="pago-numero">Número de la tarjeta</label><input id="pago-numero" type="text" inputmode="numeric" autocomplete="off" placeholder="4242 4242 4242 4242" maxlength="19" aria-describedby="pago-numero-error"><p class="pago-campo-error" id="pago-numero-error" hidden></p></div><div class="pago-fila"><div class="pago-campo"><label for="pago-vence">Vencimiento</label><input id="pago-vence" type="text" inputmode="numeric" autocomplete="off" placeholder="MM/AA" maxlength="5" aria-describedby="pago-vence-error"><p class="pago-campo-error" id="pago-vence-error" hidden></p></div><div class="pago-campo"><label for="pago-cvv">CVV</label><input id="pago-cvv" type="text" inputmode="numeric" autocomplete="off" placeholder="123" maxlength="3" aria-describedby="pago-cvv-error"><p class="pago-campo-error" id="pago-cvv-error" hidden></p></div></div><div class="pago-campo"><label for="pago-titular">Nombre del titular</label><input id="pago-titular" type="text" autocomplete="off" placeholder="Como aparece en la tarjeta" maxlength="60" aria-describedby="pago-titular-error"><p class="pago-campo-error" id="pago-titular-error" hidden></p></div></div>',
@@ -1621,7 +1621,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     });
   };
 
-  // js/cart.js
+  // js/pedido/cart.js
   var leerGuardado = () => {
     try {
       const crudo = window.localStorage.getItem(CLAVE);
@@ -2317,7 +2317,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     pintarPie();
   };
 
-  // js/account.js
+  // js/cuenta/account.js
   var CLAVE_CUENTA = "eltradicional-cuenta";
   var huellaClave = null;
   var VUELTAS = 1e5;

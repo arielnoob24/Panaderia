@@ -5,13 +5,13 @@
 // arma el panel entero y se reparte.
 import {
   avisos, anexosDeFoco, atraparFoco, apagarDetras, enterAvanza, horarioDeHoy, reducedMotion,
-} from './ui.js';
+} from '../comun/ui.js';
 import {
   CLAVE, pedido, entrega, sesion, cobro, factura, puente,
   MAX_UNIDADES, ENVIO, dinero, idDe,
   subtotal, envio, total, unidades,
-} from './state.js';
-import { marcarActualizacion, olvidarMarca } from './storage.js';
+} from '../comun/state.js';
+import { marcarActualizacion, olvidarMarca } from '../comun/storage.js';
 import {
   montarPago, piezasDePago, comprobanteHtml, pintarPago,
   olvidarTarjeta, restablecerPagar, cancelarProceso, limpiarCopiados, reiniciarMetodo,

@@ -6,13 +6,13 @@
 // ya existen, la canasta recupera lo guardado cuando esos controles ya estan
 // puestos -si no, no tendria como repintarlos- y la cuenta va al final, porque
 // pasa la direccion guardada al campo de la canasta.
-import { cargarProductos, RUTA } from './repo.js';
-import { montarCatalogo } from './view.js';
-import { montarControlesDeFicha, iniciarCanasta } from './cart.js';
-import { iniciarCuenta } from './account.js';
-import { updateOpeningStatus, vigilarImagenes } from './ui.js';
-import { puente } from './state.js';
-import { ultimaActualizacion, marcaBonita } from './storage.js';
+import { cargarProductos, RUTA } from './catalogo/repo.js';
+import { montarCatalogo } from './catalogo/view.js';
+import { montarControlesDeFicha, iniciarCanasta } from './pedido/cart.js';
+import { iniciarCuenta } from './cuenta/account.js';
+import { updateOpeningStatus, vigilarImagenes } from './comun/ui.js';
+import { puente } from './comun/state.js';
+import { ultimaActualizacion, marcaBonita } from './comun/storage.js';
 
 const catalogStatus = document.querySelector('.catalog-status');
 const pieGuardado = document.querySelector('.footer-guardado');
