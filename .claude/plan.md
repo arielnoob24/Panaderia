@@ -4,6 +4,10 @@
 > Es la fuente de verdad de **cómo debe funcionar** el sitio. Los agentes de
 > `.claude/agents/` lo leen antes de trabajar; si el código y este plan no
 > coinciden, o se arregla el código o se actualiza el plan en el mismo commit.
+>
+> Cómo se trabaja (conversar → plan → agentes → skills → aplicar) está en
+> `.claude/CLAUDE.md`. Las secciones 1 a 13 describen el sitio **como está
+> hoy**; la 15 es el siguiente paso.
 
 Última actualización: 19 de octubre de 2026.
 
@@ -297,3 +301,59 @@ Skills en `.claude/skills/`:
 Las de skills.sh quedan registradas en `skills-lock.json`; `npx skills update -p`
 las actualiza. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
+
+## 15. Migración a React (decidida, en preparación)
+
+El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
+Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
+el usuario pida fusionar. Mientras dure, las secciones 1 a 13 siguen siendo la
+referencia de **qué** tiene que hacer el sitio: la versión en React tiene que
+hacer lo mismo (mismas vistas, rutas, reglas, guardado y accesibilidad) antes
+de reemplazar a la de ahora.
+
+### Propuesta (falta que el usuario la confirme)
+
+| Tema | Propuesta | Por qué |
+|---|---|---|
+| Herramienta | **Vite** + React, en JavaScript (JSX) | Vite es el arranque estándar de React; sin TypeScript al principio para no aprender dos cosas a la vez |
+| Dónde | Carpeta `react/` dentro del repo mientras se migra; al terminar pasa a la raíz y se borra lo viejo | El sitio actual sigue funcionando y el CI sigue validándolo durante la migración |
+| Estado | `Context` + `useReducer` para pedido, entrega y sesión; sin Redux | El estado es pequeño; reemplaza a `state.js`, al `puente` y a los `pintar()` a mano |
+| Rutas | Las mismas (`#tienda-*`, `#confirmar`, `#comprobante`) con `HashRouter` de React Router | GitHub Pages no sabe de rutas; con `#` no hace falta truco de 404 |
+| Estilos | Se conserva `styles.css` y sus clases | Es la identidad del sitio; nada de Tailwind ni Bootstrap |
+| Datos | `data/productos.json` y `revisar()` igual | El CI ya los valida |
+| Guardado y correo | `storage.js` y `mail.js` casi iguales, llamados desde hooks | Ya funcionan y no dependen de la interfaz |
+| Publicar | El CI hace `npm ci && npm run build` y sube `dist/` | `node_modules` ya no se publica |
+
+### Decisiones abiertas
+
+- [ ] **Doble clic.** React necesita un *build*. Se puede mantener con
+      `vite-plugin-singlefile` (todo en un `index.html`) o dejar de exigirlo.
+- [ ] **TypeScript**: ¿desde el principio o más adelante?
+- [ ] **React Router** o un hook propio de rutas con `hashchange`.
+
+### Fases
+
+1. **Andamiaje**: Vite + React en `react/`, `styles.css` importado, el
+   catálogo cargado y una ficha pintada.
+2. **Catálogo**: fichas, "Los más pedidos", vista de catálogo, filtros, orden,
+   buscador y rutas `#tienda-*`.
+3. **Canasta**: panel, cantidades, deshacer y vaciar, guardado en `localStorage`.
+4. **Pedido y pago**: `#confirmar`, factura, tarjeta, comprobante e IndexedDB.
+5. **Cuenta**: crear, verificar, entrar, editar, historial.
+6. **Calidad**: `verificar-sitio`, `axe.mjs`, el CI y la skill `publicar`
+   adaptados al *build*; revisión completa de `ux-accesibilidad`.
+7. **Cambio**: `react/` pasa a la raíz, fuera `js/` y `herramientas/`, y el
+   plan se reescribe para describir la versión en React.
+
+Cada fase cierra con el sitio funcionando y la paridad comprobada con las
+secciones 4 a 11.
+
+### Skills para cuando empiece
+
+- `vercel-react-best-practices` y `vercel-composition-patterns`
+  (skills.sh, `vercel-labs/agent-skills`) para `frontend` y `logica-datos`.
+  Parte de su contenido es de Next.js: leerlas antes y quedarse con lo de React.
+- Una propia, `componente-react`, con las convenciones de este proyecto
+  (nombres en español, dónde va cada componente, cómo se prueba).
+- Adaptar las propias `verificar-sitio` y `publicar` al *build* de Vite.
+
