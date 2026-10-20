@@ -165,7 +165,7 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
 
 - Es otra vista dentro de `<main>`: `#confirmar` y luego `#comprobante`
   (este con `replaceState`, para que Atrás no vuelva al pago ya hecho).
-- Izquierda: retiro o domicilio (envío fijo **$1,50**), dirección, cómo paga
+- Izquierda: retiro o domicilio (envío fijo **$1.50**), dirección, cómo paga
   (efectivo o tarjeta) y factura (a mi nombre o a otra persona). Sin mapa.
 - Derecha, pegada al desplazar: lo que lleva, subtotal/envío/total, a qué
   correo llega el comprobante y "Confirmar".
@@ -241,7 +241,11 @@ EmailJS. `enviarCorreo()` nunca lanza: si falla, el pedido sigue valiendo.
   `aria-controls`, `aria-live="polite"`, `aria-invalid` + `aria-describedby`.
 - Contraste medido (texto 12,4:1; secundario 6,8:1; pie 11,1:1 y 8,7:1).
 - `prefers-reduced-motion` apaga entradas, velos y desplazamiento suave.
-- Objetivos táctiles de al menos 24 px (los botones de ficha, 44 px).
+- Objetivos táctiles de al menos 24 px, o con espacio libre alrededor como
+  permite WCAG 2.5.8 (los tamaños del teléfono miden 22,7 px y pasan así);
+  los botones de ficha, 44 px.
+- Precios con **punto decimal** (`$1.25`), como se escriben los dólares en
+  Ecuador; lo hace `dinero()`.
 
 ## 12. Calidad y publicación
 
@@ -270,8 +274,8 @@ construye (sección 15).
 
 ### Accesibilidad y UX
 - [ ] Avisar que abren otra pestaña: botón flotante y "Pedir" de reserva sin JS.
-- [ ] "Ver en el mapa" del pie mide 18 px de alto (mínimo 24).
-- [ ] `user-select: none` en todo el `body`: no se puede copiar dirección ni precios.
+- [x] "Ver en el mapa" mide 131×18 px, pero cumple WCAG 2.5.8 por el espacio libre alrededor.
+- [ ] `user-select: none`: la dirección y el horario ya se copian; los precios y el WhatsApp todavía no.
 - [ ] Probar la fila quieta por defecto en vez de que avance sola.
 - [ ] El menú del teléfono no lleva el foco a "Nosotros" al abrirse: su
       `visibility` sigue en transición en el primer cuadro. Arreglo probable:
@@ -419,6 +423,52 @@ secciones 4 a 11.
 - El "+" de cada ficha se ve y se enfoca igual, pero no agrega nada hasta la
   fase 3; el tamaño elegido sí cambia el precio, el nombre del botón y se
   anuncia, como hoy.
+
+### Arreglos antes de la fase 3 (revisión de `ux-accesibilidad`, 20 de octubre de 2026)
+
+Todos para `frontend`, en React y, cuando es CSS o `view.js`, también en el
+sitio actual. Gravedad de Nielsen entre paréntesis.
+
+- [ ] (3) Abrir directamente `#inicio`, `#catalogo`, `#historia`, `#visitanos`
+      o `#contenido` (dirección pegada, enlace compartido, pestaña nueva) baja
+      a la sección, como en el sitio actual. Hoy React se queda arriba.
+- [ ] (3) Menú del teléfono: el foco entra en "Nosotros" al abrirlo
+      (`visibility 0s` en `.main-nav.is-open`).
+- [ ] (3) Contraste de la fila de hoy del horario (`.is-today`, `.dia-hoy`) de
+      al menos 4,5:1.
+- [ ] (2) La vista de catálogo tiene `h1` (`.vista-titulo`).
+- [ ] (2) Contraste del submenú Tienda en hover y foco.
+- [ ] (2) Al volver al inicio y con Atrás/Adelante el foco va a `#inicio` o al
+      título de la vista, no a `body`.
+- [ ] (2) El menú del teléfono se cierra cuando el foco sale de él.
+- [ ] (2) Se puede pasar el cursor por encima del globo de ayuda sin que se
+      cierre (WCAG 1.4.13).
+- [ ] (2) Sin `aria-haspopup` en la flecha de Tienda.
+- [ ] (1) Se anuncia el cambio de orden; al volver al inicio no se anuncia el
+      catálogo viejo; con búsqueda vacía en "Todas" no dice "en esta categoría".
+- [ ] (1) El título de la vista y de la pestaña dicen la categoría
+      ("Dulces y pasteles · Catálogo | El Tradicional").
+- [ ] (1) Sin desplazamiento horizontal a 320 px con espaciado de texto
+      aumentado (`.vista-mandos`).
+
+No se arregla: Escape en el sitio actual mueve el foco aunque no haya nada
+abierto. React ya lo hace bien, y el sitio actual se retira en la fase 7.
+
+### Vista previa de `mejoras` (decidida el 20 de octubre de 2026)
+
+GitHub Pages solo publica `main`. Para ver la versión en React en internet
+mientras se migra, se usa **Netlify** (plan gratis, sin tarjeta):
+
+- Un sitio de Netlify conectado al repositorio, con **`mejoras` como rama
+  publicada**. Cada push a `mejoras` lo reconstruye solo.
+- La configuración vive en `netlify.toml` en la raíz: base `react`, orden
+  `npm run build`, carpeta `dist`, Node 24.15.0. Netlify clona el repo
+  entero, así que `@raiz` encuentra el catálogo y las fotos.
+- Solo enseña `react/`. El sitio actual de la rama se ve en local.
+- Lo crea el usuario una vez desde netlify.com (requiere su cuenta de GitHub).
+  La dirección queda anotada aquí: _pendiente_.
+- Al terminar la fase 7, `main` pasa a ser React y la vista previa se puede
+  borrar o dejar para revisar ramas futuras.
 
 ### Reparto en `react/`
 
