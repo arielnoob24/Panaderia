@@ -863,13 +863,23 @@ Pendiente de la fase 5:
       ninguno de gravedad 4 y axe sin violaciones. Los enlaces del menú que
       se veían apagados en las capturas miden 12,4:1 en la ventana: era la
       captura de página entera con `reducedMotion`, no el sitio.
-- [ ] Arreglos de la revisión (en curso): copiar el código, el número de
-      pedido y el correo (`user-select`); pegar el teléfono con 0 o +593;
-      avisos al lector cuando el correo no sale; un solo anuncio del error
-      del código; contraste del foco y del borde de los campos, de la forma
-      de pago elegida y del número de la ficha; `scroll-padding` bajo la
-      cabecera; foco al volver con Atrás a la primera entrada;
-      `aria-current` en la ficha. Varios arreglan también el sitio actual.
+- [x] Arreglos de la revisión (`5e081a6` de `logica-datos`, `ee4553c` de
+      `frontend`, 20 de octubre de 2026). En los dos sitios: se pueden
+      seleccionar el código del recuadro, el `ET-XXXX` y el correo; el
+      teléfono pegado con 0, +593 o espacios queda bien (`soloNueve` quita
+      el 593, sin `maxlength`, `autocomplete="tel-national"`); los campos
+      llevan borde `--horno-claro` (4,97:1) y foco con anillo `--horno` y
+      halo ámbar; la forma de pago elegida, aro de `--horno`; el número de la
+      ficha en `--papel` (9,52:1); `html { scroll-padding-top/bottom }` en vez
+      de `scroll-margin` por elemento. Solo React: avisos al lector cuando el
+      correo no sale ("No pudimos enviar el correo; el código está en
+      pantalla."), el error del código se anuncia una vez, "abrir la página"
+      lo marca `comun/apertura.js` (no la clave `default`) y el foco vuelve
+      al `h1` con Atrás, y `aria-current="page"` en la ficha.
+- [ ] Al volver con Atrás/Adelante entre vistas, arriba del todo (hoy el
+      navegador recupera el desplazamiento y el `h1` con el foco queda
+      fuera); y el buscador y "Ordenar por" del catálogo con el mismo borde
+      y foco que los campos. Los dos, `frontend`.
 - [ ] "Iniciar sesión" en todas partes.
 - [ ] Aviso en Crear si ya hay una cuenta, y pedidos filtrados por correo.
 - [ ] Recuperar la contraseña (`#/cuenta/recuperar`).
