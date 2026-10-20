@@ -735,6 +735,8 @@ const montarCatalogo = (productos) => {
   // Al salir del checkout, la pagina vuelve a lo que diga la direccion: la
   // categoria que hubiera puesta y su titulo.
   puente.pintarRuta = pintarRuta;
+  // "Ver la vitrina" de la canasta vacia entra al catalogo igual que "Ver el menu".
+  puente.abrirCategoria = abrirCategoria;
 
   window.addEventListener('popstate', () => {
     // El checkout es otra vista y vive en cart.js. Si la direccion es la suya,

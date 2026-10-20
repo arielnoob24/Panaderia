@@ -175,14 +175,27 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
 
 - Botón con icono y contador en la cabecera (en el teléfono flota abajo). Sin
   JavaScript es el enlace a WhatsApp.
-- Panel lateral `aside role="dialog"`: atrapa el foco, se cierra con Esc o
-  tocando fuera y devuelve el foco al botón.
+- Panel lateral `aside role="dialog"`: atrapa el foco, se cierra con Esc,
+  tocando fuera o con Atrás/Adelante del navegador, y devuelve el foco al
+  botón (si quien lo abrió se fue con la vista, al botón de la canasta).
 - Cada línea: foto, −, cantidad, +, y una X que quita el producto entero. Con
-  una unidad, el − pasa a basurero y pregunta "¿Lo quitamos?".
+  una unidad, el − pasa a basurero y pregunta "¿Lo quitamos?", y la X no sale
+  (haría lo mismo). El + y el − avisan "3 de Pan redondo. N productos en la
+  canasta" y el foco se queda en el botón pulsado.
+- Tope de **100 por producto**: en el tope, el + de la ficha y el de la línea
+  siguen enfocables con `aria-disabled` y, al pulsarlos, avisan "El máximo es
+  100 por producto. Ya hay 100 de … en la canasta."
+- Campo de cantidad de la ficha: Enter asienta lo escrito y Esc lo descarta,
+  los dos sin sacar el foco del campo (con 0 el producto sale y el foco pasa
+  al +).
 - **Deshacer** durante 12 s al quitar o al vaciar ("¿Quitamos todo lo que hay
-  en la canasta?").
+  en la canasta?"). El reloj se para mientras la barra tiene el foco o el
+  puntero encima, y sigue con lo que le quedaba al soltarla.
 - "Ir a pagar" exige una **cuenta con el correo verificado**; si no la hay,
-  aviso visible con "Crear cuenta o entrar".
+  sube la hoja "Entra a tu cuenta para pagar", modal: mientras está arriba la
+  barra de deshacer queda `inert` y el Tab da la vuelta solo dentro de ella.
+- Vacía, "Ver la vitrina" lleva al catálogo entero (`#tienda-catalogo`, como
+  "Ver el menú") con el foco en su título.
 
 ## 6. Confirmar el pedido y pagar
 
@@ -686,28 +699,47 @@ entre paréntesis.
       gaveta, 172 px sobre el borde. Medido a 320, 390, 900 y 1280 px sin
       solaparse. De paso, `prefers-reduced-motion` ya le quita la animación
       (perdía por lo mismo).
-- [ ] (3) `logica-datos`: React no repite un aviso igual al anterior
+- [x] (3) `logica-datos`: React no repite un aviso igual al anterior
       (`Avisos.jsx`); tiene que anunciarlo otra vez, como el sitio actual.
-- [ ] (2) `logica-datos`: con la hoja "Entra a tu cuenta para pagar" abierta,
+      Hecho: cada aviso lleva un contador y su texto va en un `Fragment` con
+      esa clave, así que es un nodo nuevo aunque diga lo mismo.
+- [x] (2) `logica-datos`: con la hoja "Entra a tu cuenta para pagar" abierta,
       el Tab no llega a "Deshacer" (la barra sale del cerco mientras tanto).
-- [ ] (2) `logica-datos`: en el tope de 100, el `+` de la ficha y el de la
+      Hecho: la barra queda `inert` con la hoja arriba (en React la hoja pasó
+      de `Canasta` a `CanastaProvider` para que la barra lo sepa).
+- [x] (2) `logica-datos`: en el tope de 100, el `+` de la ficha y el de la
       línea dicen "El máximo es 100 por producto" y quedan con `aria-disabled`.
-- [ ] (2) `logica-datos`: Enter o Esc en el campo de cantidad asientan el
-      valor sin `blur()`; el foco sigue en el campo.
-- [ ] (2) `logica-datos`: el reloj de 12 s del deshacer se para mientras la
-      barra tiene el foco o el puntero encima.
-- [ ] (2) `logica-datos`: Atrás/Adelante con el panel abierto lo cierran.
-- [ ] (1) `logica-datos`: el `+`/`−` de una línea avisa "3 de Pan redondo. N
+      Hecho: también el globo (`data-tip`); pulsarlo no vuela ni guarda nada.
+      Falta que `frontend` lo vea apagado en `styles.css` (como
+      `.canasta-enviar[aria-disabled="true"]`).
+- [x] (2) `logica-datos`: Enter o Esc en el campo de cantidad asientan el
+      valor sin `blur()`; el foco sigue en el campo. En el sitio actual, Esc
+      no sube a la página (allí se llevaba el foco al botón del menú).
+- [x] (2) `logica-datos`: el reloj de 12 s del deshacer se para mientras la
+      barra tiene el foco o el puntero encima. Al soltarla sigue con lo que le
+      quedaba; un borrado nuevo vuelve a dar 12 s.
+- [x] (2) `logica-datos`: Atrás/Adelante con el panel abierto lo cierran.
+      Antes de pintar la vista nueva, para que no siga `inert`. Si quien abrió
+      el panel se fue con la vista ("Editar la canasta" de `#confirmar`), el
+      foco va al botón de la canasta.
+- [x] (1) `logica-datos`: el `+`/`−` de una línea avisa "3 de Pan redondo. N
       productos en la canasta", como la ficha.
 - [x] (1) `logica-datos`: con la canasta vacía el pie no dice "Tu pedido se
       guardó…" (no enseña nada). Hecho con la fase 4, en los dos sitios.
-- [ ] (1) `logica-datos`: "Ver la vitrina" de la canasta vacía lleva al catálogo y deja
+- [x] (1) `logica-datos`: "Ver la vitrina" de la canasta vacía lleva al catálogo y deja
       el foco en su título (en React, a `#/tienda-catalogo` cuando haya vistas).
-- [ ] (1) `logica-datos`: con una sola unidad, la línea no enseña la X (el
+      Hecho en los dos: el sitio actual llama a `abrirCategoria('catalogo')`
+      de `view.js` por el puente; React navega a `#/tienda-catalogo` con
+      `state.entrar`, como "Ver el menú". Si las vistas nuevas cambian cómo se
+      entra al catálogo, hay que ajustar `verVitrina` en `Canasta.jsx`.
+- [x] (1) `logica-datos`: con una sola unidad, la línea no enseña la X (el
       basurero hace lo mismo y tenían el mismo nombre).
 
-React además mejora una cosa: en el sitio actual el `+`/`−` de una línea
-manda el foco a `body` porque se rehace la línea; en React se queda.
+Hechos los de `logica-datos` el 20 de octubre de 2026, comprobados en Edge
+(escritorio y teléfono, los dos sitios) con un caso que fallaba antes y pasa
+después. De paso, el sitio actual ya no manda el foco a `body` al pulsar el
+`+`/`−` de una línea: lo devuelve al mismo botón de la línea rehecha, como
+React.
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 

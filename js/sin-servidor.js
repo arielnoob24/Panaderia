@@ -1120,6 +1120,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       pintarVista(vista2);
     };
     puente.pintarRuta = pintarRuta;
+    puente.abrirCategoria = abrirCategoria;
     window.addEventListener("popstate", () => {
       if (puente.verCheckout?.()) return;
       pintarRuta();
@@ -1910,21 +1911,38 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         continue;
       }
       const ultima = l.cantidad === 1;
-      li.innerHTML = fotoHtml(l.nombre) + `<div class="canasta-info"><div class="canasta-fila"><h3>${nombre}</h3><button class="canasta-quitar" type="button" aria-label="Quitar ${nombre} de la canasta" data-tip="Quitar de la canasta">×</button></div><p class="canasta-precio">${dinero(l.precio)} c/u</p><div class="canasta-fila canasta-fila-baja"><div class="canasta-cantidad"><button type="button" data-menos aria-label="${ultima ? `Quitar ${nombre} de la canasta` : `Quitar uno de ${nombre}`}">${ultima ? BASURERO : "−"}</button><output>${l.cantidad}</output><button type="button" data-mas aria-label="Añadir uno de ${nombre}">+</button></div><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div></div>`;
+      const tope = l.cantidad >= MAX_UNIDADES;
+      li.innerHTML = fotoHtml(l.nombre) + `<div class="canasta-info"><div class="canasta-fila"><h3>${nombre}</h3>` + (ultima ? "" : `<button class="canasta-quitar" type="button" aria-label="Quitar ${nombre} de la canasta" data-tip="Quitar de la canasta">×</button>`) + `</div><p class="canasta-precio">${dinero(l.precio)} c/u</p><div class="canasta-fila canasta-fila-baja"><div class="canasta-cantidad"><button type="button" data-menos aria-label="${ultima ? `Quitar ${nombre} de la canasta` : `Quitar uno de ${nombre}`}">${ultima ? BASURERO : "−"}</button><output>${l.cantidad}</output><button type="button" data-mas aria-label="Añadir uno de ${nombre}"${tope ? ` aria-disabled="true" data-tip="El máximo es ${MAX_UNIDADES} por producto"` : ""}>+</button></div><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div></div>`;
       li.querySelector("[data-menos]").addEventListener("click", () => {
         if (l.cantidad === 1) {
           pedirQuitar(id, "[data-menos]");
           return;
         }
-        cambiar(id, -1);
+        cambiarDesdeLinea(id, -1, "[data-menos]");
       });
-      li.querySelector(".canasta-quitar").addEventListener("click", () => pedirQuitar(id, ".canasta-quitar"));
-      li.querySelector("[data-mas]").addEventListener("click", () => cambiar(id, 1));
+      li.querySelector(".canasta-quitar")?.addEventListener("click", () => pedirQuitar(id, ".canasta-quitar"));
+      li.querySelector("[data-mas]").addEventListener("click", () => {
+        if (tope) {
+          avisos.textContent = avisoTope(l.nombre);
+          return;
+        }
+        cambiarDesdeLinea(id, 1, "[data-mas]");
+      });
       lista.append(li);
     }
     pintarPie();
   };
   var lineaDe = (id) => [...lista.children].find((li) => li.dataset.id === id);
+  var cuantosHay = () => `${unidades()} producto${unidades() === 1 ? "" : "s"} en la canasta.`;
+  var avisoTope = (nombre) => `El máximo es ${MAX_UNIDADES} por producto. Ya hay ${MAX_UNIDADES} de ${nombre} en la canasta.`;
+  var cambiarDesdeLinea = (id, delta, desde) => {
+    const nombre = pedido.get(id)?.nombre;
+    cambiar(id, delta);
+    const l = pedido.get(id);
+    if (!l) return;
+    lineaDe(id)?.querySelector(desde)?.focus();
+    avisos.textContent = `${l.cantidad} de ${nombre}. ${cuantosHay()}`;
+  };
   var pedirQuitar = (id, desde) => {
     const l = pedido.get(id);
     if (!l) return;
@@ -2054,6 +2072,13 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   vista.querySelector(".checkout-volver").addEventListener("click", () => cerrarCheckout());
   listo.addEventListener("click", () => cerrarCheckout());
   puente.verCheckout = () => {
+    if (abierto()) {
+      cerrar();
+      queueMicrotask(() => {
+        const a = document.activeElement;
+        if (!a || a === document.body || a.offsetParent === null) boton?.focus();
+      });
+    }
     const paso = RUTAS[location.hash] || null;
     const limpiar = () => {
       recogerCheckout();
@@ -2125,6 +2150,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     pideCuenta.hidden = !ver;
     panel2.querySelector(".canasta-cabecera").inert = ver;
     panel2.querySelector(".canasta-pasos").inert = ver;
+    barraDeshacer.inert = ver;
   }
   [pidePrincipal, pideOtra].forEach((b) => b.addEventListener("click", () => {
     verPideCuenta(false);
@@ -2154,23 +2180,59 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var ESPERA_DESHACER = 12e3;
   var borrado = null;
   var relojDeshacer = 0;
-  var olvidarBorrado = () => {
+  var quedaDeshacer = ESPERA_DESHACER;
+  var desdeDeshacer = 0;
+  var focoEnBarra = false;
+  var punteroEnBarra = false;
+  var pararReloj = () => {
+    if (!relojDeshacer) return;
+    window.clearTimeout(relojDeshacer);
+    relojDeshacer = 0;
+    quedaDeshacer -= Date.now() - desdeDeshacer;
+  };
+  var correrReloj = () => {
+    pararReloj();
+    if (!borrado || focoEnBarra || punteroEnBarra) return;
+    desdeDeshacer = Date.now();
+    relojDeshacer = window.setTimeout(olvidarBorrado, Math.max(quedaDeshacer, 0));
+  };
+  barraDeshacer.addEventListener("focusin", () => {
+    focoEnBarra = true;
+    pararReloj();
+  });
+  barraDeshacer.addEventListener("focusout", (e) => {
+    if (barraDeshacer.contains(e.relatedTarget)) return;
+    focoEnBarra = false;
+    correrReloj();
+  });
+  barraDeshacer.addEventListener("pointerenter", () => {
+    punteroEnBarra = true;
+    pararReloj();
+  });
+  barraDeshacer.addEventListener("pointerleave", () => {
+    punteroEnBarra = false;
+    correrReloj();
+  });
+  function olvidarBorrado() {
     const teniaFoco = barraDeshacer.contains(document.activeElement);
     const id = borrado?.lineas[0]?.[0];
     window.clearTimeout(relojDeshacer);
     relojDeshacer = 0;
     borrado = null;
     barraDeshacer.hidden = true;
+    focoEnBarra = false;
+    punteroEnBarra = false;
     if (!teniaFoco) return;
     const destino = abierto() ? titulo : botonesMas.find(({ coincide }) => coincide(id))?.boton;
     destino?.focus();
-  };
+  }
   var anotarLineas = (lineas, texto) => {
     borrado = { lineas: lineas.map(([id, l]) => [id, { ...l }]) };
     deshacerTexto.textContent = texto;
     barraDeshacer.hidden = false;
-    window.clearTimeout(relojDeshacer);
-    relojDeshacer = window.setTimeout(olvidarBorrado, ESPERA_DESHACER);
+    pararReloj();
+    quedaDeshacer = ESPERA_DESHACER;
+    correrReloj();
   };
   var anotarBorrado = (id, linea) => anotarLineas([[id, linea]], linea.cantidad === 1 ? `Quitaste ${linea.nombre}.` : `Quitaste ${linea.nombre} (${linea.cantidad} unidades).`);
   var deshacerBorrado = () => {
@@ -2256,7 +2318,8 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   panel2.querySelector(".canasta-cerrar").addEventListener("click", cerrar);
   panel2.querySelector(".canasta-vacio-ir").addEventListener("click", () => {
     cerrar();
-    document.querySelector("#catalogo")?.scrollIntoView({ behavior: "smooth" });
+    if (puente.abrirCategoria) puente.abrirCategoria("catalogo");
+    else document.querySelector("#catalogo")?.scrollIntoView({ behavior: "smooth" });
   });
   atraparFoco(panel2, abierto, cerrar);
   if (boton) {
@@ -2331,7 +2394,10 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         menos.dataset.tip = n === 1 ? "Quitar de la canasta" : "Uno menos";
         mas.setAttribute("aria-label", n ? `Añadir otro de ${comoSeLlama}` : `Añadir ${comoSeLlama} a la canasta`);
         cuentaFicha.setAttribute("aria-label", `Cantidad de ${comoSeLlama}`);
-        mas.dataset.tip = n ? "Uno más" : "Añadir a la canasta";
+        const tope = n >= MAX_UNIDADES;
+        if (tope) mas.setAttribute("aria-disabled", "true");
+        else mas.removeAttribute("aria-disabled");
+        mas.dataset.tip = tope ? `El máximo es ${MAX_UNIDADES} por producto` : n ? "Uno más" : "Añadir a la canasta";
         cuentaFicha.dataset.tip = `Escribe cuántos quieres, hasta ${MAX_UNIDADES}`;
         if (importe) importe.textContent = dinero(precioDe());
       };
@@ -2341,9 +2407,13 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         refrescar();
         avisos.textContent = `${nombreDe()}, ${dinero(precioDe())}.`;
       }));
-      const cuantosQuedan = () => `${unidades()} producto${unidades() === 1 ? "" : "s"} en la canasta.`;
+      const cuantosQuedan = cuantosHay;
       mas.addEventListener("click", () => {
         const comoSeLlama = nombreDe();
+        if (cuantos() >= MAX_UNIDADES) {
+          avisos.textContent = avisoTope(comoSeLlama);
+          return;
+        }
         const l = pedido.get(idDeAhora()) || { nombre: comoSeLlama, precio: precioDe(), cantidad: 0 };
         l.cantidad = Math.min(l.cantidad + 1, MAX_UNIDADES);
         pedido.set(idDeAhora(), l);
@@ -2359,11 +2429,13 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       cuentaFicha.addEventListener("keydown", (e) => {
         if (e.key === "Enter") {
           e.preventDefault();
-          cuentaFicha.blur();
+          asentar();
+          return;
         }
         if (e.key === "Escape") {
+          e.stopPropagation();
           cuentaFicha.value = cuantos();
-          cuentaFicha.blur();
+          return;
         }
         if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
         e.preventDefault();
@@ -2371,7 +2443,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         const paso = e.key === "ArrowUp" ? 1 : -1;
         cuentaFicha.value = Math.max(0, Math.min(ahora + paso, MAX_UNIDADES));
       });
-      cuentaFicha.addEventListener("blur", () => {
+      const asentar = () => {
         const comoSeLlama = nombreDe();
         const id = idDeAhora();
         const pedida = Math.min(parseInt(cuentaFicha.value, 10) || 0, MAX_UNIDADES);
@@ -2396,8 +2468,10 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         pedido.set(id, l);
         pintar();
         guardar();
+        cuentaFicha.value = pedida;
         avisos.textContent = recortado ? `El máximo es ${MAX_UNIDADES} por producto, así que quedaron ${MAX_UNIDADES} de ${comoSeLlama}. ${cuantosQuedan()}` : `${pedida} de ${comoSeLlama}. ${cuantosQuedan()}`;
-      });
+      };
+      cuentaFicha.addEventListener("blur", asentar);
       menos.addEventListener("click", () => {
         const comoSeLlama = nombreDe();
         const seVa = cuantos() <= 1;

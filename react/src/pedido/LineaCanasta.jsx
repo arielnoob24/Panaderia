@@ -1,6 +1,8 @@
 // Una linea de la canasta, con el HTML que arma pintar() en cart.js: foto, el
 // nombre con la X que quita el producto entero, el precio por unidad y abajo
-// la cantidad y lo que suma. Con una sola unidad el "menos" es un basurero.
+// la cantidad y lo que suma. Con una sola unidad el "menos" es un basurero y
+// la X no sale: haria lo mismo y se llamaba igual. En el tope de cien el mas
+// sigue enfocable, pero con aria-disabled, y al pulsarlo dice por que.
 //
 // Cuando se pide quitarla, la misma linea pregunta "¿Lo quitamos?" en el
 // sitio del control: preguntar en otra ventana obligaria a mirar a otro lado.
@@ -10,6 +12,7 @@ import { useLayoutEffect, useRef } from 'react';
 import { dinero } from '@raiz/js/comun/state.js';
 import { useCanasta } from './CanastaProvider.jsx';
 import { Basurero } from './iconosPedido.jsx';
+import { enTope, consejoTope } from '../estado/pedido.js';
 
 // Sin alt: el nombre va justo al lado, y leerlo dos veces no ayuda a nadie.
 function Foto({ src }) {
@@ -60,6 +63,7 @@ function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, 
   }
 
   const ultima = cantidad === 1;
+  const tope = enTope(cantidad);
   return (
     <li className="canasta-linea" data-id={id}>
       <Foto src={foto} />
@@ -67,7 +71,9 @@ function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, 
         <div className="canasta-fila">
           <h3>{nombre}</h3>
           {/* La X quita el producto entero, lleve las unidades que lleve. */}
-          <button ref={refs.quitar} className="canasta-quitar" type="button" aria-label={`Quitar ${nombre} de la canasta`} data-tip="Quitar de la canasta" onClick={() => onQuitar(id, 'quitar')}>×</button>
+          {ultima ? null : (
+            <button ref={refs.quitar} className="canasta-quitar" type="button" aria-label={`Quitar ${nombre} de la canasta`} data-tip="Quitar de la canasta" onClick={() => onQuitar(id, 'quitar')}>×</button>
+          )}
         </div>
         <p className="canasta-precio">{dinero(precio)} c/u</p>
         <div className="canasta-fila canasta-fila-baja">
@@ -76,7 +82,7 @@ function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, 
               {ultima ? <Basurero /> : '−'}
             </button>
             <output>{cantidad}</output>
-            <button ref={refs.mas} type="button" data-mas="" aria-label={`Añadir uno de ${nombre}`} onClick={() => onMas(id, linea)}>+</button>
+            <button ref={refs.mas} type="button" data-mas="" aria-label={`Añadir uno de ${nombre}`} aria-disabled={tope || undefined} data-tip={tope ? consejoTope : undefined} onClick={() => onMas(id, linea)}>+</button>
           </div>
           <span className="canasta-subtotal">{dinero(precio * cantidad)}</span>
         </div>

@@ -2,14 +2,17 @@
 // hay que cantarle al lector de pantalla. Es la de js/comun/ui.js, que vivia
 // al final del body; aqui va al final de la aplicacion, y quien tenga algo que
 // decir lo pide con useAvisos() en vez de escribir en el nodo.
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { Fragment, createContext, useCallback, useContext, useMemo, useState } from 'react';
 
-const ContextoAvisos = createContext({ texto: '', avisar: () => {} });
+const ContextoAvisos = createContext({ aviso: { texto: '', vez: 0 }, avisar: () => {} });
 
 function AvisosProvider({ children }) {
-  const [texto, setTexto] = useState('');
-  const avisar = useCallback((t) => setTexto(t), []);
-  const valor = useMemo(() => ({ texto, avisar }), [texto, avisar]);
+  // 'vez' cuenta los avisos: pulsar dos veces lo mismo ("¿Vaciar la canasta?",
+  // el tope de cien) da dos veces el mismo texto, y tiene que oirse las dos,
+  // como en el sitio actual, que reescribe el nodo aunque diga lo mismo.
+  const [aviso, setAviso] = useState({ texto: '', vez: 0 });
+  const avisar = useCallback((texto) => setAviso((a) => ({ texto, vez: a.vez + 1 })), []);
+  const valor = useMemo(() => ({ aviso, avisar }), [aviso, avisar]);
   return <ContextoAvisos.Provider value={valor}>{children}</ContextoAvisos.Provider>;
 }
 
@@ -17,9 +20,16 @@ function AvisosProvider({ children }) {
 // pero el contexto es uno solo y pequeno: no compensa partirlo en dos.
 const useAvisos = () => useContext(ContextoAvisos).avisar;
 
+// Con la clave en 'vez', cada aviso es un nodo de texto nuevo aunque diga lo
+// mismo que el anterior: React no toca un texto igual, y sin cambio en el
+// nodo el lector de pantalla no tiene nada que leer.
 function RegionAvisos() {
-  const { texto } = useContext(ContextoAvisos);
-  return <p className="sr-only" role="status" aria-live="polite">{texto}</p>;
+  const { aviso } = useContext(ContextoAvisos);
+  return (
+    <p className="sr-only" role="status" aria-live="polite">
+      <Fragment key={aviso.vez}>{aviso.texto}</Fragment>
+    </p>
+  );
 }
 
 export { AvisosProvider, RegionAvisos, useAvisos };

@@ -7,6 +7,7 @@
 //
 // El pedido en si no esta aqui: es de PedidoProvider (estado/).
 import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { unidades, productos } from '../estado/pedido.js';
 import { useAvisos } from '../comun/Avisos.jsx';
@@ -22,6 +23,24 @@ function CanastaProvider({ children }) {
   // pinte: { id, que } con que = 'si' | 'menos' | 'quitar' | 'mas'. Las lineas
   // se rehacen al cambiar, y el boton que tenia el foco puede no existir ya.
   const [focoLinea, setFocoLinea] = useState(null);
+  // La hoja de "Entra a tu cuenta para pagar" ({ tiene } o null). Vive aqui y
+  // no en Canasta porque la barra de deshacer tambien la mira: la hoja es
+  // modal, y mientras esta arriba la barra sale del cerco del foco.
+  const [pide, setPide] = useState(null);
+
+  // Atras o Adelante con la canasta abierta es irse a otra pagina: el panel
+  // se cierra en el mismo pintado que trae la vista nueva, y asi lo de detras
+  // ya no esta inert cuando esa vista pide el foco para su titulo. Vale para
+  // cualquier cambio de direccion: los que salen de la propia canasta ("Ir a
+  // pagar", "Ver la vitrina") ya la cierran antes.
+  const { key: claveRuta } = useLocation();
+  const [rutaAntes, setRutaAntes] = useState(claveRuta);
+  if (claveRuta !== rutaAntes) {
+    setRutaAntes(claveRuta);
+    if (abierta) setAbierta(false);
+  }
+  // Cerrada, la hoja no sobrevive: al volver se ve la canasta como estaba.
+  if (!abierta && pide) setPide(null);
 
   const botonRef = useRef(null);
   const barraRef = useRef(null);
@@ -106,11 +125,11 @@ function CanastaProvider({ children }) {
   }, [hacer]);
 
   const valor = useMemo(() => ({
-    abierta, abrir, cerrar,
+    abierta, abrir, cerrar, pide, setPide,
     botonRef, barraRef, deshacerRef, tituloRef,
     focoLinea, enfocarLinea, registrarFicha,
     volar, deshacer, olvidar,
-  }), [abierta, abrir, cerrar, focoLinea, enfocarLinea, registrarFicha, volar, deshacer, olvidar]);
+  }), [abierta, abrir, cerrar, pide, focoLinea, enfocarLinea, registrarFicha, volar, deshacer, olvidar]);
 
   return <ContextoCanasta.Provider value={valor}>{children}</ContextoCanasta.Provider>;
 }

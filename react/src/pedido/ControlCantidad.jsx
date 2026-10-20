@@ -9,7 +9,9 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MAX_UNIDADES, idDe } from '@raiz/js/comun/state.js';
 import { usePedido } from '../estado/PedidoProvider.jsx';
-import { cantidadDe, unidades, productos } from '../estado/pedido.js';
+import {
+  cantidadDe, unidades, productos, enTope, avisoTope, consejoTope,
+} from '../estado/pedido.js';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { useCanasta } from './CanastaProvider.jsx';
 import { Basurero } from './iconosPedido.jsx';
@@ -40,7 +42,11 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
   useLayoutEffect(() => { idAhora.current = id; }, [id]);
   useEffect(() => registrarFicha({ coincide: (otro) => idAhora.current === otro, boton: masRef }), [registrarFicha]);
 
+  const tope = enTope(n);
+
   const alMas = () => {
+    // En el tope el mas no suma: dice por que y no vuela nada a la canasta.
+    if (tope) { avisar(avisoTope(nombre)); return; }
     const despues = hacer({ tipo: 'agregar', id, nombre, precio });
     volar(imagenRef?.current);
     avisar(`${nombre} añadido. ${cuantosQuedan(despues)}`);
@@ -54,22 +60,25 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
     if (seVa) masRef.current?.focus();
   };
 
-  // Al salir del campo se asienta: se recorta al tope y, si quedo en cero o en
-  // blanco, el producto sale de la canasta, que es lo que un cero dice.
+  // Al salir del campo o con Enter se asienta: se recorta al tope y, si quedo
+  // en cero o en blanco, el producto sale de la canasta, que es lo que un cero
+  // dice (y el foco pasa al mas, porque el campo se esconde). Devuelve la
+  // cantidad en que queda.
   const asentar = (texto) => {
     const escrito = parseInt(texto, 10) || 0;
     const pedida = Math.min(escrito, MAX_UNIDADES);
-    if (pedida === n) return;
+    if (pedida === n) return n;
     if (pedida <= 0) {
       const despues = hacer({ tipo: 'quitar', id });
       avisar(`${nombre} quitado. ${cuantosQuedan(despues)}`);
       masRef.current?.focus();
-      return;
+      return 0;
     }
     const despues = hacer({ tipo: 'cambiar', id, nombre, precio, cantidad: pedida });
     avisar(escrito > MAX_UNIDADES
       ? `El máximo es ${MAX_UNIDADES} por producto, así que quedaron ${MAX_UNIDADES} de ${nombre}. ${cuantosQuedan(despues)}`
       : `${pedida} de ${nombre}. ${cuantosQuedan(despues)}`);
+    return pedida;
   };
 
   const alSalir = () => {
@@ -83,8 +92,21 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
   const alEscribir = (e) => setTecleado(e.target.value.replace(/[^0-9]/g, '').slice(0, 3));
 
   const alTeclear = (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); campoRef.current?.blur(); return; }
-    if (e.key === 'Escape') { descartar.current = true; campoRef.current?.blur(); return; }
+    // Enter asienta lo escrito y Escape lo descarta, los dos sin sacar el foco
+    // del campo: quien corrige un numero suele querer corregirlo otra vez.
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      // Si queda en cero el foco pasa al mas, y ese blur no tiene que volver a
+      // asentar lo mismo (descartar hace que asiente lo que ya hay).
+      descartar.current = true;
+      const queda = asentar(tecleado ?? String(n));
+      descartar.current = false;
+      // Lo que se ve es lo que quedo (un 150 se queda en 100); con cero el
+      // campo se esconde y vuelve a ensenar la cantidad cuando reaparezca.
+      setTecleado(queda ? String(queda) : null);
+      return;
+    }
+    if (e.key === 'Escape') { setTecleado(String(n)); return; }
     // Las flechas suben y bajan de uno sin tener que borrar y reescribir.
     if (e.key !== 'ArrowUp' && e.key !== 'ArrowDown') return;
     e.preventDefault();
@@ -127,7 +149,8 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
         className="card-mas"
         type="button"
         aria-label={n ? `Añadir otro de ${nombre}` : `Añadir ${nombre} a la canasta`}
-        data-tip={n ? 'Uno más' : 'Añadir a la canasta'}
+        aria-disabled={tope || undefined}
+        data-tip={tope ? consejoTope : (n ? 'Uno más' : 'Añadir a la canasta')}
         onClick={alMas}
       >
         +

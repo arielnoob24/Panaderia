@@ -7,15 +7,14 @@
 // Abierto: atrapa el foco (con la barra de deshacer como anexo), Escape o
 // tocar el fondo lo cierran, la pagina de detras queda inert y al cerrar el
 // foco vuelve a donde estaba.
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { dinero } from '@raiz/js/comun/state.js';
 import { usePedido } from '../estado/PedidoProvider.jsx';
-import { unidades, productos } from '../estado/pedido.js';
+import { unidades, productos, enTope, avisoTope } from '../estado/pedido.js';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { useAtraparFoco, apagarDetras } from '../comun/useAtraparFoco.js';
-import { movimientoReducido } from '../comun/useMovimientoReducido.js';
 import { fotoDeLinea } from '../servicios/catalogo.js';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { useCanasta } from './CanastaProvider.jsx';
@@ -24,23 +23,23 @@ import PideCuenta from './PideCuenta.jsx';
 
 function Canasta() {
   const { lineas, unidades: n, subtotal, hacer } = usePedido();
-  const { abierta, cerrar, barraRef, deshacerRef, tituloRef, enfocarLinea } = useCanasta();
+  const {
+    abierta, cerrar, pide, setPide, botonRef, barraRef, deshacerRef, tituloRef, enfocarLinea,
+  } = useCanasta();
   const avisar = useAvisos();
   const sesion = useSesion();
   const navegar = useNavigate();
   const { pathname } = useLocation();
 
-  // Que linea espera un si o un no ({ id, desde }), si se pregunta por
-  // vaciar, y la hoja de la cuenta ({ tiene } o null).
+  // Que linea espera un si o un no ({ id, desde }) y si se pregunta por
+  // vaciar. La hoja de la cuenta (pide) es de CanastaProvider.
   const [porConfirmar, setPorConfirmar] = useState(null);
   const [preguntaVaciar, setPreguntaVaciar] = useState(false);
-  const [pide, setPide] = useState(null);
   // Una pregunta sin contestar no sobrevive al cierre: al volver, todo se ve
   // como estaba y no con un "¿lo quitamos?" de la visita anterior.
-  if (!abierta && (porConfirmar || preguntaVaciar || pide)) {
+  if (!abierta && (porConfirmar || preguntaVaciar)) {
     setPorConfirmar(null);
     setPreguntaVaciar(false);
-    setPide(null);
   }
 
   const panelRef = useRef(null);
@@ -51,6 +50,7 @@ function Canasta() {
   const principalRef = useRef(null);
   const ultimoFoco = useRef(null);
   const estabaAbierta = useRef(false);
+  const recienCerrada = useRef(false);
 
   // Abrir y cerrar: el foco, el desplazamiento de la pagina y lo de detras.
   // Antes de pintar, para que el foco no se pierda un cuadro.
@@ -67,8 +67,23 @@ function Canasta() {
       // Se enciende antes de devolver el foco: a lo apagado no se le puede dar.
       apagarDetras(panelRef.current, false);
       ultimoFoco.current?.focus();
+      recienCerrada.current = true;
     }
   }, [abierta]);
+  // Cerrada por Atras o Adelante, quien la abrio puede haberse ido con la
+  // vista ("Editar la canasta" de #/confirmar) y el foco se queda sin sitio.
+  // Entonces va al boton de la canasta, que no se mueve. Es un efecto y no va
+  // arriba porque el boton no se ve hasta que la vista que se va quita
+  // is-checkout, y porque si la vista que llega pide el foco para su titulo,
+  // ya lo tiene y aqui no se toca.
+  useEffect(() => {
+    if (abierta || !recienCerrada.current) return;
+    recienCerrada.current = false;
+    // Sin sitio es el body, algo que ya no esta en la pagina o algo del panel
+    // recien cerrado (el navegador tarda un cuadro en soltarlo).
+    const a = document.activeElement;
+    if (!a || a === document.body || !a.isConnected || panelRef.current?.contains(a)) botonRef.current?.focus();
+  }, [abierta, botonRef]);
 
   useAtraparFoco(abierta, [panelRef, barraRef], cerrar);
 
@@ -103,11 +118,21 @@ function Canasta() {
     deshacerRef.current?.focus();
   };
 
+  // El mas y el menos de una linea dicen como queda, como la ficha. El foco
+  // se queda en el boton pulsado: la linea no se rehace.
+  const decirComoQueda = (despues, id, nombre) => {
+    const queda = despues.lineas.find(([otro]) => otro === id)?.[1].cantidad;
+    avisar(`${queda} de ${nombre}. ${productos(unidades(despues.lineas))} en la canasta.`);
+  };
   const alMenos = (id, l) => {
     if (l.cantidad === 1) { pedirQuitar(id, 'menos'); return; }
-    hacer({ tipo: 'cambiar', id, cantidad: l.cantidad - 1 });
+    decirComoQueda(hacer({ tipo: 'cambiar', id, cantidad: l.cantidad - 1 }), id, l.nombre);
   };
-  const alMas = (id, l) => hacer({ tipo: 'agregar', id, nombre: l.nombre, precio: l.precio });
+  const alMas = (id, l) => {
+    // En el tope no suma: dice por que (el boton lleva aria-disabled).
+    if (enTope(l.cantidad)) { avisar(avisoTope(l.nombre)); return; }
+    decirComoQueda(hacer({ tipo: 'agregar', id, nombre: l.nombre, precio: l.precio }), id, l.nombre);
+  };
 
   // ---- Vaciar, con pregunta y deshacer ---------------------------------
   const alVaciar = () => {
@@ -157,10 +182,11 @@ function Canasta() {
     enviarRef.current?.focus();
   };
 
-  // "Ver la vitrina": se cierra y se baja al catalogo.
+  // "Ver la vitrina" lleva al catalogo entero, como "Ver el menu": la vista
+  // de catalogo sube arriba y deja el foco en su titulo (Catalogo.jsx).
   const verVitrina = () => {
     cerrar();
-    document.getElementById('catalogo')?.scrollIntoView({ behavior: movimientoReducido() ? 'auto' : 'smooth' });
+    navegar('/tienda-catalogo', { state: { entrar: true } });
   };
 
   const hayAlgo = lineas.length > 0;

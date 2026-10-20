@@ -61,6 +61,8 @@ function reductor(estado, accion) {
     case 'agregar': {
       const { id, nombre, precio } = accion;
       const antes = lineaDe(estado.lineas, id);
+      // En el tope no cambia nada, y lo que no cambia no se vuelve a guardar.
+      if (antes && antes.cantidad >= MAX_UNIDADES) return estado;
       // Lo que ya estaba conserva su nombre y su precio, como en cart.js.
       const linea = antes
         ? { ...antes, cantidad: recortar(antes.cantidad + 1) }
@@ -115,6 +117,11 @@ const unidades = (lineas) => lineas.reduce((s, [, l]) => s + l.cantidad, 0);
 const subtotal = (lineas) => lineas.reduce((s, [, l]) => s + l.precio * l.cantidad, 0);
 const cantidadDe = (lineas, id) => lineaDe(lineas, id)?.cantidad || 0;
 const productos = (n) => `${n} producto${n === 1 ? '' : 's'}`;
+const enTope = (cantidad) => cantidad >= MAX_UNIDADES;
+// Lo que se dice al pulsar el mas de algo que ya esta en el tope, desde la
+// ficha o desde la linea, igual que avisoTope() de cart.js.
+const avisoTope = (nombre) => `El máximo es ${MAX_UNIDADES} por producto. Ya hay ${MAX_UNIDADES} de ${nombre} en la canasta.`;
+const consejoTope = `El máximo es ${MAX_UNIDADES} por producto`;
 
 // Lo que dice la barra de deshacer, igual que anotarBorrado() de cart.js.
 const textoBorrado = (borrado) => {
@@ -124,4 +131,7 @@ const textoBorrado = (borrado) => {
   return l.cantidad === 1 ? `Quitaste ${l.nombre}.` : `Quitaste ${l.nombre} (${l.cantidad} unidades).`;
 };
 
-export { reductor, lineaDe, unidades, subtotal, cantidadDe, productos, textoBorrado };
+export {
+  reductor, lineaDe, unidades, subtotal, cantidadDe, productos, textoBorrado,
+  enTope, avisoTope, consejoTope,
+};

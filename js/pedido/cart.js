@@ -403,6 +403,9 @@ const pintar = () => {
     // Con una sola unidad, quitarla es borrar el producto: el boton lo dice
     // con un basurero, igual que en la ficha del catalogo, y ademas pregunta.
     const ultima = l.cantidad === 1;
+    // En el tope el mas sigue ahi y se puede enfocar, pero no suma: dice por
+    // que, que un boton que no hace nada sin explicarlo parece roto.
+    const tope = l.cantidad >= MAX_UNIDADES;
     // Foto a la izquierda; a su lado el nombre con la X en la misma linea, el
     // precio por unidad debajo y, abajo del todo, la cantidad y lo que suma.
     li.innerHTML = fotoHtml(l.nombre)
@@ -410,28 +413,52 @@ const pintar = () => {
       + `<div class="canasta-fila"><h3>${nombre}</h3>`
       // La X quita el producto entero, lleve las unidades que lleve: sin ella,
       // para quitar doce panes habia que bajar uno a uno hasta el basurero.
-      + '<button class="canasta-quitar" type="button" '
-      + `aria-label="Quitar ${nombre} de la canasta" data-tip="Quitar de la canasta">×</button></div>`
+      // Con una sola unidad no sale: el basurero hace lo mismo y se llamaba
+      // igual, y dos botones iguales seguidos solo confunden.
+      + (ultima ? '' : '<button class="canasta-quitar" type="button" '
+        + `aria-label="Quitar ${nombre} de la canasta" data-tip="Quitar de la canasta">×</button>`)
+      + '</div>'
       + `<p class="canasta-precio">${dinero(l.precio)} c/u</p>`
       + '<div class="canasta-fila canasta-fila-baja">'
       + '<div class="canasta-cantidad"><button type="button" data-menos '
       + `aria-label="${ultima ? `Quitar ${nombre} de la canasta` : `Quitar uno de ${nombre}`}">`
       + `${ultima ? BASURERO : '−'}</button>`
       + `<output>${l.cantidad}</output>`
-      + `<button type="button" data-mas aria-label="Añadir uno de ${nombre}">+</button></div>`
+      + `<button type="button" data-mas aria-label="Añadir uno de ${nombre}"`
+      + `${tope ? ` aria-disabled="true" data-tip="El máximo es ${MAX_UNIDADES} por producto"` : ''}>+</button></div>`
       + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div></div>`;
     li.querySelector('[data-menos]').addEventListener('click', () => {
       if (l.cantidad === 1) { pedirQuitar(id, '[data-menos]'); return; }
-      cambiar(id, -1);
+      cambiarDesdeLinea(id, -1, '[data-menos]');
     });
-    li.querySelector('.canasta-quitar').addEventListener('click', () => pedirQuitar(id, '.canasta-quitar'));
-    li.querySelector('[data-mas]').addEventListener('click', () => cambiar(id, 1));
+    li.querySelector('.canasta-quitar')?.addEventListener('click', () => pedirQuitar(id, '.canasta-quitar'));
+    li.querySelector('[data-mas]').addEventListener('click', () => {
+      if (tope) { avisos.textContent = avisoTope(l.nombre); return; }
+      cambiarDesdeLinea(id, 1, '[data-mas]');
+    });
     lista.append(li);
   }
   pintarPie();
 };
 
 const lineaDe = (id) => [...lista.children].find((li) => li.dataset.id === id);
+
+const cuantosHay = () => `${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
+// Lo que se dice al pulsar el mas de algo que ya esta en el tope, desde la
+// ficha o desde la linea: la regla y lo que hay, para que no parezca roto.
+const avisoTope = (nombre) => `El máximo es ${MAX_UNIDADES} por producto. Ya hay ${MAX_UNIDADES} de ${nombre} en la canasta.`;
+
+// El mas y el menos de una linea. Pintar rehace la lista, asi que el boton
+// pulsado ya no existe: el foco vuelve al mismo boton de la linea nueva, y se
+// dice como queda, como hace la ficha.
+const cambiarDesdeLinea = (id, delta, desde) => {
+  const nombre = pedido.get(id)?.nombre;
+  cambiar(id, delta);
+  const l = pedido.get(id);
+  if (!l) return;
+  lineaDe(id)?.querySelector(desde)?.focus();
+  avisos.textContent = `${l.cantidad} de ${nombre}. ${cuantosHay()}`;
+};
 
 const pedirQuitar = (id, desde) => {
   const l = pedido.get(id);
@@ -618,6 +645,20 @@ listo.addEventListener('click', () => cerrarCheckout());
 // El popstate de view.js pregunta primero por aqui. Devuelve si la vista se
 // queda en pantalla, para que alla sepan si hay categoria que pintar.
 puente.verCheckout = () => {
+  // Atras o Adelante con la canasta abierta es irse a otra pagina: el panel no
+  // se queda flotando encima de la que llega. Se cierra antes de pintarla para
+  // que lo de detras ya no este inert cuando la vista nueva pida el foco.
+  if (abierto()) {
+    cerrar();
+    // cerrar() devuelve el foco a quien abrio el panel, pero puede que la
+    // vista que llega lo esconda ("Editar la canasta" de #confirmar). Se mira
+    // cuando ya se pinto todo (view.js pinta despues de preguntar aqui) y, si
+    // el foco se quedo sin sitio, va al boton de la canasta, que no se mueve.
+    queueMicrotask(() => {
+      const a = document.activeElement;
+      if (!a || a === document.body || a.offsetParent === null) boton?.focus();
+    });
+  }
   const paso = RUTAS[location.hash] || null;
   const limpiar = () => {
     recogerCheckout();
@@ -710,6 +751,9 @@ function verPideCuenta(ver) {
   pideCuenta.hidden = !ver;
   panel.querySelector('.canasta-cabecera').inert = ver;
   panel.querySelector('.canasta-pasos').inert = ver;
+  // La barra de deshacer es un anexo del cerco del panel, pero la hoja es
+  // modal: mientras este arriba el tabulador da la vuelta solo dentro de ella.
+  barraDeshacer.inert = ver;
 }
 
 // Saltar a la cuenta no pierde el pedido: la canasta se queda como esta y al
@@ -754,8 +798,36 @@ puente.faltaDireccion = () => {
 const ESPERA_DESHACER = 12000;
 let borrado = null;
 let relojDeshacer = 0;
+// El reloj se para mientras la barra tiene el foco o el puntero encima: quien
+// esta leyendola o a punto de pulsar no tiene que ver como se le escapa
+// (WCAG 2.2.1). Al soltarla sigue con lo que le quedaba.
+let quedaDeshacer = ESPERA_DESHACER;
+let desdeDeshacer = 0;
+let focoEnBarra = false;
+let punteroEnBarra = false;
 
-const olvidarBorrado = () => {
+const pararReloj = () => {
+  if (!relojDeshacer) return;
+  window.clearTimeout(relojDeshacer);
+  relojDeshacer = 0;
+  quedaDeshacer -= Date.now() - desdeDeshacer;
+};
+const correrReloj = () => {
+  pararReloj();
+  if (!borrado || focoEnBarra || punteroEnBarra) return;
+  desdeDeshacer = Date.now();
+  relojDeshacer = window.setTimeout(olvidarBorrado, Math.max(quedaDeshacer, 0));
+};
+barraDeshacer.addEventListener('focusin', () => { focoEnBarra = true; pararReloj(); });
+barraDeshacer.addEventListener('focusout', (e) => {
+  if (barraDeshacer.contains(e.relatedTarget)) return;
+  focoEnBarra = false;
+  correrReloj();
+});
+barraDeshacer.addEventListener('pointerenter', () => { punteroEnBarra = true; pararReloj(); });
+barraDeshacer.addEventListener('pointerleave', () => { punteroEnBarra = false; correrReloj(); });
+
+function olvidarBorrado() {
   // Confirmar un borrado deja el foco en "Deshacer". Si la barra se va sola a
   // los doce segundos con el foco dentro, se quedaria en el body y quien usa
   // teclado perderia el sitio, asi que hay que recogerlo.
@@ -765,21 +837,27 @@ const olvidarBorrado = () => {
   relojDeshacer = 0;
   borrado = null;
   barraDeshacer.hidden = true;
+  // Escondida ya no tiene ni foco ni puntero encima, aunque el navegador no
+  // llegue a avisar: la proxima vez empieza sin pausa.
+  focoEnBarra = false;
+  punteroEnBarra = false;
   if (!teniaFoco) return;
   // Con el panel abierto, su titulo, que es a donde manda tambien el cambio
   // de paso. Si no, el "mas" de la ficha del producto que se quito.
   const destino = abierto() ? titulo : botonesMas.find(({ coincide }) => coincide(id))?.boton;
   destino?.focus();
-};
+}
 
 // Lo borrado es una lista de [id, linea]: una sola al quitar un producto,
-// todas al vaciar la canasta. Deshacer las repone todas.
+// todas al vaciar la canasta. Deshacer las repone todas. Cada borrado nuevo
+// vuelve a dar los doce segundos enteros.
 const anotarLineas = (lineas, texto) => {
   borrado = { lineas: lineas.map(([id, l]) => [id, { ...l }]) };
   deshacerTexto.textContent = texto;
   barraDeshacer.hidden = false;
-  window.clearTimeout(relojDeshacer);
-  relojDeshacer = window.setTimeout(olvidarBorrado, ESPERA_DESHACER);
+  pararReloj();
+  quedaDeshacer = ESPERA_DESHACER;
+  correrReloj();
 };
 const anotarBorrado = (id, linea) => anotarLineas([[id, linea]], linea.cantidad === 1
   ? `Quitaste ${linea.nombre}.`
@@ -892,9 +970,13 @@ const abierto = () => panel.classList.contains('is-open');
 
 fondo.addEventListener('click', cerrar);
 panel.querySelector('.canasta-cerrar').addEventListener('click', cerrar);
+// "Ver la vitrina" lleva al catalogo entero, como "Ver el menu", y el foco
+// queda en su titulo: bajar a la seccion de la portada dejaba el foco en el
+// boton de la canasta, lejos de lo que se acababa de pedir.
 panel.querySelector('.canasta-vacio-ir').addEventListener('click', () => {
   cerrar();
-  document.querySelector('#catalogo')?.scrollIntoView({ behavior: 'smooth' });
+  if (puente.abrirCategoria) puente.abrirCategoria('catalogo');
+  else document.querySelector('#catalogo')?.scrollIntoView({ behavior: 'smooth' });
 });
 atraparFoco(panel, abierto, cerrar);
 
@@ -992,7 +1074,10 @@ const montarControlesDeFicha = () => {
       menos.dataset.tip = n === 1 ? 'Quitar de la canasta' : 'Uno menos';
       mas.setAttribute('aria-label', n ? `Añadir otro de ${comoSeLlama}` : `Añadir ${comoSeLlama} a la canasta`);
       cuentaFicha.setAttribute('aria-label', `Cantidad de ${comoSeLlama}`);
-      mas.dataset.tip = n ? 'Uno más' : 'Añadir a la canasta';
+      // En el tope el mas se queda enfocable pero no suma, y dice por que.
+      const tope = n >= MAX_UNIDADES;
+      if (tope) mas.setAttribute('aria-disabled', 'true'); else mas.removeAttribute('aria-disabled');
+      mas.dataset.tip = tope ? `El máximo es ${MAX_UNIDADES} por producto` : (n ? 'Uno más' : 'Añadir a la canasta');
       cuentaFicha.dataset.tip = `Escribe cuántos quieres, hasta ${MAX_UNIDADES}`;
       if (importe) importe.textContent = dinero(precioDe());
     };
@@ -1003,9 +1088,10 @@ const montarControlesDeFicha = () => {
       avisos.textContent = `${nombreDe()}, ${dinero(precioDe())}.`;
     }));
 
-    const cuantosQuedan = () => `${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
+    const cuantosQuedan = cuantosHay;
     mas.addEventListener('click', () => {
       const comoSeLlama = nombreDe();
+      if (cuantos() >= MAX_UNIDADES) { avisos.textContent = avisoTope(comoSeLlama); return; }
       const l = pedido.get(idDeAhora()) || { nombre: comoSeLlama, precio: precioDe(), cantidad: 0 };
       l.cantidad = Math.min(l.cantidad + 1, MAX_UNIDADES);
       pedido.set(idDeAhora(), l);
@@ -1022,8 +1108,17 @@ const montarControlesDeFicha = () => {
       if (limpio !== cuentaFicha.value) cuentaFicha.value = limpio;
     });
     cuentaFicha.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); cuentaFicha.blur(); }
-      if (e.key === 'Escape') { cuentaFicha.value = cuantos(); cuentaFicha.blur(); }
+      // Enter asienta lo escrito y Escape lo descarta, los dos sin sacar el
+      // foco del campo: quien corrige un numero suele querer corregirlo otra
+      // vez, y echarlo del campo le obligaba a volver a buscarlo.
+      if (e.key === 'Enter') { e.preventDefault(); asentar(); return; }
+      if (e.key === 'Escape') {
+        // Se queda aqui: el Escape de la pagina cierra menus y, en el
+        // telefono, se lleva el foco al boton del menu.
+        e.stopPropagation();
+        cuentaFicha.value = cuantos();
+        return;
+      }
       // Es un campo de texto y no un number justamente para no heredar sus
       // flechitas, pero las teclas de flecha si se esperan en algo que cuenta:
       // suben y bajan de uno sin tener que borrar y reescribir el numero.
@@ -1033,9 +1128,10 @@ const montarControlesDeFicha = () => {
       const paso = e.key === 'ArrowUp' ? 1 : -1;
       cuentaFicha.value = Math.max(0, Math.min(ahora + paso, MAX_UNIDADES));
     });
-    // Al salir del campo se asienta: se recorta al tope y, si quedo en cero o
-    // en blanco, el producto sale de la canasta, que es lo que un cero dice.
-    cuentaFicha.addEventListener('blur', () => {
+    // Al salir del campo o con Enter se asienta: se recorta al tope y, si quedo
+    // en cero o en blanco, el producto sale de la canasta, que es lo que un
+    // cero dice (y el foco pasa al mas, porque el campo se esconde).
+    const asentar = () => {
       const comoSeLlama = nombreDe();
       const id = idDeAhora();
       const pedida = Math.min(parseInt(cuentaFicha.value, 10) || 0, MAX_UNIDADES);
@@ -1057,10 +1153,14 @@ const montarControlesDeFicha = () => {
       pedido.set(id, l);
       pintar();
       guardar();
+      // Con Enter el foco sigue aqui y pintar no toca lo que se esta
+      // escribiendo: el numero se pone a mano (un 150 se queda en 100).
+      cuentaFicha.value = pedida;
       avisos.textContent = recortado
         ? `El máximo es ${MAX_UNIDADES} por producto, así que quedaron ${MAX_UNIDADES} de ${comoSeLlama}. ${cuantosQuedan()}`
         : `${pedida} de ${comoSeLlama}. ${cuantosQuedan()}`;
-    });
+    };
+    cuentaFicha.addEventListener('blur', asentar);
 
     menos.addEventListener('click', () => {
       const comoSeLlama = nombreDe();
