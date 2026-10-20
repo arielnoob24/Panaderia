@@ -54,8 +54,11 @@ son solo de React, y su CSS va en `react/src/estilos/`, nunca en
 la cuenta de la fase 5 ("Fase 5: la cuenta"): en React son vistas
 `#/cuenta/*`, no un panel. De eso es tuyo: sus rutas y redirecciones en
 `App.jsx`, el boton y la ficha de la cuenta en la cabecera, y la maquetacion
-de esas vistas (dos columnas en la computadora, una en el telefono); los
-formularios y lo que hacen son de `logica-datos`. Para el diseno
+de esas vistas (dos columnas en la computadora, una en el telefono), y el
+"Movimiento de la cuenta" del plan (los ✓ de la contrasena, el paso de crear
+a verificar, la altura de Mis pedidos, "Guardado ✓", el fundido de los
+errores). Los formularios y lo que hacen, incluido el teclado de las 6
+casillas del codigo, son de `logica-datos`. Para el diseno
 sigue la skill `frontend-design`, pero la identidad ya existe (colores de
 `:root`, tipografia, mascota): no se cambia, se aprovecha. Si para algo falta
 una decision, para y pregunta.

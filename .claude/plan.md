@@ -777,6 +777,29 @@ actual sigue con su panel. Lo que hace cada paso es lo de la sección 7.
 - Queda fuera: avisar antes de llenar la canasta que pagar pide cuenta, y
   pedir como invitado (siguen en la sección 13).
 
+**Movimiento de la cuenta** (Motion y `frontend-design`, como el resto de
+"Vistas y aspecto"; todo se apaga con `prefers-reduced-motion`):
+1. **Requisitos de la contraseña**: cada uno se marca con un ✓ que aparece
+   con un pequeño rebote al cumplirse y se quita si deja de cumplirse.
+2. **De crear a verificar**: el formulario sale hacia la izquierda y el paso
+   del código entra desde la derecha, para que se lea como el paso siguiente.
+3. **Código en 6 casillas** (esto sí cambia el uso, no solo el aspecto):
+   una cifra por casilla, el foco salta solo a la siguiente, Retroceso en una
+   casilla vacía vuelve a la anterior y borra, las flechas se mueven entre
+   ellas, y pegar el código (en cualquier casilla) lo reparte entero. Van en
+   un `fieldset` con `legend` "Código de 6 cifras" y cada una con su
+   `aria-label` ("Cifra 1 de 6"…), `inputmode="numeric"` y
+   `autocomplete="one-time-code"` en la primera. Al llenar la sexta se
+   comprueba solo; si falla, el error va bajo las casillas y el foco a la
+   primera.
+4. **Mis pedidos**: cada fila se despliega animando la altura en vez de
+   saltar, y su flecha gira. Sigue siendo un `<details>` (funciona con
+   teclado y lector de pantalla).
+5. **Guardar en Mis datos**: el botón pasa a "Guardado ✓" unos 2 s, además
+   del aviso `aria-live`.
+6. **Errores**: el mensaje aparece con un fundido suave bajo el campo. Sin
+   sacudidas (WCAG 2.3.3 y marean).
+
 Pendiente de la fase 5:
 - [ ] Rutas y vistas de la cuenta, con sus redirecciones.
 - [ ] Crear y verificar (con EmailJS y el recuadro de respaldo).
@@ -784,6 +807,7 @@ Pendiente de la fase 5:
 - [ ] Mis datos y cerrar sesión.
 - [ ] Mis pedidos.
 - [ ] Botón y ficha de la cuenta en la cabecera.
+- [ ] Movimiento de la cuenta (los 6 puntos), y el código en 6 casillas.
 - [ ] Cuenta compartida con el sitio actual, comprobada en los dos sentidos.
 - [ ] Revisión de `ux-accesibilidad`.
 
