@@ -5,13 +5,51 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="El Tradicional: panadería y pastelería con pan recién horneado, pasteles y dulces hechos como antes.">
   <meta name="theme-color" content="#3a2822">
-  <!-- Los iconos son los de assets/img de la raiz: Vite los lleva al build con
-       su huella en el nombre, sin copiarlos a react/. -->
+  <!-- Las rutas a ../assets son las fotos e iconos de la raiz: Vite los lleva
+       al build con su huella en el nombre, sin copiarlos a react/. La foto de
+       portada se pide ya, antes que la hoja: es lo primero que se ve. -->
+  <link rel="preload" as="image" fetchpriority="high" href="../assets/img/hero-900.jpg" imagesrcset="../assets/img/hero-900.jpg 1x, ../assets/img/hero-1600.jpg 2x">
+  <!-- Las direcciones de abajo son las del sitio publicado y no cambian con la
+       migracion: React lo reemplaza en el mismo sitio (fase 7). -->
+  <link rel="canonical" href="https://arielnoob24.github.io/Panaderia/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_EC">
+  <meta property="og:site_name" content="El Tradicional">
+  <meta property="og:title" content="El Tradicional | Panadería &amp; Pastelería">
+  <meta property="og:description" content="Pan recién horneado, pasteles y dulces hechos como antes.">
+  <meta property="og:url" content="https://arielnoob24.github.io/Panaderia/">
+  <meta property="og:image" content="https://arielnoob24.github.io/Panaderia/assets/img/hero-1200.jpg">
+  <meta property="og:image:alt" content="Pan rústico recién horneado sobre una mesa de madera">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="El Tradicional | Panadería &amp; Pastelería">
+  <meta name="twitter:description" content="Pan recién horneado, pasteles y dulces hechos como antes.">
+  <meta name="twitter:image" content="https://arielnoob24.github.io/Panaderia/assets/img/hero-1200.jpg">
+  <title>El Tradicional | Panadería &amp; Pastelería</title>
   <link rel="icon" href="../assets/img/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="../assets/img/favicon-32.png">
   <link rel="icon" type="image/png" sizes="192x192" href="../assets/img/favicon-192.png">
   <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
-  <title>El Tradicional | Panadería &amp; Pastelería</title>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Bakery",
+    "name": "El Tradicional",
+    "description": "Panadería y pastelería con recetas tradicionales e ingredientes locales.",
+    "telephone": "+593 99 000 0000",
+    "url": "https://arielnoob24.github.io/Panaderia/",
+    "priceRange": "$$",
+    "image": "https://arielnoob24.github.io/Panaderia/assets/img/hero-1200.jpg",
+    "hasMap": "https://www.google.com/maps/dir/?api=1&destination=-1.004033,-77.812690",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Calle Eloy Alfaro y Gabriel Espinosa, esquina",
+      "addressLocality": "Tena",
+      "addressRegion": "Napo",
+      "addressCountry": "EC"
+    },
+    "openingHours": ["Mo-Fr 08:00-20:00", "Sa-Su 09:00-21:00"]
+  }
+  </script>
 </head>
 <body>
   <div id="raiz"></div>

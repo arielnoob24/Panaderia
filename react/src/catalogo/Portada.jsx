@@ -1,47 +1,38 @@
-// La portada. Fase 1: solo la seccion del catalogo con una ficha, para probar
-// que styles.css aplica y que el catalogo carga, y los enlaces a las rutas.
-// La cabecera, la portada de verdad y "Los mas pedidos" llegan en la fase 2.
-import { Link } from 'react-router-dom';
-import { catalogo } from '../servicios/catalogo.js';
-import FichaProducto from './FichaProducto.jsx';
-import { CATEGORIAS } from './categorias.js';
+// La pagina de siempre: portada, franja, catalogo e historia. Es la misma para
+// #/ y para las vistas de catalogo (#/tienda-catalogo, #/tienda-<categoria>):
+// como en el sitio actual, la vista no es otra pagina sino el catalogo solo,
+// con la portada y la historia apartadas por body.is-vista (styles.css). Asi
+// las fichas son las mismas al ir y volver, y no se vuelven a montar.
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAparecer } from '../comun/useAparecer.js';
+import { Trigo } from '../comun/iconos.jsx';
+import Hero from './Hero.jsx';
+import Catalogo from './Catalogo.jsx';
+import Historia from './Historia.jsx';
+import { categoriaDeRuta } from './categorias.js';
 
-// La ficha de muestra es el primer destacado que se puede pedir: es lo que
-// abriria "Los mas pedidos".
-const muestra = catalogo.productos.find((p) => p.destacado && p.disponible)
-  || catalogo.productos[0];
+// La franja de las espigas: es adorno, y el lector de pantalla se la salta.
+function Franja() {
+  const aparecer = useAparecer('reveal-band');
+  return (
+    <section ref={aparecer.ref} className={`sign-band ${aparecer.className}`} data-motion={aparecer['data-motion']} aria-hidden="true">
+      <div className="container sign-band-inner"><Trigo /><Trigo derecha /></div>
+    </section>
+  );
+}
 
 function Portada() {
+  const { pathname } = useLocation();
+  const categoria = categoriaDeRuta(pathname);
+  // Lo que no es una ruta vuelve a la portada, sin dejar rastro en Atras.
+  if (!categoria) return <Navigate to="/" replace />;
   return (
-    <section id="catalogo" className="catalog section-pad">
-      <div className="container">
-        <div className="section-heading heading-row">
-          <div>
-            <p className="eyebrow">La vitrina</p>
-            <h2>Hecho a mano,<br /><em>como en casa</em></h2>
-          </div>
-          <p className="section-intro">
-            Todo empieza con harina, agua y tiempo. Elige tu favorito, haz tu pedido y pasa a buscarlo calentito.
-          </p>
-        </div>
-        <p className="catalog-status" role="status" aria-live="polite">
-          {catalogo.error && `No pudimos cargar el catálogo: ${catalogo.error.message}.`}
-        </p>
-        <div className="product-grid">
-          {muestra && <FichaProducto producto={muestra} />}
-        </div>
-        {/* Provisional, mientras no hay menu Tienda: deja llegar a cada ruta. */}
-        <nav aria-label="Rutas en construcción">
-          <ul>
-            <li><Link to="/tienda-catalogo">Catálogo entero</Link></li>
-            {CATEGORIAS.map((c) => (
-              <li key={c.id}><Link to={`/tienda-${c.id}`}>{c.nombre}</Link></li>
-            ))}
-            <li><Link to="/confirmar">Confirmar el pedido</Link></li>
-          </ul>
-        </nav>
-      </div>
-    </section>
+    <>
+      <Hero />
+      <Franja />
+      <Catalogo categoria={categoria} />
+      <Historia />
+    </>
   );
 }
 

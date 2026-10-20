@@ -1,37 +1,45 @@
-// Las rutas del sitio. Son las del sitio actual (seccion 4 y 6 del plan):
-//   #/                      la portada
+// La pagina y sus rutas. Son las del sitio actual (secciones 4 y 6 del plan):
+//   #/                      la portada, con "Los mas pedidos"
 //   #/tienda-catalogo       el catalogo entero
-//   #/tienda-<categoria>    el catalogo con el filtro puesto
-//   #/confirmar             confirmar el pedido y pagar
-//   #/comprobante           el comprobante del pedido pagado
+//   #/tienda-<categoria>    el catalogo con "Filtrar por" puesto
+//   #/confirmar             confirmar el pedido y pagar (fase 4)
+//   #/comprobante           el comprobante del pedido pagado (fase 4)
 // HashRouter las escribe con una barra detras del '#'. Las de antes, sin la
 // barra (#tienda-panes), siguen entrando: React Router le pone la barra al
 // leer la direccion, asi que los enlaces guardados no se rompen.
-// Fase 1: las vistas solo dicen donde se esta; se llenan en las fases 2 a 4.
-import { Navigate, Route, Routes } from 'react-router-dom';
+//
+// La portada y las vistas de catalogo son una sola ruta a proposito (ver
+// Portada.jsx): la vista aparta la portada en vez de reemplazarla.
+import { Route, Routes } from 'react-router-dom';
+import Cabecera from './comun/Cabecera.jsx';
+import Pie from './comun/Pie.jsx';
+import Globo from './comun/Globo.jsx';
+import { RegionAvisos } from './comun/Avisos.jsx';
+import EnlaceSeccion from './comun/EnlaceSeccion.jsx';
 import Portada from './catalogo/Portada.jsx';
-import VistaTienda from './catalogo/VistaTienda.jsx';
-import { CATEGORIAS } from './catalogo/categorias.js';
 import Confirmar from './pedido/Confirmar.jsx';
 import Comprobante from './pedido/Comprobante.jsx';
 
 function App() {
   return (
-    <main id="contenido">
-      <Routes>
-        <Route path="/" element={<Portada />} />
-        {/* Una ruta por categoria, y no 'tienda-:categoria': React Router no
-            admite un parametro pegado a un texto dentro del mismo tramo. */}
-        <Route path="/tienda-catalogo" element={<VistaTienda categoria="catalogo" />} />
-        {CATEGORIAS.map((c) => (
-          <Route key={c.id} path={`/tienda-${c.id}`} element={<VistaTienda categoria={c.id} />} />
-        ))}
-        <Route path="/confirmar" element={<Confirmar />} />
-        <Route path="/comprobante" element={<Comprobante />} />
-        {/* Lo que no es una ruta vuelve a la portada, sin dejar rastro en Atras. */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </main>
+    <>
+      {/* Lleva el foco a <main> sin cambiar la direccion (secciones.js). */}
+      <EnlaceSeccion a="contenido" className="skip-link">Saltar al contenido</EnlaceSeccion>
+      <Cabecera />
+      <main id="contenido" tabIndex={-1}>
+        <Routes>
+          <Route path="/confirmar" element={<Confirmar />} />
+          <Route path="/comprobante" element={<Comprobante />} />
+          {/* La portada decide si la direccion es una de las suyas; si no,
+              vuelve a #/ con replace. */}
+          <Route path="*" element={<Portada />} />
+        </Routes>
+      </main>
+      <Pie />
+      {/* Aqui ira el boton flotante de la canasta (fase 3). */}
+      <RegionAvisos />
+      <Globo />
+    </>
   );
 }
 

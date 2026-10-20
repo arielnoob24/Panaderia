@@ -55,6 +55,8 @@ js/
     state.js            lo que comparten los modulos, y el puente entre ellos
     storage.js          los cuatro sitios donde se guarda: local, session, IDB y cookie
     ui.js               barra, foco, cuadritos de ayuda, animaciones y horario
+    horario.js          cuentas del horario: feriados con Pascua y textos del
+                        pie y de la nota del horno (sin DOM; lo usa tambien react/)
     mail.js             envio de correo por EmailJS
   catalogo/
     repo.js             lee y revisa data/productos.json
@@ -271,6 +273,12 @@ construye (sección 15).
 - [ ] "Ver en el mapa" del pie mide 18 px de alto (mínimo 24).
 - [ ] `user-select: none` en todo el `body`: no se puede copiar dirección ni precios.
 - [ ] Probar la fila quieta por defecto en vez de que avance sola.
+- [ ] El menú del teléfono no lleva el foco a "Nosotros" al abrirse: su
+      `visibility` sigue en transición en el primer cuadro. Arreglo probable:
+      `visibility 0s` al abrir, como ya tiene el submenú de Tienda (pasa igual
+      en `react/`).
+- [ ] axe marca el contraste de la fila de hoy del horario (`.is-today`) y que
+      la vista de catálogo no tiene `h1` (pasa igual en `react/`).
 - [ ] Decir antes de llenar la canasta que pagar pide cuenta, o permitir invitado.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).
 
@@ -310,7 +318,7 @@ las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
 ese repositorio: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, fase 2 en curso)
+## 15. Migración a React (decidida, fase 2 hecha; sigue la 3)
 
 El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
 Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
@@ -387,6 +395,30 @@ secciones 4 a 11.
   WCAG 2.4.1.
 - CI: paso "Construir la version en React" (`npm ci && npm run build` en
   `react/`) detrás de la validación; `ci-local.sh` solo corre la validación.
+
+### Cómo quedó la fase 2 (hecha el 19 de octubre de 2026)
+
+- La página entera menos canasta y cuenta, con las clases y el ARIA de
+  `index.html`. Donde irán la canasta y la cuenta (`.nav-acciones`, botón
+  flotante, "Tu pedido se guardó" del pie) solo hay un comentario.
+- Una sola ruta para la portada y las vistas (`path="*"` → `Portada`): como en
+  `view.js`, la vista aparta la portada con `body.is-vista` y las fichas son
+  siempre las mismas. Entrar con un enlace (`state.entrar`) limpia orden,
+  Mostrar y búsqueda, sube y enfoca el título; Atrás no limpia. "Filtrar por"
+  sale de la dirección y se cambia con `replace`.
+- Reutilizado sin copiar: `recordarVista`/`vistaRecordada` de `storage.js`,
+  `dinero`/`idDe` de `state.js` y el horario, que pasó de `ui.js` a
+  `js/comun/horario.js` (sin DOM) para que lo importen los dos sitios.
+- Lo que se mueve a cada píxel (barra de avance, alto de la fila en el
+  teléfono, el globo) va por `ref` y no por estado.
+- Desde la vista, Nosotros vuelve a la portada (con historial) y baja a
+  #historia cuando ya está pintada; Contáctanos baja al pie sin salir de la
+  vista. El salto al contenido no cambia la dirección.
+- Escape cierra la tienda y el menú del teléfono a la vez y devuelve el foco al
+  botón que corresponde (antes, en el teléfono, iba siempre al del menú).
+- El "+" de cada ficha se ve y se enfoca igual, pero no agrega nada hasta la
+  fase 3; el tamaño elegido sí cambia el precio, el nombre del botón y se
+  anuncia, como hoy.
 
 ### Reparto en `react/`
 

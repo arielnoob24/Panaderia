@@ -1,11 +1,16 @@
 // La ficha de un producto, con las mismas clases y el mismo HTML que arma
-// fichaHtml() en js/catalogo/view.js: styles.css se importa tal cual y tiene
-// que reconocerla sin cambiar una regla.
-// Fase 1: sin tamanos ni control de cantidad, que llegan con el catalogo y la
-// canasta (fases 2 y 3).
-import { useState } from 'react';
-import { dinero } from '@raiz/js/comun/state.js';
+// fichaHtml() en js/catalogo/view.js y que luego completa cart.js con el
+// control de cantidad: styles.css se importa tal cual y tiene que reconocerla
+// sin cambiar una regla.
+//
+// La ficha no decide si se ve ni en que puesto va: eso lo calcula el catalogo
+// (filtro, orden, entrada escalonada) y se lo pasa. Ella pinta y avisa del
+// tamano elegido, que sube al catalogo porque ordenar por precio usa el precio
+// del tamano que se esta viendo, como en el sitio actual.
+import { Fragment, memo } from 'react';
+import { dinero, idDe } from '@raiz/js/comun/state.js';
 import { fotoDe, ANCHOS } from '../servicios/catalogo.js';
+import { useCargaImagen, clases } from '../comun/useCargaImagen.js';
 import { nombreCategoria } from './categorias.js';
 
 // Cuanto mide la foto en cada vista, igual que SIZES_CUADRICULA y SIZES_FILA
@@ -15,9 +20,6 @@ const SIZES = {
   fila: '(max-width: 680px) calc(50vw - 23px), 272px',
 };
 
-// La clase del hueco de la foto segun como va la carga.
-const ESTADO_HUECO = { cargando: 'is-loading', fallo: 'image-unavailable' };
-
 // La etiqueta de agotado no viene en los datos: sale de que no haya existencia.
 function Etiqueta({ producto }) {
   if (!producto.disponible) return <span className="product-tag agotado">Agotado</span>;
@@ -25,21 +27,71 @@ function Etiqueta({ producto }) {
   return <span className={`product-tag ${producto.etiqueta.color}`}>{producto.etiqueta.texto}</span>;
 }
 
-function FichaProducto({ producto, vista = 'cuadricula' }) {
+// Lo que viene en varios tamanos lleva un grupo de radios. El identificador
+// sale del nombre, que es lo unico que distingue un producto de otro.
+// Agotado es agotado en todos sus tamanos: se pueden ver, pero no elegir.
+function Tamanos({ producto, elegido, onElegir }) {
+  const id = idDe(producto.nombre);
+  return (
+    <div className="card-tamanos" role="group" aria-label={`Tamaño de ${producto.nombre}`}>
+      {producto.tamanos.map((t, i) => (
+        <Fragment key={t.valor}>
+          <input
+            className="tamano-input"
+            type="radio"
+            name={`tam-${id}`}
+            id={`tam-${id}-${i}`}
+            value={t.valor}
+            data-precio={t.precio.toFixed(2)}
+            checked={elegido === i}
+            disabled={!producto.disponible}
+            onChange={() => onElegir(producto, i)}
+          />
+          <label className="tamano" htmlFor={`tam-${id}-${i}`}>{t.valor}</label>
+        </Fragment>
+      ))}
+    </div>
+  );
+}
+
+// Lo agotado no lleva boton de pedir: lleva dicho que vuelve manana.
+// Lo disponible lleva el mismo control que pone cart.js, cerrado: solo el +.
+// FASE 2: el + se ve y se enfoca como en el sitio actual pero todavia no
+// agrega nada; la canasta, el - y la cantidad llegan en la fase 3.
+function Pedir({ producto, nombre }) {
+  if (!producto.disponible) return <span className="card-agotado">Vuelve mañana</span>;
+  return (
+    <div className="card-cantidad">
+      <button
+        className="card-mas"
+        type="button"
+        aria-label={`Añadir ${nombre} a la canasta`}
+        data-tip="Añadir a la canasta"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
+function FichaProducto({ producto, vista, visible, orden, retraso, entrando, elegido = 0, onElegir }) {
   const srcSet = ANCHOS.map((w) => `${fotoDe(producto, w)} ${w}w`).join(', ');
   const categoria = nombreCategoria(producto.categoria);
-  // Lo mismo que vigilarImagenes() de js/comun/ui.js: styles.css deja la foto
-  // transparente hasta que llega (is-loaded) y late el hueco mientras tanto
-  // (is-loading). Si no llega, se quita en vez de dejar el icono roto.
-  const [foto, setFoto] = useState('cargando');
+  const tamano = producto.tamanos[elegido];
+  // Con tamanos, el nombre y el precio son los del elegido, como los arma cart.js.
+  const nombre = tamano ? `${producto.nombre} ${tamano.valor}` : producto.nombre;
+  const precio = tamano ? tamano.precio : producto.precio;
+  const carga = useCargaImagen();
   return (
     <article
-      className="product-card"
+      className={entrando ? 'product-card catalog-enter' : 'product-card'}
+      hidden={!visible}
+      style={{ order: orden, '--catalog-delay': retraso === undefined ? undefined : `${retraso}ms` }}
       data-available={producto.disponible ? undefined : 'false'}
       data-destacado={producto.destacado ? 'true' : undefined}
       data-category={producto.categoria}
     >
-      <div className={['product-image', ESTADO_HUECO[foto]].filter(Boolean).join(' ')}>
+      <div className={clases('product-image', carga.hueco)}>
         {/* El src es el de reserva para quien no entienda srcset: el grande. */}
         <img
           src={fotoDe(producto, 840)}
@@ -49,10 +101,7 @@ function FichaProducto({ producto, vista = 'cuadricula' }) {
           loading="lazy"
           width="840"
           height="630"
-          className={foto === 'lista' ? 'is-loaded' : undefined}
-          hidden={foto === 'fallo'}
-          onLoad={() => setFoto('lista')}
-          onError={() => setFoto('fallo')}
+          {...carga.imagen}
         />
         <Etiqueta producto={producto} />
       </div>
@@ -60,13 +109,15 @@ function FichaProducto({ producto, vista = 'cuadricula' }) {
         {/* Sin nombre conocido no se pone rotulo: mejor nada que 'bebidas-frias'. */}
         {categoria && <span className="product-categoria">{categoria}</span>}
         <h3>{producto.nombre}</h3>
+        {producto.tamanos.length > 0 && <Tamanos producto={producto} elegido={elegido} onElegir={onElegir} />}
         <div className="product-bottom">
-          <strong>{dinero(producto.precio)}</strong>
-          {!producto.disponible && <span className="card-agotado">Vuelve mañana</span>}
+          <strong>{dinero(precio)}</strong>
+          <Pedir producto={producto} nombre={nombre} />
         </div>
       </div>
     </article>
   );
 }
 
-export default FichaProducto;
+// Al escribir en el buscador cambian unas pocas fichas, no las diecisiete.
+export default memo(FichaProducto);
