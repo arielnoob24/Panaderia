@@ -406,10 +406,11 @@ Skills en `.claude/skills/`:
 | `componente-react` | propia: convenciones de `react/` | `frontend`, `logica-datos` |
 | `vercel-react-best-practices` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos`, `calidad-publicacion` |
 | `vercel-composition-patterns` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos` |
+| `frontend-design` | skills.sh, `anthropics/skills` (copiada a mano del commit `dbd4588`) | `frontend` |
 
 Las instaladas con el CLI quedan en `skills-lock.json` y `npx skills update -p`
 las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
-ese repositorio: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
+ese repositorio, y `frontend-design` igual: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
 ## 15. Migración a React (decidida, fase 4 hecha; sigue la 5)
@@ -672,8 +673,9 @@ abierto. React ya lo hace bien, y el sitio actual se retira en la fase 7.
 
 ### Arreglos de la fase 3 (revisión de `ux-accesibilidad`, 20 de octubre de 2026)
 
-Van en React y, salvo el 1, también en el sitio actual. Se hacen después de
-la fase 4. Gravedad de Nielsen entre paréntesis.
+Van en React y, salvo el de los avisos repetidos, también en el sitio actual.
+Se hacen después de la fase 4, a la vez que las vistas. Gravedad de Nielsen
+entre paréntesis.
 
 - [ ] (3) `frontend`: en el teléfono la barra de deshacer tapa el botón
       flotante de la canasta (la regla de `bottom: 74px` del `@media` va antes
@@ -694,12 +696,83 @@ la fase 4. Gravedad de Nielsen entre paréntesis.
       productos en la canasta", como la ficha.
 - [x] (1) `logica-datos`: con la canasta vacía el pie no dice "Tu pedido se
       guardó…" (no enseña nada). Hecho con la fase 4, en los dos sitios.
-- [ ] (1) `frontend`: "Ver la vitrina" deja el foco en `#catalogo`.
-- [ ] (1) `frontend`: con una sola unidad, la línea no enseña la X (el
+- [ ] (1) `logica-datos`: "Ver la vitrina" de la canasta vacía lleva al catálogo y deja
+      el foco en su título (en React, a `#/tienda-catalogo` cuando haya vistas).
+- [ ] (1) `logica-datos`: con una sola unidad, la línea no enseña la X (el
       basurero hace lo mismo y tenían el mismo nombre).
 
 React además mejora una cosa: en el sitio actual el `+`/`−` de una línea
 manda el foco a `body` porque se rehace la línea; en React se queda.
+
+### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
+
+El usuario quiere menos desplazamiento y una página que no se vea vacía y se
+sienta fluida. **Solo en React**: el sitio actual se queda como está (recibe
+solo arreglos) y, desde aquí, la comparación de paridad deja de aplicar a lo
+que cambia este apartado. Lo hace `frontend`, con la skill `frontend-design`.
+El CSS nuevo va en `react/src/estilos/`, importado después de `styles.css`;
+`assets/css/styles.css` no se toca para esto.
+
+**Vistas en lugar de una sola página larga.** Cada opción del menú de arriba es
+una ruta propia; esto sustituye a la decisión de la fase 1 de que Nosotros y
+Contáctanos bajaran por la misma página:
+
+| Menú | Ruta | Contenido |
+|---|---|---|
+| Logo / Inicio | `#/` | Portada (hero), la franja y debajo **"Los más pedidos" en carrusel**, con un enlace a toda la tienda. Aquí sí se baja un poco: es a propósito |
+| Nosotros | `#/nosotros` | La historia y, cuando haya fotos, la galería del local |
+| Tienda | `#/tienda-*` | Como ahora |
+| Contáctanos | `#/contacto` | Horario completo con el día de hoy marcado, abierto/cerrado, dirección, **mapa** y contacto |
+
+- **Pie corto** en todas las vistas: marca, abierto/cerrado, WhatsApp e
+  Instagram, "Tu pedido se guardó…" y el ©. El horario completo y la
+  dirección pasan a `#/contacto`.
+- Al cambiar de vista: arriba del todo, título de la pestaña propio, `h1` en
+  cada vista y el foco en él (WCAG 2.4.3), y se anuncia como hoy las vistas
+  de la tienda. El enlace de salto al contenido sigue igual.
+- Las direcciones viejas siguen entrando con `replace`: `#historia` →
+  `#/nosotros`, `#visitanos` → `#/contacto`, `#catalogo` → `#/tienda-catalogo`,
+  `#inicio` → `#/`.
+- **Transición: fundido suave**. La vista nueva aparece con opacidad y un
+  pequeño desplazamiento hacia arriba (unos 280 ms); sin animación con
+  `prefers-reduced-motion`.
+- **Carrusel** de "Los más pedidos": `scroll-snap` nativo con botones
+  Anterior/Siguiente, se arrastra con el dedo, sin avance automático, cada
+  ficha alcanzable con Tab y los botones se desactivan en los extremos.
+
+**Animaciones con Motion** (`motion`, versión exacta, sin `^`): la transición
+de vistas, las líneas de la canasta que entran, salen y se reacomodan, el
+contador de la canasta que salta al añadir y la respuesta al pulsar. Siguiendo
+`frontend-design`: un solo momento de entrada orquestado por vista (no un
+fundido en cada sección) y el resto, movimiento que responde a lo que hace la
+persona. Todo con `useReducedMotion` / `MotionConfig reducedMotion="user"`.
+
+**Fondo que no se vea vacío**: ilustraciones de línea de **trigo, maíz y pan**
+en SVG propio (dibujadas aquí, sin bancos de imágenes), detrás del contenido,
+`aria-hidden`, en tonos de la paleta y lo bastante tenues para no bajar el
+contraste del texto de encima (se mide). Distintas en cada vista, sin
+movimiento propio.
+
+**Regla 60-30-10 en cada vista**: 60 % `--masa`/`--papel` (fondo), 30 %
+`--horno` (texto, bandas oscuras, pie), 10 % `--ambar`/`--corteza` (botones,
+precios, acentos). Se comprueba con capturas de cada vista en escritorio y en
+el teléfono, contando la proporción de píxeles de cada grupo.
+
+**Mapa** en `#/contacto`: `iframe` de Google Maps sin clave
+(`https://maps.google.com/maps?q=-1.004033,-77.812690&z=17&output=embed`), con
+`title`, `loading="lazy"` y el enlace "Ver en el mapa" de siempre debajo.
+
+**Galería del local**: _pendiente de fotos reales del usuario_ (horno, local,
+proceso), en `assets/img/local/`. Sin fotos no se enseña nada; no se usan
+fotos de bancos ni inventadas.
+
+Pendiente de este apartado:
+- [ ] Vistas, pie corto, transición, carrusel y direcciones viejas.
+- [ ] Motion en vistas y canasta.
+- [ ] Fondos de trigo, maíz y pan, y 60-30-10 medido en cada vista.
+- [ ] Mapa en `#/contacto`.
+- [ ] Galería (cuando el usuario pase las fotos).
+- [ ] Revisión de `ux-accesibilidad` de todo lo anterior.
 
 ### Vista previa de `mejoras` (en pausa: el usuario lo decide al final)
 

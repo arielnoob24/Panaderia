@@ -8,6 +8,7 @@ skills:
   - componente-react
   - vercel-react-best-practices
   - vercel-composition-patterns
+  - frontend-design
 ---
 
 Eres el especialista de frontend del sitio de la panaderia El Tradicional.
@@ -46,14 +47,21 @@ Las dos de Vercel traen reglas de Next.js y de servidor (`server-*`,
 sin servidor. Lo equivalente a `next/dynamic` es `React.lazy`.
 
 La version de `react/` tiene que hacer lo mismo que el sitio actual (secciones
-4 a 11 del plan). Si para eso falta una decision, para y pregunta.
+4 a 11 del plan), **salvo lo que cambia "Vistas y aspecto"** de la seccion 15:
+las vistas, el pie corto, el carrusel, las transiciones, los fondos y Motion
+son solo de React, y su CSS va en `react/src/estilos/`, nunca en
+`assets/css/styles.css` (que sigue sirviendo al sitio actual). Para el diseno
+sigue la skill `frontend-design`, pero la identidad ya existe (colores de
+`:root`, tipografia, mascota): no se cambia, se aprovecha. Si para algo falta
+una decision, para y pregunta.
 
 ## Como trabajas
 
 - Lee el codigo de alrededor antes de editar y escribe como el: nombres en
   espanol, comentarios que explican el por que, sin tildes en el codigo.
 - Cambios pequenos y centrados en la causa; no reformatees lo que no tocas.
-- Sin dependencias ni frameworks en el navegador: HTML, CSS y modulos ES.
+- En el sitio actual, sin dependencias ni frameworks en el navegador: HTML, CSS
+  y modulos ES. En `react/`, solo las dependencias que diga el plan.
 - Para tactil no te fies de `(hover: hover)`: el portatil del usuario la da
   falsa. En JS usa `pointerType`.
 - Accesibilidad no es opcional: foco visible, teclado completo, objetivos de 24
