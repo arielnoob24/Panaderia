@@ -715,9 +715,11 @@ panelC.querySelector('[data-paso="pagos"] .cuenta-salir').addEventListener('clic
 
 // Tener cuenta sirve para no volver a escribir lo mismo: la direccion pasa a la
 // canasta, pero solo si esta vacia. Lo que ya escribiste manda sobre la cuenta.
-const prellenarPedido = () => {
+// Al arrancar se rellena sin guardar: es lo que ya estaba en la cuenta, no un
+// cambio del pedido, y guardarlo pondria en el pie la hora de entrar.
+const prellenarPedido = (apuntar = true) => {
   if (!sesion.dentro || !sesion.direccion || entrega.direccion) return;
-  puente.ponerDireccion(sesion.direccion);
+  puente.ponerDireccion(sesion.direccion, apuntar);
 };
 
 let ultimoFocoC = null;
@@ -1182,7 +1184,7 @@ enterAvanza(camposEditar.map((c) => c.input), guardarEdicion);
 const iniciarCuenta = () => {
   leerCuenta();
   pintarSesion();
-  prellenarPedido();
+  prellenarPedido(false);
   if (sesion.dentro) puente.elegirMetodo?.(sesion.metodo);
 };
 

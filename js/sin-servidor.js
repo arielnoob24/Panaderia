@@ -540,6 +540,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var ENVIO = 1.5;
   var dinero = (n) => "$" + n.toFixed(2);
   var direccionEntera = () => [entrega.direccion, entrega.piso, entrega.referencia].filter(Boolean).join(" · ");
+  var escapar = (texto) => String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var idDe = (nombre) => nombre.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-");
   var subtotal = () => [...pedido.values()].reduce((s, l) => s + l.precio * l.cantidad, 0);
   var envio = () => entrega.modo === "domicilio" ? ENVIO : 0;
@@ -664,7 +665,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   // js/catalogo/view.js
   var catalogStatus = document.querySelector(".catalog-status");
   var productGrid = document.querySelector(".product-grid");
-  var escapar = (texto) => String(texto).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   var enlacesTienda = [...document.querySelectorAll(".main-nav a[data-filtro]")];
   var NOMBRES = {};
   enlacesTienda.forEach((a) => {
@@ -1448,7 +1448,11 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     recibo.textContent = "";
     for (const l of pedido.values()) {
       const li = document.createElement("li");
-      li.innerHTML = `<span>${l.cantidad} × ${l.nombre}</span><span>${dinero(l.precio * l.cantidad)}</span>`;
+      const que = document.createElement("span");
+      que.textContent = `${l.cantidad} × ${l.nombre}`;
+      const cuanto = document.createElement("span");
+      cuanto.textContent = dinero(l.precio * l.cantidad);
+      li.append(que, cuanto);
       recibo.append(li);
     }
     reciboEnviadoDe.textContent = `Correo de El Tradicional · para ${sesion.correo}`;
@@ -1781,7 +1785,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   };
   var fotoHtml = (nombre) => {
     const src = fotoDe(nombre);
-    return '<span class="canasta-foto">' + (src ? `<img src="${src}" alt="" width="64" height="64" loading="lazy">` : "") + "</span>";
+    return '<span class="canasta-foto">' + (src ? `<img src="${escapar(src)}" alt="" width="64" height="64" loading="lazy">` : "") + "</span>";
   };
   var latido = () => {
     if (!boton) return;
@@ -1827,9 +1831,10 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       const li = document.createElement("li");
       li.className = "canasta-linea";
       li.dataset.id = id;
+      const nombre = escapar(l.nombre);
       if (id === porConfirmar) {
         li.classList.add("is-confirmando");
-        li.innerHTML = fotoHtml(l.nombre) + `<div class="canasta-info"><h3>${l.nombre}</h3><p class="canasta-confirma-dicho">${l.cantidad === 1 ? "¿Lo quitamos de la canasta?" : `¿Quitamos las ${l.cantidad} unidades?`}</p><div class="canasta-confirma"><button class="canasta-confirma-si" type="button" aria-label="Sí, quitar ${l.nombre} de la canasta">Sí, quitar</button><button class="canasta-confirma-no" type="button" aria-label="Cancelar, dejar ${l.nombre} en la canasta">Cancelar</button></div></div>`;
+        li.innerHTML = fotoHtml(l.nombre) + `<div class="canasta-info"><h3>${nombre}</h3><p class="canasta-confirma-dicho">${l.cantidad === 1 ? "¿Lo quitamos de la canasta?" : `¿Quitamos las ${l.cantidad} unidades?`}</p><div class="canasta-confirma"><button class="canasta-confirma-si" type="button" aria-label="Sí, quitar ${nombre} de la canasta">Sí, quitar</button><button class="canasta-confirma-no" type="button" aria-label="Cancelar, dejar ${nombre} en la canasta">Cancelar</button></div></div>`;
         li.querySelector(".canasta-confirma-si").addEventListener("click", () => confirmarQuitar(id));
         li.querySelector(".canasta-confirma-no").addEventListener("click", () => cancelarQuitar(id));
         li.addEventListener("keydown", (e) => {
@@ -1841,7 +1846,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         continue;
       }
       const ultima = l.cantidad === 1;
-      li.innerHTML = fotoHtml(l.nombre) + `<div class="canasta-info"><div class="canasta-fila"><h3>${l.nombre}</h3><button class="canasta-quitar" type="button" aria-label="Quitar ${l.nombre} de la canasta" data-tip="Quitar de la canasta">×</button></div><p class="canasta-precio">${dinero(l.precio)} c/u</p><div class="canasta-fila canasta-fila-baja"><div class="canasta-cantidad"><button type="button" data-menos aria-label="${ultima ? `Quitar ${l.nombre} de la canasta` : `Quitar uno de ${l.nombre}`}">${ultima ? BASURERO : "−"}</button><output>${l.cantidad}</output><button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div></div>`;
+      li.innerHTML = fotoHtml(l.nombre) + `<div class="canasta-info"><div class="canasta-fila"><h3>${nombre}</h3><button class="canasta-quitar" type="button" aria-label="Quitar ${nombre} de la canasta" data-tip="Quitar de la canasta">×</button></div><p class="canasta-precio">${dinero(l.precio)} c/u</p><div class="canasta-fila canasta-fila-baja"><div class="canasta-cantidad"><button type="button" data-menos aria-label="${ultima ? `Quitar ${nombre} de la canasta` : `Quitar uno de ${nombre}`}">${ultima ? BASURERO : "−"}</button><output>${l.cantidad}</output><button type="button" data-mas aria-label="Añadir uno de ${nombre}">+</button></div><span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div></div>`;
       li.querySelector("[data-menos]").addEventListener("click", () => {
         if (l.cantidad === 1) {
           pedirQuitar(id, "[data-menos]");
@@ -1882,6 +1887,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     anotarBorrado(id, { ...l });
     pedido.delete(id);
     pintar();
+    guardar();
     avisos.textContent = `Quitaste ${l.nombre}. ${unidades()} producto${unidades() === 1 ? "" : "s"} en la canasta.`;
     deshacerBoton.focus();
   };
@@ -1937,7 +1943,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     pintarResumen();
     pintarPago();
     refrescos.forEach((refrescar) => refrescar());
-    guardar();
   };
   var RUTAS = { "#confirmar": "pedido", "#comprobante": "comprobante" };
   var TITULOS = { pedido: "Confirmar el pedido", comprobante: "Pedido confirmado" };
@@ -2018,12 +2023,14 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     entrega.modo = radio.value === "domicilio" ? "domicilio" : "retiro";
     avisoDir.hidden = true;
     pintarPie();
+    guardar();
     if (entrega.modo === "domicilio") campoDir.focus();
   }));
   campoDir.addEventListener("input", () => {
     entrega.direccion = campoDir.value.trim().slice(0, 200);
     if (entrega.direccion) avisoDir.hidden = true;
     pintarPie();
+    guardar();
   });
   [[campoPiso, "piso", 120], [campoRef, "referencia", 200], [campoNotas, "notas", 300]].forEach(([campo, llave, tope]) => campo?.addEventListener("input", () => {
     entrega[llave] = campo.value.trim().slice(0, tope);
@@ -2107,6 +2114,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     const [id, linea] = repuestas[0];
     olvidarBorrado();
     pintar();
+    guardar();
     avisos.textContent = `${repuestas.length === 1 ? `${linea.nombre} vuelve` : "Todo vuelve"} a la canasta. ${unidades()} producto${unidades() === 1 ? "" : "s"} en la canasta.`;
     const destino = abierto() ? [...lista.querySelectorAll(".canasta-linea")].find((li) => li.querySelector("h3")?.textContent === linea.nombre)?.querySelector("[data-mas]") || panel2.querySelector(".canasta-cerrar") : botonesMas.find(({ coincide }) => coincide(id))?.boton;
     destino?.focus();
@@ -2132,6 +2140,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     pedido.clear();
     porConfirmar = null;
     pintar();
+    guardar();
     avisos.textContent = "Vaciaste la canasta.";
     deshacerBoton.focus();
   });
@@ -2152,6 +2161,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       pedido.set(id, l);
     }
     pintar();
+    guardar();
   };
   var ultimoFoco = null;
   var abrir2 = () => {
@@ -2272,6 +2282,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         l.cantidad = Math.min(l.cantidad + 1, MAX_UNIDADES);
         pedido.set(idDeAhora(), l);
         pintar();
+        guardar();
         volarALaCanasta(ficha);
         avisos.textContent = `${comoSeLlama} añadido. ${cuantosQuedan()}`;
       });
@@ -2308,6 +2319,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
           if (antesDeBorrar) anotarBorrado(id, antesDeBorrar);
           pedido.delete(id);
           pintar();
+          guardar();
           avisos.textContent = `${comoSeLlama} quitado. ${cuantosQuedan()}`;
           mas.focus();
           return;
@@ -2317,6 +2329,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         l.cantidad = pedida;
         pedido.set(id, l);
         pintar();
+        guardar();
         avisos.textContent = recortado ? `El máximo es ${MAX_UNIDADES} por producto, así que quedaron ${MAX_UNIDADES} de ${comoSeLlama}. ${cuantosQuedan()}` : `${pedida} de ${comoSeLlama}. ${cuantosQuedan()}`;
       });
       menos.addEventListener("click", () => {
@@ -2349,10 +2362,11 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     cuenta.hidden = true;
     if (boton) boton.setAttribute("aria-label", "Ver la canasta, vacía");
   };
-  puente.ponerDireccion = (direccion) => {
+  puente.ponerDireccion = (direccion, apuntar = true) => {
     entrega.direccion = direccion;
     campoDir.value = direccion;
     pintarPie();
+    if (apuntar) guardar();
   };
 
   // js/cuenta/account.js
@@ -2819,9 +2833,9 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
     verPaso("sesion");
     botonPagos.focus();
   });
-  var prellenarPedido = () => {
+  var prellenarPedido = (apuntar = true) => {
     if (!sesion.dentro || !sesion.direccion || entrega.direccion) return;
-    puente.ponerDireccion(sesion.direccion);
+    puente.ponerDireccion(sesion.direccion, apuntar);
   };
   var ultimoFocoC = null;
   var abiertoC = () => panelC.classList.contains("is-open");
@@ -3197,7 +3211,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
   var iniciarCuenta = () => {
     leerCuenta();
     pintarSesion();
-    prellenarPedido();
+    prellenarPedido(false);
     if (sesion.dentro) puente.elegirMetodo?.(sesion.metodo);
   };
   puente.abrirC = abrirC;

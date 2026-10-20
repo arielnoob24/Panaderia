@@ -48,6 +48,13 @@ const dinero = (n) => '$' + n.toFixed(2);
 // campo mas obligaria a acordarse de los tres.
 const direccionEntera = () => [entrega.direccion, entrega.piso, entrega.referencia]
   .filter(Boolean).join(' · ');
+// Lo que entra en la pagina como HTML y no lo escribio este codigo -los nombres
+// del catalogo, o lo que se recupera de localStorage, que cualquiera puede
+// tocar a mano- se escapa: un '<' en un nombre no puede acabar siendo una
+// etiqueta. Vive aqui porque lo usan la vitrina, la canasta y el comprobante.
+const escapar = (texto) => String(texto)
+  .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+  .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const idDe = (nombre) => nombre.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-');
 
 
@@ -69,6 +76,6 @@ const puente = {};
 export {
   CLAVE, pedido, entrega, sesion, tarjeta, cobro, factura, puente,
   MAX_UNIDADES, ENVIO,
-  telefonoLargo, dinero, direccionEntera, idDe,
+  telefonoLargo, dinero, direccionEntera, idDe, escapar,
   subtotal, envio, total, unidades,
 };

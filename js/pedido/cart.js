@@ -8,7 +8,7 @@ import {
 } from '../comun/ui.js';
 import {
   CLAVE, pedido, entrega, sesion, cobro, factura, puente,
-  MAX_UNIDADES, ENVIO, dinero, idDe,
+  MAX_UNIDADES, ENVIO, dinero, idDe, escapar,
   subtotal, envio, total, unidades,
 } from '../comun/state.js';
 import { marcarActualizacion, olvidarMarca } from '../comun/storage.js';
@@ -29,6 +29,9 @@ const leerGuardado = () => {
   Object.assign(entrega, leido.entrega);
   Object.assign(factura, leido.factura);
 };
+// Se guarda solo cuando algo cambia -el pedido, la entrega o la factura-, no
+// al cargar la pagina: si se reescribiera en cada visita, la fecha del pie
+// diria siempre la hora de entrar y no la del ultimo cambio.
 const guardar = () => {
   // Cuando se guardo va en dos sitios a la vez, y no por descuido: dentro del
   // propio pedido, para saber de cuando es lo que se esta recuperando, y en la
@@ -304,7 +307,7 @@ const fotoHtml = (nombre) => {
   const src = fotoDe(nombre);
   // Sin alt: el nombre va justo al lado, y leerlo dos veces no ayuda a nadie.
   return '<span class="canasta-foto">'
-    + (src ? `<img src="${src}" alt="" width="64" height="64" loading="lazy">` : '')
+    + (src ? `<img src="${escapar(src)}" alt="" width="64" height="64" loading="lazy">` : '')
     + '</span>';
 };
 
@@ -365,17 +368,20 @@ const pintar = () => {
     // Por el dataset y no por un selector: el identificador lleva dentro el
     // nombre del producto y el tamanio, y eso no siempre es un selector valido.
     li.dataset.id = id;
+    // El nombre viene de lo guardado, que cualquiera puede tocar a mano, asi
+    // que entra en el HTML escapado.
+    const nombre = escapar(l.nombre);
     if (id === porConfirmar) {
       li.classList.add('is-confirmando');
       li.innerHTML = fotoHtml(l.nombre)
-        + `<div class="canasta-info"><h3>${l.nombre}</h3>`
+        + `<div class="canasta-info"><h3>${nombre}</h3>`
         + `<p class="canasta-confirma-dicho">${l.cantidad === 1
           ? '¿Lo quitamos de la canasta?' : `¿Quitamos las ${l.cantidad} unidades?`}</p>`
         + '<div class="canasta-confirma">'
         + '<button class="canasta-confirma-si" type="button" '
-        + `aria-label="Sí, quitar ${l.nombre} de la canasta">Sí, quitar</button>`
+        + `aria-label="Sí, quitar ${nombre} de la canasta">Sí, quitar</button>`
         + '<button class="canasta-confirma-no" type="button" '
-        + `aria-label="Cancelar, dejar ${l.nombre} en la canasta">Cancelar</button>`
+        + `aria-label="Cancelar, dejar ${nombre} en la canasta">Cancelar</button>`
         + '</div></div>';
       li.querySelector('.canasta-confirma-si').addEventListener('click', () => confirmarQuitar(id));
       li.querySelector('.canasta-confirma-no').addEventListener('click', () => cancelarQuitar(id));
@@ -397,18 +403,18 @@ const pintar = () => {
     // precio por unidad debajo y, abajo del todo, la cantidad y lo que suma.
     li.innerHTML = fotoHtml(l.nombre)
       + '<div class="canasta-info">'
-      + `<div class="canasta-fila"><h3>${l.nombre}</h3>`
+      + `<div class="canasta-fila"><h3>${nombre}</h3>`
       // La X quita el producto entero, lleve las unidades que lleve: sin ella,
       // para quitar doce panes habia que bajar uno a uno hasta el basurero.
       + '<button class="canasta-quitar" type="button" '
-      + `aria-label="Quitar ${l.nombre} de la canasta" data-tip="Quitar de la canasta">×</button></div>`
+      + `aria-label="Quitar ${nombre} de la canasta" data-tip="Quitar de la canasta">×</button></div>`
       + `<p class="canasta-precio">${dinero(l.precio)} c/u</p>`
       + '<div class="canasta-fila canasta-fila-baja">'
       + '<div class="canasta-cantidad"><button type="button" data-menos '
-      + `aria-label="${ultima ? `Quitar ${l.nombre} de la canasta` : `Quitar uno de ${l.nombre}`}">`
+      + `aria-label="${ultima ? `Quitar ${nombre} de la canasta` : `Quitar uno de ${nombre}`}">`
       + `${ultima ? BASURERO : '−'}</button>`
       + `<output>${l.cantidad}</output>`
-      + `<button type="button" data-mas aria-label="Añadir uno de ${l.nombre}">+</button></div>`
+      + `<button type="button" data-mas aria-label="Añadir uno de ${nombre}">+</button></div>`
       + `<span class="canasta-subtotal">${dinero(l.precio * l.cantidad)}</span></div></div>`;
     li.querySelector('[data-menos]').addEventListener('click', () => {
       if (l.cantidad === 1) { pedirQuitar(id, '[data-menos]'); return; }
@@ -458,6 +464,7 @@ const confirmarQuitar = (id) => {
   anotarBorrado(id, { ...l });
   pedido.delete(id);
   pintar();
+  guardar();
   avisos.textContent = `Quitaste ${l.nombre}. ${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
   // La linea donde vivia el foco ya no existe. Se le pasa a "Deshacer", que
   // acaba de aparecer y es justo lo siguiente que querria quien se arrepienta.
@@ -530,7 +537,6 @@ const pintarPie = () => {
   pintarResumen();
   pintarPago();
   refrescos.forEach((refrescar) => refrescar());
-  guardar();
 };
 
 // ---- Moverse entre la canasta y la vista de confirmar ----------------
@@ -592,6 +598,8 @@ const recogerCheckout = () => {
   olvidarBorrado();
   pedido.clear();
   // Pedido cumplido: el proximo empieza de cero, tambien en la forma de pago.
+  // No se guarda: lo guardado ya se borro al aprobar, y una canasta vacia no
+  // es un cambio que apuntar en el pie.
   reiniciarMetodo();
   pintar();
 };
@@ -640,6 +648,7 @@ radios.forEach((radio) => radio.addEventListener('change', () => {
   entrega.modo = radio.value === 'domicilio' ? 'domicilio' : 'retiro';
   avisoDir.hidden = true;
   pintarPie();
+  guardar();
   if (entrega.modo === 'domicilio') campoDir.focus();
 }));
 
@@ -647,6 +656,7 @@ campoDir.addEventListener('input', () => {
   entrega.direccion = campoDir.value.trim().slice(0, 200);
   if (entrega.direccion) avisoDir.hidden = true;
   pintarPie();
+  guardar();
 });
 
 // Los tres campos de detalle se guardan igual, asi que se cablean en bucle.
@@ -776,6 +786,7 @@ const deshacerBorrado = () => {
   const [id, linea] = repuestas[0];
   olvidarBorrado();
   pintar();
+  guardar();
   avisos.textContent = `${repuestas.length === 1 ? `${linea.nombre} vuelve` : 'Todo vuelve'} a la canasta. ${unidades()} producto${unidades() === 1 ? '' : 's'} en la canasta.`;
   // La barra acaba de esconderse con el foco dentro, asi que hay que
   // recogerlo: si no, se va al body y quien usa teclado pierde el sitio.
@@ -819,6 +830,7 @@ preguntaVaciar.querySelector('.canasta-vaciar-si').addEventListener('click', () 
   pedido.clear();
   porConfirmar = null;
   pintar();
+  guardar();
   avisos.textContent = 'Vaciaste la canasta.';
   deshacerBoton.focus();
 });
@@ -844,6 +856,7 @@ const cambiar = (id, delta) => {
     pedido.set(id, l);
   }
   pintar();
+  guardar();
 };
 
 let ultimoFoco = null;
@@ -991,6 +1004,7 @@ const montarControlesDeFicha = () => {
       l.cantidad = Math.min(l.cantidad + 1, MAX_UNIDADES);
       pedido.set(idDeAhora(), l);
       pintar();
+      guardar();
       volarALaCanasta(ficha);
       avisos.textContent = `${comoSeLlama} añadido. ${cuantosQuedan()}`;
     });
@@ -1026,6 +1040,7 @@ const montarControlesDeFicha = () => {
         if (antesDeBorrar) anotarBorrado(id, antesDeBorrar);
         pedido.delete(id);
         pintar();
+        guardar();
         avisos.textContent = `${comoSeLlama} quitado. ${cuantosQuedan()}`;
         mas.focus();
         return;
@@ -1035,6 +1050,7 @@ const montarControlesDeFicha = () => {
       l.cantidad = pedida;
       pedido.set(id, l);
       pintar();
+      guardar();
       avisos.textContent = recortado
         ? `El máximo es ${MAX_UNIDADES} por producto, así que quedaron ${MAX_UNIDADES} de ${comoSeLlama}. ${cuantosQuedan()}`
         : `${pedida} de ${comoSeLlama}. ${cuantosQuedan()}`;
@@ -1067,6 +1083,7 @@ const iniciarCanasta = () => {
   if (campoRef) campoRef.value = entrega.referencia;
   if (campoNotas) campoNotas.value = entrega.notas;
   cargarFactura();
+  // Solo se pinta: lo leido no se vuelve a escribir (ver guardar()).
   pintar();
 };
 
@@ -1082,11 +1099,14 @@ puente.vaciarContador = () => {
   cuenta.hidden = true;
   if (boton) boton.setAttribute('aria-label', 'Ver la canasta, vacía');
 };
-// La cuenta rellena la direccion del pedido con la que tenga guardada.
-puente.ponerDireccion = (direccion) => {
+// La cuenta rellena la direccion del pedido con la que tenga guardada. Al
+// arrancar no se guarda (es lo que se lee de la cuenta, no un cambio); al
+// entrar o al editar la cuenta, si.
+puente.ponerDireccion = (direccion, apuntar = true) => {
   entrega.direccion = direccion;
   campoDir.value = direccion;
   pintarPie();
+  if (apuntar) guardar();
 };
 
 export { montarControlesDeFicha, iniciarCanasta };

@@ -4,18 +4,14 @@
 // Las fichas salen de aqui como HTML; el control de cantidad que llevan
 // dentro lo pone cart.js despues, porque eso ya es canasta.
 import { reducedMotion, avisos, grupo, abrirGrupo } from '../comun/ui.js';
-import { dinero, idDe, puente } from '../comun/state.js';
+import { dinero, idDe, puente, escapar } from '../comun/state.js';
 import { recordarVista, vistaRecordada } from '../comun/storage.js';
 
 const catalogStatus = document.querySelector('.catalog-status');
 const productGrid = document.querySelector('.product-grid');
 
 // Los nombres y los textos alternativos vienen de un archivo de datos y entran
-// en la pagina como HTML, asi que se escapan: un '<' en un nombre no puede
-// acabar siendo una etiqueta.
-const escapar = (texto) => String(texto)
-  .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-  .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+// en la pagina como HTML, asi que pasan por escapar() (state.js).
 
 // Como se llama cada categoria lo dice el menu Tienda, y de ahi lo leen la
 // ficha y la vista de categoria: un solo sitio donde cambiar "Bebidas".

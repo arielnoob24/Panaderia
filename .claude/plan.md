@@ -213,10 +213,10 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
 
 | Dónde | Qué | Por qué |
 |---|---|---|
-| `localStorage` | Pedido a medias, entrega, factura y la cuenta | Tiene que seguir mañana |
+| `localStorage` | Pedido a medias, entrega, factura y la cuenta. Se escribe solo cuando cambia algo, no al cargar | Tiene que seguir mañana |
 | `sessionStorage` | Orden y "Mostrar" del catálogo | Dura lo que la pestaña |
 | IndexedDB `eltradicional/pedidos` | Pedidos pagados, clave = número | Registros que se acumulan |
-| Cookie `eltradicional-guardado` | Fecha del último guardado (1 mes, `SameSite=Lax`) | Corta y caduca sola |
+| Cookie `eltradicional-guardado` | Fecha del último guardado (1 mes, `SameSite=Lax`); el pie la enseña como "Tu pedido se guardó…" | Corta y caduca sola |
 
 Todo va en `try/catch`: en ventana privada no puede tumbar la página.
 
@@ -297,9 +297,10 @@ construye (sección 15).
 - [ ] El panel de la cuenta (`.cuenta-panel.is-open`) tiene la misma
       transición de `visibility` que tenía la canasta: comprobar si el foco
       entra al abrirlo (fase 5).
-- [ ] `cart.js` mete el nombre de cada línea (que viene de `localStorage`) con
-      `innerHTML` sin `escapar()`. React no tiene el problema; en el sitio
-      actual, si sigue vivo, pasarlo por `escapar()`.
+- [x] `cart.js` metía el nombre de cada línea (que viene de `localStorage`) con
+      `innerHTML` sin escapar, y el comprobante también. Ahora pasa por
+      `escapar()`, que vive en `state.js` (antes solo en `view.js`), y el
+      comprobante usa `textContent`. React no tenía el problema.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).
 
 ### SEO
@@ -531,6 +532,8 @@ abierto. React ya lo hace bien, y el sitio actual se retira en la fase 7.
 - Decidido el 20 de octubre de 2026: **se queda lo de React** y el sitio
   actual también deja de guardar al cargar; solo guarda cuando cambia el
   pedido, la entrega o la factura. Así el pie de los dos dice la fecha real.
+  Hecho el 20 de octubre: tampoco guarda la dirección que la cuenta rellena
+  al arrancar (sí al entrar o al editar la cuenta).
 - Arreglado en los dos sitios: el `+` de la línea de la canasta respeta el
   tope de 100 (antes solo la ficha), y el panel se hace visible en el acto al
   abrirse (`visibility 0s`), así que el foco entra en la X de cerrar (antes se

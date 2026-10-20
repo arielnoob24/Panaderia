@@ -398,8 +398,13 @@ const pintarComprobante = () => {
   const recibo = panel.querySelector('.recibo-lista');
   recibo.textContent = '';
   for (const l of pedido.values()) {
+    // Con textContent: el nombre viene de lo guardado y no se lee como HTML.
     const li = document.createElement('li');
-    li.innerHTML = `<span>${l.cantidad} × ${l.nombre}</span><span>${dinero(l.precio * l.cantidad)}</span>`;
+    const que = document.createElement('span');
+    que.textContent = `${l.cantidad} × ${l.nombre}`;
+    const cuanto = document.createElement('span');
+    cuanto.textContent = dinero(l.precio * l.cantidad);
+    li.append(que, cuanto);
     recibo.append(li);
   }
   reciboEnviadoDe.textContent = `Correo de El Tradicional · para ${sesion.correo}`;
