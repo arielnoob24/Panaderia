@@ -69,8 +69,12 @@ for (const t of tablas) {
 ok(tablas.every(t => /^[a-z]+(_[a-z]+)*$/.test(t)), 'Nombres de tabla en el formato ENTIDAD');
 const usados = Object.values(prefijo).filter(Boolean);
 ok(new Set(usados).size === usados.length, 'Ningun prefijo de atributos se repite entre tablas');
-const fkRenombradas = fks.filter(f => f.cols.join() !== f.refs.join());
-ok(fkRenombradas.length === 0, 'Cada FK conserva el nombre de la PK que referencia '
+// Si una tabla apunta dos veces a la misma, la que se repite agrega su papel
+// al nombre de la PK (umi_codigocompra -> umi_codigo).
+const aLaMisma = (f) => fks.filter(g => g.t === f.t && g.padre === f.padre).length > 1;
+const fkRenombradas = fks.filter(f => f.cols.join() !== f.refs.join()
+  && !(aLaMisma(f) && f.cols.every((c, i) => c.startsWith(f.refs[i]))));
+ok(fkRenombradas.length === 0, 'Cada FK conserva el nombre de la PK que referencia (o le agrega su papel) '
   + fkRenombradas.map(f => `${f.n}: ${f.cols} -> ${f.refs}`).join('; '));
 
 // Fuertes y debiles
@@ -211,6 +215,165 @@ await q(`UPDATE facturas SET fac_fechaanulacion = now() + INTERVAL '1 hour' WHER
 await q(`INSERT INTO facturas (ped_codigo, cli_codigo) VALUES ($1, $2)`, [ped, cli]);
 const numeros = (await q(`SELECT fac_establecimiento || '-' || fac_puntoemision || '-' || fac_secuencial n FROM facturas ORDER BY fac_codigo`)).map(r => r.n);
 ok(numeros.join() === '001-001-000000001,001-001-000000002', `Anulada y reemitida sin saltos aunque un insert fallo: ${numeros.join(', ')}`);
+const asientosVenta = await q(`SELECT asi_debe::text d, asi_cuadra c FROM vw_asientos WHERE asi_origen = 'VEN' ORDER BY asi_codigo`);
+ok(asientosVenta.length === 3 && asientosVenta.every(a => a.c && a.d === '6.50'),
+  `Cada factura y su anulacion dejan un asiento que cuadra (${asientosVenta.map(a => a.d).join(', ')})`);
+
+titulo('Talento humano');
+const cargo = (nombre) => unValor(`SELECT car_codigo FROM cargos WHERE car_nombre = $1`, [nombre]);
+const nuevoEmpleado = (cedula, nombre, correo) => unValor(
+  `INSERT INTO empleados (can_codigo, emp_cedula, emp_primerapellido, emp_primernombre, emp_fechanacimiento,
+                          emp_sexo, emp_correo, emp_celular, emp_direccion)
+   VALUES ('1501', $1, 'Grefa', $2, '1990-05-04', 'H', $3, '0981112233', 'Barrio Bellavista, Tena')
+   RETURNING emp_codigo`, [cedula, nombre, correo]);
+const panadero = await nuevoEmpleado('1501234569', 'Carlos', 'carlos@eltradicional.ec');
+const contador = await nuevoEmpleado('1507654323', 'Rosa', 'rosa@eltradicional.ec');
+await q(`INSERT INTO empleados_cargos (emp_codigo, car_codigo, eca_sueldo) VALUES ($1, $2, 600), ($3, $4, 900)`,
+  [panadero, await cargo('Panadero'), contador, await cargo('Contador')]);
+await debeFallar(`INSERT INTO empleados (can_codigo, emp_cedula, emp_primerapellido, emp_primernombre, emp_fechanacimiento, emp_sexo, emp_correo, emp_celular, emp_direccion)
+  VALUES ('1501', '1501234560', 'X', 'Y', '1990-01-01', 'H', 'x@x.ec', '0981112233', 'Tena')`, 'Empleado con cedula invalida');
+await debeFallar(`INSERT INTO empleados (can_codigo, emp_cedula, emp_primerapellido, emp_primernombre, emp_fechanacimiento, emp_sexo, emp_correo, emp_celular, emp_direccion)
+  VALUES ('1501', '1704567898', 'X', 'Y', CURRENT_DATE - 3650, 'H', 'x@x.ec', '0981112233', 'Tena')`, 'Empleado de 10 anios');
+await debeFallar(`INSERT INTO empleados_cargos (emp_codigo, car_codigo, eca_sueldo) VALUES ('${panadero}', '${await cargo('Pastelero')}', 650)`,
+  'Dos cargos actuales a la vez');
+ok((await unValor(`SELECT dep_nombre FROM vw_empleados WHERE emp_codigo = $1`, [panadero])) === 'Producción',
+  'El departamento sale del cargo actual');
+
+titulo('Compras y recepcion');
+const mat = (nombre) => unValor(`SELECT mat_codigo FROM materiales WHERE mat_nombre = $1`, [nombre]);
+const harina = await mat('Harina de trigo');
+const huevos = await mat('Huevos');
+const chispas = await mat('Chispas de chocolate');
+const sal = await mat('Sal');
+const pvd = await unValor(`INSERT INTO proveedores (tid_codigo, can_codigo, pvd_identificacion, pvd_razonsocial, pvd_correo, pvd_direccion)
+  VALUES ('04', '1501', '1790012345001', 'Molinos del Oriente S.A.', 'ventas@molinos.ec', 'Av. Jumandy, Tena') RETURNING pvd_codigo`);
+await debeFallar(`INSERT INTO proveedores (tid_codigo, can_codigo, pvd_identificacion, pvd_razonsocial, pvd_correo, pvd_direccion)
+  VALUES ('07', '1501', '9999999999999', 'X', 'x@x.ec', 'Tena')`, 'Proveedor como consumidor final');
+await q(`INSERT INTO proveedores_materiales (pvd_codigo, mat_codigo, pma_precioreferencia) VALUES ($1, $2, 36.50), ($1, $3, 4.50), ($1, $4, 8.00)`,
+  [pvd, harina, huevos, chispas]);
+const oco = await unValor(`INSERT INTO ordenes_compra (pvd_codigo, emp_codigo, oco_fechaentrega) VALUES ($1, $2, CURRENT_DATE + 2) RETURNING oco_codigo`, [pvd, panadero]);
+await q(`INSERT INTO detalles_orden_compra (oco_codigo, mat_codigo, doc_cantidad) VALUES ($1, $2, 2), ($1, $3, 1), ($1, $4, 1)`,
+  [oco, harina, huevos, chispas]);
+await debeFallar(`INSERT INTO detalles_orden_compra (oco_codigo, mat_codigo, doc_cantidad) VALUES ('${oco}', '${sal}', 1)`, 'Material que el proveedor no vende');
+const totOc = (await q(`SELECT oco_subtotal::text s, oco_iva::text i, oco_total::text t FROM vw_ordenes_compra_totales WHERE oco_codigo = $1`, [oco]))[0];
+ok(totOc.s === '85.50' && totOc.i === '1.20' && totOc.t === '86.70', `Precio del proveedor e IVA del material: ${JSON.stringify(totOc)}`);
+await debeFallar(`INSERT INTO recepciones (oco_codigo) VALUES ('${oco}')`, 'Recepcion de una orden sin aprobar');
+await q(`UPDATE ordenes_compra SET oco_estado = 'APR' WHERE oco_codigo = $1`, [oco]);
+const rcp = await unValor(`SELECT rcp_codigo FROM recepciones WHERE oco_codigo = $1 AND rcp_estado = 'PEN'`, [oco]);
+ok(!!rcp, 'Aprobar la orden crea su recepcion pendiente');
+const asiCompra = (await q(`SELECT asi_codigo, asi_estado, asi_debe::text d, asi_cuadra c FROM vw_asientos WHERE asi_referencia = $1`, [oco]))[0];
+ok(asiCompra?.asi_estado === 'PEN' && asiCompra.d === '86.70' && asiCompra.c, 'Y su asiento pendiente, que cuadra (86.70)');
+await debeFallar(`UPDATE detalles_orden_compra SET doc_cantidad = 5 WHERE oco_codigo = '${oco}' AND mat_codigo = '${harina}'`, 'Cambiar una linea de una orden aprobada');
+await debeFallar(`UPDATE ordenes_compra SET oco_estado = 'ANU' WHERE oco_codigo = '${oco}'`, 'Anular una orden ya aprobada');
+
+const lote = (material, recibida, extra = '') => unValor(
+  `INSERT INTO lotes_material (mat_codigo, rcp_codigo, oco_codigo, lma_cantidadrecibida ${extra ? ', lma_fechacaducidad' : ''})
+   VALUES ($1, $2, $3, $4 ${extra ? ', ' + extra : ''}) RETURNING lma_codigo`, [material, rcp, oco, recibida]);
+const loteHarina = await lote(harina, 2, 'CURRENT_DATE + 30');
+await lote(huevos, 1);
+const ingreso = (await q(`SELECT lma_cantidadinicial::text c, lma_costounitario::float8 u, lma_fechacaducidad - CURRENT_DATE d
+                            FROM lotes_material WHERE lma_codigo = $1`, [loteHarina]))[0];
+ok(ingreso.c === '90718.400' && Math.abs(ingreso.u - 36.5 / 45359.2) < 1e-6, `2 qq de harina = ${ingreso.c} g a ${ingreso.u.toFixed(6)} el gramo`);
+const loteHuevos = (await q(`SELECT lma_cantidadinicial::text c, lma_fechacaducidad - CURRENT_DATE d FROM lotes_material WHERE mat_codigo = $1`, [huevos]))[0];
+ok(loteHuevos.c === '30.000' && loteHuevos.d === 21, 'Una cubeta = 30 huevos, y caduca en 21 dias por su vida util');
+await debeFallar(`INSERT INTO lotes_material (mat_codigo, rcp_codigo, oco_codigo, lma_cantidadrecibida) VALUES ('${sal}', '${rcp}', '${oco}', 1)`, 'Lote de algo que la orden no pidio');
+const disponible = async (l) => (await q(`SELECT lma_disponible d FROM vw_lotes_saldo WHERE lma_codigo = $1`, [l]))[0].d;
+ok(await disponible(loteHarina) === false, 'Un lote de una recepcion pendiente todavia no se puede usar');
+await debeFallar(`UPDATE recepciones SET rcp_estado = 'REC' WHERE rcp_codigo = '${rcp}'`, 'Recibir sin decir quien recibe');
+await q(`UPDATE recepciones SET rcp_estado = 'REC', emp_codigo = $1, rcp_observacion = 'Las chispas no llegaron' WHERE rcp_codigo = $2`, [panadero, rcp]);
+ok(await disponible(loteHarina) === true, 'Recibida, el lote ya se puede usar');
+const faltan = await q(`SELECT mat_nombre, doc_diferencia::text d FROM vw_ordenes_compra_recibido WHERE oco_codigo = $1 AND doc_diferencia <> 0`, [oco]);
+ok(faltan.length === 1 && faltan[0].mat_nombre === 'Chispas de chocolate' && faltan[0].d === '1.00', 'La diferencia muestra lo que no llego');
+await debeFallar(`INSERT INTO lotes_material (mat_codigo, rcp_codigo, oco_codigo, lma_cantidadrecibida) VALUES ('${chispas}', '${rcp}', '${oco}', 1)`, 'Agregar un lote a una recepcion ya recibida');
+
+titulo('Produccion por lotes (FEFO y promedio)');
+// Inventario inicial: harina que entro antes pero caduca despues, harina
+// caducada, y dos lotes de sal (PROM) a distinto costo.
+const inicial = (material, recibida, costo, ingreso, caducidad) => unValor(
+  `INSERT INTO lotes_material (mat_codigo, lma_cantidadrecibida, lma_costounitario, lma_fechaingreso, lma_fechacaducidad)
+   VALUES ($1, $2, $3, $4, $5) RETURNING lma_codigo`, [material, recibida, costo, ingreso, caducidad]);
+const hace = (dias) => new Date(Date.now() - dias * 864e5).toISOString();
+const dia = (dias) => new Date(Date.now() + dias * 864e5).toISOString().slice(0, 10);
+const harinaVieja = await inicial(harina, 1, 0.0007, hace(10), dia(100));
+const harinaCaducada = await inicial(harina, 1, 0.0005, hace(200), dia(-1));
+await inicial(sal, 1, 0.001, hace(5), null);
+await inicial(sal, 1, 0.002, hace(4), null);
+for (const [nombre, costo] of [['Azúcar', 0.0012], ['Levadura fresca', 0.004], ['Mantequilla', 0.006]]) {
+  await inicial(await mat(nombre), 1, costo, hace(1), null);
+}
+const pan = await unValor(`SELECT pro_codigo FROM productos WHERE pro_nombre = 'Pan redondo'`);
+const unico = await unValor(`SELECT tam_codigo FROM tamanos WHERE tam_descripcion = 'Único'`);
+const orden = (cantidad) => unValor(`INSERT INTO ordenes_produccion (pro_codigo, tam_codigo, emp_codigo, orp_cantidad)
+  VALUES ($1, $2, $3, $4) RETURNING orp_codigo`, [pan, unico, panadero, cantidad]);
+const orp = await orden(100);
+await q(`UPDATE ordenes_produccion SET orp_estado = 'APR' WHERE orp_codigo = $1`, [orp]);
+const consumos = await q(`SELECT m.mat_nombre, c.lma_codigo, c.cpr_cantidad::text n, c.cpr_costounitario::float8 u
+                            FROM consumos_produccion c JOIN lotes_material l USING (lma_codigo) JOIN materiales m USING (mat_codigo)
+                           WHERE c.orp_codigo = $1`, [orp]);
+const deHarina = consumos.filter(c => c.mat_nombre === 'Harina de trigo');
+ok(deHarina.length === 1 && deHarina[0].lma_codigo === loteHarina && deHarina[0].n === '6000.000',
+  'FEFO: los 6000 g de harina salen del lote que caduca antes, no del que entro antes ni del caducado');
+const deSal = consumos.find(c => c.mat_nombre === 'Sal');
+ok(deSal && Math.abs(deSal.u - 0.0015) < 1e-9, `PROM: la sal se cuesta al promedio de sus lotes (${deSal?.u})`);
+ok(consumos.length === 6, `Se consumieron los 6 materiales de la receta (${consumos.length})`);
+const costo = (await q(`SELECT orp_costototal::text t, orp_costounitario::text u FROM vw_costo_produccion WHERE orp_codigo = $1`, [orp]))[0];
+ok(!!costo && Number(costo.t) > 0, `Costo de la tanda: ${costo?.t} (${costo?.u} por pan)`);
+const asiProd = (await q(`SELECT asi_debe::text d, asi_cuadra c FROM vw_asientos WHERE asi_referencia = $1`, [orp]))[0];
+ok(asiProd?.c && asiProd.d === costo?.t, 'El asiento de produccion pasa ese costo de materia prima a productos terminados');
+const grande = await orden(100000);
+await debeFallar(`UPDATE ordenes_produccion SET orp_estado = 'APR' WHERE orp_codigo = '${grande}'`, 'Producir sin material suficiente');
+ok((await unValor(`SELECT count(*)::int FROM consumos_produccion WHERE orp_codigo = $1`, [grande])) === 0, 'Y no queda nada consumido a medias');
+const existencia = (await q(`SELECT pta_producido::int p, pta_vendido::int v, pta_existencia::int e FROM vw_existencias_productos WHERE pro_codigo = $1`, [pan]))[0];
+ok(existencia.p === 100 && existencia.v === 10 && existencia.e === 90, `Pan redondo: 100 hechos, 10 vendidos, quedan ${existencia.e}`);
+
+titulo('Ajustes y kardex');
+const aju = await unValor(`INSERT INTO ajustes_inventario (emp_codigo, aju_motivo) VALUES ($1, 'Funda de harina rota') RETURNING aju_codigo`, [panadero]);
+await q(`INSERT INTO detalles_ajuste (aju_codigo, lma_codigo, daj_cantidad) VALUES ($1, $2, -1000)`, [aju, loteHarina]);
+await debeFallar(`UPDATE ajustes_inventario SET aju_estado = 'APR' WHERE aju_codigo = '${aju}'`, 'Aprobar un ajuste sin quien lo autorice');
+await debeFallar(`UPDATE ajustes_inventario SET emp_codigoautoriza = '${panadero}' WHERE aju_codigo = '${aju}'`, 'Que lo autorice el mismo que lo hizo');
+const ajuGrande = await unValor(`INSERT INTO ajustes_inventario (emp_codigo, aju_motivo) VALUES ($1, 'Conteo') RETURNING aju_codigo`, [panadero]);
+await q(`INSERT INTO detalles_ajuste (aju_codigo, lma_codigo, daj_cantidad) VALUES ($1, $2, -999999)`, [ajuGrande, loteHarina]);
+await debeFallar(`UPDATE ajustes_inventario SET aju_estado = 'APR', emp_codigoautoriza = '${contador}' WHERE aju_codigo = '${ajuGrande}'`, 'Ajuste que deja el lote en negativo');
+await q(`UPDATE ajustes_inventario SET aju_estado = 'APR', emp_codigoautoriza = $1 WHERE aju_codigo = $2`, [contador, aju]);
+const saldo = (await q(`SELECT lma_saldo::text s FROM vw_lotes_saldo WHERE lma_codigo = $1`, [loteHarina]))[0].s;
+ok(saldo === '83718.400', `Saldo del lote: 90718,4 - 6000 producidos - 1000 de la funda rota = ${saldo}`);
+const exist = (await q(`SELECT mat_existencia::text e, mat_existenciacompra::text c FROM vw_existencias_materiales WHERE mat_codigo = $1`, [harina]))[0];
+const kardex = await q(`SELECT kar_tipo, kar_saldo::text s FROM vw_kardex WHERE mat_codigo = $1 ORDER BY kar_fecha, kar_documento, lma_codigo`, [harina]);
+ok(exist.e === '129077.600' && exist.c === '2.85', `Existencia de harina sin el lote caducado: ${exist.e} g = ${exist.c} qq`);
+// 90718,4 + 45359,2 + 45359,2 (caducado, sigue en libros) - 6000 - 1000
+ok(kardex.length === 5 && kardex.at(-1).s === '174436.800',
+  `Kardex de harina: ${kardex.map(k => k.kar_tipo).join(', ')}; saldo final ${kardex.at(-1)?.s}`);
+ok((await disponible(harinaVieja)) && !(await disponible(harinaCaducada)), 'El lote caducado no esta disponible');
+
+titulo('Nomina y contabilidad');
+const nom = await unValor(`INSERT INTO nominas (emp_codigo, nom_anio, nom_mes) VALUES ($1, 2026, 10) RETURNING nom_codigo`, [panadero]);
+const extra = await unValor(`SELECT cno_codigo FROM conceptos_nomina WHERE cno_numero = '1010'`);
+await q(`INSERT INTO detalles_nomina (nom_codigo, cno_codigo, dno_cantidad, dno_valor) VALUES ($1, $2, 5, 25)`, [nom, extra]);
+const rol = (await q(`SELECT nom_ingresos::text i, nom_descuentos::text d, nom_neto::text n FROM vw_nominas WHERE nom_codigo = $1`, [nom]))[0];
+ok(rol.i === '625.00' && rol.d === '56.70' && rol.n === '568.30', `Rol: sueldo 600 + 25 de horas extra - 56,70 de IESS = ${rol.n}`);
+await debeFallar(`INSERT INTO nominas (emp_codigo, nom_anio, nom_mes) VALUES ('${panadero}', 2026, 10)`, 'Dos roles del mismo mes');
+await q(`UPDATE nominas SET nom_estado = 'APR' WHERE nom_codigo = $1`, [nom]);
+const asiNom = (await q(`SELECT asi_codigo, asi_debe::text d, asi_cuadra c FROM vw_asientos WHERE asi_referencia = $1`, [nom]))[0];
+ok(asiNom?.c && asiNom.d === '625.00', 'El asiento del rol cuadra: 625 al DEBE, IESS y bancos al HABER');
+
+await debeFallar(`UPDATE asientos SET asi_estado = 'APR' WHERE asi_codigo = '${asiCompra.asi_codigo}'`, 'Aprobar un asiento sin el contador');
+await q(`UPDATE asientos SET asi_estado = 'APR', emp_codigo = $1 WHERE asi_codigo = $2`, [contador, asiCompra.asi_codigo]);
+ok((await unValor(`SELECT asi_estado FROM asientos WHERE asi_codigo = $1`, [asiCompra.asi_codigo])) === 'APR', 'Un asiento que cuadra se aprueba');
+const manual = await unValor(`INSERT INTO asientos (asi_descripcion) VALUES ('Aporte de capital') RETURNING asi_codigo`);
+const cuenta = (numero) => unValor(`SELECT cue_codigo FROM cuentas_contables WHERE cue_numero = $1`, [numero]);
+await q(`INSERT INTO detalles_asiento (asi_codigo, cue_codigo, das_debe) VALUES ($1, $2, 1000)`, [manual, await cuenta('1.1.01.02')]);
+await q(`INSERT INTO detalles_asiento (asi_codigo, cue_codigo, das_haber) VALUES ($1, $2, 900)`, [manual, await cuenta('3.1.01')]);
+await debeFallar(`INSERT INTO detalles_asiento (asi_codigo, cue_codigo, das_haber) VALUES ('${manual}', '${await cuenta('1.1')}', 100)`, 'Valor en una cuenta de mayor');
+await debeFallar(`INSERT INTO detalles_asiento (asi_codigo, cue_codigo, das_debe, das_haber) VALUES ('${manual}', '${await cuenta('5.2.01')}', 10, 10)`, 'DEBE y HABER en la misma linea');
+await q(`UPDATE asientos SET asi_estado = 'APR', emp_codigo = $1 WHERE asi_codigo = $2`, [contador, manual]);
+ok((await unValor(`SELECT asi_estado FROM asientos WHERE asi_codigo = $1`, [manual])) === 'ERR', 'Uno que no cuadra (1000 contra 900) queda en ERR');
+await q(`UPDATE detalles_asiento SET das_haber = 1000 WHERE asi_codigo = $1 AND das_haber > 0`, [manual]);
+await q(`UPDATE asientos SET asi_estado = 'APR' WHERE asi_codigo = $1`, [manual]);
+ok((await unValor(`SELECT asi_estado FROM asientos WHERE asi_codigo = $1`, [manual])) === 'APR', 'Corregido, se aprueba');
+await debeFallar(`UPDATE detalles_asiento SET das_debe = 1 WHERE asi_codigo = '${manual}'`, 'Cambiar un asiento aprobado');
+await debeFallar(`INSERT INTO cuentas_contables (cue_numero, cue_nombre, cue_tipo) VALUES ('1.1.09.01', 'Sin madre', 'DET')`, 'Cuenta sin cuenta madre');
+const bancos = (await q(`SELECT cue_saldo::text s FROM vw_saldos_cuentas WHERE cue_numero = '1.1.01.02'`))[0].s;
+ok(bancos === '1000.00', `El mayor de bancos solo cuenta asientos aprobados: ${bancos}`);
 
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

@@ -9,7 +9,9 @@
      de su tabla: PRO_Nombre. La llave primaria de cada tabla fuerte es su
      código: PRO_Codigo.
    - Una llave foránea conserva el nombre de la llave que referencia: en
-     PRODUCTOS, la categoría es CAT_Codigo.
+     PRODUCTOS, la categoría es CAT_Codigo. Si una tabla apunta dos veces a
+     la misma, la que se repite agrega su papel: en MATERIALES,
+     UMI_CodigoCompra y UMI_CodigoProduccion.
    - Los códigos son texto con prefijo y los pone la base sola con una
      secuencia: 'PRO001', 'PED0000001'. Tres excepciones usan el código
      oficial, porque ya existe y otros datos dependen de él:
@@ -31,7 +33,13 @@
      El precio y el porcentaje de IVA de cada línea del pedido sí se guardan:
      son los de ese día, y el catálogo puede cambiar después.
 
-   Grupos (25 tablas)
+   - Los documentos (orden de compra, recepción, ajuste, orden de producción,
+     rol de pagos y asiento) pasan por estados: ABI abierto, PEN pendiente,
+     APR aprobado, ANU anulado, REC recibido, CAN cancelado, ERR error. El
+     estado va en la cabecera y las líneas lo siguen: aprobado o anulado, ni
+     el documento ni sus líneas se pueden cambiar.
+
+   Grupos (51 tablas)
    1. Autenticación y autorización: ROLES, PERMISOS, ROLES_PERMISOS (débil),
       USUARIOS, VERIFICACIONES
    2. Ubicación: PROVINCIAS, CANTONES, DIRECCIONES
@@ -40,6 +48,16 @@
    4. Pedidos: TIPOS_ENTREGA, ESTADOS_PEDIDO, PEDIDOS, DETALLES_PEDIDO (débil)
    5. Facturación y pagos: TIPOS_IDENTIFICACION, CLIENTES, FACTURAS,
       METODOS_PAGO, PAGOS
+   6. Talento humano: DEPARTAMENTOS, CARGOS, EMPLEADOS, EMPLEADOS_CARGOS
+      (débil), CARGAS_FAMILIARES
+   7. Materiales y recetas: UNIDADES_MEDIDA, METODOS_COSTEO, TIPOS_MATERIAL,
+      MATERIALES, RECETAS (débil)
+   8. Compras: PROVEEDORES, PROVEEDORES_MATERIALES (débil), ORDENES_COMPRA,
+      DETALLES_ORDEN_COMPRA (débil), RECEPCIONES, LOTES_MATERIAL
+   9. Inventario y producción: AJUSTES_INVENTARIO, DETALLES_AJUSTE (débil),
+      ORDENES_PRODUCCION, CONSUMOS_PRODUCCION (débil)
+   10. Contabilidad: CUENTAS_CONTABLES, ASIENTOS, DETALLES_ASIENTO (débil)
+   11. Nómina: CONCEPTOS_NOMINA, NOMINAS, DETALLES_NOMINA (débil)
 
    Relaciones (todas 1:N; "A 1:N B" = un A tiene muchos B)
    ROLES 1:N USUARIOS                      ROLES 1:N ROLES_PERMISOS
@@ -55,6 +73,40 @@
    PEDIDOS 1:N FACTURAS                    CLIENTES 1:N FACTURAS
    TIPOS_IDENTIFICACION 1:N CLIENTES       PEDIDOS 1:N PAGOS
    METODOS_PAGO 1:N PAGOS
+   DEPARTAMENTOS 1:N CARGOS                EMPLEADOS 1:N DEPARTAMENTOS (responsable)
+   CANTONES 1:N EMPLEADOS                  EMPLEADOS 1:N EMPLEADOS_CARGOS
+   CARGOS 1:N EMPLEADOS_CARGOS             EMPLEADOS 1:N CARGAS_FAMILIARES
+   UNIDADES_MEDIDA 1:N MATERIALES (x2)     METODOS_COSTEO 1:N MATERIALES
+   TIPOS_MATERIAL 1:N MATERIALES           TARIFAS_IVA 1:N MATERIALES
+   PRODUCTOS_TAMANOS 1:N RECETAS           MATERIALES 1:N RECETAS
+   TIPOS_IDENTIFICACION 1:N PROVEEDORES    CANTONES 1:N PROVEEDORES
+   PROVEEDORES 1:N PROVEEDORES_MATERIALES  MATERIALES 1:N PROVEEDORES_MATERIALES
+   PROVEEDORES 1:N ORDENES_COMPRA          EMPLEADOS 1:N ORDENES_COMPRA
+   ORDENES_COMPRA 1:N DETALLES_ORDEN_COMPRA MATERIALES 1:N DETALLES_ORDEN_COMPRA
+   ORDENES_COMPRA 1:N RECEPCIONES          EMPLEADOS 1:N RECEPCIONES
+   MATERIALES 1:N LOTES_MATERIAL           RECEPCIONES 1:N LOTES_MATERIAL
+   DETALLES_ORDEN_COMPRA 1:N LOTES_MATERIAL EMPLEADOS 1:N AJUSTES_INVENTARIO (x2)
+   AJUSTES_INVENTARIO 1:N DETALLES_AJUSTE  LOTES_MATERIAL 1:N DETALLES_AJUSTE
+   PRODUCTOS_TAMANOS 1:N ORDENES_PRODUCCION EMPLEADOS 1:N ORDENES_PRODUCCION
+   ORDENES_PRODUCCION 1:N CONSUMOS_PRODUCCION LOTES_MATERIAL 1:N CONSUMOS_PRODUCCION
+   EMPLEADOS 1:N ASIENTOS                  ASIENTOS 1:N DETALLES_ASIENTO
+   CUENTAS_CONTABLES 1:N DETALLES_ASIENTO  CUENTAS_CONTABLES 1:N CONCEPTOS_NOMINA
+   EMPLEADOS 1:N NOMINAS                   NOMINAS 1:N DETALLES_NOMINA
+   CONCEPTOS_NOMINA 1:N DETALLES_NOMINA
+
+   Lo que el profesor pidió y dónde está
+   - Unidad de compra y de producción: MATERIALES (UMI_CodigoCompra,
+     UMI_CodigoProduccion y MAT_FactorConversion: 1 qq = 45359,2 g).
+   - Materiales distintos de productos: MATERIALES es lo que se compra;
+     PRODUCTOS, lo que se vende. Las bebidas que se revenden son materiales
+     con una receta de 1 unidad.
+   - Recetas: RECETAS, por producto y tamaño.
+   - Perecibles por lote: LOTES_MATERIAL, con fecha de ingreso y caducidad,
+     cantidad inicial y costo unitario. El saldo se calcula (VW_LOTES_SALDO).
+   - FEFO, FIFO, LIFO y costo promedio: METODOS_COSTEO, uno por material. El
+     kardex es VW_KARDEX: se arma con lotes, ajustes y consumos, que ya están
+     guardados, en vez de copiarlos a otra tabla.
+   - Producción: ORDENES_PRODUCCION y CONSUMOS_PRODUCCION (qué lote se usó).
 
    Un pedido puede tener varias facturas porque una factura anulada se vuelve
    a emitir; solo una puede estar vigente a la vez (índice UX_FACTURAS_Vigente).
@@ -625,6 +677,641 @@ CREATE INDEX IX_PAGOS_Metodo ON PAGOS (MPA_Codigo);
 
 
 /* =============================================================================
+   Grupo 6. Talento humano
+   ========================================================================== */
+
+-- EMP_Codigo es el responsable del departamento. Su llave foránea se crea
+-- después de EMPLEADOS, porque cada tabla necesita a la otra.
+CREATE SEQUENCE SEQ_DEPARTAMENTOS MAXVALUE 999;
+CREATE TABLE DEPARTAMENTOS (
+    DEP_Codigo CHAR(6)     NOT NULL DEFAULT 'DEP' || LPAD(nextval('SEQ_DEPARTAMENTOS')::TEXT, 3, '0'),
+    EMP_Codigo CHAR(10),
+    DEP_Nombre VARCHAR(40) NOT NULL,
+    DEP_Activo BOOLEAN     NOT NULL DEFAULT TRUE,
+    CONSTRAINT PK_DEPARTAMENTOS PRIMARY KEY (DEP_Codigo),
+    CONSTRAINT UQ_DEPARTAMENTOS_Nombre UNIQUE (DEP_Nombre),
+    CONSTRAINT CK_DEPARTAMENTOS_Codigo CHECK (DEP_Codigo ~ '^DEP[0-9]{3}$')
+);
+ALTER SEQUENCE SEQ_DEPARTAMENTOS OWNED BY DEPARTAMENTOS.DEP_Codigo;
+
+-- Cada cargo es de un departamento: el del empleado sale de su cargo actual.
+CREATE SEQUENCE SEQ_CARGOS MAXVALUE 999;
+CREATE TABLE CARGOS (
+    CAR_Codigo    CHAR(6)      NOT NULL DEFAULT 'CAR' || LPAD(nextval('SEQ_CARGOS')::TEXT, 3, '0'),
+    DEP_Codigo    CHAR(6)      NOT NULL,
+    CAR_Nombre    VARCHAR(40)  NOT NULL,
+    CAR_Funciones VARCHAR(250),
+    CONSTRAINT PK_CARGOS PRIMARY KEY (CAR_Codigo),
+    CONSTRAINT UQ_CARGOS_Nombre UNIQUE (CAR_Nombre),
+    CONSTRAINT FK_CARGOS_DEPARTAMENTOS FOREIGN KEY (DEP_Codigo)
+        REFERENCES DEPARTAMENTOS (DEP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_CARGOS_Codigo CHECK (CAR_Codigo ~ '^CAR[0-9]{3}$')
+);
+ALTER SEQUENCE SEQ_CARGOS OWNED BY CARGOS.CAR_Codigo;
+CREATE INDEX IX_CARGOS_Departamento ON CARGOS (DEP_Codigo);
+
+-- Se guardan aunque dejen la empresa (EMP_Activo), por su historia. El cargo
+-- y el sueldo no están aquí: cambian con el tiempo (EMPLEADOS_CARGOS).
+CREATE SEQUENCE SEQ_EMPLEADOS MAXVALUE 9999999;
+CREATE TABLE EMPLEADOS (
+    EMP_Codigo          CHAR(10)     NOT NULL DEFAULT 'EMP' || LPAD(nextval('SEQ_EMPLEADOS')::TEXT, 7, '0'),
+    CAN_Codigo          CHAR(4)      NOT NULL,   -- donde vive
+    EMP_Cedula          CHAR(10)     NOT NULL,
+    EMP_PrimerApellido  VARCHAR(30)  NOT NULL,
+    EMP_SegundoApellido VARCHAR(30),
+    EMP_PrimerNombre    VARCHAR(30)  NOT NULL,
+    EMP_SegundoNombre   VARCHAR(30),
+    EMP_FechaNacimiento DATE         NOT NULL,
+    EMP_Sexo            CHAR(1)      NOT NULL,   -- H hombre, M mujer
+    EMP_TipoSangre      VARCHAR(3),
+    EMP_Correo          VARCHAR(254) NOT NULL,
+    EMP_Celular         CHAR(10)     NOT NULL,
+    EMP_Direccion       VARCHAR(200) NOT NULL,
+    EMP_Foto            VARCHAR(150),
+    -- PER permanente, TEM temporal, TER tercerizado, SPR servicios profesionales
+    EMP_TipoContrato    CHAR(3)      NOT NULL DEFAULT 'PER',
+    EMP_Banco           VARCHAR(40),
+    EMP_CuentaBancaria  VARCHAR(20),
+    EMP_FechaIngreso    DATE         NOT NULL DEFAULT CURRENT_DATE,
+    EMP_Activo          BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT PK_EMPLEADOS PRIMARY KEY (EMP_Codigo),
+    CONSTRAINT UQ_EMPLEADOS_Cedula UNIQUE (EMP_Cedula),
+    CONSTRAINT UQ_EMPLEADOS_Correo UNIQUE (EMP_Correo),
+    CONSTRAINT FK_EMPLEADOS_CANTONES FOREIGN KEY (CAN_Codigo)
+        REFERENCES CANTONES (CAN_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_EMPLEADOS_Codigo CHECK (EMP_Codigo ~ '^EMP[0-9]{7}$'),
+    CONSTRAINT CK_EMPLEADOS_Cedula CHECK (FN_CEDULA_VALIDA(EMP_Cedula)),
+    CONSTRAINT CK_EMPLEADOS_Nombres CHECK (btrim(EMP_PrimerApellido) <> '' AND btrim(EMP_PrimerNombre) <> ''),
+    CONSTRAINT CK_EMPLEADOS_Sexo CHECK (EMP_Sexo IN ('H', 'M')),
+    CONSTRAINT CK_EMPLEADOS_TipoSangre CHECK (EMP_TipoSangre IN ('O+', 'O-', 'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-')),
+    CONSTRAINT CK_EMPLEADOS_Correo CHECK (
+        EMP_Correo = lower(EMP_Correo)
+        AND EMP_Correo ~ '^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'),
+    CONSTRAINT CK_EMPLEADOS_Celular CHECK (EMP_Celular ~ '^09[0-9]{8}$'),
+    CONSTRAINT CK_EMPLEADOS_TipoContrato CHECK (EMP_TipoContrato IN ('PER', 'TEM', 'TER', 'SPR')),
+    CONSTRAINT CK_EMPLEADOS_Cuenta CHECK (
+        (EMP_Banco IS NULL) = (EMP_CuentaBancaria IS NULL)
+        AND EMP_CuentaBancaria ~ '^[0-9]{6,20}$'),
+    -- En Ecuador se puede trabajar desde los 15 años.
+    CONSTRAINT CK_EMPLEADOS_Edad CHECK (EMP_FechaIngreso >= EMP_FechaNacimiento + INTERVAL '15 years')
+);
+ALTER SEQUENCE SEQ_EMPLEADOS OWNED BY EMPLEADOS.EMP_Codigo;
+CREATE INDEX IX_EMPLEADOS_Canton ON EMPLEADOS (CAN_Codigo);
+
+ALTER TABLE DEPARTAMENTOS ADD CONSTRAINT FK_DEPARTAMENTOS_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+    REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE SET NULL;
+CREATE INDEX IX_DEPARTAMENTOS_Responsable ON DEPARTAMENTOS (EMP_Codigo);
+
+-- Débil: resuelve EMPLEADOS N:N CARGOS y guarda el crecimiento en la empresa:
+-- cada cargo que tuvo, desde cuándo y con qué sueldo. El cargo actual es el
+-- que no tiene fecha de fin, y solo puede haber uno.
+CREATE TABLE EMPLEADOS_CARGOS (
+    EMP_Codigo      CHAR(10)     NOT NULL,
+    CAR_Codigo      CHAR(6)      NOT NULL,
+    ECA_FechaInicio DATE         NOT NULL DEFAULT CURRENT_DATE,
+    ECA_FechaFin    DATE,
+    ECA_Sueldo      NUMERIC(8,2) NOT NULL,
+    CONSTRAINT PK_EMPLEADOS_CARGOS PRIMARY KEY (EMP_Codigo, CAR_Codigo),
+    CONSTRAINT FK_EMPLEADOS_CARGOS_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_EMPLEADOS_CARGOS_CARGOS FOREIGN KEY (CAR_Codigo)
+        REFERENCES CARGOS (CAR_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_EMPLEADOS_CARGOS_Sueldo CHECK (ECA_Sueldo > 0),
+    CONSTRAINT CK_EMPLEADOS_CARGOS_Fechas CHECK (ECA_FechaFin >= ECA_FechaInicio)
+);
+CREATE UNIQUE INDEX UX_EMPLEADOS_CARGOS_Actual ON EMPLEADOS_CARGOS (EMP_Codigo) WHERE ECA_FechaFin IS NULL;
+CREATE INDEX IX_EMPLEADOS_CARGOS_Cargo ON EMPLEADOS_CARGOS (CAR_Codigo);
+
+-- Personas que dependen del empleado. Un recién nacido puede no tener cédula.
+CREATE SEQUENCE SEQ_CARGAS_FAMILIARES MAXVALUE 9999999;
+CREATE TABLE CARGAS_FAMILIARES (
+    CFA_Codigo          CHAR(10)    NOT NULL DEFAULT 'CFA' || LPAD(nextval('SEQ_CARGAS_FAMILIARES')::TEXT, 7, '0'),
+    EMP_Codigo          CHAR(10)    NOT NULL,
+    CFA_Cedula          CHAR(10),
+    CFA_Apellidos       VARCHAR(60) NOT NULL,
+    CFA_Nombres         VARCHAR(60) NOT NULL,
+    CFA_FechaNacimiento DATE        NOT NULL,
+    CFA_Sexo            CHAR(1)     NOT NULL,
+    -- CON cónyuge, HIJ hijo o hija, PAD padre o madre, OTR otro
+    CFA_Parentesco      CHAR(3)     NOT NULL,
+    -- SOL soltero, CAS casado, DIV divorciado, VIU viudo, UNH unión de hecho
+    CFA_EstadoCivil     CHAR(3)     NOT NULL DEFAULT 'SOL',
+    CFA_Dependiente     BOOLEAN     NOT NULL DEFAULT TRUE,
+    CFA_Activa          BOOLEAN     NOT NULL DEFAULT TRUE,
+    CONSTRAINT PK_CARGAS_FAMILIARES PRIMARY KEY (CFA_Codigo),
+    CONSTRAINT UQ_CARGAS_FAMILIARES_Cedula UNIQUE (EMP_Codigo, CFA_Cedula),
+    CONSTRAINT FK_CARGAS_FAMILIARES_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT CK_CARGAS_FAMILIARES_Codigo CHECK (CFA_Codigo ~ '^CFA[0-9]{7}$'),
+    CONSTRAINT CK_CARGAS_FAMILIARES_Cedula CHECK (CFA_Cedula IS NULL OR FN_CEDULA_VALIDA(CFA_Cedula)),
+    CONSTRAINT CK_CARGAS_FAMILIARES_Sexo CHECK (CFA_Sexo IN ('H', 'M')),
+    CONSTRAINT CK_CARGAS_FAMILIARES_Parentesco CHECK (CFA_Parentesco IN ('CON', 'HIJ', 'PAD', 'OTR')),
+    CONSTRAINT CK_CARGAS_FAMILIARES_EstadoCivil CHECK (CFA_EstadoCivil IN ('SOL', 'CAS', 'DIV', 'VIU', 'UNH'))
+);
+ALTER SEQUENCE SEQ_CARGAS_FAMILIARES OWNED BY CARGAS_FAMILIARES.CFA_Codigo;
+
+
+/* =============================================================================
+   Grupo 7. Materiales y recetas
+   ========================================================================== */
+
+CREATE SEQUENCE SEQ_UNIDADES_MEDIDA MAXVALUE 999;
+CREATE TABLE UNIDADES_MEDIDA (
+    UMI_Codigo      CHAR(6)     NOT NULL DEFAULT 'UMI' || LPAD(nextval('SEQ_UNIDADES_MEDIDA')::TEXT, 3, '0'),
+    UMI_Nombre      VARCHAR(30) NOT NULL,
+    UMI_Abreviatura VARCHAR(10) NOT NULL,
+    CONSTRAINT PK_UNIDADES_MEDIDA PRIMARY KEY (UMI_Codigo),
+    CONSTRAINT UQ_UNIDADES_MEDIDA_Nombre UNIQUE (UMI_Nombre),
+    CONSTRAINT UQ_UNIDADES_MEDIDA_Abreviatura UNIQUE (UMI_Abreviatura),
+    CONSTRAINT CK_UNIDADES_MEDIDA_Codigo CHECK (UMI_Codigo ~ '^UMI[0-9]{3}$')
+);
+ALTER SEQUENCE SEQ_UNIDADES_MEDIDA OWNED BY UNIDADES_MEDIDA.UMI_Codigo;
+
+-- De qué lote se saca al producir y a qué costo:
+--   FEFO  primero el que caduca antes (lo normal en perecibles)
+--   FIFO  primero el que entró antes
+--   LIFO  primero el que entró último
+--   PROM  en orden de entrada, al costo promedio ponderado de los lotes con saldo
+CREATE SEQUENCE SEQ_METODOS_COSTEO MAXVALUE 999;
+CREATE TABLE METODOS_COSTEO (
+    MCO_Codigo CHAR(6)     NOT NULL DEFAULT 'MCO' || LPAD(nextval('SEQ_METODOS_COSTEO')::TEXT, 3, '0'),
+    MCO_Sigla  VARCHAR(4)  NOT NULL,
+    MCO_Nombre VARCHAR(60) NOT NULL,
+    CONSTRAINT PK_METODOS_COSTEO PRIMARY KEY (MCO_Codigo),
+    CONSTRAINT UQ_METODOS_COSTEO_Sigla UNIQUE (MCO_Sigla),
+    CONSTRAINT CK_METODOS_COSTEO_Codigo CHECK (MCO_Codigo ~ '^MCO[0-9]{3}$'),
+    CONSTRAINT CK_METODOS_COSTEO_Sigla CHECK (MCO_Sigla IN ('FEFO', 'FIFO', 'LIFO', 'PROM'))
+);
+ALTER SEQUENCE SEQ_METODOS_COSTEO OWNED BY METODOS_COSTEO.MCO_Codigo;
+
+CREATE SEQUENCE SEQ_TIPOS_MATERIAL MAXVALUE 999;
+CREATE TABLE TIPOS_MATERIAL (
+    TMA_Codigo CHAR(6)     NOT NULL DEFAULT 'TMA' || LPAD(nextval('SEQ_TIPOS_MATERIAL')::TEXT, 3, '0'),
+    TMA_Nombre VARCHAR(40) NOT NULL,
+    CONSTRAINT PK_TIPOS_MATERIAL PRIMARY KEY (TMA_Codigo),
+    CONSTRAINT UQ_TIPOS_MATERIAL_Nombre UNIQUE (TMA_Nombre),
+    CONSTRAINT CK_TIPOS_MATERIAL_Codigo CHECK (TMA_Codigo ~ '^TMA[0-9]{3}$')
+);
+ALTER SEQUENCE SEQ_TIPOS_MATERIAL OWNED BY TIPOS_MATERIAL.TMA_Codigo;
+
+-- Materia prima e insumos: lo que se compra. Se compra en una unidad (el
+-- quintal) y la receta lo pide en otra (gramos): MAT_FactorConversion dice
+-- cuántas unidades de producción trae una de compra (1 qq = 45359,2 g). Lotes,
+-- recetas, consumos y ajustes van siempre en la unidad de producción.
+-- Las bebidas que se revenden también son materiales, con receta de 1 unidad.
+CREATE SEQUENCE SEQ_MATERIALES MAXVALUE 999;
+CREATE TABLE MATERIALES (
+    MAT_Codigo           CHAR(6)       NOT NULL DEFAULT 'MAT' || LPAD(nextval('SEQ_MATERIALES')::TEXT, 3, '0'),
+    TMA_Codigo           CHAR(6)       NOT NULL,
+    MCO_Codigo           CHAR(6)       NOT NULL,
+    TIV_Codigo           CHAR(6)       NOT NULL,   -- el IVA con que se compra
+    UMI_CodigoCompra     CHAR(6)       NOT NULL,
+    UMI_CodigoProduccion CHAR(6)       NOT NULL,
+    MAT_Nombre           VARCHAR(60)   NOT NULL,
+    MAT_FactorConversion NUMERIC(12,4) NOT NULL,
+    MAT_Perecible        BOOLEAN       NOT NULL DEFAULT FALSE,
+    MAT_DiasVidaUtil     SMALLINT,                 -- caducidad de un lote si no se indica
+    MAT_StockMinimo      NUMERIC(14,3) NOT NULL DEFAULT 0,
+    MAT_CodigoBarras     VARCHAR(14),
+    MAT_Activo           BOOLEAN       NOT NULL DEFAULT TRUE,
+    CONSTRAINT PK_MATERIALES PRIMARY KEY (MAT_Codigo),
+    CONSTRAINT UQ_MATERIALES_Nombre UNIQUE (MAT_Nombre),
+    CONSTRAINT UQ_MATERIALES_CodigoBarras UNIQUE (MAT_CodigoBarras),
+    CONSTRAINT FK_MATERIALES_TIPOS_MATERIAL FOREIGN KEY (TMA_Codigo)
+        REFERENCES TIPOS_MATERIAL (TMA_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_MATERIALES_METODOS_COSTEO FOREIGN KEY (MCO_Codigo)
+        REFERENCES METODOS_COSTEO (MCO_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_MATERIALES_TARIFAS_IVA FOREIGN KEY (TIV_Codigo)
+        REFERENCES TARIFAS_IVA (TIV_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_MATERIALES_UNIDAD_COMPRA FOREIGN KEY (UMI_CodigoCompra)
+        REFERENCES UNIDADES_MEDIDA (UMI_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_MATERIALES_UNIDAD_PRODUCCION FOREIGN KEY (UMI_CodigoProduccion)
+        REFERENCES UNIDADES_MEDIDA (UMI_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_MATERIALES_Codigo CHECK (MAT_Codigo ~ '^MAT[0-9]{3}$'),
+    CONSTRAINT CK_MATERIALES_Nombre CHECK (btrim(MAT_Nombre) <> ''),
+    CONSTRAINT CK_MATERIALES_Factor CHECK (MAT_FactorConversion > 0),
+    CONSTRAINT CK_MATERIALES_VidaUtil CHECK (MAT_DiasVidaUtil IS NULL OR (MAT_Perecible AND MAT_DiasVidaUtil > 0)),
+    CONSTRAINT CK_MATERIALES_StockMinimo CHECK (MAT_StockMinimo >= 0),
+    CONSTRAINT CK_MATERIALES_CodigoBarras CHECK (MAT_CodigoBarras ~ '^[0-9]{8,14}$')
+);
+ALTER SEQUENCE SEQ_MATERIALES OWNED BY MATERIALES.MAT_Codigo;
+CREATE INDEX IX_MATERIALES_Tipo ON MATERIALES (TMA_Codigo);
+
+-- Débil: resuelve PRODUCTOS_TAMANOS N:N MATERIALES. Va por tamaño y no por
+-- producto porque una Avena polaca de 500 ml lleva más leche que la de 300 ml.
+-- RCT_Cantidad es lo que lleva UNA unidad del producto, en la unidad de
+-- producción del material.
+CREATE TABLE RECETAS (
+    PRO_Codigo   CHAR(6)       NOT NULL,
+    TAM_Codigo   CHAR(6)       NOT NULL,
+    MAT_Codigo   CHAR(6)       NOT NULL,
+    RCT_Cantidad NUMERIC(12,3) NOT NULL,
+    CONSTRAINT PK_RECETAS PRIMARY KEY (PRO_Codigo, TAM_Codigo, MAT_Codigo),
+    CONSTRAINT FK_RECETAS_PRODUCTOS_TAMANOS FOREIGN KEY (PRO_Codigo, TAM_Codigo)
+        REFERENCES PRODUCTOS_TAMANOS (PRO_Codigo, TAM_Codigo) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_RECETAS_MATERIALES FOREIGN KEY (MAT_Codigo)
+        REFERENCES MATERIALES (MAT_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_RECETAS_Cantidad CHECK (RCT_Cantidad > 0)
+);
+CREATE INDEX IX_RECETAS_Material ON RECETAS (MAT_Codigo);
+
+
+/* =============================================================================
+   Grupo 8. Compras
+   ========================================================================== */
+
+-- Se guardan aunque queden inactivos, por el historial de compras. Si es
+-- persona natural o jurídica sale del RUC (VW_PROVEEDORES).
+CREATE SEQUENCE SEQ_PROVEEDORES MAXVALUE 9999999;
+CREATE TABLE PROVEEDORES (
+    PVD_Codigo         CHAR(10)     NOT NULL DEFAULT 'PVD' || LPAD(nextval('SEQ_PROVEEDORES')::TEXT, 7, '0'),
+    TID_Codigo         CHAR(2)      NOT NULL,
+    CAN_Codigo         CHAR(4)      NOT NULL,
+    PVD_Identificacion VARCHAR(13)  NOT NULL,
+    PVD_RazonSocial    VARCHAR(150) NOT NULL,
+    PVD_Telefono       VARCHAR(10),
+    PVD_Celular        CHAR(10),
+    PVD_Correo         VARCHAR(254) NOT NULL,
+    PVD_Direccion      VARCHAR(200) NOT NULL,
+    PVD_Activo         BOOLEAN      NOT NULL DEFAULT TRUE,
+    CONSTRAINT PK_PROVEEDORES PRIMARY KEY (PVD_Codigo),
+    CONSTRAINT UQ_PROVEEDORES_Identificacion UNIQUE (TID_Codigo, PVD_Identificacion),
+    CONSTRAINT FK_PROVEEDORES_TIPOS_IDENTIFICACION FOREIGN KEY (TID_Codigo)
+        REFERENCES TIPOS_IDENTIFICACION (TID_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_PROVEEDORES_CANTONES FOREIGN KEY (CAN_Codigo)
+        REFERENCES CANTONES (CAN_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_PROVEEDORES_Codigo CHECK (PVD_Codigo ~ '^PVD[0-9]{7}$'),
+    -- Un proveedor factura con RUC o, si es una persona, con su cédula.
+    CONSTRAINT CK_PROVEEDORES_TipoIdentificacion CHECK (TID_Codigo IN ('04', '05')),
+    CONSTRAINT CK_PROVEEDORES_Identificacion CHECK (FN_IDENTIFICACION_VALIDA(TID_Codigo, PVD_Identificacion)),
+    CONSTRAINT CK_PROVEEDORES_RazonSocial CHECK (btrim(PVD_RazonSocial) <> ''),
+    CONSTRAINT CK_PROVEEDORES_Telefono CHECK (PVD_Telefono ~ '^0[2-7][0-9]{7}$'),
+    CONSTRAINT CK_PROVEEDORES_Celular CHECK (PVD_Celular ~ '^09[0-9]{8}$'),
+    CONSTRAINT CK_PROVEEDORES_Correo CHECK (
+        PVD_Correo = lower(PVD_Correo)
+        AND PVD_Correo ~ '^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$')
+);
+ALTER SEQUENCE SEQ_PROVEEDORES OWNED BY PROVEEDORES.PVD_Codigo;
+CREATE INDEX IX_PROVEEDORES_Canton ON PROVEEDORES (CAN_Codigo);
+
+-- Débil: resuelve PROVEEDORES N:N MATERIALES (qué vende cada proveedor y a
+-- cuánto, por unidad de compra y sin IVA). Una orden de compra solo puede
+-- pedir lo que su proveedor vende.
+CREATE TABLE PROVEEDORES_MATERIALES (
+    PVD_Codigo           CHAR(10)      NOT NULL,
+    MAT_Codigo           CHAR(6)       NOT NULL,
+    PMA_PrecioReferencia NUMERIC(10,4) NOT NULL,
+    PMA_DiasEntrega      SMALLINT      NOT NULL DEFAULT 1,
+    CONSTRAINT PK_PROVEEDORES_MATERIALES PRIMARY KEY (PVD_Codigo, MAT_Codigo),
+    CONSTRAINT FK_PROVEEDORES_MATERIALES_PROVEEDORES FOREIGN KEY (PVD_Codigo)
+        REFERENCES PROVEEDORES (PVD_Codigo) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_PROVEEDORES_MATERIALES_MATERIALES FOREIGN KEY (MAT_Codigo)
+        REFERENCES MATERIALES (MAT_Codigo) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT CK_PROVEEDORES_MATERIALES_Precio CHECK (PMA_PrecioReferencia > 0),
+    CONSTRAINT CK_PROVEEDORES_MATERIALES_Dias CHECK (PMA_DiasEntrega >= 0)
+);
+CREATE INDEX IX_PROVEEDORES_MATERIALES_Material ON PROVEEDORES_MATERIALES (MAT_Codigo);
+
+-- ABI abierta -> APR aprobada (crea la recepción pendiente y el asiento) o
+-- ANU anulada. Subtotal, IVA y total salen de VW_ORDENES_COMPRA_TOTALES.
+CREATE SEQUENCE SEQ_ORDENES_COMPRA MAXVALUE 9999999;
+CREATE TABLE ORDENES_COMPRA (
+    OCO_Codigo       CHAR(10)     NOT NULL DEFAULT 'OCO' || LPAD(nextval('SEQ_ORDENES_COMPRA')::TEXT, 7, '0'),
+    PVD_Codigo       CHAR(10)     NOT NULL,
+    EMP_Codigo       CHAR(10)     NOT NULL,   -- quien la genera
+    OCO_Fecha        TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    OCO_FechaEntrega DATE         NOT NULL,
+    OCO_Estado       CHAR(3)      NOT NULL DEFAULT 'ABI',
+    OCO_Observacion  VARCHAR(250),
+    CONSTRAINT PK_ORDENES_COMPRA PRIMARY KEY (OCO_Codigo),
+    CONSTRAINT FK_ORDENES_COMPRA_PROVEEDORES FOREIGN KEY (PVD_Codigo)
+        REFERENCES PROVEEDORES (PVD_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_ORDENES_COMPRA_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_ORDENES_COMPRA_Codigo CHECK (OCO_Codigo ~ '^OCO[0-9]{7}$'),
+    CONSTRAINT CK_ORDENES_COMPRA_Estado CHECK (OCO_Estado IN ('ABI', 'APR', 'ANU')),
+    CONSTRAINT CK_ORDENES_COMPRA_Entrega CHECK (
+        OCO_FechaEntrega >= (OCO_Fecha AT TIME ZONE 'America/Guayaquil')::DATE)
+);
+ALTER SEQUENCE SEQ_ORDENES_COMPRA OWNED BY ORDENES_COMPRA.OCO_Codigo;
+CREATE INDEX IX_ORDENES_COMPRA_Proveedor ON ORDENES_COMPRA (PVD_Codigo, OCO_Fecha DESC);
+CREATE INDEX IX_ORDENES_COMPRA_Empleado ON ORDENES_COMPRA (EMP_Codigo);
+
+-- Débil: resuelve ORDENES_COMPRA N:N MATERIALES. Cantidad y precio en la
+-- unidad de compra; precio sin IVA. Precio e IVA son los del día: si no se
+-- mandan, TG_DETALLES_ORDEN_COMPRA_MATERIAL copia el precio del proveedor y
+-- el IVA del material.
+CREATE TABLE DETALLES_ORDEN_COMPRA (
+    OCO_Codigo         CHAR(10)      NOT NULL,
+    MAT_Codigo         CHAR(6)       NOT NULL,
+    DOC_Cantidad       NUMERIC(10,2) NOT NULL,
+    DOC_PrecioUnitario NUMERIC(10,4) NOT NULL,
+    DOC_PorcentajeIva  NUMERIC(5,2)  NOT NULL,
+    CONSTRAINT PK_DETALLES_ORDEN_COMPRA PRIMARY KEY (OCO_Codigo, MAT_Codigo),
+    CONSTRAINT FK_DETALLES_ORDEN_COMPRA_ORDENES_COMPRA FOREIGN KEY (OCO_Codigo)
+        REFERENCES ORDENES_COMPRA (OCO_Codigo) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_DETALLES_ORDEN_COMPRA_MATERIALES FOREIGN KEY (MAT_Codigo)
+        REFERENCES MATERIALES (MAT_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_DETALLES_ORDEN_COMPRA_Cantidad CHECK (DOC_Cantidad > 0),
+    CONSTRAINT CK_DETALLES_ORDEN_COMPRA_Precio CHECK (DOC_PrecioUnitario > 0),
+    CONSTRAINT CK_DETALLES_ORDEN_COMPRA_Iva CHECK (DOC_PorcentajeIva BETWEEN 0 AND 100)
+);
+CREATE INDEX IX_DETALLES_ORDEN_COMPRA_Material ON DETALLES_ORDEN_COMPRA (MAT_Codigo);
+
+-- PEN pendiente (la crea la aprobación de la orden) -> REC recibida o CAN
+-- cancelada. Una orden puede llegar en varias recepciones. Lo que llega son
+-- sus lotes (LOTES_MATERIAL); lo pedido contra lo recibido está en
+-- VW_ORDENES_COMPRA_RECIBIDO. El bodeguero no ve precios.
+CREATE SEQUENCE SEQ_RECEPCIONES MAXVALUE 9999999;
+CREATE TABLE RECEPCIONES (
+    RCP_Codigo      CHAR(10)     NOT NULL DEFAULT 'RCP' || LPAD(nextval('SEQ_RECEPCIONES')::TEXT, 7, '0'),
+    OCO_Codigo      CHAR(10)     NOT NULL,
+    EMP_Codigo      CHAR(10),                -- el bodeguero que recibe
+    RCP_Fecha       TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    RCP_Estado      CHAR(3)      NOT NULL DEFAULT 'PEN',
+    RCP_Observacion VARCHAR(250),            -- el motivo de una diferencia
+    CONSTRAINT PK_RECEPCIONES PRIMARY KEY (RCP_Codigo),
+    -- La usa LOTES_MATERIAL para exigir que el lote sea de esa misma orden.
+    CONSTRAINT UQ_RECEPCIONES_Orden UNIQUE (RCP_Codigo, OCO_Codigo),
+    CONSTRAINT FK_RECEPCIONES_ORDENES_COMPRA FOREIGN KEY (OCO_Codigo)
+        REFERENCES ORDENES_COMPRA (OCO_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_RECEPCIONES_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_RECEPCIONES_Codigo CHECK (RCP_Codigo ~ '^RCP[0-9]{7}$'),
+    CONSTRAINT CK_RECEPCIONES_Estado CHECK (RCP_Estado IN ('PEN', 'REC', 'CAN')),
+    CONSTRAINT CK_RECEPCIONES_Responsable CHECK (RCP_Estado <> 'REC' OR EMP_Codigo IS NOT NULL)
+);
+ALTER SEQUENCE SEQ_RECEPCIONES OWNED BY RECEPCIONES.RCP_Codigo;
+CREATE INDEX IX_RECEPCIONES_Orden ON RECEPCIONES (OCO_Codigo);
+
+-- Cada lote es una entrada de un material: lo que llegó en una recepción o,
+-- sin recepción, el inventario inicial. La cantidad va en las dos unidades y
+-- el costo es por unidad de producción y sin IVA; los dos son los del día en
+-- que entró (el factor y el precio pueden cambiar después). Si no se mandan,
+-- TG_LOTES_MATERIAL_INGRESO los calcula, y pone la caducidad de un perecible.
+-- El saldo no se guarda: es la cantidad inicial más los ajustes menos los
+-- consumos (VW_LOTES_SALDO).
+CREATE SEQUENCE SEQ_LOTES_MATERIAL MAXVALUE 9999999;
+CREATE TABLE LOTES_MATERIAL (
+    LMA_Codigo           CHAR(10)      NOT NULL DEFAULT 'LMA' || LPAD(nextval('SEQ_LOTES_MATERIAL')::TEXT, 7, '0'),
+    MAT_Codigo           CHAR(6)       NOT NULL,
+    RCP_Codigo           CHAR(10),
+    OCO_Codigo           CHAR(10),
+    LMA_FechaIngreso     TIMESTAMPTZ   NOT NULL DEFAULT now(),
+    LMA_FechaCaducidad   DATE,
+    LMA_CantidadRecibida NUMERIC(10,2) NOT NULL,   -- en unidad de compra
+    LMA_CantidadInicial  NUMERIC(14,3) NOT NULL,   -- en unidad de producción
+    LMA_CostoUnitario    NUMERIC(18,10) NOT NULL,
+    CONSTRAINT PK_LOTES_MATERIAL PRIMARY KEY (LMA_Codigo),
+    CONSTRAINT FK_LOTES_MATERIAL_MATERIALES FOREIGN KEY (MAT_Codigo)
+        REFERENCES MATERIALES (MAT_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    -- Con el material en la llave, solo llega lo que la orden pidió.
+    CONSTRAINT FK_LOTES_MATERIAL_DETALLES_ORDEN_COMPRA FOREIGN KEY (OCO_Codigo, MAT_Codigo)
+        REFERENCES DETALLES_ORDEN_COMPRA (OCO_Codigo, MAT_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_LOTES_MATERIAL_RECEPCIONES FOREIGN KEY (RCP_Codigo, OCO_Codigo)
+        REFERENCES RECEPCIONES (RCP_Codigo, OCO_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_LOTES_MATERIAL_Codigo CHECK (LMA_Codigo ~ '^LMA[0-9]{7}$'),
+    CONSTRAINT CK_LOTES_MATERIAL_Origen CHECK ((RCP_Codigo IS NULL) = (OCO_Codigo IS NULL)),
+    CONSTRAINT CK_LOTES_MATERIAL_Cantidades CHECK (LMA_CantidadRecibida > 0 AND LMA_CantidadInicial > 0),
+    CONSTRAINT CK_LOTES_MATERIAL_Costo CHECK (LMA_CostoUnitario >= 0),
+    CONSTRAINT CK_LOTES_MATERIAL_Caducidad CHECK (
+        LMA_FechaCaducidad >= (LMA_FechaIngreso AT TIME ZONE 'America/Guayaquil')::DATE)
+);
+ALTER SEQUENCE SEQ_LOTES_MATERIAL OWNED BY LOTES_MATERIAL.LMA_Codigo;
+CREATE INDEX IX_LOTES_MATERIAL_Material ON LOTES_MATERIAL (MAT_Codigo, LMA_FechaIngreso);
+CREATE INDEX IX_LOTES_MATERIAL_Recepcion ON LOTES_MATERIAL (RCP_Codigo);
+CREATE INDEX IX_LOTES_MATERIAL_Orden ON LOTES_MATERIAL (OCO_Codigo, MAT_Codigo);
+
+
+/* =============================================================================
+   Grupo 9. Inventario y producción
+   ========================================================================== */
+
+-- Corrige el inventario en libros para que cuadre con el físico (daño,
+-- caducidad, error de conteo). Lo aprueba alguien distinto de quien lo hace.
+-- ABI abierto -> APR aprobado (crea el asiento) o ANU anulado.
+CREATE SEQUENCE SEQ_AJUSTES_INVENTARIO MAXVALUE 9999999;
+CREATE TABLE AJUSTES_INVENTARIO (
+    AJU_Codigo         CHAR(10)     NOT NULL DEFAULT 'AJU' || LPAD(nextval('SEQ_AJUSTES_INVENTARIO')::TEXT, 7, '0'),
+    EMP_Codigo         CHAR(10)     NOT NULL,   -- quien lo hace
+    EMP_CodigoAutoriza CHAR(10),                -- quien lo aprueba
+    AJU_Fecha          TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    AJU_Motivo         VARCHAR(150) NOT NULL,
+    AJU_Estado         CHAR(3)      NOT NULL DEFAULT 'ABI',
+    CONSTRAINT PK_AJUSTES_INVENTARIO PRIMARY KEY (AJU_Codigo),
+    CONSTRAINT FK_AJUSTES_INVENTARIO_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_AJUSTES_INVENTARIO_AUTORIZA FOREIGN KEY (EMP_CodigoAutoriza)
+        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_AJUSTES_INVENTARIO_Codigo CHECK (AJU_Codigo ~ '^AJU[0-9]{7}$'),
+    CONSTRAINT CK_AJUSTES_INVENTARIO_Motivo CHECK (btrim(AJU_Motivo) <> ''),
+    CONSTRAINT CK_AJUSTES_INVENTARIO_Estado CHECK (AJU_Estado IN ('ABI', 'APR', 'ANU')),
+    CONSTRAINT CK_AJUSTES_INVENTARIO_Autoriza CHECK (AJU_Estado <> 'APR' OR EMP_CodigoAutoriza IS NOT NULL),
+    CONSTRAINT CK_AJUSTES_INVENTARIO_Distinto CHECK (EMP_CodigoAutoriza <> EMP_Codigo)
+);
+ALTER SEQUENCE SEQ_AJUSTES_INVENTARIO OWNED BY AJUSTES_INVENTARIO.AJU_Codigo;
+CREATE INDEX IX_AJUSTES_INVENTARIO_Empleado ON AJUSTES_INVENTARIO (EMP_Codigo);
+CREATE INDEX IX_AJUSTES_INVENTARIO_Autoriza ON AJUSTES_INVENTARIO (EMP_CodigoAutoriza);
+
+-- Débil: resuelve AJUSTES_INVENTARIO N:N LOTES_MATERIAL. Se ajusta un lote
+-- porque cada uno tiene su costo y su caducidad. Cantidad en unidad de
+-- producción: negativa si falta (pérdida), positiva si sobra.
+CREATE TABLE DETALLES_AJUSTE (
+    AJU_Codigo   CHAR(10)      NOT NULL,
+    LMA_Codigo   CHAR(10)      NOT NULL,
+    DAJ_Cantidad NUMERIC(14,3) NOT NULL,
+    CONSTRAINT PK_DETALLES_AJUSTE PRIMARY KEY (AJU_Codigo, LMA_Codigo),
+    CONSTRAINT FK_DETALLES_AJUSTE_AJUSTES_INVENTARIO FOREIGN KEY (AJU_Codigo)
+        REFERENCES AJUSTES_INVENTARIO (AJU_Codigo) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_DETALLES_AJUSTE_LOTES_MATERIAL FOREIGN KEY (LMA_Codigo)
+        REFERENCES LOTES_MATERIAL (LMA_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_DETALLES_AJUSTE_Cantidad CHECK (DAJ_Cantidad <> 0)
+);
+CREATE INDEX IX_DETALLES_AJUSTE_Lote ON DETALLES_AJUSTE (LMA_Codigo);
+
+-- Una tanda: cuántas unidades de un producto en un tamaño se hicieron.
+-- ABI abierta -> APR producida: descuenta de los lotes lo que pide la receta,
+-- según el método de cada material (CONSUMOS_PRODUCCION), y crea el asiento.
+-- ABI -> ANU anulada.
+CREATE SEQUENCE SEQ_ORDENES_PRODUCCION MAXVALUE 9999999;
+CREATE TABLE ORDENES_PRODUCCION (
+    ORP_Codigo   CHAR(10)    NOT NULL DEFAULT 'ORP' || LPAD(nextval('SEQ_ORDENES_PRODUCCION')::TEXT, 7, '0'),
+    PRO_Codigo   CHAR(6)     NOT NULL,
+    TAM_Codigo   CHAR(6)     NOT NULL,
+    EMP_Codigo   CHAR(10)    NOT NULL,   -- quien hornea o prepara
+    ORP_Fecha    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    ORP_Cantidad INTEGER     NOT NULL,
+    ORP_Estado   CHAR(3)     NOT NULL DEFAULT 'ABI',
+    CONSTRAINT PK_ORDENES_PRODUCCION PRIMARY KEY (ORP_Codigo),
+    CONSTRAINT FK_ORDENES_PRODUCCION_PRODUCTOS_TAMANOS FOREIGN KEY (PRO_Codigo, TAM_Codigo)
+        REFERENCES PRODUCTOS_TAMANOS (PRO_Codigo, TAM_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_ORDENES_PRODUCCION_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_ORDENES_PRODUCCION_Codigo CHECK (ORP_Codigo ~ '^ORP[0-9]{7}$'),
+    CONSTRAINT CK_ORDENES_PRODUCCION_Cantidad CHECK (ORP_Cantidad > 0),
+    CONSTRAINT CK_ORDENES_PRODUCCION_Estado CHECK (ORP_Estado IN ('ABI', 'APR', 'ANU'))
+);
+ALTER SEQUENCE SEQ_ORDENES_PRODUCCION OWNED BY ORDENES_PRODUCCION.ORP_Codigo;
+CREATE INDEX IX_ORDENES_PRODUCCION_Producto ON ORDENES_PRODUCCION (PRO_Codigo, TAM_Codigo);
+CREATE INDEX IX_ORDENES_PRODUCCION_Empleado ON ORDENES_PRODUCCION (EMP_Codigo);
+
+-- Débil: resuelve ORDENES_PRODUCCION N:N LOTES_MATERIAL: de qué lote salió
+-- cada material de la tanda (la trazabilidad de un perecible). La llena la
+-- base al aprobar la orden. El costo es el del lote, o el promedio si el
+-- material usa PROM.
+CREATE TABLE CONSUMOS_PRODUCCION (
+    ORP_Codigo        CHAR(10)      NOT NULL,
+    LMA_Codigo        CHAR(10)      NOT NULL,
+    CPR_Cantidad      NUMERIC(14,3) NOT NULL,
+    CPR_CostoUnitario NUMERIC(18,10) NOT NULL,
+    CONSTRAINT PK_CONSUMOS_PRODUCCION PRIMARY KEY (ORP_Codigo, LMA_Codigo),
+    CONSTRAINT FK_CONSUMOS_PRODUCCION_ORDENES_PRODUCCION FOREIGN KEY (ORP_Codigo)
+        REFERENCES ORDENES_PRODUCCION (ORP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_CONSUMOS_PRODUCCION_LOTES_MATERIAL FOREIGN KEY (LMA_Codigo)
+        REFERENCES LOTES_MATERIAL (LMA_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_CONSUMOS_PRODUCCION_Cantidad CHECK (CPR_Cantidad > 0),
+    CONSTRAINT CK_CONSUMOS_PRODUCCION_Costo CHECK (CPR_CostoUnitario >= 0)
+);
+CREATE INDEX IX_CONSUMOS_PRODUCCION_Lote ON CONSUMOS_PRODUCCION (LMA_Codigo);
+
+
+/* =============================================================================
+   Grupo 10. Contabilidad
+   ========================================================================== */
+
+-- El plan de cuentas. CUE_Numero es el código contable (1.1.01.01); la cuenta
+-- madre es el número sin su último tramo, así que no se guarda aparte. Las MAY
+-- (mayor) agrupan; solo las DET (detalle) reciben valores en un asiento.
+CREATE SEQUENCE SEQ_CUENTAS_CONTABLES MAXVALUE 999;
+CREATE TABLE CUENTAS_CONTABLES (
+    CUE_Codigo CHAR(6)     NOT NULL DEFAULT 'CUE' || LPAD(nextval('SEQ_CUENTAS_CONTABLES')::TEXT, 3, '0'),
+    CUE_Numero VARCHAR(20) NOT NULL,
+    CUE_Nombre VARCHAR(80) NOT NULL,
+    CUE_Tipo   CHAR(3)     NOT NULL,
+    CUE_Activa BOOLEAN     NOT NULL DEFAULT TRUE,
+    CONSTRAINT PK_CUENTAS_CONTABLES PRIMARY KEY (CUE_Codigo),
+    CONSTRAINT UQ_CUENTAS_CONTABLES_Numero UNIQUE (CUE_Numero),
+    CONSTRAINT CK_CUENTAS_CONTABLES_Codigo CHECK (CUE_Codigo ~ '^CUE[0-9]{3}$'),
+    -- 1 activo, 2 pasivo, 3 patrimonio, 4 ingresos, 5 costos y gastos, 6 de orden
+    CONSTRAINT CK_CUENTAS_CONTABLES_Numero CHECK (CUE_Numero ~ '^[1-6](\.[0-9]{1,2})*$'),
+    CONSTRAINT CK_CUENTAS_CONTABLES_Tipo CHECK (CUE_Tipo IN ('MAY', 'DET'))
+);
+ALTER SEQUENCE SEQ_CUENTAS_CONTABLES OWNED BY CUENTAS_CONTABLES.CUE_Codigo;
+
+-- ABI abierto: lo hace a mano el contador (ASI_Origen MAN)
+-- PEN pendiente: lo generó otro módulo al aprobar un documento
+-- APR aprobado: solo si el DEBE suma lo mismo que el HABER; si no, queda ERR
+-- ANU anulado
+-- ASI_Origen dice qué módulo lo generó (COM compras, INV inventario, PRO
+-- producción, VEN ventas, NOM nómina) y ASI_Referencia el código del
+-- documento que lo generó.
+CREATE SEQUENCE SEQ_ASIENTOS MAXVALUE 9999999;
+CREATE TABLE ASIENTOS (
+    ASI_Codigo      CHAR(10)     NOT NULL DEFAULT 'ASI' || LPAD(nextval('SEQ_ASIENTOS')::TEXT, 7, '0'),
+    EMP_Codigo      CHAR(10),                 -- el contador que lo aprueba
+    ASI_Fecha       TIMESTAMPTZ  NOT NULL DEFAULT now(),
+    ASI_Descripcion VARCHAR(150) NOT NULL,
+    ASI_Origen      CHAR(3)      NOT NULL DEFAULT 'MAN',
+    ASI_Referencia  CHAR(10),
+    ASI_Estado      CHAR(3)      NOT NULL DEFAULT 'ABI',
+    CONSTRAINT PK_ASIENTOS PRIMARY KEY (ASI_Codigo),
+    CONSTRAINT FK_ASIENTOS_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_ASIENTOS_Codigo CHECK (ASI_Codigo ~ '^ASI[0-9]{7}$'),
+    CONSTRAINT CK_ASIENTOS_Descripcion CHECK (btrim(ASI_Descripcion) <> ''),
+    CONSTRAINT CK_ASIENTOS_Origen CHECK (ASI_Origen IN ('MAN', 'COM', 'INV', 'PRO', 'VEN', 'NOM')),
+    CONSTRAINT CK_ASIENTOS_Referencia CHECK ((ASI_Origen = 'MAN') = (ASI_Referencia IS NULL)),
+    CONSTRAINT CK_ASIENTOS_Estado CHECK (ASI_Estado IN ('ABI', 'PEN', 'APR', 'ANU', 'ERR')),
+    CONSTRAINT CK_ASIENTOS_Aprobado CHECK (ASI_Estado <> 'APR' OR EMP_Codigo IS NOT NULL)
+);
+ALTER SEQUENCE SEQ_ASIENTOS OWNED BY ASIENTOS.ASI_Codigo;
+CREATE INDEX IX_ASIENTOS_Referencia ON ASIENTOS (ASI_Origen, ASI_Referencia);
+CREATE INDEX IX_ASIENTOS_Empleado ON ASIENTOS (EMP_Codigo);
+
+-- Débil: resuelve ASIENTOS N:N CUENTAS_CONTABLES. Cada línea va al DEBE o al
+-- HABER, nunca a los dos.
+CREATE TABLE DETALLES_ASIENTO (
+    ASI_Codigo CHAR(10)      NOT NULL,
+    CUE_Codigo CHAR(6)       NOT NULL,
+    DAS_Debe   NUMERIC(12,2) NOT NULL DEFAULT 0,
+    DAS_Haber  NUMERIC(12,2) NOT NULL DEFAULT 0,
+    CONSTRAINT PK_DETALLES_ASIENTO PRIMARY KEY (ASI_Codigo, CUE_Codigo),
+    CONSTRAINT FK_DETALLES_ASIENTO_ASIENTOS FOREIGN KEY (ASI_Codigo)
+        REFERENCES ASIENTOS (ASI_Codigo) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_DETALLES_ASIENTO_CUENTAS_CONTABLES FOREIGN KEY (CUE_Codigo)
+        REFERENCES CUENTAS_CONTABLES (CUE_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_DETALLES_ASIENTO_Valores CHECK (
+        DAS_Debe >= 0 AND DAS_Haber >= 0 AND (DAS_Debe = 0) <> (DAS_Haber = 0))
+);
+CREATE INDEX IX_DETALLES_ASIENTO_Cuenta ON DETALLES_ASIENTO (CUE_Codigo);
+
+
+/* =============================================================================
+   Grupo 11. Nómina
+   ========================================================================== */
+
+-- Ingresos (ING) y descuentos (DES) del rol de pagos, cada uno con la cuenta
+-- contable donde se registra. CNO_Numero es el del rol impreso (1000 sueldo).
+CREATE SEQUENCE SEQ_CONCEPTOS_NOMINA MAXVALUE 999;
+CREATE TABLE CONCEPTOS_NOMINA (
+    CNO_Codigo CHAR(6)     NOT NULL DEFAULT 'CNO' || LPAD(nextval('SEQ_CONCEPTOS_NOMINA')::TEXT, 3, '0'),
+    CUE_Codigo CHAR(6)     NOT NULL,
+    CNO_Numero CHAR(4)     NOT NULL,
+    CNO_Nombre VARCHAR(60) NOT NULL,
+    CNO_Tipo   CHAR(3)     NOT NULL,
+    CONSTRAINT PK_CONCEPTOS_NOMINA PRIMARY KEY (CNO_Codigo),
+    CONSTRAINT UQ_CONCEPTOS_NOMINA_Numero UNIQUE (CNO_Numero),
+    CONSTRAINT UQ_CONCEPTOS_NOMINA_Nombre UNIQUE (CNO_Nombre),
+    CONSTRAINT FK_CONCEPTOS_NOMINA_CUENTAS_CONTABLES FOREIGN KEY (CUE_Codigo)
+        REFERENCES CUENTAS_CONTABLES (CUE_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_CONCEPTOS_NOMINA_Codigo CHECK (CNO_Codigo ~ '^CNO[0-9]{3}$'),
+    CONSTRAINT CK_CONCEPTOS_NOMINA_Numero CHECK (CNO_Numero ~ '^[0-9]{4}$'),
+    CONSTRAINT CK_CONCEPTOS_NOMINA_Tipo CHECK (CNO_Tipo IN ('ING', 'DES'))
+);
+ALTER SEQUENCE SEQ_CONCEPTOS_NOMINA OWNED BY CONCEPTOS_NOMINA.CNO_Codigo;
+
+-- El rol de pagos de un empleado en un mes. Al crearlo, TG_NOMINAS_INICIAR le
+-- pone el sueldo de su cargo actual y el aporte personal al IESS (9,45 %); lo
+-- demás se agrega a mano. ABI -> APR (crea el asiento) o ANU. Ingresos,
+-- descuentos y neto salen de VW_NOMINAS.
+CREATE SEQUENCE SEQ_NOMINAS MAXVALUE 9999999;
+CREATE TABLE NOMINAS (
+    NOM_Codigo    CHAR(10) NOT NULL DEFAULT 'NOM' || LPAD(nextval('SEQ_NOMINAS')::TEXT, 7, '0'),
+    EMP_Codigo    CHAR(10) NOT NULL,
+    NOM_Anio      SMALLINT NOT NULL,
+    NOM_Mes       SMALLINT NOT NULL,
+    NOM_FechaPago DATE,
+    NOM_Estado    CHAR(3)  NOT NULL DEFAULT 'ABI',
+    CONSTRAINT PK_NOMINAS PRIMARY KEY (NOM_Codigo),
+    CONSTRAINT FK_NOMINAS_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_NOMINAS_Codigo CHECK (NOM_Codigo ~ '^NOM[0-9]{7}$'),
+    CONSTRAINT CK_NOMINAS_Periodo CHECK (NOM_Anio BETWEEN 2000 AND 2100 AND NOM_Mes BETWEEN 1 AND 12),
+    CONSTRAINT CK_NOMINAS_Estado CHECK (NOM_Estado IN ('ABI', 'APR', 'ANU'))
+);
+ALTER SEQUENCE SEQ_NOMINAS OWNED BY NOMINAS.NOM_Codigo;
+-- Un solo rol por empleado y mes, sin contar los anulados.
+CREATE UNIQUE INDEX UX_NOMINAS_Mes ON NOMINAS (EMP_Codigo, NOM_Anio, NOM_Mes) WHERE NOM_Estado <> 'ANU';
+
+-- Débil: resuelve NOMINAS N:N CONCEPTOS_NOMINA. DNO_Cantidad son días u
+-- horas (30 días de sueldo, 5 horas extra).
+CREATE TABLE DETALLES_NOMINA (
+    NOM_Codigo   CHAR(10)      NOT NULL,
+    CNO_Codigo   CHAR(6)       NOT NULL,
+    DNO_Cantidad NUMERIC(6,2)  NOT NULL DEFAULT 1,
+    DNO_Valor    NUMERIC(10,2) NOT NULL,
+    CONSTRAINT PK_DETALLES_NOMINA PRIMARY KEY (NOM_Codigo, CNO_Codigo),
+    CONSTRAINT FK_DETALLES_NOMINA_NOMINAS FOREIGN KEY (NOM_Codigo)
+        REFERENCES NOMINAS (NOM_Codigo) ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT FK_DETALLES_NOMINA_CONCEPTOS_NOMINA FOREIGN KEY (CNO_Codigo)
+        REFERENCES CONCEPTOS_NOMINA (CNO_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_DETALLES_NOMINA_Cantidad CHECK (DNO_Cantidad > 0),
+    CONSTRAINT CK_DETALLES_NOMINA_Valor CHECK (DNO_Valor > 0)
+);
+CREATE INDEX IX_DETALLES_NOMINA_Concepto ON DETALLES_NOMINA (CNO_Codigo);
+
+
+/* =============================================================================
    Reglas que cruzan tablas (un CHECK no puede mirar otra tabla)
    ========================================================================== */
 
@@ -718,6 +1405,602 @@ BEFORE INSERT ON FACTURAS
 FOR EACH ROW EXECUTE FUNCTION FN_FACTURAS_SECUENCIAL();
 
 
+/* -----------------------------------------------------------------------------
+   Estados de los documentos
+   -------------------------------------------------------------------------- */
+
+-- Un documento aprobado o anulado ya no se cambia ni se borra. TG_ARGV[0] es
+-- la columna del estado y TG_ARGV[1] los estados en que todavía se puede
+-- tocar ('ABI'; 'PEN' en recepciones; 'ABI,PEN,ERR' en asientos). Al crearlo
+-- tiene que estar en uno de esos.
+CREATE FUNCTION FN_DOCUMENTO_ABIERTO()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_abiertos TEXT[] := string_to_array(TG_ARGV[1], ',');
+BEGIN
+    IF TG_OP IN ('UPDATE', 'DELETE')
+       AND NOT ((to_jsonb(OLD) ->> TG_ARGV[0]) = ANY (v_abiertos)) THEN
+        RAISE EXCEPTION 'En % ya no se puede cambiar un documento en estado %',
+            TG_TABLE_NAME, to_jsonb(OLD) ->> TG_ARGV[0];
+    END IF;
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    END IF;
+    IF TG_OP = 'INSERT' AND NOT ((to_jsonb(NEW) ->> TG_ARGV[0]) = ANY (v_abiertos)) THEN
+        RAISE EXCEPTION 'En % un documento nuevo empieza en estado %', TG_TABLE_NAME, TG_ARGV[1];
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+-- Las líneas de un documento solo se tocan mientras su cabecera está abierta.
+-- TG_ARGV: tabla de la cabecera, su llave, su columna de estado y los
+-- estados abiertos.
+CREATE FUNCTION FN_LINEA_ABIERTA()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_fila   JSONB;
+    v_estado TEXT;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        v_fila := to_jsonb(OLD);
+    ELSE
+        v_fila := to_jsonb(NEW);
+    END IF;
+    EXECUTE format('SELECT %I FROM %I WHERE %I = $1', TG_ARGV[2], TG_ARGV[0], TG_ARGV[1])
+       INTO v_estado
+      USING v_fila ->> TG_ARGV[1];
+    IF v_estado IS NOT NULL AND NOT (v_estado = ANY (string_to_array(TG_ARGV[3], ','))) THEN
+        RAISE EXCEPTION 'El documento % está en estado % y ya no se le pueden cambiar las líneas',
+            v_fila ->> TG_ARGV[1], v_estado;
+    END IF;
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER TG_ORDENES_COMPRA_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON ORDENES_COMPRA
+FOR EACH ROW EXECUTE FUNCTION FN_DOCUMENTO_ABIERTO('oco_estado', 'ABI');
+CREATE TRIGGER TG_RECEPCIONES_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON RECEPCIONES
+FOR EACH ROW EXECUTE FUNCTION FN_DOCUMENTO_ABIERTO('rcp_estado', 'PEN');
+CREATE TRIGGER TG_AJUSTES_INVENTARIO_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON AJUSTES_INVENTARIO
+FOR EACH ROW EXECUTE FUNCTION FN_DOCUMENTO_ABIERTO('aju_estado', 'ABI');
+CREATE TRIGGER TG_ORDENES_PRODUCCION_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON ORDENES_PRODUCCION
+FOR EACH ROW EXECUTE FUNCTION FN_DOCUMENTO_ABIERTO('orp_estado', 'ABI');
+CREATE TRIGGER TG_ASIENTOS_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON ASIENTOS
+FOR EACH ROW EXECUTE FUNCTION FN_DOCUMENTO_ABIERTO('asi_estado', 'ABI,PEN,ERR');
+CREATE TRIGGER TG_NOMINAS_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON NOMINAS
+FOR EACH ROW EXECUTE FUNCTION FN_DOCUMENTO_ABIERTO('nom_estado', 'ABI');
+
+CREATE TRIGGER TG_DETALLES_ORDEN_COMPRA_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON DETALLES_ORDEN_COMPRA
+FOR EACH ROW EXECUTE FUNCTION FN_LINEA_ABIERTA('ordenes_compra', 'oco_codigo', 'oco_estado', 'ABI');
+CREATE TRIGGER TG_LOTES_MATERIAL_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON LOTES_MATERIAL
+FOR EACH ROW EXECUTE FUNCTION FN_LINEA_ABIERTA('recepciones', 'rcp_codigo', 'rcp_estado', 'PEN');
+CREATE TRIGGER TG_DETALLES_AJUSTE_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON DETALLES_AJUSTE
+FOR EACH ROW EXECUTE FUNCTION FN_LINEA_ABIERTA('ajustes_inventario', 'aju_codigo', 'aju_estado', 'ABI');
+CREATE TRIGGER TG_DETALLES_ASIENTO_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON DETALLES_ASIENTO
+FOR EACH ROW EXECUTE FUNCTION FN_LINEA_ABIERTA('asientos', 'asi_codigo', 'asi_estado', 'ABI,PEN,ERR');
+CREATE TRIGGER TG_DETALLES_NOMINA_ABIERTO BEFORE INSERT OR UPDATE OR DELETE ON DETALLES_NOMINA
+FOR EACH ROW EXECUTE FUNCTION FN_LINEA_ABIERTA('nominas', 'nom_codigo', 'nom_estado', 'ABI');
+
+
+/* -----------------------------------------------------------------------------
+   Asientos que generan los otros módulos
+   -------------------------------------------------------------------------- */
+
+-- Crea la cabecera de un asiento pendiente y devuelve su código.
+CREATE FUNCTION FN_ASIENTO_NUEVO(p_origen TEXT, p_referencia TEXT, p_descripcion TEXT)
+RETURNS CHAR(10)
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_codigo CHAR(10);
+BEGIN
+    INSERT INTO ASIENTOS (ASI_Origen, ASI_Referencia, ASI_Descripcion, ASI_Estado)
+    VALUES (p_origen, p_referencia, LEFT(p_descripcion, 150), 'PEN')
+    RETURNING ASI_Codigo INTO v_codigo;
+    RETURN v_codigo;
+END;
+$$;
+
+-- Suma un valor al DEBE o al HABER de una cuenta (por su número contable).
+-- Si la cuenta ya está en el asiento, se compensa con lo que ya tenía; un
+-- valor 0 no deja línea.
+CREATE FUNCTION FN_ASIENTO_LINEA(p_asiento TEXT, p_numero TEXT, p_debe NUMERIC, p_haber NUMERIC)
+RETURNS VOID
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_cuenta CHAR(6);
+    v_neto   NUMERIC(12,2) := ROUND(COALESCE(p_debe, 0) - COALESCE(p_haber, 0), 2);
+    v_debe   NUMERIC(12,2);
+    v_haber  NUMERIC(12,2);
+BEGIN
+    SELECT CUE_Codigo INTO v_cuenta FROM CUENTAS_CONTABLES WHERE CUE_Numero = p_numero;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'No existe la cuenta contable %', p_numero;
+    END IF;
+    SELECT DAS_Debe, DAS_Haber INTO v_debe, v_haber
+      FROM DETALLES_ASIENTO
+     WHERE ASI_Codigo = p_asiento AND CUE_Codigo = v_cuenta;
+    IF FOUND THEN
+        v_neto := v_neto + v_debe - v_haber;
+        DELETE FROM DETALLES_ASIENTO WHERE ASI_Codigo = p_asiento AND CUE_Codigo = v_cuenta;
+    END IF;
+    IF v_neto <> 0 THEN
+        INSERT INTO DETALLES_ASIENTO (ASI_Codigo, CUE_Codigo, DAS_Debe, DAS_Haber)
+        VALUES (p_asiento, v_cuenta, GREATEST(v_neto, 0), GREATEST(-v_neto, 0));
+    END IF;
+END;
+$$;
+
+-- Solo las cuentas de detalle activas reciben valores.
+CREATE FUNCTION FN_DETALLES_ASIENTO_CUENTA()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM CUENTAS_CONTABLES
+                    WHERE CUE_Codigo = NEW.CUE_Codigo AND CUE_Tipo = 'DET' AND CUE_Activa) THEN
+        RAISE EXCEPTION 'La cuenta % no es de detalle o está inactiva', NEW.CUE_Codigo;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER TG_DETALLES_ASIENTO_CUENTA
+BEFORE INSERT OR UPDATE OF CUE_Codigo ON DETALLES_ASIENTO
+FOR EACH ROW EXECUTE FUNCTION FN_DETALLES_ASIENTO_CUENTA();
+
+-- La cuenta madre (el número sin su último tramo) tiene que existir y ser MAY.
+CREATE FUNCTION FN_CUENTAS_CONTABLES_MADRE()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF NEW.CUE_Numero LIKE '%.%' AND NOT EXISTS (
+        SELECT 1 FROM CUENTAS_CONTABLES
+         WHERE CUE_Numero = regexp_replace(NEW.CUE_Numero, '\.[0-9]+$', '')
+           AND CUE_Tipo = 'MAY') THEN
+        RAISE EXCEPTION 'La cuenta % no tiene una cuenta madre de tipo MAY', NEW.CUE_Numero;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER TG_CUENTAS_CONTABLES_MADRE
+BEFORE INSERT OR UPDATE OF CUE_Numero ON CUENTAS_CONTABLES
+FOR EACH ROW EXECUTE FUNCTION FN_CUENTAS_CONTABLES_MADRE();
+
+-- Un asiento se aprueba solo si cuadra: DEBE igual a HABER y distinto de 0.
+-- Si no cuadra, el cambio no se rechaza: queda en ERR para que el contador
+-- lo corrija y lo vuelva a aprobar.
+CREATE FUNCTION FN_ASIENTOS_CUADRE()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_debe  NUMERIC(14,2);
+    v_haber NUMERIC(14,2);
+BEGIN
+    IF NEW.ASI_Estado = 'APR' THEN
+        SELECT COALESCE(SUM(DAS_Debe), 0), COALESCE(SUM(DAS_Haber), 0)
+          INTO v_debe, v_haber
+          FROM DETALLES_ASIENTO
+         WHERE ASI_Codigo = NEW.ASI_Codigo;
+        IF v_debe = 0 OR v_debe <> v_haber THEN
+            NEW.ASI_Estado := 'ERR';
+        END IF;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER TG_ASIENTOS_CUADRE
+BEFORE UPDATE OF ASI_Estado ON ASIENTOS
+FOR EACH ROW EXECUTE FUNCTION FN_ASIENTOS_CUADRE();
+
+
+/* -----------------------------------------------------------------------------
+   Compras
+   -------------------------------------------------------------------------- */
+
+-- Una orden solo pide lo que su proveedor vende. Si no se mandan precio o
+-- IVA, se copian del proveedor y del material.
+CREATE FUNCTION FN_DETALLES_ORDEN_COMPRA_MATERIAL()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_precio NUMERIC(10,4);
+BEGIN
+    SELECT pm.PMA_PrecioReferencia INTO v_precio
+      FROM ORDENES_COMPRA o
+      JOIN PROVEEDORES_MATERIALES pm ON pm.PVD_Codigo = o.PVD_Codigo
+     WHERE o.OCO_Codigo = NEW.OCO_Codigo
+       AND pm.MAT_Codigo = NEW.MAT_Codigo;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'El proveedor de la orden % no vende el material %', NEW.OCO_Codigo, NEW.MAT_Codigo;
+    END IF;
+    NEW.DOC_PrecioUnitario := COALESCE(NEW.DOC_PrecioUnitario, v_precio);
+    IF NEW.DOC_PorcentajeIva IS NULL THEN
+        SELECT t.TIV_Porcentaje INTO NEW.DOC_PorcentajeIva
+          FROM MATERIALES m
+          JOIN TARIFAS_IVA t ON t.TIV_Codigo = m.TIV_Codigo
+         WHERE m.MAT_Codigo = NEW.MAT_Codigo;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER TG_DETALLES_ORDEN_COMPRA_MATERIAL
+BEFORE INSERT OR UPDATE OF MAT_Codigo ON DETALLES_ORDEN_COMPRA
+FOR EACH ROW EXECUTE FUNCTION FN_DETALLES_ORDEN_COMPRA_MATERIAL();
+
+-- Aprobar una orden crea su recepción pendiente para bodega y el asiento
+-- pendiente para contabilidad: inventario e IVA pagado al DEBE, proveedores
+-- al HABER.
+CREATE FUNCTION FN_ORDENES_COMPRA_APROBAR()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_subtotal NUMERIC(12,2);
+    v_iva      NUMERIC(12,2);
+    v_asiento  CHAR(10);
+BEGIN
+    IF NEW.OCO_Estado <> 'APR' OR OLD.OCO_Estado = 'APR' THEN
+        RETURN NULL;
+    END IF;
+    SELECT OCO_Subtotal, OCO_Iva INTO v_subtotal, v_iva
+      FROM VW_ORDENES_COMPRA_TOTALES
+     WHERE OCO_Codigo = NEW.OCO_Codigo;
+    IF v_subtotal = 0 THEN
+        RAISE EXCEPTION 'La orden de compra % no tiene materiales', NEW.OCO_Codigo;
+    END IF;
+
+    INSERT INTO RECEPCIONES (OCO_Codigo) VALUES (NEW.OCO_Codigo);
+
+    v_asiento := FN_ASIENTO_NUEVO('COM', NEW.OCO_Codigo, 'Compra de materiales, orden ' || NEW.OCO_Codigo);
+    PERFORM FN_ASIENTO_LINEA(v_asiento, '1.1.03.01', v_subtotal, 0);
+    PERFORM FN_ASIENTO_LINEA(v_asiento, '1.1.04.01', v_iva, 0);
+    PERFORM FN_ASIENTO_LINEA(v_asiento, '2.1.01.01', 0, v_subtotal + v_iva);
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER TG_ORDENES_COMPRA_APROBAR
+AFTER UPDATE OF OCO_Estado ON ORDENES_COMPRA
+FOR EACH ROW EXECUTE FUNCTION FN_ORDENES_COMPRA_APROBAR();
+
+-- Solo se recibe lo de una orden aprobada, en una fecha que no sea anterior
+-- a la orden, y para darla por recibida tiene que haber llegado algo.
+CREATE FUNCTION FN_RECEPCIONES_REVISAR()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_estado CHAR(3);
+    v_fecha  TIMESTAMPTZ;
+BEGIN
+    SELECT OCO_Estado, OCO_Fecha INTO v_estado, v_fecha
+      FROM ORDENES_COMPRA
+     WHERE OCO_Codigo = NEW.OCO_Codigo;
+    IF v_estado <> 'APR' THEN
+        RAISE EXCEPTION 'La orden de compra % no está aprobada', NEW.OCO_Codigo;
+    ELSIF NEW.RCP_Fecha < v_fecha THEN
+        RAISE EXCEPTION 'La recepción no puede ser anterior a la orden de compra %', NEW.OCO_Codigo;
+    ELSIF NEW.RCP_Estado = 'REC'
+          AND NOT EXISTS (SELECT 1 FROM LOTES_MATERIAL WHERE RCP_Codigo = NEW.RCP_Codigo) THEN
+        RAISE EXCEPTION 'La recepción % no tiene nada recibido', NEW.RCP_Codigo;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER TG_RECEPCIONES_REVISAR
+BEFORE INSERT OR UPDATE ON RECEPCIONES
+FOR EACH ROW EXECUTE FUNCTION FN_RECEPCIONES_REVISAR();
+
+-- Al entrar un lote: la cantidad en unidad de producción sale del factor del
+-- material; el costo por unidad de producción, del precio de la orden; y un
+-- perecible sin caducidad toma la de su vida útil.
+CREATE FUNCTION FN_LOTES_MATERIAL_INGRESO()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_factor    NUMERIC(12,4);
+    v_perecible BOOLEAN;
+    v_dias      SMALLINT;
+    v_precio    NUMERIC(10,4);
+BEGIN
+    SELECT MAT_FactorConversion, MAT_Perecible, MAT_DiasVidaUtil
+      INTO v_factor, v_perecible, v_dias
+      FROM MATERIALES
+     WHERE MAT_Codigo = NEW.MAT_Codigo;
+
+    NEW.LMA_CantidadInicial := COALESCE(NEW.LMA_CantidadInicial, NEW.LMA_CantidadRecibida * v_factor);
+
+    IF NEW.LMA_CostoUnitario IS NULL AND NEW.OCO_Codigo IS NOT NULL THEN
+        SELECT DOC_PrecioUnitario INTO v_precio
+          FROM DETALLES_ORDEN_COMPRA
+         WHERE OCO_Codigo = NEW.OCO_Codigo AND MAT_Codigo = NEW.MAT_Codigo;
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'La orden % no pidió el material %', NEW.OCO_Codigo, NEW.MAT_Codigo;
+        END IF;
+        NEW.LMA_CostoUnitario := v_precio / v_factor;
+    END IF;
+
+    IF v_perecible AND NEW.LMA_FechaCaducidad IS NULL THEN
+        IF v_dias IS NULL THEN
+            RAISE EXCEPTION 'El material % es perecible: el lote necesita fecha de caducidad', NEW.MAT_Codigo;
+        END IF;
+        NEW.LMA_FechaCaducidad := (NEW.LMA_FechaIngreso AT TIME ZONE 'America/Guayaquil')::DATE + v_dias;
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER TG_LOTES_MATERIAL_INGRESO
+BEFORE INSERT ON LOTES_MATERIAL
+FOR EACH ROW EXECUTE FUNCTION FN_LOTES_MATERIAL_INGRESO();
+
+
+/* -----------------------------------------------------------------------------
+   Inventario y producción
+   -------------------------------------------------------------------------- */
+
+-- Aprobar un ajuste revisa que ningún lote quede con saldo negativo y crea el
+-- asiento: lo que falta va a pérdida y lo que sobra a sobrantes, al costo de
+-- cada lote.
+CREATE FUNCTION FN_AJUSTES_INVENTARIO_APROBAR()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_lote     CHAR(10);
+    v_perdida  NUMERIC(12,2);
+    v_sobrante NUMERIC(12,2);
+    v_asiento  CHAR(10);
+BEGIN
+    IF NEW.AJU_Estado <> 'APR' OR OLD.AJU_Estado = 'APR' THEN
+        RETURN NULL;
+    END IF;
+    SELECT d.LMA_Codigo INTO v_lote
+      FROM DETALLES_AJUSTE d
+      JOIN VW_LOTES_SALDO s ON s.LMA_Codigo = d.LMA_Codigo
+     WHERE d.AJU_Codigo = NEW.AJU_Codigo
+       AND s.LMA_Saldo < 0
+     LIMIT 1;
+    IF FOUND THEN
+        RAISE EXCEPTION 'El ajuste % deja el lote % con saldo negativo', NEW.AJU_Codigo, v_lote;
+    END IF;
+
+    SELECT ROUND(SUM(-d.DAJ_Cantidad * l.LMA_CostoUnitario) FILTER (WHERE d.DAJ_Cantidad < 0), 2),
+           ROUND(SUM(d.DAJ_Cantidad * l.LMA_CostoUnitario) FILTER (WHERE d.DAJ_Cantidad > 0), 2)
+      INTO v_perdida, v_sobrante
+      FROM DETALLES_AJUSTE d
+      JOIN LOTES_MATERIAL l ON l.LMA_Codigo = d.LMA_Codigo
+     WHERE d.AJU_Codigo = NEW.AJU_Codigo;
+    IF v_perdida IS NULL AND v_sobrante IS NULL THEN
+        RAISE EXCEPTION 'El ajuste % no tiene lotes', NEW.AJU_Codigo;
+    END IF;
+
+    v_asiento := FN_ASIENTO_NUEVO('INV', NEW.AJU_Codigo, 'Ajuste de inventario: ' || NEW.AJU_Motivo);
+    PERFORM FN_ASIENTO_LINEA(v_asiento, '5.2.04', v_perdida, 0);
+    PERFORM FN_ASIENTO_LINEA(v_asiento, '1.1.03.01', v_sobrante, v_perdida);
+    PERFORM FN_ASIENTO_LINEA(v_asiento, '4.1.02', 0, v_sobrante);
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER TG_AJUSTES_INVENTARIO_APROBAR
+AFTER UPDATE OF AJU_Estado ON AJUSTES_INVENTARIO
+FOR EACH ROW EXECUTE FUNCTION FN_AJUSTES_INVENTARIO_APROBAR();
+
+-- Aprobar una orden de producción descuenta de los lotes lo que pide la
+-- receta. Para cada material se recorren sus lotes recibidos, con saldo y sin
+-- caducar, en el orden de su método:
+--   FEFO  la caducidad más cercana primero
+--   FIFO  el ingreso más antiguo primero
+--   LIFO  el ingreso más reciente primero
+--   PROM  como FIFO, pero al costo promedio ponderado de esos lotes
+-- Cada lote usado queda en CONSUMOS_PRODUCCION. Si no alcanza, no se aprueba.
+-- Después crea el asiento: productos terminados al DEBE, materia prima al HABER.
+CREATE FUNCTION FN_ORDENES_PRODUCCION_APROBAR()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_receta   RECORD;
+    v_lote     RECORD;
+    v_falta    NUMERIC(14,3);
+    v_toma     NUMERIC(14,3);
+    v_promedio NUMERIC(18,10);
+    v_costo    NUMERIC(12,2);
+    v_asiento  CHAR(10);
+BEGIN
+    IF NEW.ORP_Estado <> 'APR' OR OLD.ORP_Estado = 'APR' THEN
+        RETURN NULL;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM RECETAS
+                    WHERE PRO_Codigo = NEW.PRO_Codigo AND TAM_Codigo = NEW.TAM_Codigo) THEN
+        RAISE EXCEPTION 'El producto % en el tamaño % no tiene receta', NEW.PRO_Codigo, NEW.TAM_Codigo;
+    END IF;
+
+    FOR v_receta IN
+        SELECT r.MAT_Codigo, m.MAT_Nombre, mc.MCO_Sigla, u.UMI_Abreviatura,
+               r.RCT_Cantidad * NEW.ORP_Cantidad AS necesita
+          FROM RECETAS r
+          JOIN MATERIALES m      ON m.MAT_Codigo = r.MAT_Codigo
+          JOIN METODOS_COSTEO mc ON mc.MCO_Codigo = m.MCO_Codigo
+          JOIN UNIDADES_MEDIDA u ON u.UMI_Codigo = m.UMI_CodigoProduccion
+         WHERE r.PRO_Codigo = NEW.PRO_Codigo
+           AND r.TAM_Codigo = NEW.TAM_Codigo
+    LOOP
+        v_falta := v_receta.necesita;
+        v_promedio := NULL;
+        IF v_receta.MCO_Sigla = 'PROM' THEN
+            SELECT SUM(LMA_Saldo * LMA_CostoUnitario) / NULLIF(SUM(LMA_Saldo), 0)
+              INTO v_promedio
+              FROM VW_LOTES_SALDO
+             WHERE MAT_Codigo = v_receta.MAT_Codigo
+               AND LMA_Disponible;
+        END IF;
+
+        FOR v_lote IN
+            SELECT LMA_Codigo, LMA_Saldo, LMA_CostoUnitario
+              FROM VW_LOTES_SALDO
+             WHERE MAT_Codigo = v_receta.MAT_Codigo
+               AND LMA_Disponible
+             ORDER BY CASE WHEN v_receta.MCO_Sigla = 'FEFO' THEN LMA_FechaCaducidad END ASC NULLS LAST,
+                      CASE WHEN v_receta.MCO_Sigla = 'LIFO' THEN LMA_FechaIngreso END DESC,
+                      LMA_FechaIngreso,
+                      LMA_Codigo
+        LOOP
+            EXIT WHEN v_falta <= 0;
+            v_toma := LEAST(v_lote.LMA_Saldo, v_falta);
+            INSERT INTO CONSUMOS_PRODUCCION (ORP_Codigo, LMA_Codigo, CPR_Cantidad, CPR_CostoUnitario)
+            VALUES (NEW.ORP_Codigo, v_lote.LMA_Codigo, v_toma, COALESCE(v_promedio, v_lote.LMA_CostoUnitario));
+            v_falta := v_falta - v_toma;
+        END LOOP;
+
+        IF v_falta > 0 THEN
+            RAISE EXCEPTION 'No alcanza %: faltan % %', v_receta.MAT_Nombre, v_falta, v_receta.UMI_Abreviatura;
+        END IF;
+    END LOOP;
+
+    SELECT ROUND(SUM(CPR_Cantidad * CPR_CostoUnitario), 2) INTO v_costo
+      FROM CONSUMOS_PRODUCCION
+     WHERE ORP_Codigo = NEW.ORP_Codigo;
+    v_asiento := FN_ASIENTO_NUEVO('PRO', NEW.ORP_Codigo, 'Producción, orden ' || NEW.ORP_Codigo);
+    PERFORM FN_ASIENTO_LINEA(v_asiento, '1.1.03.02', v_costo, 0);
+    PERFORM FN_ASIENTO_LINEA(v_asiento, '1.1.03.01', 0, v_costo);
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER TG_ORDENES_PRODUCCION_APROBAR
+AFTER UPDATE OF ORP_Estado ON ORDENES_PRODUCCION
+FOR EACH ROW EXECUTE FUNCTION FN_ORDENES_PRODUCCION_APROBAR();
+
+
+/* -----------------------------------------------------------------------------
+   Ventas y nómina
+   -------------------------------------------------------------------------- */
+
+-- Facturar crea el asiento de la venta: caja al DEBE; ventas (con el envío)
+-- e IVA cobrado al HABER. Si esos productos tienen costo de producción, suma
+-- el costo de ventas contra productos terminados. Anular la factura crea el
+-- asiento contrario.
+CREATE FUNCTION FN_FACTURAS_ASIENTO()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_total   RECORD;
+    v_costo   NUMERIC(12,2);
+    v_origen  CHAR(10);
+    v_asiento CHAR(10);
+    v_numero  TEXT := NEW.FAC_Establecimiento || '-' || NEW.FAC_PuntoEmision || '-' || NEW.FAC_Secuencial;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        SELECT * INTO v_total FROM VW_PEDIDOS_TOTALES WHERE PED_Codigo = NEW.PED_Codigo;
+        SELECT ROUND(SUM(d.DPE_Cantidad * e.PTA_CostoPromedio), 2) INTO v_costo
+          FROM DETALLES_PEDIDO d
+          JOIN VW_EXISTENCIAS_PRODUCTOS e ON e.PRO_Codigo = d.PRO_Codigo AND e.TAM_Codigo = d.TAM_Codigo
+         WHERE d.PED_Codigo = NEW.PED_Codigo;
+
+        v_asiento := FN_ASIENTO_NUEVO('VEN', NEW.FAC_Codigo, 'Venta, factura ' || v_numero);
+        PERFORM FN_ASIENTO_LINEA(v_asiento, '1.1.01.01', v_total.PED_Total, 0);
+        PERFORM FN_ASIENTO_LINEA(v_asiento, '4.1.01', 0,
+            v_total.PED_Subtotal0 + v_total.PED_SubtotalGravado + v_total.PED_CostoEnvio);
+        PERFORM FN_ASIENTO_LINEA(v_asiento, '2.1.02.01', 0, v_total.PED_Iva);
+        PERFORM FN_ASIENTO_LINEA(v_asiento, '5.1.01', v_costo, 0);
+        PERFORM FN_ASIENTO_LINEA(v_asiento, '1.1.03.02', 0, v_costo);
+    ELSIF OLD.FAC_FechaAnulacion IS NULL AND NEW.FAC_FechaAnulacion IS NOT NULL THEN
+        SELECT ASI_Codigo INTO v_origen
+          FROM ASIENTOS
+         WHERE ASI_Origen = 'VEN' AND ASI_Referencia = NEW.FAC_Codigo
+         ORDER BY ASI_Codigo
+         LIMIT 1;
+        v_asiento := FN_ASIENTO_NUEVO('VEN', NEW.FAC_Codigo, 'Anulación de la factura ' || v_numero);
+        INSERT INTO DETALLES_ASIENTO (ASI_Codigo, CUE_Codigo, DAS_Debe, DAS_Haber)
+        SELECT v_asiento, CUE_Codigo, DAS_Haber, DAS_Debe
+          FROM DETALLES_ASIENTO
+         WHERE ASI_Codigo = v_origen;
+    END IF;
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER TG_FACTURAS_ASIENTO
+AFTER INSERT OR UPDATE OF FAC_FechaAnulacion ON FACTURAS
+FOR EACH ROW EXECUTE FUNCTION FN_FACTURAS_ASIENTO();
+
+-- Un rol nuevo empieza con 30 días del sueldo del cargo actual y el aporte
+-- personal al IESS (9,45 % del sueldo).
+CREATE FUNCTION FN_NOMINAS_INICIAR()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_sueldo NUMERIC(8,2);
+BEGIN
+    SELECT ECA_Sueldo INTO v_sueldo
+      FROM EMPLEADOS_CARGOS
+     WHERE EMP_Codigo = NEW.EMP_Codigo AND ECA_FechaFin IS NULL;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'El empleado % no tiene un cargo actual', NEW.EMP_Codigo;
+    END IF;
+    INSERT INTO DETALLES_NOMINA (NOM_Codigo, CNO_Codigo, DNO_Cantidad, DNO_Valor)
+    SELECT NEW.NOM_Codigo, c.CNO_Codigo, v.cantidad, v.valor
+      FROM (VALUES ('1000', 30, v_sueldo),
+                   ('2000', 1,  ROUND(v_sueldo * 0.0945, 2))) AS v (numero, cantidad, valor)
+      JOIN CONCEPTOS_NOMINA c ON c.CNO_Numero = v.numero;
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER TG_NOMINAS_INICIAR
+AFTER INSERT ON NOMINAS
+FOR EACH ROW EXECUTE FUNCTION FN_NOMINAS_INICIAR();
+
+-- Aprobar el rol crea su asiento: cada ingreso al DEBE de su cuenta de gasto,
+-- cada descuento al HABER de su cuenta, y el neto al HABER de bancos.
+CREATE FUNCTION FN_NOMINAS_APROBAR()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_linea   RECORD;
+    v_neto    NUMERIC(12,2) := 0;
+    v_asiento CHAR(10);
+BEGIN
+    IF NEW.NOM_Estado <> 'APR' OR OLD.NOM_Estado = 'APR' THEN
+        RETURN NULL;
+    END IF;
+    v_asiento := FN_ASIENTO_NUEVO('NOM', NEW.NOM_Codigo,
+        format('Rol de pagos %s/%s del empleado %s', NEW.NOM_Mes, NEW.NOM_Anio, NEW.EMP_Codigo));
+    FOR v_linea IN
+        SELECT cu.CUE_Numero, c.CNO_Tipo, d.DNO_Valor
+          FROM DETALLES_NOMINA d
+          JOIN CONCEPTOS_NOMINA c   ON c.CNO_Codigo = d.CNO_Codigo
+          JOIN CUENTAS_CONTABLES cu ON cu.CUE_Codigo = c.CUE_Codigo
+         WHERE d.NOM_Codigo = NEW.NOM_Codigo
+    LOOP
+        IF v_linea.CNO_Tipo = 'ING' THEN
+            PERFORM FN_ASIENTO_LINEA(v_asiento, v_linea.CUE_Numero, v_linea.DNO_Valor, 0);
+            v_neto := v_neto + v_linea.DNO_Valor;
+        ELSE
+            PERFORM FN_ASIENTO_LINEA(v_asiento, v_linea.CUE_Numero, 0, v_linea.DNO_Valor);
+            v_neto := v_neto - v_linea.DNO_Valor;
+        END IF;
+    END LOOP;
+    IF v_neto < 0 THEN
+        RAISE EXCEPTION 'En el rol % los descuentos superan a los ingresos', NEW.NOM_Codigo;
+    END IF;
+    PERFORM FN_ASIENTO_LINEA(v_asiento, '1.1.01.02', 0, v_neto);
+    RETURN NULL;
+END;
+$$;
+
+CREATE TRIGGER TG_NOMINAS_APROBAR
+AFTER UPDATE OF NOM_Estado ON NOMINAS
+FOR EACH ROW EXECUTE FUNCTION FN_NOMINAS_APROBAR();
+
+
 /* =============================================================================
    Vistas: lo que se calcula no se guarda
    ========================================================================== */
@@ -799,6 +2082,271 @@ SELECT p.PRO_Codigo,
   JOIN PRODUCTOS_TAMANOS pt ON pt.PRO_Codigo = p.PRO_Codigo
   JOIN TAMANOS t            ON t.TAM_Codigo = pt.TAM_Codigo
   LEFT JOIN ETIQUETAS e     ON e.ETI_Codigo = p.ETI_Codigo;
+
+-- Empleados con su cargo actual, su departamento, su sueldo y su edad.
+CREATE VIEW VW_EMPLEADOS AS
+SELECT e.EMP_Codigo,
+       e.EMP_Cedula,
+       e.EMP_PrimerApellido || COALESCE(' ' || e.EMP_SegundoApellido, '') || ' '
+           || e.EMP_PrimerNombre || COALESCE(' ' || e.EMP_SegundoNombre, '') AS EMP_NombreCompleto,
+       c.CAR_Nombre,
+       d.DEP_Nombre,
+       ec.ECA_Sueldo,
+       ec.ECA_FechaInicio,
+       date_part('year', age(e.EMP_FechaNacimiento))::INTEGER AS EMP_Edad,
+       e.EMP_Activo
+  FROM EMPLEADOS e
+  LEFT JOIN EMPLEADOS_CARGOS ec ON ec.EMP_Codigo = e.EMP_Codigo AND ec.ECA_FechaFin IS NULL
+  LEFT JOIN CARGOS c            ON c.CAR_Codigo = ec.CAR_Codigo
+  LEFT JOIN DEPARTAMENTOS d     ON d.DEP_Codigo = c.DEP_Codigo;
+
+-- Proveedores con el tipo de persona, que sale de la identificación: cédula,
+-- o RUC con tercer dígito menor que 6, es persona natural.
+CREATE VIEW VW_PROVEEDORES AS
+SELECT p.PVD_Codigo,
+       p.PVD_Identificacion,
+       p.PVD_RazonSocial,
+       CASE WHEN p.TID_Codigo = '05' OR SUBSTRING(p.PVD_Identificacion, 3, 1)::INTEGER < 6
+            THEN 'Natural' ELSE 'Jurídica' END AS PVD_TipoPersona,
+       p.PVD_Telefono,
+       p.PVD_Celular,
+       p.PVD_Correo,
+       c.CAN_Nombre,
+       pr.PRV_Nombre,
+       p.PVD_Direccion,
+       p.PVD_Activo
+  FROM PROVEEDORES p
+  JOIN CANTONES c    ON c.CAN_Codigo = p.CAN_Codigo
+  JOIN PROVINCIAS pr ON pr.PRV_Codigo = c.PRV_Codigo;
+
+-- Subtotal, IVA y total de cada orden de compra.
+CREATE VIEW VW_ORDENES_COMPRA_TOTALES AS
+WITH lineas AS (
+    SELECT OCO_Codigo,
+           ROUND(DOC_Cantidad * DOC_PrecioUnitario, 2)                           AS subtotal,
+           ROUND(DOC_Cantidad * DOC_PrecioUnitario * DOC_PorcentajeIva / 100, 2) AS iva
+      FROM DETALLES_ORDEN_COMPRA
+)
+SELECT o.OCO_Codigo,
+       o.OCO_Fecha,
+       o.OCO_Estado,
+       p.PVD_RazonSocial,
+       COALESCE(SUM(l.subtotal), 0)           AS OCO_Subtotal,
+       COALESCE(SUM(l.iva), 0)                AS OCO_Iva,
+       COALESCE(SUM(l.subtotal + l.iva), 0)   AS OCO_Total
+  FROM ORDENES_COMPRA o
+  JOIN PROVEEDORES p   ON p.PVD_Codigo = o.PVD_Codigo
+  LEFT JOIN lineas l   ON l.OCO_Codigo = o.OCO_Codigo
+ GROUP BY o.OCO_Codigo, p.PVD_RazonSocial;
+
+-- Lo pedido contra lo recibido (en recepciones ya recibidas), en la unidad
+-- de compra. Diferencia distinta de 0: la orden no está completa.
+CREATE VIEW VW_ORDENES_COMPRA_RECIBIDO AS
+SELECT d.OCO_Codigo,
+       d.MAT_Codigo,
+       m.MAT_Nombre,
+       u.UMI_Abreviatura                                                     AS UMI_Compra,
+       d.DOC_Cantidad                                                        AS DOC_Pedido,
+       COALESCE(SUM(l.LMA_CantidadRecibida) FILTER (WHERE r.RCP_Estado = 'REC'), 0) AS DOC_Recibido,
+       d.DOC_Cantidad
+           - COALESCE(SUM(l.LMA_CantidadRecibida) FILTER (WHERE r.RCP_Estado = 'REC'), 0) AS DOC_Diferencia
+  FROM DETALLES_ORDEN_COMPRA d
+  JOIN MATERIALES m          ON m.MAT_Codigo = d.MAT_Codigo
+  JOIN UNIDADES_MEDIDA u     ON u.UMI_Codigo = m.UMI_CodigoCompra
+  LEFT JOIN LOTES_MATERIAL l ON l.OCO_Codigo = d.OCO_Codigo AND l.MAT_Codigo = d.MAT_Codigo
+  LEFT JOIN RECEPCIONES r    ON r.RCP_Codigo = l.RCP_Codigo
+ GROUP BY d.OCO_Codigo, d.MAT_Codigo, m.MAT_Nombre, u.UMI_Abreviatura;
+
+-- Saldo de cada lote: lo que entró, más los ajustes aprobados, menos lo que
+-- consumió la producción. Un lote cuenta cuando su recepción ya se recibió
+-- (o si es inventario inicial). Disponible = recibido, con saldo y sin caducar.
+CREATE VIEW VW_LOTES_SALDO AS
+WITH ajustes AS (
+    SELECT d.LMA_Codigo, SUM(d.DAJ_Cantidad) AS cantidad
+      FROM DETALLES_AJUSTE d
+      JOIN AJUSTES_INVENTARIO a ON a.AJU_Codigo = d.AJU_Codigo
+     WHERE a.AJU_Estado = 'APR'
+     GROUP BY d.LMA_Codigo
+),
+consumos AS (
+    SELECT LMA_Codigo, SUM(CPR_Cantidad) AS cantidad
+      FROM CONSUMOS_PRODUCCION
+     GROUP BY LMA_Codigo
+),
+lotes AS (
+    SELECT l.LMA_Codigo,
+           l.MAT_Codigo,
+           l.LMA_FechaIngreso,
+           l.LMA_FechaCaducidad,
+           l.LMA_CostoUnitario,
+           l.LMA_CantidadInicial,
+           COALESCE(a.cantidad, 0) AS LMA_Ajustado,
+           COALESCE(c.cantidad, 0) AS LMA_Consumido,
+           l.LMA_CantidadInicial + COALESCE(a.cantidad, 0) - COALESCE(c.cantidad, 0) AS LMA_Saldo,
+           (r.RCP_Codigo IS NULL OR r.RCP_Estado = 'REC')                            AS LMA_Recibido,
+           COALESCE(l.LMA_FechaCaducidad < CURRENT_DATE, FALSE)                      AS LMA_Caducado
+      FROM LOTES_MATERIAL l
+      LEFT JOIN RECEPCIONES r ON r.RCP_Codigo = l.RCP_Codigo
+      LEFT JOIN ajustes a     ON a.LMA_Codigo = l.LMA_Codigo
+      LEFT JOIN consumos c    ON c.LMA_Codigo = l.LMA_Codigo
+)
+SELECT lotes.*,
+       LMA_Recibido AND NOT LMA_Caducado AND LMA_Saldo > 0 AS LMA_Disponible
+  FROM lotes;
+
+-- Existencias de cada material (lotes recibidos y sin caducar), en las dos
+-- unidades, su valor al costo y si está bajo el mínimo.
+CREATE VIEW VW_EXISTENCIAS_MATERIALES AS
+SELECT m.MAT_Codigo,
+       m.MAT_Nombre,
+       mc.MCO_Sigla,
+       COALESCE(SUM(s.LMA_Saldo), 0)                                         AS MAT_Existencia,
+       up.UMI_Abreviatura                                                    AS UMI_Produccion,
+       ROUND(COALESCE(SUM(s.LMA_Saldo), 0) / m.MAT_FactorConversion, 2)      AS MAT_ExistenciaCompra,
+       uc.UMI_Abreviatura                                                    AS UMI_Compra,
+       ROUND(COALESCE(SUM(s.LMA_Saldo * s.LMA_CostoUnitario), 0), 2)         AS MAT_Valor,
+       COALESCE(SUM(s.LMA_Saldo), 0) < m.MAT_StockMinimo                     AS MAT_BajoMinimo
+  FROM MATERIALES m
+  JOIN METODOS_COSTEO mc   ON mc.MCO_Codigo = m.MCO_Codigo
+  JOIN UNIDADES_MEDIDA up  ON up.UMI_Codigo = m.UMI_CodigoProduccion
+  JOIN UNIDADES_MEDIDA uc  ON uc.UMI_Codigo = m.UMI_CodigoCompra
+  LEFT JOIN VW_LOTES_SALDO s ON s.MAT_Codigo = m.MAT_Codigo AND s.LMA_Recibido AND NOT s.LMA_Caducado
+ GROUP BY m.MAT_Codigo, mc.MCO_Sigla, up.UMI_Abreviatura, uc.UMI_Abreviatura;
+
+-- Kardex: cada entrada y salida de cada material, por lote, con su costo y
+-- el saldo del material después de cada movimiento. Se arma con lo que ya
+-- está guardado (lotes, ajustes y consumos), así que nada se guarda dos veces.
+CREATE VIEW VW_KARDEX AS
+WITH movimientos AS (
+    SELECT l.MAT_Codigo, l.LMA_Codigo, l.LMA_FechaIngreso AS fecha,
+           CASE WHEN l.RCP_Codigo IS NULL THEN 'Inventario inicial' ELSE 'Compra' END AS tipo,
+           COALESCE(l.RCP_Codigo, l.LMA_Codigo) AS documento,
+           l.LMA_CantidadInicial AS cantidad, l.LMA_CostoUnitario AS costo
+      FROM LOTES_MATERIAL l
+      LEFT JOIN RECEPCIONES r ON r.RCP_Codigo = l.RCP_Codigo
+     WHERE r.RCP_Codigo IS NULL OR r.RCP_Estado = 'REC'
+    UNION ALL
+    SELECT l.MAT_Codigo, d.LMA_Codigo, a.AJU_Fecha, 'Ajuste', a.AJU_Codigo,
+           d.DAJ_Cantidad, l.LMA_CostoUnitario
+      FROM DETALLES_AJUSTE d
+      JOIN AJUSTES_INVENTARIO a ON a.AJU_Codigo = d.AJU_Codigo
+      JOIN LOTES_MATERIAL l     ON l.LMA_Codigo = d.LMA_Codigo
+     WHERE a.AJU_Estado = 'APR'
+    UNION ALL
+    SELECT l.MAT_Codigo, c.LMA_Codigo, o.ORP_Fecha, 'Producción', o.ORP_Codigo,
+           -c.CPR_Cantidad, c.CPR_CostoUnitario
+      FROM CONSUMOS_PRODUCCION c
+      JOIN ORDENES_PRODUCCION o ON o.ORP_Codigo = c.ORP_Codigo
+      JOIN LOTES_MATERIAL l     ON l.LMA_Codigo = c.LMA_Codigo
+)
+SELECT mv.MAT_Codigo,
+       m.MAT_Nombre,
+       mv.fecha                          AS KAR_Fecha,
+       mv.tipo                           AS KAR_Tipo,
+       mv.documento                      AS KAR_Documento,
+       mv.LMA_Codigo,
+       mv.cantidad                       AS KAR_Cantidad,
+       mv.costo                          AS KAR_CostoUnitario,
+       ROUND(mv.cantidad * mv.costo, 2)  AS KAR_Valor,
+       SUM(mv.cantidad) OVER (PARTITION BY mv.MAT_Codigo
+                              ORDER BY mv.fecha, mv.documento, mv.LMA_Codigo
+                              ROWS UNBOUNDED PRECEDING) AS KAR_Saldo
+  FROM movimientos mv
+  JOIN MATERIALES m ON m.MAT_Codigo = mv.MAT_Codigo;
+
+-- Lo que costó cada tanda producida y cada unidad de ella.
+CREATE VIEW VW_COSTO_PRODUCCION AS
+SELECT o.ORP_Codigo,
+       o.ORP_Fecha,
+       o.PRO_Codigo,
+       o.TAM_Codigo,
+       p.PRO_Nombre,
+       t.TAM_Descripcion,
+       o.ORP_Cantidad,
+       ROUND(SUM(c.CPR_Cantidad * c.CPR_CostoUnitario), 2)                  AS ORP_CostoTotal,
+       ROUND(SUM(c.CPR_Cantidad * c.CPR_CostoUnitario) / o.ORP_Cantidad, 4) AS ORP_CostoUnitario
+  FROM ORDENES_PRODUCCION o
+  JOIN PRODUCTOS p            ON p.PRO_Codigo = o.PRO_Codigo
+  JOIN TAMANOS t              ON t.TAM_Codigo = o.TAM_Codigo
+  JOIN CONSUMOS_PRODUCCION c  ON c.ORP_Codigo = o.ORP_Codigo
+ WHERE o.ORP_Estado = 'APR'
+ GROUP BY o.ORP_Codigo, p.PRO_Nombre, t.TAM_Descripcion;
+
+-- Por producto y tamaño: lo producido, lo vendido (pedidos no cancelados),
+-- lo que queda y el costo promedio de una unidad.
+CREATE VIEW VW_EXISTENCIAS_PRODUCTOS AS
+WITH producido AS (
+    SELECT PRO_Codigo, TAM_Codigo, SUM(ORP_Cantidad) AS cantidad, SUM(ORP_CostoTotal) AS costo
+      FROM VW_COSTO_PRODUCCION
+     GROUP BY PRO_Codigo, TAM_Codigo
+),
+vendido AS (
+    SELECT d.PRO_Codigo, d.TAM_Codigo, SUM(d.DPE_Cantidad) AS cantidad
+      FROM DETALLES_PEDIDO d
+      JOIN PEDIDOS p        ON p.PED_Codigo = d.PED_Codigo
+      JOIN ESTADOS_PEDIDO e ON e.EPE_Codigo = p.EPE_Codigo
+     WHERE e.EPE_Nombre <> 'Cancelado'
+     GROUP BY d.PRO_Codigo, d.TAM_Codigo
+)
+SELECT pt.PRO_Codigo,
+       pt.TAM_Codigo,
+       p.PRO_Nombre,
+       t.TAM_Descripcion,
+       COALESCE(pr.cantidad, 0)                            AS PTA_Producido,
+       COALESCE(v.cantidad, 0)                             AS PTA_Vendido,
+       COALESCE(pr.cantidad, 0) - COALESCE(v.cantidad, 0)  AS PTA_Existencia,
+       ROUND(pr.costo / pr.cantidad, 4)                    AS PTA_CostoPromedio,
+       pt.PTA_Precio
+  FROM PRODUCTOS_TAMANOS pt
+  JOIN PRODUCTOS p      ON p.PRO_Codigo = pt.PRO_Codigo
+  JOIN TAMANOS t        ON t.TAM_Codigo = pt.TAM_Codigo
+  LEFT JOIN producido pr ON pr.PRO_Codigo = pt.PRO_Codigo AND pr.TAM_Codigo = pt.TAM_Codigo
+  LEFT JOIN vendido v    ON v.PRO_Codigo = pt.PRO_Codigo AND v.TAM_Codigo = pt.TAM_Codigo;
+
+-- Ingresos, descuentos y neto a pagar de cada rol de pagos.
+CREATE VIEW VW_NOMINAS AS
+SELECT n.NOM_Codigo,
+       n.EMP_Codigo,
+       n.NOM_Anio,
+       n.NOM_Mes,
+       n.NOM_Estado,
+       COALESCE(SUM(d.DNO_Valor) FILTER (WHERE c.CNO_Tipo = 'ING'), 0) AS NOM_Ingresos,
+       COALESCE(SUM(d.DNO_Valor) FILTER (WHERE c.CNO_Tipo = 'DES'), 0) AS NOM_Descuentos,
+       COALESCE(SUM(d.DNO_Valor) FILTER (WHERE c.CNO_Tipo = 'ING'), 0)
+           - COALESCE(SUM(d.DNO_Valor) FILTER (WHERE c.CNO_Tipo = 'DES'), 0) AS NOM_Neto
+  FROM NOMINAS n
+  LEFT JOIN DETALLES_NOMINA d  ON d.NOM_Codigo = n.NOM_Codigo
+  LEFT JOIN CONCEPTOS_NOMINA c ON c.CNO_Codigo = d.CNO_Codigo
+ GROUP BY n.NOM_Codigo;
+
+-- Cada asiento con la suma del DEBE y del HABER, y si cuadra.
+CREATE VIEW VW_ASIENTOS AS
+SELECT a.ASI_Codigo,
+       a.ASI_Fecha,
+       a.ASI_Origen,
+       a.ASI_Referencia,
+       a.ASI_Descripcion,
+       a.ASI_Estado,
+       COALESCE(SUM(d.DAS_Debe), 0)  AS ASI_Debe,
+       COALESCE(SUM(d.DAS_Haber), 0) AS ASI_Haber,
+       COALESCE(SUM(d.DAS_Debe), 0) = COALESCE(SUM(d.DAS_Haber), 0) AS ASI_Cuadra
+  FROM ASIENTOS a
+  LEFT JOIN DETALLES_ASIENTO d ON d.ASI_Codigo = a.ASI_Codigo
+ GROUP BY a.ASI_Codigo;
+
+-- El mayor: saldo de cada cuenta de detalle con los asientos aprobados.
+CREATE VIEW VW_SALDOS_CUENTAS AS
+SELECT c.CUE_Numero,
+       c.CUE_Nombre,
+       COALESCE(SUM(d.DAS_Debe), 0)               AS CUE_Debe,
+       COALESCE(SUM(d.DAS_Haber), 0)              AS CUE_Haber,
+       COALESCE(SUM(d.DAS_Debe - d.DAS_Haber), 0) AS CUE_Saldo
+  FROM CUENTAS_CONTABLES c
+  LEFT JOIN DETALLES_ASIENTO d
+         ON d.CUE_Codigo = c.CUE_Codigo
+        AND EXISTS (SELECT 1 FROM ASIENTOS a WHERE a.ASI_Codigo = d.ASI_Codigo AND a.ASI_Estado = 'APR')
+ WHERE c.CUE_Tipo = 'DET'
+ GROUP BY c.CUE_Codigo;
 
 
 /* =============================================================================
@@ -971,5 +2519,256 @@ INSERT INTO METODOS_PAGO (MPA_Nombre, MPA_CodigoSri, MPA_UsaTarjeta) VALUES
     ('Efectivo',           '01', FALSE),
     ('Tarjeta de débito',  '16', TRUE),
     ('Tarjeta de crédito', '19', TRUE);
+
+-- Permisos de los módulos internos (compras, bodega, producción, nómina y
+-- contabilidad). Los usa el personal, no el cliente del sitio.
+INSERT INTO PERMISOS (PER_Nombre, PER_Descripcion) VALUES
+    ('compras.aprobar',      'Aprobar o anular órdenes de compra'),
+    ('bodega.recibir',       'Registrar lo que llega de una orden de compra'),
+    ('inventario.ajustar',   'Hacer y aprobar ajustes de inventario'),
+    ('produccion.registrar', 'Registrar y aprobar órdenes de producción'),
+    ('nomina.aprobar',       'Generar y aprobar roles de pago'),
+    ('contabilidad.aprobar', 'Aprobar o anular asientos contables');
+
+INSERT INTO ROLES_PERMISOS (ROL_Codigo, PER_Codigo)
+SELECT r.ROL_Codigo, p.PER_Codigo
+  FROM (VALUES
+        ('Administrador', 'compras.aprobar'),
+        ('Administrador', 'bodega.recibir'),
+        ('Administrador', 'inventario.ajustar'),
+        ('Administrador', 'produccion.registrar'),
+        ('Administrador', 'nomina.aprobar'),
+        ('Administrador', 'contabilidad.aprobar'),
+        ('Empleado',      'bodega.recibir'),
+        ('Empleado',      'produccion.registrar')
+       ) AS v (rol, permiso)
+  JOIN ROLES r    ON r.ROL_Nombre = v.rol
+  JOIN PERMISOS p ON p.PER_Nombre = v.permiso;
+
+INSERT INTO DEPARTAMENTOS (DEP_Nombre) VALUES
+    ('Producción'), ('Ventas'), ('Bodega'), ('Compras'), ('Administración');
+
+INSERT INTO CARGOS (DEP_Codigo, CAR_Nombre, CAR_Funciones)
+SELECT d.DEP_Codigo, v.cargo, v.funciones
+  FROM (VALUES
+        ('Producción',     'Jefe de producción',     'Planifica las tandas y aprueba las órdenes de producción'),
+        ('Producción',     'Panadero',               'Prepara y hornea el pan'),
+        ('Producción',     'Pastelero',              'Prepara pasteles, galletas y dulces'),
+        ('Producción',     'Ayudante de panadería',  'Pesa ingredientes, limpia y empaca'),
+        ('Ventas',         'Cajero',                 'Cobra, factura y entrega los pedidos en el local'),
+        ('Ventas',         'Repartidor',             'Lleva los pedidos a domicilio'),
+        ('Bodega',         'Bodeguero',              'Recibe lo comprado, cuida los lotes y hace los conteos'),
+        ('Compras',        'Jefe de compras',        'Elige proveedores y genera las órdenes de compra'),
+        ('Administración', 'Administrador',          'Aprueba compras, ajustes y roles de pago'),
+        ('Administración', 'Contador',               'Revisa y aprueba los asientos contables')
+       ) AS v (departamento, cargo, funciones)
+  JOIN DEPARTAMENTOS d ON d.DEP_Nombre = v.departamento;
+
+INSERT INTO UNIDADES_MEDIDA (UMI_Nombre, UMI_Abreviatura) VALUES
+    ('Gramo',             'g'),
+    ('Kilogramo',         'kg'),
+    ('Quintal',           'qq'),
+    ('Saco de 50 kg',     'saco'),
+    ('Mililitro',         'ml'),
+    ('Litro',             'L'),
+    ('Unidad',            'u'),
+    ('Cubeta de 30',      'cubeta'),
+    ('Paca de 12',        'paca12'),
+    ('Paca de 6',         'paca6');
+
+INSERT INTO METODOS_COSTEO (MCO_Sigla, MCO_Nombre) VALUES
+    ('FEFO', 'Primero en caducar, primero en salir'),
+    ('FIFO', 'Primero en entrar, primero en salir'),
+    ('LIFO', 'Último en entrar, primero en salir'),
+    ('PROM', 'Costo promedio ponderado');
+
+INSERT INTO TIPOS_MATERIAL (TMA_Nombre) VALUES
+    ('Harinas y cereales'), ('Lácteos y huevos'), ('Azúcares y chocolates'),
+    ('Grasas'), ('Levaduras y condimentos'), ('Frutas'), ('Bebidas para reventa');
+
+-- Materia prima e insumos. El factor pasa de la unidad de compra a la de
+-- producción (1 qq = 45359,2 g). Vida útil, método y mínimo son de ejemplo:
+-- los tiene que confirmar el negocio. El IVA sigue la misma suposición que
+-- el catálogo (lo básico 0 %, lo demás 15 %).
+INSERT INTO MATERIALES (TMA_Codigo, MCO_Codigo, TIV_Codigo, UMI_CodigoCompra, UMI_CodigoProduccion,
+                        MAT_Nombre, MAT_FactorConversion, MAT_Perecible, MAT_DiasVidaUtil, MAT_StockMinimo)
+SELECT tm.TMA_Codigo, mc.MCO_Codigo, t.TIV_Codigo, uc.UMI_Codigo, up.UMI_Codigo,
+       v.nombre, v.factor, v.dias IS NOT NULL, v.dias, v.minimo
+  FROM (VALUES
+        ('Harina de trigo',         'Harinas y cereales',      'FEFO', '0', 'qq',     'g',  45359.2, 180, 20000),
+        ('Avena en hojuelas',       'Harinas y cereales',      'FEFO', '0', 'kg',     'g',  1000,    180, 2000),
+        ('Galleta molida',          'Harinas y cereales',      'FIFO', '4', 'kg',     'g',  1000,    90,  1000),
+        ('Leche entera',            'Lácteos y huevos',        'FEFO', '0', 'L',      'ml', 1000,    7,   10000),
+        ('Queso fresco',            'Lácteos y huevos',        'FEFO', '0', 'kg',     'g',  1000,    10,  2000),
+        ('Queso crema',             'Lácteos y huevos',        'FEFO', '4', 'kg',     'g',  1000,    20,  1000),
+        ('Huevos',                  'Lácteos y huevos',        'FEFO', '0', 'cubeta', 'u',  30,      21,  60),
+        ('Azúcar',                  'Azúcares y chocolates',   'FIFO', '0', 'saco',   'g',  50000,   NULL, 10000),
+        ('Chocolate en barra',      'Azúcares y chocolates',   'FIFO', '4', 'kg',     'g',  1000,    180, 1000),
+        ('Cacao en polvo',          'Azúcares y chocolates',   'PROM', '4', 'kg',     'g',  1000,    NULL, 500),
+        ('Chispas de chocolate',    'Azúcares y chocolates',   'FIFO', '4', 'kg',     'g',  1000,    180, 500),
+        ('Grageas de colores',      'Azúcares y chocolates',   'PROM', '4', 'kg',     'g',  1000,    NULL, 200),
+        ('Mantequilla',             'Grasas',                  'FEFO', '0', 'kg',     'g',  1000,    60,  2000),
+        ('Levadura fresca',         'Levaduras y condimentos', 'FEFO', '0', 'kg',     'g',  1000,    30,  500),
+        ('Sal',                     'Levaduras y condimentos', 'PROM', '0', 'kg',     'g',  1000,    NULL, 1000),
+        ('Esencia de vainilla',     'Levaduras y condimentos', 'PROM', '4', 'L',      'ml', 1000,    NULL, 100),
+        ('Canela molida',           'Levaduras y condimentos', 'PROM', '0', 'kg',     'g',  1000,    NULL, 100),
+        ('Limón',                   'Frutas',                  'FEFO', '0', 'kg',     'g',  1000,    15,  500),
+        ('Coca-Cola de 500 ml',     'Bebidas para reventa',    'FEFO', '4', 'paca12', 'u',  12,      180, 24),
+        ('Coca-Cola de 1 L',        'Bebidas para reventa',    'FEFO', '4', 'paca12', 'u',  12,      180, 12),
+        ('Coca-Cola de 2 L',        'Bebidas para reventa',    'FEFO', '4', 'paca6',  'u',  6,       180, 6),
+        ('Fanta de 500 ml',         'Bebidas para reventa',    'FEFO', '4', 'paca12', 'u',  12,      180, 12),
+        ('Fanta de 1 L',            'Bebidas para reventa',    'FEFO', '4', 'paca12', 'u',  12,      180, 12),
+        ('Sprite de 500 ml',        'Bebidas para reventa',    'FEFO', '4', 'paca12', 'u',  12,      180, 12),
+        ('Sprite de 1 L',           'Bebidas para reventa',    'FEFO', '4', 'paca12', 'u',  12,      180, 12),
+        ('Agua de 500 ml',          'Bebidas para reventa',    'FIFO', '4', 'paca12', 'u',  12,      NULL, 24),
+        ('Agua de 1 L',             'Bebidas para reventa',    'FIFO', '4', 'paca12', 'u',  12,      NULL, 12),
+        ('Powerade de 500 ml',      'Bebidas para reventa',    'FEFO', '4', 'paca12', 'u',  12,      180, 12),
+        ('Powerade de 1 L',         'Bebidas para reventa',    'FEFO', '4', 'paca12', 'u',  12,      180, 12)
+       ) AS v (nombre, tipo, metodo, iva_sri, compra, produccion, factor, dias, minimo)
+  JOIN TIPOS_MATERIAL tm  ON tm.TMA_Nombre = v.tipo
+  JOIN METODOS_COSTEO mc  ON mc.MCO_Sigla = v.metodo
+  JOIN TARIFAS_IVA t      ON t.TIV_CodigoSri = v.iva_sri
+  JOIN UNIDADES_MEDIDA uc ON uc.UMI_Abreviatura = v.compra
+  JOIN UNIDADES_MEDIDA up ON up.UMI_Abreviatura = v.produccion;
+
+-- Lo que lleva UNA unidad de cada producto y tamaño. Son cantidades de
+-- ejemplo: las tiene que confirmar el panadero.
+INSERT INTO RECETAS (PRO_Codigo, TAM_Codigo, MAT_Codigo, RCT_Cantidad)
+SELECT p.PRO_Codigo, t.TAM_Codigo, m.MAT_Codigo, v.cantidad
+  FROM (VALUES
+        ('Pan redondo',                     'Único',  'Harina de trigo',      60),
+        ('Pan redondo',                     'Único',  'Azúcar',               4),
+        ('Pan redondo',                     'Único',  'Sal',                  1.2),
+        ('Pan redondo',                     'Único',  'Levadura fresca',      2),
+        ('Pan redondo',                     'Único',  'Mantequilla',          4),
+        ('Pan redondo',                     'Único',  'Huevos',               0.05),
+        ('Pan enrollado',                   'Único',  'Harina de trigo',      70),
+        ('Pan enrollado',                   'Único',  'Azúcar',               5),
+        ('Pan enrollado',                   'Único',  'Sal',                  1.2),
+        ('Pan enrollado',                   'Único',  'Levadura fresca',      2),
+        ('Pan enrollado',                   'Único',  'Mantequilla',          10),
+        ('Palanqueta',                      'Único',  'Harina de trigo',      90),
+        ('Palanqueta',                      'Único',  'Sal',                  1.8),
+        ('Palanqueta',                      'Único',  'Levadura fresca',      2.5),
+        ('Empanada de queso',               'Único',  'Harina de trigo',      50),
+        ('Empanada de queso',               'Único',  'Mantequilla',          12),
+        ('Empanada de queso',               'Único',  'Queso fresco',         30),
+        ('Empanada de queso',               'Único',  'Azúcar',               5),
+        ('Empanada de queso',               'Único',  'Huevos',               0.1),
+        ('Pan de chocolate',                'Único',  'Harina de trigo',      65),
+        ('Pan de chocolate',                'Único',  'Azúcar',               8),
+        ('Pan de chocolate',                'Único',  'Levadura fresca',      2),
+        ('Pan de chocolate',                'Único',  'Mantequilla',          6),
+        ('Pan de chocolate',                'Único',  'Chocolate en barra',   15),
+        ('Pan de chocolate',                'Único',  'Huevos',               0.05),
+        ('Pan redondo dulce',               'Único',  'Harina de trigo',      60),
+        ('Pan redondo dulce',               'Único',  'Azúcar',               10),
+        ('Pan redondo dulce',               'Único',  'Levadura fresca',      2),
+        ('Pan redondo dulce',               'Único',  'Mantequilla',          6),
+        ('Pan redondo dulce',               'Único',  'Huevos',               0.1),
+        ('Pan redondo dulce',               'Único',  'Grageas de colores',   3),
+        ('Suspiros',                        'Único',  'Huevos',               0.25),
+        ('Suspiros',                        'Único',  'Azúcar',               30),
+        ('Galletas',                        'Único',  'Harina de trigo',      25),
+        ('Galletas',                        'Único',  'Mantequilla',          12),
+        ('Galletas',                        'Único',  'Azúcar',               12),
+        ('Galletas',                        'Único',  'Huevos',               0.1),
+        ('Galletas',                        'Único',  'Chispas de chocolate', 8),
+        ('Rebanada de pastel de chocolate', 'Único',  'Harina de trigo',      30),
+        ('Rebanada de pastel de chocolate', 'Único',  'Azúcar',               30),
+        ('Rebanada de pastel de chocolate', 'Único',  'Huevos',               0.5),
+        ('Rebanada de pastel de chocolate', 'Único',  'Mantequilla',          15),
+        ('Rebanada de pastel de chocolate', 'Único',  'Cacao en polvo',       10),
+        ('Rebanada de pastel de chocolate', 'Único',  'Leche entera',         20),
+        ('Rebanada de pastel de chocolate', 'Único',  'Chocolate en barra',   20),
+        ('Rebanada de pastel de vainilla',  'Único',  'Harina de trigo',      30),
+        ('Rebanada de pastel de vainilla',  'Único',  'Azúcar',               30),
+        ('Rebanada de pastel de vainilla',  'Único',  'Huevos',               0.5),
+        ('Rebanada de pastel de vainilla',  'Único',  'Mantequilla',          15),
+        ('Rebanada de pastel de vainilla',  'Único',  'Leche entera',         25),
+        ('Rebanada de pastel de vainilla',  'Único',  'Esencia de vainilla',  2),
+        ('Rebanada de cheesecake de limón', 'Único',  'Queso crema',          60),
+        ('Rebanada de cheesecake de limón', 'Único',  'Azúcar',               20),
+        ('Rebanada de cheesecake de limón', 'Único',  'Huevos',               0.3),
+        ('Rebanada de cheesecake de limón', 'Único',  'Galleta molida',       25),
+        ('Rebanada de cheesecake de limón', 'Único',  'Mantequilla',          8),
+        ('Rebanada de cheesecake de limón', 'Único',  'Limón',                15),
+        ('Coca-Cola',                       '500 ml', 'Coca-Cola de 500 ml',  1),
+        ('Coca-Cola',                       '1 L',    'Coca-Cola de 1 L',     1),
+        ('Coca-Cola',                       '2 L',    'Coca-Cola de 2 L',     1),
+        ('Fanta',                           '500 ml', 'Fanta de 500 ml',      1),
+        ('Fanta',                           '1 L',    'Fanta de 1 L',         1),
+        ('Sprite',                          '500 ml', 'Sprite de 500 ml',     1),
+        ('Sprite',                          '1 L',    'Sprite de 1 L',        1),
+        ('Agua',                            '500 ml', 'Agua de 500 ml',       1),
+        ('Agua',                            '1 L',    'Agua de 1 L',          1),
+        ('Powerade',                        '500 ml', 'Powerade de 500 ml',   1),
+        ('Powerade',                        '1 L',    'Powerade de 1 L',      1),
+        ('Avena polaca',                    '300 ml', 'Leche entera',         240),
+        ('Avena polaca',                    '300 ml', 'Avena en hojuelas',    20),
+        ('Avena polaca',                    '300 ml', 'Azúcar',               15),
+        ('Avena polaca',                    '300 ml', 'Canela molida',        0.5),
+        ('Avena polaca',                    '500 ml', 'Leche entera',         400),
+        ('Avena polaca',                    '500 ml', 'Avena en hojuelas',    33),
+        ('Avena polaca',                    '500 ml', 'Azúcar',               25),
+        ('Avena polaca',                    '500 ml', 'Canela molida',        0.8)
+       ) AS v (producto, tamano, material, cantidad)
+  JOIN PRODUCTOS p  ON p.PRO_Nombre = v.producto
+  JOIN TAMANOS t    ON t.TAM_Descripcion = v.tamano
+  JOIN MATERIALES m ON m.MAT_Nombre = v.material;
+
+-- Plan de cuentas de la panadería, de lo general a lo particular (cada cuenta
+-- después de su madre). Los asientos automáticos usan estos números.
+INSERT INTO CUENTAS_CONTABLES (CUE_Numero, CUE_Nombre, CUE_Tipo) VALUES
+    ('1',          'Activos',                                 'MAY'),
+    ('1.1',        'Activo corriente',                        'MAY'),
+    ('1.1.01',     'Efectivo y equivalentes de efectivo',     'MAY'),
+    ('1.1.01.01',  'Caja general',                            'DET'),
+    ('1.1.01.02',  'Bancos',                                  'DET'),
+    ('1.1.02',     'Cuentas por cobrar',                      'MAY'),
+    ('1.1.02.01',  'Clientes',                                'DET'),
+    ('1.1.02.02',  'Préstamos a empleados',                   'DET'),
+    ('1.1.03',     'Inventarios',                             'MAY'),
+    ('1.1.03.01',  'Inventario de materia prima',             'DET'),
+    ('1.1.03.02',  'Inventario de productos terminados',      'DET'),
+    ('1.1.04',     'Impuestos anticipados',                   'MAY'),
+    ('1.1.04.01',  'IVA pagado en compras',                   'DET'),
+    ('2',          'Pasivos',                                 'MAY'),
+    ('2.1',        'Pasivo corriente',                        'MAY'),
+    ('2.1.01',     'Cuentas por pagar',                       'MAY'),
+    ('2.1.01.01',  'Proveedores',                             'DET'),
+    ('2.1.02',     'Obligaciones tributarias',                'MAY'),
+    ('2.1.02.01',  'IVA cobrado en ventas',                   'DET'),
+    ('2.1.02.02',  'Retenciones de impuesto a la renta',      'DET'),
+    ('2.1.03',     'Obligaciones con el IESS',                'MAY'),
+    ('2.1.03.01',  'Aportes al IESS por pagar',               'DET'),
+    ('3',          'Patrimonio',                              'MAY'),
+    ('3.1',        'Capital',                                 'MAY'),
+    ('3.1.01',     'Capital social',                          'DET'),
+    ('4',          'Ingresos',                                'MAY'),
+    ('4.1',        'Ingresos operacionales',                  'MAY'),
+    ('4.1.01',     'Ventas de productos',                     'DET'),
+    ('4.1.02',     'Sobrantes de inventario',                 'DET'),
+    ('5',          'Costos y gastos',                         'MAY'),
+    ('5.1',        'Costos',                                  'MAY'),
+    ('5.1.01',     'Costo de ventas',                         'DET'),
+    ('5.2',        'Gastos de operación',                     'MAY'),
+    ('5.2.01',     'Sueldos y salarios',                      'DET'),
+    ('5.2.02',     'Horas extra',                             'DET'),
+    ('5.2.03',     'Fondos de reserva',                       'DET'),
+    ('5.2.04',     'Pérdida por deterioro de inventario',     'DET'),
+    ('6',          'Cuentas de orden',                        'MAY');
+
+INSERT INTO CONCEPTOS_NOMINA (CUE_Codigo, CNO_Numero, CNO_Nombre, CNO_Tipo)
+SELECT c.CUE_Codigo, v.numero, v.nombre, v.tipo
+  FROM (VALUES
+        ('1000', 'Sueldo mensual',            'ING', '5.2.01'),
+        ('1010', 'Horas extra',               'ING', '5.2.02'),
+        ('1020', 'Fondo de reserva',          'ING', '5.2.03'),
+        ('2000', 'Aporte personal al IESS',   'DES', '2.1.03.01'),
+        ('2010', 'Préstamo de la empresa',    'DES', '1.1.02.02'),
+        ('2021', 'Impuesto a la renta',       'DES', '2.1.02.02')
+       ) AS v (numero, nombre, tipo, cuenta)
+  JOIN CUENTAS_CONTABLES c ON c.CUE_Numero = v.cuenta;
 
 COMMIT;

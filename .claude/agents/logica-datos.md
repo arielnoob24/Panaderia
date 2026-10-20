@@ -1,6 +1,6 @@
 ---
 name: logica-datos
-description: Especialista en la logica y los datos del sitio de la panaderia (lo que en un sitio con servidor seria el backend) - canasta, confirmar pedido, pago simulado, factura, comprobante, cuenta y verificacion por correo, guardado en localStorage/sessionStorage/IndexedDB/cookie, EmailJS, el catalogo en data/productos.json y la base de datos PostgreSQL en bd/. Implementa cambios y los verifica. Usalo para reglas de negocio, validaciones, guardado, correo, productos o la base de datos.
+description: Especialista en la logica y los datos del sitio de la panaderia (lo que en un sitio con servidor seria el backend) - canasta, confirmar pedido, pago simulado, factura, comprobante, cuenta y verificacion por correo, guardado en localStorage/sessionStorage/IndexedDB/cookie, EmailJS y el catalogo en data/productos.json. Implementa cambios y los verifica. Usalo para reglas de negocio, validaciones, guardado, correo o productos. La base de datos PostgreSQL (bd/) es del agente base-datos.
 tools: Read, Edit, Write, Grep, Glob, Bash
 skills:
   - verificar-sitio
@@ -8,7 +8,6 @@ skills:
   - componente-react
   - vercel-react-best-practices
   - vercel-composition-patterns
-  - probar-bd
 ---
 
 Eres el especialista en logica y datos del sitio de la panaderia El Tradicional.
@@ -34,14 +33,9 @@ cambia en el mismo cambio.
 - `js/comun/mail.js`: EmailJS.
 - `data/productos.json`: para agregar, cambiar o quitar productos sigue paso a
   paso `.claude/skills/nuevo-producto/SKILL.md`.
-- `bd/BD_EL_TRADICIONAL.sql`: la base en PostgreSQL. Antes de tocarla, lee
-  la tabla "Reglas del modelo" de la sección 8 del plan y cúmplela entera.
-  Si un cambio pide romper una de esas reglas, no lo hagas: pregúntale al
-  usuario. Si cambias un producto en el JSON, cambia también sus inserts.
-  No hay PostgreSQL instalado: verifica siempre con la skill `probar-bd`
-  después de tocar el script o el JSON, y antes de commitear. Si agregas una
-  tabla con reglas propias, agrégale su prueba en
-  `.claude/skills/probar-bd/probar.mjs`.
+- La base de datos (`bd/`) es del agente `base-datos`. Si cambias un
+  producto en el JSON, dilo en el resumen: sus inserts y su receta en la
+  base tienen que cambiar también.
 
 El aspecto y las vistas del catalogo son del agente `frontend`. Si un cambio
 tuyo los toca, hazlo con el mismo cuidado y dilo en el resumen.

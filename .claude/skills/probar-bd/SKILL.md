@@ -38,9 +38,9 @@ las comprueba con `probar.mjs`, que está junto a este archivo.
 | Bloque | Qué mira | Si sale MAL |
 |---|---|---|
 | El script | Que corre sin errores y no tiene las palabras que rechaza el CI | Arregla el SQL |
-| Estructura | Nombres `ENTIDAD` / `ENT_Atributo` y un prefijo por tabla. Cada FK con el nombre de la PK que referencia. La PK de una fuerte es `XXX_Codigo`; la de una débil, la unión de sus FK. Sin 1:1 ni herencia, cada tabla con alguna relación y todas en un solo grupo. Autenticación y autorización con al menos 3 tablas | Es una regla del profesor o del usuario: cambia el modelo, no la prueba. Si de verdad hace falta romperla, pregúntale al usuario |
+| Estructura | Nombres `ENTIDAD` / `ENT_Atributo` y un prefijo por tabla. Cada FK con el nombre de la PK que referencia (o con su papel agregado, si la tabla apunta dos veces a la misma). La PK de una fuerte es `XXX_Codigo`; la de una débil, la unión de sus FK. Sin 1:1 ni herencia, cada tabla con alguna relación y todas en un solo grupo. Autenticación y autorización con al menos 3 tablas | Es una regla del profesor o del usuario: cambia el modelo, no la prueba. Si de verdad hace falta romperla, pregúntale al usuario |
 | Datos iniciales | Cada producto del JSON con su categoría, foto, alt, disponible, destacado, sello, tamaños y precios, más las 24 provincias | Actualiza los inserts del catálogo en el SQL |
-| Pruebas del caso | Cédula y RUC; usuario, verificación, dirección, pedido, líneas, pago, totales y factura, con inserts que deben pasar y otros que deben fallar | Si cambiaste a propósito esa tabla, ajusta su prueba en `probar.mjs`; si no, es un error del SQL |
+| Pruebas del caso | Cédula y RUC; usuario, verificación, dirección, pedido, líneas, pago, totales, factura y su asiento; empleados y cargos; orden de compra, aprobación, recepción y lotes; producción con FEFO y promedio; ajustes, saldo y kardex; rol de pagos; asientos que cuadran, que quedan en ERR y que ya no cambian. Con inserts que deben pasar y otros que deben fallar | Si cambiaste a propósito esa tabla, ajusta su prueba en `probar.mjs`; si no, es un error del SQL |
 
 Las comprobaciones de estructura leen el catálogo de PostgreSQL, así que
 sirven sin cambios cuando se agregan tablas. Las pruebas del caso usan

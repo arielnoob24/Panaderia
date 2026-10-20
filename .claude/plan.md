@@ -268,7 +268,7 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
 |---|---|
 | **Relacional y en un solo `.sql`** | El entregable es un script que crea la base desde cero: base, tablas, reglas, vistas y datos iniciales. Vive en `bd/` |
 | **Motor PostgreSQL** | Lo eligió el usuario el 20 de octubre de 2026 |
-| **Nombres `ENTIDAD` y `ENT_Atributo`** | Tabla en plural y mayúsculas (`ESTUDIANTES`). Cada atributo lleva el prefijo de 3 letras de su tabla (`EST_Nombre`), y el prefijo no se repite entre tablas. Una FK conserva el nombre de la PK que referencia. Sin comillas, así que PostgreSQL los guarda en minúsculas |
+| **Nombres `ENTIDAD` y `ENT_Atributo`** | Tabla en plural y mayúsculas (`ESTUDIANTES`). Cada atributo lleva el prefijo de 3 letras de su tabla (`EST_Nombre`), y el prefijo no se repite entre tablas. Una FK conserva el nombre de la PK que referencia; si una tabla apunta dos veces a la misma, la que se repite agrega su papel (`UMI_CodigoCompra`, `EMP_CodigoAutoriza`), como en la propuesta del profesor. Sin comillas, así que PostgreSQL los guarda en minúsculas |
 | **La PK es un código** | Cada tabla fuerte tiene `XXX_Codigo`, en texto con prefijo, que pone una secuencia: `PRO001` (3 dígitos en catálogos), `PED0000001` (7 en lo que crece). Excepción: si ya existe un código oficial (INEC, SRI), se usa ese. Las secuencias dejan huecos cuando un insert falla, y es normal; solo el secuencial de factura no puede tener huecos (el SRI) |
 | **Sin N:N** | Se resuelve con una entidad débil entre las dos |
 | **PK de una débil** | Es la unión de las PK de las fuertes que relaciona, sin un código propio. Si una de ellas es otra débil, entra su PK compuesta (`DETALLES_PEDIDO`): falta confirmar con el profesor si eso vale |
@@ -278,16 +278,54 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
 | **Autenticación y autorización con al menos 3 tablas** | Lo dijo el profesor. Hoy son 5: ROLES, PERMISOS, ROLES_PERMISOS, USUARIOS, VERIFICACIONES |
 | **Normalizada (hasta 3FN)** | Valores atómicos (nombres y apellidos separados). Lo que se calcula no se guarda: va en una vista. El precio y el IVA del día en cada línea sí se guardan, porque cambian |
 | **Tipos según el contexto ecuatoriano** | Dinero en dólares `NUMERIC(…,2)`. Fechas `TIMESTAMPTZ` con zona `America/Guayaquil`. Cédula `CHAR(10)` con módulo 10, RUC de 13 dígitos, celular `CHAR(10)` `09XXXXXXXX`. Provincias y cantones con su código del INEC; tipo de identificación, forma de pago y tarifa de IVA con su código del SRI. Número de factura `001-001-000000001`. Cada tipo con su `CHECK` |
-| **Varias tablas, no 3 o 4** | El modelo cubre lo que hace el sitio: cuenta, catálogo, canasta, entrega, factura y pago |
-- **25 tablas en 5 grupos**: autenticación y autorización (ROLES, PERMISOS,
+| **Varias tablas, no 3 o 4** | El modelo cubre lo que hace el sitio (cuenta, catálogo, canasta, entrega, factura y pago) y lo que pide el "Contexto comercial" del profesor (JW Cóndor, dic. 2025): compras, inventario, producción, talento humano y contabilidad |
+| **Documentos con estados** | Orden de compra, ajuste, orden de producción y rol de pagos: ABI → APR o ANU. Recepción: PEN → REC o CAN. Asiento: ABI (manual) o PEN (generado) → APR, ANU o ERR. El estado va en la cabecera y las líneas lo siguen (guardarlo en cada línea repetiría el dato). Aprobado o anulado, el documento y sus líneas ya no cambian |
+| **Aprobar genera lo siguiente** | Orden de compra aprobada → recepción pendiente + asiento. Ajuste, producción y rol aprobados → asiento. Factura → asiento de venta; anularla → asiento contrario. Un asiento que no cuadra al aprobarlo queda en ERR |
+
+- **51 tablas en 11 grupos**: autenticación y autorización (ROLES, PERMISOS,
   ROLES_PERMISOS, USUARIOS, VERIFICACIONES), ubicación (PROVINCIAS, CANTONES,
   DIRECCIONES), catálogo (CATEGORIAS, ETIQUETAS, TARIFAS_IVA, PRODUCTOS,
   TAMANOS, PRODUCTOS_TAMANOS, ALERGENOS, PRODUCTOS_ALERGENOS), pedidos
-  (TIPOS_ENTREGA, ESTADOS_PEDIDO, PEDIDOS, DETALLES_PEDIDO) y facturación y
-  pagos (TIPOS_IDENTIFICACION, CLIENTES, FACTURAS, METODOS_PAGO, PAGOS).
+  (TIPOS_ENTREGA, ESTADOS_PEDIDO, PEDIDOS, DETALLES_PEDIDO), facturación y
+  pagos (TIPOS_IDENTIFICACION, CLIENTES, FACTURAS, METODOS_PAGO, PAGOS),
+  talento humano (DEPARTAMENTOS, CARGOS, EMPLEADOS, EMPLEADOS_CARGOS,
+  CARGAS_FAMILIARES), materiales y recetas (UNIDADES_MEDIDA, METODOS_COSTEO,
+  TIPOS_MATERIAL, MATERIALES, RECETAS), compras (PROVEEDORES,
+  PROVEEDORES_MATERIALES, ORDENES_COMPRA, DETALLES_ORDEN_COMPRA, RECEPCIONES,
+  LOTES_MATERIAL), inventario y producción (AJUSTES_INVENTARIO,
+  DETALLES_AJUSTE, ORDENES_PRODUCCION, CONSUMOS_PRODUCCION), contabilidad
+  (CUENTAS_CONTABLES, ASIENTOS, DETALLES_ASIENTO) y nómina
+  (CONCEPTOS_NOMINA, NOMINAS, DETALLES_NOMINA).
+- **Lo que pidió el profesor y cómo quedó** (decidido el 20 de octubre de 2026):
+  - *Unidades*: el material guarda `UMI_CodigoCompra`, `UMI_CodigoProduccion`
+    y `MAT_FactorConversion` (1 qq = 45359,2 g). Lote, receta, consumo y
+    ajuste van siempre en la unidad de producción.
+  - *Materiales y productos*: tablas separadas (sin herencia). MATERIALES es
+    lo que se compra; PRODUCTOS, lo que se vende. Las bebidas que se revenden
+    son materiales con receta de 1 unidad, así que todo sale por producción.
+  - *Recetas*: por `PRODUCTOS_TAMANOS` (la Avena de 500 ml lleva más leche que
+    la de 300 ml). Es una débil sobre otra débil, como `DETALLES_PEDIDO`.
+  - *Lotes*: cantidad inicial y costo por unidad de producción del día en que
+    entró. **El saldo no se guarda** (regla de 3FN): sale de `VW_LOTES_SALDO`.
+  - *Método de costeo*: uno por material (`METODOS_COSTEO`): FEFO, FIFO,
+    LIFO o PROM (promedio ponderado). Lo aplica la base al aprobar la
+    producción.
+  - *Kardex*: es la vista `VW_KARDEX` y no una tabla, porque lotes, ajustes y
+    consumos ya están guardados y copiarlos rompería la 3FN. Si el profesor
+    pide la tabla `MOVIMIENTOS_INVENTARIO`, se cambia.
+  - *Producción*: `ORDENES_PRODUCCION` y `CONSUMOS_PRODUCCION` (de qué lote
+    salió cada material).
+  - *Del contexto comercial no se hizo*: perchas y bodegas, entregas al
+    cliente (las cubren los estados del pedido), crédito y cuentas por cobrar
+    de clientes, vendedores y comisiones, centros de costo, cuotas.
+  - *Empleados y usuarios* no se enlazan: sería 1:1. El empleado se conecta
+    por lo que hace (compra, recibe, produce, aprueba).
 - **Lo que se calcula no se guarda**: totales, IVA y lo pagado salen de
   `VW_PEDIDOS_TOTALES`; si el correo está verificado, de `VW_USUARIOS`. El
-  precio y el IVA de cada línea sí se guardan (son los del día).
+  precio y el IVA de cada línea sí se guardan (son los del día). También son
+  vistas: saldo de lotes, existencias, kardex, totales de la orden de compra,
+  lo recibido, costo de producción, existencias de productos, neto del rol,
+  cuadre de asientos y saldos de cuentas.
 - **Lo que revisa la base**: cédula (módulo 10) y RUC, celular `09XXXXXXXX`,
   correo en minúsculas, número `ET-XXXX` sin 0/1/I/O, 1–100 por línea,
   domicilio con dirección del mismo usuario y retiro sin ella, producto
@@ -298,7 +336,10 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
 - **Datos iniciales**: roles y permisos, las 24 provincias, los cantones de
   Napo, el catálogo de `data/productos.json` con sus tamaños, alérgenos
   comunes, entregas ($0 y $1,50), estados, tipos de identificación,
-  CONSUMIDOR FINAL y formas de pago con su código del SRI.
+  CONSUMIDOR FINAL, formas de pago con su código del SRI, departamentos y
+  cargos, unidades, métodos de costeo, 29 materiales, la receta de cada
+  producto y tamaño, el plan de cuentas y los conceptos de nómina. Las
+  cantidades de las recetas, la vida útil y los mínimos son de ejemplo.
 
 ## 9. Correo (`js/comun/mail.js`)
 
@@ -386,7 +427,12 @@ construye (sección 15).
 
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).
-- [ ] Revisar el modelo con el profesor.
+- [x] Compras, inventario por lotes, recetas, producción con FEFO/FIFO/LIFO/
+      promedio, talento humano, nómina y contabilidad (51 tablas).
+- [ ] Revisar el modelo con el profesor, sobre todo: el kardex como vista,
+      el saldo del lote calculado y las débiles sobre otra débil.
+- [ ] Confirmar las recetas con el panadero y la vida útil de cada material.
+- [ ] Subir el script a Supabase (solo el paso 2, en el editor SQL).
 - [ ] El IVA de cada producto es una suposición (pan 0%, dulces y bebidas
       15%): confirmarlo con el contador.
 - [ ] Cuáles alérgenos lleva cada producto (`PRODUCTOS_ALERGENOS`).
@@ -405,7 +451,8 @@ Los agentes viven en `.claude/agents/` y todos leen este plan primero.
 | Agente | Se encarga de | Cambia archivos | Skills cargadas |
 |---|---|---|---|
 | `frontend` | `index.html`, `assets/css/styles.css`, `js/catalogo/view.js`, `js/comun/ui.js`, maquetación, responsive, animaciones | Sí | `verificar-sitio`, `wcag-audit-patterns`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` |
-| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo, la base de datos (`bd/`) | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns`, `probar-bd` (+ sigue `nuevo-producto`) |
+| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` (+ sigue `nuevo-producto`) |
+| `base-datos` | La base de datos (`bd/`) y su prueba (`.claude/skills/probar-bd/probar.mjs`) | Sí | `probar-bd` |
 | `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | `wcag-audit-patterns`, `nielsen-usability-heuristics` (+ `.claude/herramientas/axe.mjs`) |
 | `calidad-publicacion` | Revisión de código y seguridad, CI, empaquetar, subir a la rama | Solo lo de publicar | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
 
@@ -416,7 +463,7 @@ Skills en `.claude/skills/`:
 | `verificar-sitio` | propia | `frontend`, `logica-datos`, `calidad-publicacion` |
 | `publicar` | propia | `calidad-publicacion` |
 | `nuevo-producto` | propia, la invocas tú con `/nuevo-producto` | `logica-datos` sigue sus pasos |
-| `probar-bd` | propia: corre `bd/` en PGlite y comprueba las reglas del modelo, el catálogo y los inserts (`probar.mjs` al lado) | `logica-datos` |
+| `probar-bd` | propia: corre `bd/` en PGlite y comprueba las reglas del modelo, el catálogo y los inserts (`probar.mjs` al lado) | `base-datos` |
 | `notas-para-explicar` | propia, la invocas tú con `/notas-para-explicar` | — |
 | `wcag-audit-patterns` | skills.sh, `wshobson/agents` | `ux-accesibilidad`, `frontend` |
 | `nielsen-usability-heuristics` | skills.sh, `dembrandt/dembrandt-skills` | `ux-accesibilidad`, `logica-datos` |
