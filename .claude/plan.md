@@ -809,16 +809,21 @@ Pendiente de la fase 5:
 - [x] Crear y verificar (con EmailJS y el recuadro de respaldo).
 - [x] Entrar, y de "Ir a pagar" directo a `#/confirmar`.
 - [x] Mis datos y cerrar sesión.
-- [ ] Forma de pago preferida dentro de Mis datos.
+- [x] Forma de pago preferida dentro de Mis datos (`FormaDePago.jsx`: el
+      `fieldset` `.cuenta-metodos` del sitio actual, con leyenda visible, y
+      "No guardamos tarjetas" debajo). Se guarda con "Guardar los cambios"
+      en el campo `metodo` de siempre; `#/confirmar` empieza con ella.
+      Comprobado en los dos sentidos con el sitio actual.
 - [x] Mis pedidos.
 - [x] Botón y ficha de la cuenta en la cabecera.
 - [x] El código en 6 casillas: su teclado (punto 3 de arriba, sin animar).
 - [x] Movimiento de la cuenta (los 6 puntos), y la maquetación de las vistas.
-- [ ] `logica-datos`: escribir en una casilla del código la **misma cifra**
+- [x] `logica-datos`: escribir en una casilla del código la **misma cifra**
       que ya tenía no pasa a la siguiente (React no da `onChange` si el
       valor no cambia), así que corregir un código con una cifra repetida en
-      su sitio se atasca. Va en `CasillasCodigo.jsx` (`onKeyDown` o
-      `onInput`).
+      su sitio se atasca. Arreglado: las casillas escuchan `onInput`, que el
+      navegador da siempre (también con el teclado del teléfono y al
+      rellenar el código solo).
 - [x] Cuenta compartida con el sitio actual, comprobada en los dos sentidos.
 - [ ] Revisión de `ux-accesibilidad`.
 

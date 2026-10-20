@@ -141,3 +141,10 @@ a.nav-cuenta { text-decoration: none; }
   .codigo-casilla, .codigo-casilla.is-llena { animation: none; transition: none; }
   .cuenta-vista .cuenta-pedido summary::after { transition: none; }
 }
+
+/* La forma de pago preferida en Mis datos: la leyenda se ve como la etiqueta
+   de un campo (en el panel del sitio actual iba escondida porque el paso
+   tenia su propio titulo). */
+.cuenta-forma-pago { margin-top: 1.1rem; }
+.cuenta-metodos-leyenda { margin-bottom: .4rem; padding: 0; color: var(--horno); font: 700 .8rem/1.3 Arial, sans-serif; }
+.cuenta-forma-pago .cuenta-pagos-dicho { margin: 0; color: var(--horno-suave); font-size: .8rem; }

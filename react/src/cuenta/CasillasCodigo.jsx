@@ -15,6 +15,7 @@
 // el foco no tiene que saltar mientras se corrige; para eso esta Enter.
 const N = 6;
 const llenas = (cifras) => cifras.every(Boolean);
+const nada = () => {};
 
 function CasillasCodigo({ cifras, onCambio, onEnter, casillasRef, idError, mal }) {
   const enfocar = (i) => {
@@ -93,7 +94,14 @@ function CasillasCodigo({ cifras, onCambio, onEnter, casillasRef, idError, mal }
             aria-describedby={idError}
             aria-invalid={mal}
             value={cifra}
-            onChange={alCambiar(i)}
+            // onInput y no onChange: escribir encima la misma cifra que ya
+            // habia no cambia el valor, y React no da onChange; el foco se
+            // quedaba en la casilla. El evento input del navegador si llega,
+            // tambien con el teclado del telefono y al rellenar el codigo
+            // solo. onChange queda vacio porque React lo pide en un campo
+            // controlado.
+            onInput={alCambiar(i)}
+            onChange={nada}
             onPaste={alPegar(i)}
             onKeyDown={alTeclear(i)}
             onFocus={(e) => e.target.select()}

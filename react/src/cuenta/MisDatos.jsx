@@ -1,5 +1,5 @@
 // ---- #/cuenta: Mis datos ---------------------------------------------------
-// Nombre, telefono y direccion, editables aqui mismo con las mismas reglas que
+// Nombre, telefono, direccion y forma de pago preferida, editables aqui mismo con las mismas reglas que
 // al crear la cuenta; el correo se ve pero no se cambia: es con el que se
 // entra y adonde llega el comprobante, y cambiarlo pediria verificarlo otra
 // vez. "Guardar los cambios" y "Cerrar sesion", que no borra la cuenta y
@@ -19,6 +19,7 @@ import { soloNueve, fallosEditar, avisoFaltan } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
 import TextoSuave from './TextoSuave.jsx';
+import FormaDePago from './FormaDePago.jsx';
 import { Desvio } from './Desvio.jsx';
 import { useEnterAvanza } from './useEnterAvanza.js';
 import { usePedidosGuardados } from './usePedidosGuardados.js';
@@ -48,6 +49,9 @@ function FormularioDatos() {
   const [datos, setDatos] = useState(() => ({
     nombre: sesion.nombre, telefono: sesion.telefono, direccion: sesion.direccion,
   }));
+  // La forma de pago va aparte de los campos de texto: no tiene errores ni
+  // se recorta, y es uno de dos.
+  const [metodo, setMetodo] = useState(sesion.metodo);
   const [tocados, setTocados] = useState(() => new Set());
   const [intentado, setIntentado] = useState(false);
   const [aviso, setAviso] = useState('');
@@ -76,6 +80,11 @@ function FormularioDatos() {
     setHecho('');
     setGuardado(0);
   };
+  const alMetodo = (valor) => {
+    setMetodo(valor);
+    setHecho('');
+    setGuardado(0);
+  };
   const alDejar = (campo) => () => setTocados((t) => (t.has(campo) ? t : new Set(t).add(campo)));
 
   const alGuardar = () => {
@@ -93,7 +102,7 @@ function FormularioDatos() {
     } else if (!entrega.direccion && v.direccion) {
       hacer({ tipo: 'entrega', campo: 'direccion', valor: v.direccion });
     }
-    sesion.editar(v);
+    sesion.editar({ ...v, metodo });
     setDatos(v);
     setIntentado(false);
     setTocados(new Set());
@@ -145,6 +154,7 @@ function FormularioDatos() {
             etiqueta: 'Dirección', type: 'text', autoComplete: 'street-address', maxLength: 200,
             placeholder: 'Calle, número y una referencia', opcional: true,
           })}
+          <FormaDePago metodo={metodo} onMetodo={alMetodo} />
           <p className="cuenta-hecho" hidden={!hecho}><TextoSuave texto={hecho} /></p>
         </div>
         <div className="cuenta-pie">

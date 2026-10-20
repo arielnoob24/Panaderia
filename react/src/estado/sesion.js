@@ -25,7 +25,7 @@
 //   { tipo: 'envio', codigo, envio }              como fue el correo
 //   { tipo: 'verificar' }                         codigo bueno: cuenta y dentro
 //   { tipo: 'entrar' }                            contrasena buena
-//   { tipo: 'editar', nombre, telefono, direccion }
+//   { tipo: 'editar', nombre, telefono, direccion, metodo }
 //   { tipo: 'salir' }                             cierra la sesion, no borra
 const cambio = (estado, parte) => ({ ...estado, ...parte, cambios: estado.cambios + 1 });
 
@@ -64,7 +64,14 @@ function reductor(estado, accion) {
       return cambio(estado, { cuenta: { ...estado.cuenta, dentro: true }, pendiente: null });
     case 'editar':
       return cambio(estado, {
-        cuenta: { ...estado.cuenta, nombre: accion.nombre, telefono: accion.telefono, direccion: accion.direccion },
+        cuenta: {
+          ...estado.cuenta,
+          nombre: accion.nombre,
+          telefono: accion.telefono,
+          direccion: accion.direccion,
+          // Solo los dos que hay en el cobro, como leerCuentaGuardada().
+          metodo: accion.metodo === 'tarjeta' ? 'tarjeta' : 'efectivo',
+        },
       });
     case 'salir':
       // Lo que se cierra es la sesion, no la cuenta: los datos se quedan para
