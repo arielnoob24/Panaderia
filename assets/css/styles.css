@@ -1214,8 +1214,13 @@ body.is-checkout .floating-whatsapp { display: none; }
    Solo en ambar se quedaba en 2,38:1 sobre el papel. */
 .pago-campo input:focus-visible, .cuenta-campo input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 /* Con el +593 delante, el anillo rodea la caja entera y no solo el campo. */
-.cuenta-campo .cuenta-conprefijo input:focus-visible { outline: none; box-shadow: none; }
-.cuenta-conprefijo:has(input:focus-visible) { border-radius: var(--r-btn); outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+/* Solo donde el navegador entiende :has(): en uno que no (Firefox antes de
+   la 121) la caja no se enteraria del foco, y el campo tiene que conservar
+   su propio anillo. */
+@supports selector(:has(*)) {
+  .cuenta-campo .cuenta-conprefijo input:focus-visible { outline: none; box-shadow: none; }
+  .cuenta-conprefijo:has(input:focus-visible) { border-radius: var(--r-btn); outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+}
 .pago-campo input.is-mal, .cuenta-campo input.is-mal { border-color: var(--corteza); }
 .pago-campo-error, .cuenta-campo-error { margin: .3rem 0 0; color: var(--corteza-oscura); font: .74rem/1.4 Arial, sans-serif; }
 .pago-campo-error[hidden], .cuenta-campo-error[hidden] { display: none; }

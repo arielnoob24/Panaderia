@@ -31,29 +31,34 @@ function PasoQueCambia({ paso, orden, children }) {
   const hojaRef = useRef(null);
 
   // De que paso se viene. Se ajusta mientras se pinta, para que la hoja
-  // nueva ya nazca sabiendo por donde entrar; la que se va es el nodo que
-  // todavia esta en la pagina.
-  const [cambio, setCambio] = useState({ ahora: paso, hacia: null, sale: null });
+  // nueva ya nazca sabiendo por donde entrar.
+  const [cambio, setCambio] = useState({ ahora: paso, hacia: null });
   if (cambio.ahora !== paso) {
     const atras = orden.indexOf(paso) < orden.indexOf(cambio.ahora);
-    setCambio({ ahora: paso, hacia: atras ? 'atras' : 'delante', sale: atras || reducido ? null : hojaRef.current });
+    setCambio({ ahora: paso, hacia: atras ? 'atras' : 'delante' });
   }
 
-  // React ya la quito: se vuelve a poner detras de la nueva y se va.
-  const sale = cambio.sale;
+  // La hoja pintada en el ultimo cambio, con su paso. Se apunta despues de
+  // pintar (no se lee el ref mientras se pinta): en el pintado en que cambia
+  // el paso, lo apuntado sigue siendo la hoja vieja, que React ya quito. Se
+  // vuelve a poner detras de la nueva y se va. Sin limpieza: el nodo se quita
+  // solo al acabar, y si la vista se va antes, se va con su caja.
+  const pintada = useRef(null);
   useLayoutEffect(() => {
+    const antes = pintada.current;
+    pintada.current = { paso, nodo: hojaRef.current };
     const caja = cajaRef.current;
-    if (!sale || !caja || sale.isConnected || typeof sale.animate !== 'function') return undefined;
+    const sale = antes?.nodo;
+    if (!antes || antes.paso === paso || cambio.hacia !== 'delante' || reducido) return;
+    if (!sale || !caja || sale.isConnected || typeof sale.animate !== 'function') return;
     sale.classList.add('is-saliendo');
     sale.inert = true;
     sale.setAttribute('aria-hidden', 'true');
     // Sin ids repetidos mientras dura: getElementById tiene que dar la nueva.
     sale.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
     caja.append(sale);
-    const animacion = sale.animate(SALE, SALE_COMO);
-    animacion.finished.then(() => sale.remove(), () => sale.remove());
-    return () => { animacion.cancel(); sale.remove(); };
-  }, [sale]);
+    sale.animate(SALE, SALE_COMO).finished.then(() => sale.remove(), () => sale.remove());
+  }, [paso]);
 
   // Al llegar a la vista no se anima: ya entra la vista entera.
   const entrada = !cambio.hacia || reducido ? false : DE[cambio.hacia];
