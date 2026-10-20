@@ -57,7 +57,8 @@ jobs:
           # servidor, que distingue, y entonces solo se rompe lo publicado.
           # La ruta se resuelve desde la carpeta del modulo que importa.
           for f in $(find js -name '*.js' ! -name sin-servidor.js); do
-            grep -o "from '\.\.\{0,1\}/[A-Za-z0-9_/-]*\.js'" "$f" | sed "s|^from '||; s|'$||" | while read -r m; do
+            # Un modulo que no importa nada deja a grep sin salida y con codigo 1.
+            { grep -o "from '\.\.\{0,1\}/[A-Za-z0-9_/-]*\.js'" "$f" || true; } | sed "s|^from '||; s|'$||" | while read -r m; do
               test -s "$(dirname "$f")/$m" || { echo "Falta $m, que importa $f."; exit 1; }
             done
           done
