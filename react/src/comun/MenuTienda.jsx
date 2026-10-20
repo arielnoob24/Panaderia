@@ -8,7 +8,7 @@
 // aria-haspopup: anunciaria un menu de aplicacion (role=menu), y esto es una
 // lista de enlaces que se abre y se cierra; aria-expanded ya lo dice.
 import { useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { CATEGORIAS } from '../catalogo/categorias.js';
 
 // Se mira quien entra cada vez, por pointerType, y no con la media query
@@ -19,6 +19,7 @@ const esRaton = (e) => e.pointerType === 'mouse' || e.pointerType === 'pen';
 const hayBarra = () => window.innerWidth > 680;
 
 function MenuTienda({ abierta, setAbierta, botonRef, alElegir }) {
+  const { pathname } = useLocation();
   const grupoRef = useRef(null);
   const enlacesRef = useRef([]);
   // El cursor solo la asoma: al apartarlo se cierra. El clic la deja fijada,
@@ -87,7 +88,17 @@ function MenuTienda({ abierta, setAbierta, botonRef, alElegir }) {
       onPointerLeave={(e) => { if (esRaton(e) && !fijada.current) setAbierta(false); }}
     >
       {/* La palabra Tienda lleva al catalogo entero, igual que "Ver el menu". */}
-      <Link className="nav-grupo-enlace" to="/tienda-catalogo" state={{ entrar: true }} onClick={elegir}>Tienda</Link>
+      {/* Todas las categorias son la misma vista, la tienda: estando en
+          cualquiera, Tienda es la opcion actual. */}
+      <Link
+        className="nav-grupo-enlace"
+        to="/tienda-catalogo"
+        state={{ entrar: true }}
+        aria-current={pathname.startsWith('/tienda-') ? 'page' : undefined}
+        onClick={elegir}
+      >
+        Tienda
+      </Link>
       <button
         ref={botonRef}
         className="nav-grupo-boton"

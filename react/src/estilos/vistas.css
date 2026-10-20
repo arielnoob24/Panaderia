@@ -1,0 +1,122 @@
+/* ---- Las vistas de la version en React -----------------------------------
+   Va despues de styles.css (main.jsx) y solo la usa react/: el sitio actual
+   sigue siendo una pagina larga (seccion 15 del plan, "Vistas y aspecto").
+   Los colores, la letra y los radios son los de :root de styles.css; aqui no
+   se inventa ninguno.
+
+   Reparto 60-30-10 en cada vista:
+     60  masa y papel: el fondo y las fichas
+     30  horno: el texto, una banda oscura por vista y el pie
+     10  ambar y corteza: botones, precios, la franja y los dibujos del fondo */
+
+/* ---- Lo comun --------------------------------------------------------- */
+
+/* El pie corto se queda abajo aunque la vista mida menos que la pantalla:
+   en #/contacto, sin esto, quedaba una franja de masa debajo del pie. */
+#raiz { display: flex; min-height: 100vh; flex-direction: column; }
+#raiz > main { flex: 1 0 auto; }
+
+/* Debajo de la cabecera fija, que no tiene fondo mientras se esta arriba. */
+.vista-nosotros, .vista-contacto { padding-top: 132px; }
+/* El rotulo de la foto se asoma 14 px por la derecha: a 320 px eso era
+   desplazamiento de lado. */
+.vista-nosotros { overflow-x: clip; }
+
+/* Los h1 de las vistas reciben el foco al llegar (useVista): sin anillo
+   cuando lo pone el codigo, con anillo cuando se llega con el teclado. */
+.vista h1:focus { outline: none; }
+.vista h1:focus-visible { outline: 2px solid var(--ambar); outline-offset: 6px; border-radius: 3px; }
+
+/* La opcion de la vista en la que se esta: un filete ambar debajo, que no
+   depende del color del texto (la cabecera cambia de color al pegarse). */
+.main-nav > a[aria-current="page"], .nav-grupo-enlace[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--ambar); text-decoration-thickness: 3px; text-underline-offset: 8px; }
+
+/* Una banda oscura por vista: el mostrador en #/, los principios en
+   #/nosotros, el horario en #/contacto. Con el mismo radio que la historia y
+   el pie, para que se lean como piezas de la misma madera. */
+.banda-oscura { background: var(--horno); color: var(--sobre-horno); }
+
+/* ---- #/ : el mostrador con "Los mas pedidos" -------------------------- */
+
+.mostrador { margin: 4.5rem 0 3.5rem; padding: 3.6rem 0 3.8rem; border-radius: var(--r-band); }
+.mostrador .fila-cabeza { align-items: baseline; margin-bottom: .4rem; }
+.mostrador .fila-rotulo { color: var(--papel); font: 500 clamp(2.2rem, 4.4vw, 3.2rem)/1 Georgia, serif; }
+.mostrador .fila-ver-todo { color: var(--ambar); }
+.mostrador .fila-ver-todo:hover { color: var(--ambar-claro); }
+.mostrador-dicho { margin: 0 0 1.8rem; color: var(--sobre-horno-tenue); font: .9rem/1.5 Arial, sans-serif; }
+/* Cada ficha se queda bien puesta al soltar: con proximity se podia quedar a
+   medias entre dos. */
+.mostrador .product-grid.is-fila { scroll-snap-type: x mandatory; scrollbar-color: rgba(255, 255, 255, .28) transparent; }
+.mostrador .product-grid.is-fila::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .28); }
+.mostrador .product-card { color: var(--horno); box-shadow: 0 10px 24px rgba(0, 0, 0, .22); }
+/* En las puntas la flecha se apaga pero se queda donde estaba: si tenia el
+   foco, lo conserva (aria-disabled, MasPedidos.jsx). */
+.mostrador .fila-flecha[aria-disabled="true"] { opacity: .4; cursor: default; transform: none; }
+.mostrador .fila-flecha[aria-disabled="true"]:hover { background: var(--papel); }
+
+/* ---- #/nosotros --------------------------------------------------------- */
+
+.nosotros-historia { padding: 1.5rem 0 4.5rem; }
+.nosotros-texto h1 { margin: 0 0 1.8rem; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 Georgia, serif; }
+.nosotros-texto h1 em { color: var(--corteza-oscura); }
+.nosotros-texto .lead { max-width: 30ch; margin: 0 0 1.2rem; font: italic 1.5rem/1.35 Georgia, serif; }
+.nosotros-texto p:not(.lead) { max-width: 46ch; color: var(--horno-suave); font-size: 1.05rem; line-height: 1.7; }
+.nosotros-principios { margin: 0 0 3.5rem; padding: 3.6rem 0; border-radius: var(--r-band); }
+.nosotros-principios h2 { margin: 0; color: var(--papel); font: 500 clamp(1.8rem, 3.4vw, 2.4rem)/1.1 Georgia, serif; }
+.nosotros-principios .principles { margin: 2rem 0 2.2rem; }
+
+/* ---- #/contacto ---------------------------------------------------------- */
+
+.contacto-vista { padding: 1.5rem 0 4rem; }
+.contacto-rejilla { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); grid-template-areas: "datos horario" "escribir horario"; gap: 2.6rem clamp(2.5rem, 6vw, 6rem); align-items: start; }
+.contacto-datos { grid-area: datos; }
+.contacto-horario { grid-area: horario; }
+.contacto-escribir { grid-area: escribir; }
+.contacto-datos h1 { margin: 0 0 1.6rem; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 Georgia, serif; }
+.contacto-direccion { margin: 0; font: normal 1.45rem/1.35 Georgia, serif; }
+/* El enlace al mapa sobre la masa: corteza oscura, que pasa 4,5:1. */
+.contacto-mapa-enlace { display: inline-flex; align-items: center; gap: .45rem; margin-top: .9rem; color: var(--corteza-oscura); font: 700 .9rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.contacto-mapa-enlace:hover { color: var(--horno); }
+.contacto-subtitulo { margin: 0 0 1rem; font: 500 1.5rem/1.2 Georgia, serif; }
+.contacto-lista { display: flex; flex-wrap: wrap; gap: 1.2rem 2.6rem; }
+/* .contacto viene del pie oscuro de styles.css; sobre la masa, los tonos de
+   texto claro pasan a los de fondo claro. */
+.contacto-lista .contacto-tipo { color: var(--horno-suave); }
+.contacto-lista .contacto-valor { color: var(--corteza-oscura); }
+.contacto-lista .contacto-valor:hover { color: var(--horno); }
+.contacto-nota { max-width: 46ch; margin: 1.4rem 0 0; color: var(--horno-suave); font: .8rem/1.5 Arial, sans-serif; }
+.contacto-horario { padding: 2rem clamp(1.4rem, 3vw, 2.2rem) 1.8rem; border-radius: var(--r-card); }
+.contacto-horario h2 { margin: 0 0 1rem; color: var(--papel); font: 500 1.6rem/1.15 Georgia, serif; }
+.contacto-horario .open-label { margin-bottom: 1.2rem; font-size: .78rem; }
+.contacto-horario .footer-horario { font-size: 1rem; }
+.contacto-horario-nota { margin: 1rem 0 0; color: var(--sobre-horno-tenue); font: .8rem/1.5 Arial, sans-serif; }
+
+/* ---- El pie corto -------------------------------------------------------- */
+
+.pie-corto { padding: 2rem 0 1.3rem; }
+.pie-corto-fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.4rem 3rem; }
+.pie-corto-estado { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; }
+.pie-corto-estado .open-label { margin: 0; }
+.pie-corto-horario { color: var(--sobre-horno); font: .8rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.pie-corto-horario:hover { color: var(--ambar); }
+.pie-corto-contacto { display: flex; flex-wrap: wrap; gap: 1rem 2.2rem; }
+.pie-corto-contacto .contacto + .contacto { margin-top: 0; }
+.pie-corto-final { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .3rem 2rem; margin-top: 1.4rem; padding-top: .9rem; border-top: 1px solid rgba(255, 255, 255, .15); }
+.pie-corto-final p { margin: 0; }
+.pie-corto-final .footer-note { padding: 0; border: 0; }
+.pie-corto-final .contacto-ficticio { flex-basis: 100%; }
+
+/* ---- Cortes ------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+  .contacto-rejilla { grid-template-columns: 1fr; grid-template-areas: "datos" "horario" "escribir"; }
+}
+@media (max-width: 680px) {
+  .vista-nosotros, .vista-contacto { padding-top: 96px; }
+  .mostrador { margin: 3rem 0 2.5rem; padding: 2.6rem 0 2.8rem; border-radius: var(--r-card); }
+  .nosotros-principios { padding: 2.8rem 0; border-radius: var(--r-card); }
+  .mostrador .fila-barra { background: rgba(255, 255, 255, .2); }
+  .mostrador .fila-avance { background: var(--ambar); }
+  .nosotros-historia { padding-bottom: 3rem; }
+  .pie-corto-fila { align-items: flex-start; flex-direction: column; }
+}

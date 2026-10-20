@@ -2,19 +2,20 @@
 // Logo, navegacion y el menu del telefono, con el mismo HTML que index.html y
 // el comportamiento de js/comun/ui.js: se pega al bajar 40 px, se da la vuelta
 // sobre las secciones oscuras, el menu del telefono lleva el foco a su primer
-// enlace al abrirse y Escape cierra lo que haya abierto.
+// enlace al abrirse y Escape cierra lo que haya abierto. Cada opcion lleva a
+// su vista (comun/vistas.js); la de la vista en la que se esta lleva
+// aria-current="page", que NavLink pone solo.
 import { useEffect, useRef, useState } from 'react';
 import mascota from '@raiz/assets/img/mascota.png';
 import logo from '@raiz/assets/img/logo.png';
-import EnlaceSeccion from './EnlaceSeccion.jsx';
+import { Link, NavLink } from 'react-router-dom';
 import MenuTienda from './MenuTienda.jsx';
 import BotonCanasta from '../pedido/BotonCanasta.jsx';
 
-// La historia y el pie son del mismo marron que la barra pegada: cuando alguno
-// pasa por detras de ella, la barra se da la vuelta para no fundirse. Se
-// buscan en cada vuelta y no una vez al montar: la historia no existe en las
-// vistas de confirmar y comprobante.
-const OSCURAS = '.story, .site-footer';
+// Las bandas oscuras y el pie son del mismo marron que la barra pegada: cuando
+// alguno pasa por detras de ella, la barra se da la vuelta para no fundirse.
+// Se buscan en cada vuelta y no una vez al montar: cada vista tiene las suyas.
+const OSCURAS = '.banda-oscura, .site-footer';
 
 function Cabecera() {
   const [pegada, setPegada] = useState(false);
@@ -108,19 +109,19 @@ function Cabecera() {
   return (
     <header ref={cabeceraRef} className={claseCabecera}>
       <div className="container nav-wrap">
-        <EnlaceSeccion a="inicio" className="brand" aria-label="El Tradicional, panadería y pastelería. Ir al inicio">
+        <Link to="/" state={{ entrar: true }} className="brand" aria-label="El Tradicional, panadería y pastelería. Ir al inicio" onClick={cerrarMenu}>
           <span className="mascot-slot mascot-brand"><img src={mascota} alt="" width="224" height="210" /></span>
           <img className="brand-logo" src={logo} alt="" width="420" height="184" />
-        </EnlaceSeccion>
+        </Link>
         <nav ref={navRef} id="main-nav" className={menuAbierto ? 'main-nav is-open' : 'main-nav'} aria-label="Navegación principal">
-          <EnlaceSeccion ref={primerEnlaceRef} a="historia" onClick={cerrarMenu}>Nosotros</EnlaceSeccion>
+          <NavLink ref={primerEnlaceRef} to="/nosotros" state={{ entrar: true }} onClick={cerrarMenu}>Nosotros</NavLink>
           <MenuTienda
             abierta={tiendaAbierta}
             setAbierta={setTiendaAbierta}
             botonRef={botonTiendaRef}
             alElegir={cerrarMenu}
           />
-          <EnlaceSeccion a="visitanos" onClick={cerrarMenu}>Contáctanos</EnlaceSeccion>
+          <NavLink to="/contacto" state={{ entrar: true }} onClick={cerrarMenu}>Contáctanos</NavLink>
         </nav>
         <div className="nav-acciones">
           {/* La canasta va delante del menu, como la pone el sitio actual; en

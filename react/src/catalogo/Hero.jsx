@@ -1,10 +1,9 @@
-// La portada de arriba (#inicio): titular, "Ver el menu", "Como llegar" y la
+// La portada de arriba de #/: titular, "Ver el menu", "Como llegar" y la
 // nota del horno, que dice segun la hora si se esta horneando, si el horno se
 // esta calentando o si ya se cerro (js/comun/horario.js).
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { notaDelHorno } from '@raiz/js/comun/horario.js';
-import EnlaceSeccion from '../comun/EnlaceSeccion.jsx';
 import { useHorario } from '../comun/useHorario.js';
 import { IconoMenu, IconoPin } from '../comun/iconos.jsx';
 
@@ -12,7 +11,9 @@ import { IconoMenu, IconoPin } from '../comun/iconos.jsx';
 // parrafo, y el parrafo mas que los botones. Cada uno sale 70 ms despues.
 const subida = (i) => ({ '--rise': `${[16, 10, 8][i]}px`, '--hero-delay': `${i * 70}ms` });
 
-function Hero() {
+// El titular es el h1 de la vista de inicio: tituloRef es donde va el foco al
+// llegar (comun/useVista.js).
+function Hero({ tituloRef }) {
   const horario = useHorario();
   const nota = notaDelHorno(horario);
   const fotoRef = useRef(null);
@@ -33,7 +34,7 @@ function Hero() {
   }, []);
 
   return (
-    <section id="inicio" className="hero" tabIndex={-1}>
+    <section id="inicio" className="hero">
       <div
         ref={fotoRef}
         className={fotoLista ? 'hero-image is-loaded' : 'hero-image'}
@@ -42,14 +43,14 @@ function Hero() {
       ></div>
       <div className="hero-overlay"></div>
       <div className="container hero-content is-ready">
-        <h1 style={subida(0)}>El sabor<br /><em>de siempre</em></h1>
+        <h1 ref={tituloRef} tabIndex={-1} style={subida(0)}>El sabor<br /><em>de siempre</em></h1>
         <p className="hero-copy" style={subida(1)}>Pan recién horneado todos los días, manos pacientes y recetas que saben a hogar</p>
         <div className="hero-actions" style={subida(2)}>
           {/* Lleva al catalogo entero: quien pulsa aqui quiere verlo todo. */}
           <Link className="button button-yellow" to="/tienda-catalogo" state={{ entrar: true }}>
             Ver el menú <span aria-hidden="true"><IconoMenu /></span>
           </Link>
-          <EnlaceSeccion a="visitanos" className="text-link">Cómo llegar <IconoPin /></EnlaceSeccion>
+          <Link className="text-link" to="/contacto" state={{ entrar: true }}>Cómo llegar <IconoPin /></Link>
         </div>
       </div>
       <div className="hero-note">

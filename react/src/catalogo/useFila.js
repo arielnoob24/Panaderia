@@ -1,22 +1,19 @@
-// ---- "Los mas pedidos": la fila que se mueve ---------------------------
-// Lo mismo que hace montarCatalogo() en js/catalogo/view.js con la fila de la
-// portada: flechas, barra de avance, boton de pausa, el avance solo cada 4,2 s
-// y, en el telefono, que la fila mida lo que piden las dos fichas que se ven.
+// ---- "Los mas pedidos": el carrusel de #/ --------------------------------
+// Scroll-snap del navegador: se arrastra con el dedo, la rueda o el teclado,
+// y cada ficha se queda bien puesta al soltar. Aqui solo van las flechas
+// Anterior y Siguiente (una ficha por salto, apagadas en las puntas), la barra
+// de avance del telefono y su alto. No avanza solo (seccion 15 del plan):
+// lo que se mueve sin que nadie lo pida es lo que mas molesta mientras se elige.
 //
 // Lo que cambia a cada pixel (la barra de avance, el alto de la fila en el
 // telefono) se escribe directo en el DOM por ref: pasarlo por el estado seria
-// repintar el catalogo entero a cada paso del desplazamiento. Al estado solo
-// van los si/no que cambian de tarde en tarde (hay flechas, se esta al final).
+// repintar las fichas a cada paso del desplazamiento. Al estado solo van los
+// si/no que cambian de tarde en tarde (hay flechas, se esta en una punta).
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { movimientoReducido } from '../comun/useMovimientoReducido.js';
 
-const CADA = 4200;
-// Tras tocarla a mano se le da un respiro largo: seguir empujando mientras
-// alguien decide que lleva es la forma mas rapida de molestar.
-const RESPIRO = CADA * 2;
-
 // Una ficha por salto: el salto de casi una pantalla se pasaba de largo y
-// habia que buscar donde se habia quedado uno. Lo usan la flecha y el reloj.
+// habia que buscar donde se habia quedado uno.
 const pasoFila = (grid) => {
   const ficha = grid.querySelector('.product-card:not([hidden])');
   const hueco = parseFloat(getComputedStyle(grid).columnGap) || 0;
@@ -25,7 +22,6 @@ const pasoFila = (grid) => {
 // Con 8 px de margen: el desplazamiento suave a veces se queda a uno o dos
 // pixeles de la punta exacta.
 const enElFinal = (grid) => grid.scrollLeft > grid.scrollWidth - grid.clientWidth - 8;
-const hayFila = (grid) => grid.classList.contains('is-fila');
 
 // Lo que mide la ficha sin estirar: el aire que el margen automatico mete
 // encima del precio es justo lo que sobra.
@@ -38,17 +34,10 @@ const altoPropio = (ficha) => {
   return ficha.offsetHeight - Math.max(0, sobra);
 };
 
-// 'cambio' es cualquier valor que cambie cuando cambian las fichas que se ven
-// o la vista: al cambiar, se vuelven a mirar las puntas y a medir.
-function useFila({ gridRef, zonaRef, avanceRef, cambio, avisar }) {
+function useFila({ gridRef, avanceRef }) {
   const [hayFlechas, setHayFlechas] = useState(false);
   const [alPrincipio, setAlPrincipio] = useState(true);
   const [alFinal, setAlFinal] = useState(false);
-  // La fila se adelanta sola, y eso necesita un boton que la pare: no vale
-  // que se detenga al pasar el raton o al entrar el foco, porque eso es un
-  // efecto secundario de hacer otra cosa. Quien la para, la para hasta que
-  // diga lo contrario.
-  const [parada, setParada] = useState(false);
 
   // ---- Medir --------------------------------------------------------
   // Una fila de lado mide lo que su ficha mas alta, aunque este al otro
@@ -62,7 +51,7 @@ function useFila({ gridRef, zonaRef, avanceRef, cambio, avisar }) {
       const grid = gridRef.current;
       if (!grid) return;
       const fichas = [...grid.querySelectorAll('.product-card')].filter((p) => !p.hidden);
-      if (!window.matchMedia('(max-width: 680px)').matches || !hayFila(grid)) {
+      if (!window.matchMedia('(max-width: 680px)').matches) {
         grid.style.height = '';
         fichas.forEach((p) => { p.style.minHeight = ''; });
         return;
@@ -80,13 +69,13 @@ function useFila({ gridRef, zonaRef, avanceRef, cambio, avisar }) {
     });
   }, [gridRef]);
 
-  // Al principio se apaga la flecha de atras. La de adelante no se apaga: en
-  // la ultima ficha cambia de nombre y lleva de vuelta a la primera.
+  // En cada punta se apaga su flecha: no hay nada mas alla, y una flecha que
+  // no hace nada (o que salta al otro extremo) desorienta.
   const mirarPuntas = useCallback(() => {
     const grid = gridRef.current;
     if (!grid) return;
     const sobra = grid.scrollWidth - grid.clientWidth;
-    setHayFlechas(hayFila(grid) && sobra >= 24);
+    setHayFlechas(sobra >= 24);
     setAlPrincipio(grid.scrollLeft < 8);
     setAlFinal(enElFinal(grid));
     // El trozo lleno mide lo que se ve de la fila y se corre lo que se ha
@@ -124,102 +113,16 @@ function useFila({ gridRef, zonaRef, avanceRef, cambio, avisar }) {
     };
   }, [gridRef, mirarPuntas, medirFila]);
 
-  // Cada vez que cambian las fichas o la vista, las puntas y el alto son otros.
   // Antes de pintar, para que las flechas no aparezcan un instante tarde.
-  useLayoutEffect(() => { mirarPuntas(); }, [cambio, mirarPuntas]);
+  useLayoutEffect(() => { mirarPuntas(); }, [mirarPuntas]);
 
-  // ---- Avanzar sola -------------------------------------------------
-  // Que senales de "hay alguien eligiendo" estan en pie: el raton encima, un
-  // dedo, o el foco en alguna ficha. Antes era un solo si/no para las tres, y
-  // la que se iba borraba a las otras.
-  const cerca = useRef(new Set());
-  // Y la ultima vez que se toco algo dentro. Hasta que pase un buen rato sin
-  // tocarla, quieta.
-  const tocada = useRef(0);
-  const paradaRef = useRef(parada);
-  useEffect(() => { paradaRef.current = parada; }, [parada]);
-
-  useEffect(() => {
-    const zona = zonaRef.current;
-    if (!zona) return undefined;
-    const quitas = [];
-    const escuchar = (ev, fn) => {
-      zona.addEventListener(ev, fn, { passive: true });
-      quitas.push(() => zona.removeEventListener(ev, fn));
-    };
-    // Al irse la senal tampoco arranca en seguida: se cuenta como un toque mas.
-    const vigilar = (entra, sale) => {
-      escuchar(entra, () => { cerca.current.add(entra); });
-      escuchar(sale, () => { cerca.current.delete(entra); tocada.current = Date.now(); });
-    };
-    vigilar('mouseenter', 'mouseleave');
-    vigilar('focusin', 'focusout');
-    vigilar('touchstart', 'touchend');
-    // touchcancel tambien suelta el dedo: el navegador lo manda en vez de
-    // touchend cuando el toque se convierte en desplazar la fila.
-    escuchar('touchcancel', () => { cerca.current.delete('touchstart'); tocada.current = Date.now(); });
-    // Las flechas y todo lo de las fichas cuentan como tocarla; el boton de
-    // pausa queda fuera, en la cabecera de la fila, porque pulsarlo ya dice
-    // por si solo lo que se quiere.
-    ['pointerdown', 'click', 'input', 'change', 'keydown'].forEach((ev) => {
-      escuchar(ev, () => { tocada.current = Date.now(); });
-    });
-    return () => quitas.forEach((q) => q());
-  }, [zonaRef]);
-
-  useEffect(() => {
-    if (parada) return undefined;
-    const puedeAndar = (grid) => hayFila(grid)
-      && !movimientoReducido()
-      && !document.hidden
-      && !paradaRef.current
-      && grid.scrollWidth - grid.clientWidth > 24;
-    const avanzar = () => {
-      const grid = gridRef.current;
-      if (!grid || cerca.current.size || Date.now() - tocada.current < RESPIRO || !puedeAndar(grid)) return;
-      // Al llegar al final vuelve al principio, para que no se quede parada
-      // en seco dando la impresion de que se rompio.
-      if (enElFinal(grid)) {
-        grid.scrollTo({ left: 0, behavior: 'smooth' });
-        return;
-      }
-      grid.scrollBy({ left: pasoFila(grid), behavior: 'smooth' });
-    };
-    let reloj = null;
-    const arrancar = () => { if (!reloj) reloj = setInterval(avanzar, CADA); };
-    const parar = () => { clearInterval(reloj); reloj = null; };
-    const alCambiarVisibilidad = () => { if (document.hidden) parar(); else arrancar(); };
-    document.addEventListener('visibilitychange', alCambiarVisibilidad);
-    arrancar();
-    return () => {
-      parar();
-      document.removeEventListener('visibilitychange', alCambiarVisibilidad);
-    };
-  }, [parada, gridRef]);
-
-  // ---- Lo que pulsa la persona ---------------------------------------
   const irFlecha = (ir) => {
     const grid = gridRef.current;
     if (!grid) return;
-    const behavior = movimientoReducido() ? 'auto' : 'smooth';
-    // La de adelante, en la ultima ficha, vuelve a la primera: lo mismo que
-    // hace la fila cuando avanza sola.
-    if (ir === 1 && enElFinal(grid)) {
-      grid.scrollTo({ left: 0, behavior });
-      return;
-    }
-    grid.scrollBy({ left: ir * pasoFila(grid), behavior });
+    grid.scrollBy({ left: ir * pasoFila(grid), behavior: movimientoReducido() ? 'instant' : 'smooth' });
   };
 
-  const alternarPausa = () => {
-    const ahora = !parada;
-    setParada(ahora);
-    avisar(ahora
-      ? 'Los más pedidos, detenidos. No se moverán hasta que lo reanudes.'
-      : 'Los más pedidos, en marcha otra vez.');
-  };
-
-  return { hayFlechas, alPrincipio, alFinal, parada, irFlecha, alternarPausa };
+  return { hayFlechas, alPrincipio, alFinal, irFlecha };
 }
 
 export { useFila };

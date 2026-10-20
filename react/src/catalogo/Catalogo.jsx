@@ -1,37 +1,37 @@
-// ---- El catalogo (#catalogo) --------------------------------------------
-// En la portada es la fila de "Los mas pedidos"; en #/tienda-catalogo y
-// #/tienda-<categoria> es la vista de catalogo, en cuadricula y con sus mandos.
-// Es la misma seccion y las mismas fichas en los dos casos, como en
-// js/catalogo/view.js, del que esto sigue las reglas una por una:
-//   - Entrar en una vista (enlace, "Ver el menu", "Volver al inicio") la deja
-//     limpia: orden recomendado, todos, sin busqueda; sube arriba y el foco va
-//     al titulo. Volver con Atras no la limpia: es volver a donde se estaba.
+// ---- La tienda (#/tienda-catalogo, #/tienda-<categoria>) -----------------
+// El catalogo en cuadricula y con sus mandos. Sigue las reglas de
+// js/catalogo/view.js una por una:
+//   - Entrar en la tienda (enlace, "Ver el menu", Tienda o una categoria) la
+//     deja limpia: orden recomendado, todos, sin busqueda; sube arriba y el
+//     foco va al titulo. Volver con Atras no la limpia: es volver a donde se
+//     estaba.
 //   - Cambiar "Filtrar por" a mano cambia la direccion con replace, para que
-//     Atras saque del catalogo en vez de deshacer filtros de uno en uno.
+//     Atras saque de la tienda en vez de deshacer filtros de uno en uno.
 //   - El orden y "Mostrar" se recuerdan en sessionStorage (storage.js).
 //   - Ordenar cambia la propiedad CSS order, no el orden de las fichas.
-//   - Al cambiar de vista, las fichas se atenuan 160 ms y entran escalonadas.
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, useNavigationType, Link } from 'react-router-dom';
+//   - Al cambiar el filtro o el orden, las fichas entran escalonadas.
+// Las categorias son la misma vista: entre ellas el catalogo no se vuelve a
+// montar (App.jsx). "Los mas pedidos" de #/ es otra pieza (MasPedidos.jsx).
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { dinero } from '@raiz/js/comun/state.js';
 import { recordarVista, vistaRecordada } from '@raiz/js/comun/storage.js';
 import { catalogo } from '../servicios/catalogo.js';
 import { useAvisos } from '../comun/Avisos.jsx';
-import { useAparecer } from '../comun/useAparecer.js';
 import { movimientoReducido } from '../comun/useMovimientoReducido.js';
-import { irASeccionSiSeVe } from '../comun/secciones.js';
-import { clases } from '../comun/useCargaImagen.js';
-import { Chevron } from '../comun/iconos.jsx';
+import { useVista } from '../comun/useVista.js';
 import FichaProducto from './FichaProducto.jsx';
 import VistaCabeza from './VistaCabeza.jsx';
-import { useFila } from './useFila.js';
-import { vistaDe, filtroDe, nombreCategoria } from './categorias.js';
+import { filtroDe, nombreCategoria } from './categorias.js';
 
 const { productos } = catalogo;
 const ORDENES = ['recomendados', 'precio-asc', 'precio-desc', 'nombre'];
 // "Todo el catalogo" no es una de las tres de Tienda, pero es una vista con
 // nombre y direccion propia.
 const TITULO_CATALOGO = 'Todo el catálogo';
+// Lo que se apunta en sessionStorage como vista: el mismo nombre que usa el
+// sitio actual para su catalogo, para que lo recordado valga en los dos.
+const VISTA = 'catalogo';
 
 // Ordenar no cambia cuantos se ven, asi que el aviso del catalogo no dice nada
 // nuevo: se anuncia el orden puesto.
@@ -48,9 +48,9 @@ const plano = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().tr
 // El orden y "solo disponibles" los dice la pestana, si lo que recordaba es de
 // esta misma vista. Lo recordado se comprueba contra las opciones que existen:
 // es un dato del navegador y se puede editar a mano.
-const recordado = (vista) => {
+const recordado = () => {
   const antes = vistaRecordada();
-  if (!antes || antes.categoria !== vista) return { orden: 'recomendados', solo: false };
+  if (!antes || antes.categoria !== VISTA) return { orden: 'recomendados', solo: false };
   return {
     orden: ORDENES.includes(antes.orden) ? antes.orden : 'recomendados',
     solo: antes.soloDisponibles === true,
@@ -67,13 +67,7 @@ const contarColumnas = (grid) => {
 };
 const retrasoDiagonal = (i, columnas) => Math.min((Math.floor(i / columnas) + (i % columnas)) * 40, 320);
 
-// En la portada solo los mas pedidos y que se puedan pedir hoy: es un
-// escaparate. Si no hubiera ninguno marcado, salen todos.
-const hayDestacados = productos.some((p) => p.destacado);
-const enPortada = (p) => !hayDestacados || (p.destacado && p.disponible);
-
 function Catalogo({ categoria }) {
-  const vista = vistaDe(categoria);
   // El filtro de categoria no se guarda en ningun sitio: lo dice la direccion.
   const subcategoria = filtroDe(categoria);
   const location = useLocation();
@@ -81,15 +75,16 @@ function Catalogo({ categoria }) {
   const tipoNavegacion = useNavigationType();
   const avisar = useAvisos();
 
-  const [orden, setOrden] = useState(() => recordado(vista).orden);
-  const [soloDisponibles, setSoloDisponibles] = useState(() => recordado(vista).solo);
+  const [orden, setOrden] = useState(() => recordado().orden);
+  const [soloDisponibles, setSoloDisponibles] = useState(() => recordado().solo);
   const [busqueda, setBusqueda] = useState('');
   // El tamano elegido de cada producto, por nombre. Vive aqui y no en la ficha
   // porque ordenar por precio usa el del tamano que se ve.
   const [elegidos, setElegidos] = useState({});
 
-  // Entrar en una vista la deja limpia. Se ajusta mientras se pinta, al ver
-  // una direccion nueva, y no en un efecto: asi no hay un cuadro con lo de antes.
+  // Entrar de nuevo con un enlace estando ya en la tienda (otra categoria desde
+  // el menu) la deja limpia. Se ajusta mientras se pinta, al ver una direccion
+  // nueva, y no en un efecto: asi no hay un cuadro con lo de antes.
   const [claveVista, setClaveVista] = useState(location.key);
   if (claveVista !== location.key) {
     setClaveVista(location.key);
@@ -100,16 +95,9 @@ function Catalogo({ categoria }) {
     }
   }
 
-  // ---- El cambio de vista, con su salida ------------------------------
-  // La vista que pintan las fichas va 160 ms por detras de la direccion: los
-  // productos actuales se atenuan (is-filtering) y solo despues entra la vista
-  // nueva. La cabeza y el titulo cambian en seguida, como en view.js.
-  const [vistaPintada, setVistaPintada] = useState(vista);
-  const [filtrando, setFiltrando] = useState(false);
+  // ---- La entrada escalonada --------------------------------------------
   const [entrada, setEntrada] = useState(null);
   const gridRef = useRef(null);
-  const zonaRef = useRef(null);
-  const avanceRef = useRef(null);
   const tituloRef = useRef(null);
 
   // Las columnas se miden antes de cambiar nada, como en view.js.
@@ -118,26 +106,8 @@ function Catalogo({ categoria }) {
     setEntrada({ columnas: contarColumnas(gridRef.current) });
   }, []);
 
-  useLayoutEffect(() => {
-    if (vista === vistaPintada) { setFiltrando(false); return undefined; }
-    // Al cambiar, la fila vuelve a su principio: si no, se entraria a la
-    // mitad de lo nuevo sin saber que hay detras.
-    if (gridRef.current) gridRef.current.scrollLeft = 0;
-    if (movimientoReducido()) {
-      setEntrada(null);
-      setVistaPintada(vista);
-      return undefined;
-    }
-    setFiltrando(true);
-    const reloj = setTimeout(() => {
-      animarEntrada();
-      setVistaPintada(vista);
-    }, 160);
-    return () => clearTimeout(reloj);
-  }, [vista, vistaPintada, animarEntrada]);
-
-  // La entrada escalonada se quita al acabar, para que no se repita al volver
-  // a pintar. 780 ms es lo que tarda la ultima ficha en llegar.
+  // Se quita al acabar, para que no se repita al volver a pintar. 780 ms es
+  // lo que tarda la ultima ficha en llegar.
   useEffect(() => {
     if (!entrada) return undefined;
     const reloj = setTimeout(() => setEntrada(null), 780);
@@ -146,10 +116,8 @@ function Catalogo({ categoria }) {
 
   // ---- Que se ve y en que orden ----------------------------------------
   const cuadro = useMemo(() => {
-    const enCatalogo = vistaPintada === 'catalogo';
-    const deLaCategoria = vistaPintada === 'todos' ? productos.filter(enPortada) : productos;
     const precioDe = (p) => p.tamanos[elegidos[p.nombre] ?? 0]?.precio ?? p.precio;
-    const porOrden = [...deLaCategoria].sort((a, b) => {
+    const porOrden = [...productos].sort((a, b) => {
       if (orden === 'precio-asc') return precioDe(a) - precioDe(b);
       if (orden === 'precio-desc') return precioDe(b) - precioDe(a);
       if (orden === 'nombre') return a.nombre.localeCompare(b.nombre, 'es');
@@ -160,31 +128,23 @@ function Catalogo({ categoria }) {
     const visibles = new Map();
     let agotados = 0;
     productos.forEach((p) => {
-      const deAqui = vistaPintada === 'todos' ? enPortada(p) : true;
-      // El filtro solo manda en el catalogo; en el mostrador no hay con que tocarlo.
-      const pasaFiltro = vistaPintada === 'todos' || !soloDisponibles || p.disponible;
-      const pasaSub = !enCatalogo || subcategoria === 'todas' || p.categoria === subcategoria;
-      const pasaBusqueda = !enCatalogo || !buscado || plano(p.nombre).includes(buscado);
-      if (!(deAqui && pasaFiltro && pasaSub && pasaBusqueda)) return;
+      const pasaFiltro = !soloDisponibles || p.disponible;
+      const pasaSub = subcategoria === 'todas' || p.categoria === subcategoria;
+      const pasaBusqueda = !buscado || plano(p.nombre).includes(buscado);
+      if (!(pasaFiltro && pasaSub && pasaBusqueda)) return;
       visibles.set(p, visibles.size);
       if (!p.disponible) agotados += 1;
     });
-    return { total: deLaCategoria.length, puesto, visibles, agotados, enCatalogo };
-  }, [vistaPintada, orden, soloDisponibles, subcategoria, busqueda, elegidos]);
+    return { total: productos.length, puesto, visibles, agotados };
+  }, [orden, soloDisponibles, subcategoria, busqueda, elegidos]);
 
   const n = cuadro.visibles.size;
-  // Dentro del catalogo lo util es saber cuantos se ven de los que hay: con un
-  // filtro puesto, un numero suelto no dice si falta algo.
-  const dice = vistaPintada === 'todos'
-    ? ''
-    : `Mostrando ${n} de ${cuadro.total} producto${cuadro.total === 1 ? '' : 's'}`;
+  // Lo util es saber cuantos se ven de los que hay: con un filtro puesto, un
+  // numero suelto no dice si falta algo.
+  const dice = `Mostrando ${n} de ${cuadro.total} producto${cuadro.total === 1 ? '' : 's'}`;
   let estado;
   if (catalogo.error) {
     estado = 'No se pudo cargar el catálogo. Recarga la página; si sigue sin salir, escríbenos y te decimos qué hay hoy.';
-  } else if (vistaPintada === 'todos') {
-    // En la portada, el aviso dice cuantos hay en total: si no, la fila
-    // parece el catalogo entero.
-    estado = `Los ${n} más pedidos. En todo el catálogo hay ${productos.length}.`;
   } else {
     // Llamar "disponible" a lo que esta agotado seria mentira.
     const plural = n === 1 ? '' : 's';
@@ -195,69 +155,53 @@ function Catalogo({ categoria }) {
     const donde = subcategoria === 'todas' ? 'en todo el catálogo' : 'en esta categoría';
     estado = `${dice}. ${cuantos} ${donde}.`;
   }
-  // Mientras la vista nueva espera su turno (los 160 ms de la salida), el
-  // aviso se queda en lo que decia: si no, al volver al inicio se anunciaba el
-  // catalogo ya limpio ("Mostrando 17 de 17") antes que "Los 8 mas pedidos".
-  const [estadoDicho, setEstadoDicho] = useState(estado);
-  if (vistaPintada === vista && estadoDicho !== estado) setEstadoDicho(estado);
+  // La region de avisos nace con la vista, y lo que ya trae al nacer el lector
+  // de pantalla no lo lee: se llena un momento despues, para que al entrar
+  // se oiga cuantos hay, como cuando la tienda y la portada eran una pagina.
+  const [hablar, setHablar] = useState(false);
+  useEffect(() => {
+    const reloj = setTimeout(() => setHablar(true), 150);
+    return () => clearTimeout(reloj);
+  }, []);
   let vacio = '';
-  if (cuadro.enCatalogo && n === 0) {
+  if (n === 0) {
     vacio = busqueda
       ? `No encontramos nada que se llame «${busqueda.trim()}». Prueba con otra palabra o quita algún filtro.`
       : 'No hay productos con estos filtros.';
   }
 
-  // ---- Lo que se recuerda y lo que va fuera de la seccion --------------
+  // ---- Lo que se recuerda, el titulo y el foco --------------------------
   // Donde estabas se apunta en cada cambio, no al salir: de la pagina se sale
   // cerrandola, y no hay un momento fiable para guardar al final.
   useEffect(() => {
-    recordarVista({ categoria: vistaPintada, orden, soloDisponibles, subcategoria });
-  }, [vistaPintada, orden, soloDisponibles, subcategoria]);
+    recordarVista({ categoria: VISTA, orden, soloDisponibles, subcategoria });
+  }, [orden, soloDisponibles, subcategoria]);
 
   // Con una categoria puesta en "Filtrar por", el titulo y la pestana dicen
   // cual: "Todo el catalogo" estando en Dulces no decia donde se estaba.
   const nombreFiltro = subcategoria === 'todas' ? null : nombreCategoria(subcategoria);
   const titulo = nombreFiltro || TITULO_CATALOGO;
+  useVista(nombreFiltro ? `${nombreFiltro} · Catálogo | El Tradicional` : `${TITULO_CATALOGO} | El Tradicional`, tituloRef);
 
-  // La vista aparta la portada y la historia (body.is-vista en styles.css).
+  // body.is-vista: styles.css le da a la tienda su margen bajo la cabecera.
   useEffect(() => {
-    document.body.classList.toggle('is-vista', vista !== 'todos');
+    document.body.classList.add('is-vista');
     return () => document.body.classList.remove('is-vista');
-  }, [vista]);
-  useEffect(() => {
-    if (vista === 'todos') document.title = 'El Tradicional | Panadería & Pastelería';
-    else document.title = nombreFiltro ? `${nombreFiltro} · Catálogo | El Tradicional` : `${TITULO_CATALOGO} | El Tradicional`;
-  }, [vista, nombreFiltro]);
+  }, []);
 
-  // Al entrar: arriba del todo y el foco en el titulo de la vista, o en
-  // #inicio si se vuelve a la portada. Con Atras y Adelante el navegador pone
-  // el desplazamiento, pero el foco se quedaba en body, sin decir donde se
-  // estaba: va al mismo sitio. Con una seccion pedida (Nosotros desde la
-  // vista, o #historia abierto tal cual), se espera a que la portada este
-  // pintada para bajar a ella: antes, la cuadricula aun mide lo que media.
-  // ultimaClave empieza vacia para atender tambien la direccion con la que se
-  // monta: la de una seccion abierta tal cual llega asi (Portada.jsx).
-  const ultimaClave = useRef(null);
-  const seccionPendiente = useRef(null);
+  // Al entrar en la tienda manda useVista. Aqui, lo que pasa ya dentro: otra
+  // categoria con un enlace (arriba del todo y el foco en el titulo) o Atras y
+  // Adelante entre categorias (el foco al titulo; si no, se quedaba en body
+  // sin decir donde se estaba). Cambiar el filtro a mano no mueve nada.
+  const ultimaClave = useRef(location.key);
   useEffect(() => {
     if (ultimaClave.current === location.key) return;
-    const alMontar = ultimaClave.current === null;
     ultimaClave.current = location.key;
-    const { entrar, seccion, alAbrir } = location.state || {};
-    if (seccion) { seccionPendiente.current = { id: seccion, suave: !alAbrir }; return; }
-    // Al cargar la pagina, el foco y el desplazamiento son los del navegador.
-    if (alMontar) return;
+    const entrar = location.state?.entrar;
     if (!entrar && tipoNavegacion !== 'POP') return;
-    if (entrar) window.scrollTo({ top: 0, behavior: movimientoReducido() ? 'auto' : 'smooth' });
-    const destino = vista !== 'todos' ? tituloRef.current : document.getElementById('inicio');
-    destino?.focus({ preventScroll: true });
-  }, [location.key, location.state, vista, tipoNavegacion]);
-  useEffect(() => {
-    if (!seccionPendiente.current || vistaPintada !== vista) return;
-    const { id, suave } = seccionPendiente.current;
-    seccionPendiente.current = null;
-    irASeccionSiSeVe(id, suave);
-  }, [vistaPintada, vista, location.key]);
+    if (entrar) window.scrollTo({ top: 0, behavior: movimientoReducido() ? 'instant' : 'smooth' });
+    tituloRef.current?.focus({ preventScroll: true });
+  }, [location.key, location.state, tipoNavegacion]);
 
   // ---- Lo que se toca --------------------------------------------------
   const alSub = (sub) => {
@@ -276,19 +220,11 @@ function Catalogo({ categoria }) {
     avisar(`${producto.nombre} ${t.valor}, ${dinero(t.precio)}.`);
   }, [avisar]);
 
-  const fila = useFila({
-    gridRef, zonaRef, avanceRef, avisar,
-    cambio: `${vistaPintada}|${[...cuadro.visibles.keys()].map((p) => p.nombre).join(',')}`,
-  });
-
-  const encabezado = useAparecer('reveal');
-  const enFila = vistaPintada === 'todos';
-
   return (
-    <section id="catalogo" className="catalog section-pad" tabIndex={-1}>
+    <section id="catalogo" className="catalog section-pad vista-tienda">
       <div className="container">
         <VistaCabeza
-          visible={vista !== 'todos'}
+          visible
           titulo={titulo}
           tituloRef={tituloRef}
           subcategoria={subcategoria}
@@ -303,91 +239,26 @@ function Catalogo({ categoria }) {
           vacio={vacio}
           onVolver={alVolver}
         />
-        <div
-          ref={encabezado.ref}
-          className={clases('section-heading heading-row', encabezado.className)}
-          data-motion={encabezado['data-motion']}
-          hidden={vista !== 'todos'}
-        >
-          <div><p className="eyebrow">La vitrina</p><h2>Hecho a mano,<br /><em>como en casa</em></h2></div>
-          <p className="section-intro">Todo empieza con harina, agua y tiempo. Elige tu favorito, haz tu pedido y pasa a buscarlo calentito.</p>
-        </div>
-        <p className="catalog-status" role="status" aria-live="polite">{estadoDicho}</p>
-        {/* La fila necesita decir que es: sin nombre parecia el catalogo
-            entero puesto de lado. Va fuera de la zona para no pasar por debajo
-            de las flechas, que estan pegadas a los bordes. */}
-        <div className="fila-cabeza">
-          <h3 className="fila-rotulo">Los más pedidos</h3>
-          {/* En el telefono se ve solo "Ver todo", pero se nombra entero para todos. */}
-          <Link className="fila-ver-todo" to="/tienda-catalogo" state={{ entrar: true }} aria-label="Ver todo el catálogo">
-            Ver todo<span className="fila-ver-todo-largo"> el catálogo</span> <span aria-hidden="true">→</span>
-          </Link>
-          <button
-            className="fila-pausa"
-            type="button"
-            aria-pressed={fila.parada}
-            aria-label={fila.parada ? 'Reanudar el avance de los más pedidos' : 'Detener el avance de los más pedidos'}
-            data-tip={fila.parada ? 'Reanudar' : 'Pausar'}
-            onClick={fila.alternarPausa}
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
-              {fila.parada
-                ? <path d="M8 5.5l11 6.5-11 6.5z" />
-                : <><rect x="7" y="5.5" width="3.4" height="13" rx="1" /><rect x="13.6" y="5.5" width="3.4" height="13" rx="1" /></>}
-            </svg>
-          </button>
-        </div>
-        <div ref={zonaRef} className="fila-zona">
-          <div ref={gridRef} className={clases('product-grid', enFila && 'is-fila', filtrando && 'is-filtering')}>
-            {productos.map((p) => {
-              const i = cuadro.visibles.get(p);
-              const visible = i !== undefined;
-              const entrando = Boolean(entrada) && visible;
-              return (
-                <FichaProducto
-                  key={p.nombre}
-                  producto={p}
-                  vista={enFila ? 'fila' : 'cuadricula'}
-                  visible={visible}
-                  orden={cuadro.puesto.get(p)}
-                  retraso={entrando ? retrasoDiagonal(i, entrada.columnas) : undefined}
-                  entrando={entrando}
-                  elegido={elegidos[p.nombre] ?? 0}
-                  onElegir={alElegir}
-                />
-              );
-            })}
-          </div>
-          {/* Las flechas van en un pie debajo de la fila, con una barra entre
-              las dos. En la computadora el pie no pinta caja: las flechas
-              flotan a los lados y la barra no sale. En el telefono si. */}
-          <div className="fila-pie" hidden={!fila.hayFlechas}>
-            <button
-              className="fila-flecha"
-              type="button"
-              data-ir="-1"
-              hidden={!fila.hayFlechas}
-              disabled={fila.alPrincipio}
-              aria-label="Ver los productos anteriores"
-              data-tip="Anterior"
-              onClick={() => fila.irFlecha(-1)}
-            >
-              <Chevron izquierda />
-            </button>
-            {/* Es un dibujo de lo que ya cuentan las fichas y las flechas. */}
-            <div className="fila-barra" aria-hidden="true"><span ref={avanceRef} className="fila-avance"></span></div>
-            <button
-              className="fila-flecha"
-              type="button"
-              data-ir="1"
-              hidden={!fila.hayFlechas}
-              aria-label={fila.alFinal ? 'Volver al primer producto' : 'Ver más productos'}
-              data-tip={fila.alFinal ? 'Volver al principio' : 'Siguiente'}
-              onClick={() => fila.irFlecha(1)}
-            >
-              <Chevron />
-            </button>
-          </div>
+        <p className="catalog-status" role="status" aria-live="polite">{hablar ? estado : ''}</p>
+        <div ref={gridRef} className="product-grid">
+          {productos.map((p) => {
+            const i = cuadro.visibles.get(p);
+            const visible = i !== undefined;
+            const entrando = Boolean(entrada) && visible;
+            return (
+              <FichaProducto
+                key={p.nombre}
+                producto={p}
+                vista="cuadricula"
+                visible={visible}
+                orden={cuadro.puesto.get(p)}
+                retraso={entrando ? retrasoDiagonal(i, entrada.columnas) : undefined}
+                entrando={entrando}
+                elegido={elegidos[p.nombre] ?? 0}
+                onElegir={alElegir}
+              />
+            );
+          })}
         </div>
       </div>
     </section>

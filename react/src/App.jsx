@@ -1,41 +1,57 @@
-// La pagina y sus rutas. Son las del sitio actual (secciones 4 y 6 del plan):
-//   #/                      la portada, con "Los mas pedidos"
-//   #/tienda-catalogo       el catalogo entero
-//   #/tienda-<categoria>    el catalogo con "Filtrar por" puesto
-//   #/confirmar             confirmar el pedido y pagar (fase 4)
-//   #/comprobante           el comprobante del pedido pagado (fase 4)
+// La pagina: cabecera, la vista que pide la direccion y el pie corto. Las
+// vistas y sus direcciones estan en comun/vistas.js:
+//   #/  #/nosotros  #/tienda-catalogo  #/tienda-<categoria>  #/contacto
+//   #/confirmar  #/comprobante
 // HashRouter las escribe con una barra detras del '#'. Las de antes, sin la
 // barra (#tienda-panes), siguen entrando: React Router le pone la barra al
-// leer la direccion, asi que los enlaces guardados no se rompen.
-//
-// La portada y las vistas de catalogo son una sola ruta a proposito (ver
-// Portada.jsx): la vista aparta la portada en vez de reemplazarla.
-import { Route, Routes } from 'react-router-dom';
+// leer la direccion. Las de cuando todo era una pagina (#historia,
+// #visitanos...) llevan a su vista con replace; lo demas, a #/.
+import { Navigate, useLocation } from 'react-router-dom';
 import Cabecera from './comun/Cabecera.jsx';
 import Pie from './comun/Pie.jsx';
 import Globo from './comun/Globo.jsx';
 import { RegionAvisos } from './comun/Avisos.jsx';
-import EnlaceSeccion from './comun/EnlaceSeccion.jsx';
-import Portada from './catalogo/Portada.jsx';
+import SaltoContenido from './comun/SaltoContenido.jsx';
+import { VIEJAS, vistaDeRuta } from './comun/vistas.js';
+import Inicio from './vistas/Inicio.jsx';
+import Nosotros from './vistas/Nosotros.jsx';
+import Contacto from './vistas/Contacto.jsx';
+import Catalogo from './catalogo/Catalogo.jsx';
+import { categoriaDeRuta } from './catalogo/categorias.js';
 import Confirmar from './pedido/Confirmar.jsx';
 import Comprobante from './pedido/Comprobante.jsx';
 import Canasta from './pedido/Canasta.jsx';
 import BarraDeshacer from './pedido/BarraDeshacer.jsx';
 
+// La vista que toca. Las de la tienda son una sola: entre categorias el
+// catalogo se queda montado y solo cambia "Filtrar por".
+function Vista({ cual, pathname }) {
+  if (cual === 'inicio') return <Inicio />;
+  if (cual === 'nosotros') return <Nosotros />;
+  if (cual === 'contacto') return <Contacto />;
+  if (cual === 'confirmar') return <Confirmar />;
+  if (cual === 'comprobante') return <Comprobante />;
+  return <Catalogo categoria={categoriaDeRuta(pathname)} />;
+}
+
 function App() {
+  const location = useLocation();
+  const { pathname } = location;
+  const cual = vistaDeRuta(pathname);
+
+  // Una direccion vieja, o una que no existe: se cambia sin dejar rastro en
+  // Atras y, si es la de abrir la pagina, sin mover el foco (useVista).
+  const alAbrir = { alAbrir: location.key === 'default' };
+  let vista;
+  if (cual) vista = <Vista cual={cual} pathname={pathname} />;
+  else vista = <Navigate to={VIEJAS[pathname] || '/'} replace state={alAbrir} />;
+
   return (
     <>
-      {/* Lleva el foco a <main> sin cambiar la direccion (secciones.js). */}
-      <EnlaceSeccion a="contenido" className="skip-link">Saltar al contenido</EnlaceSeccion>
+      <SaltoContenido />
       <Cabecera />
       <main id="contenido" tabIndex={-1}>
-        <Routes>
-          <Route path="/confirmar" element={<Confirmar />} />
-          <Route path="/comprobante" element={<Comprobante />} />
-          {/* La portada decide si la direccion es una de las suyas; si no,
-              vuelve a #/ con replace. */}
-          <Route path="*" element={<Portada />} />
-        </Routes>
+        {vista}
       </main>
       <Pie />
       {/* El boton de la canasta va en la cabecera; el panel y la barra de
