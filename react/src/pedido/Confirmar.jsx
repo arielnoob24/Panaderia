@@ -5,7 +5,7 @@
 // "Editar la canasta"), la vista se queda y el boton dice que no hay nada que
 // confirmar, como en el sitio actual; deshacer lo devuelve.
 import { useState } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import FormularioPedido from './FormularioPedido.jsx';
@@ -13,10 +13,10 @@ import FormularioPedido from './FormularioPedido.jsx';
 function Confirmar() {
   const { lineas } = usePedido();
   const { puedePedir } = useSesion();
-  const { key } = useLocation();
   const [puedeEntrar] = useState(() => puedePedir && lineas.length > 0);
-  // Si es la direccion con que se abrio la pagina, el foco no se mueve (useVista).
-  if (!puedeEntrar) return <Navigate to="/" replace state={{ alAbrir: key === 'default' }} />;
+  // Si es la direccion con que se abrio la pagina, el foco no se mueve: lo
+  // sabe useVista (comun/apertura.js).
+  if (!puedeEntrar) return <Navigate to="/" replace />;
   return <FormularioPedido />;
 }
 

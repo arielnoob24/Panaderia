@@ -11,6 +11,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCanasta } from './CanastaProvider.jsx';
+import { esLaDeAbrir } from '../comun/apertura.js';
 
 function useVistaPedido(titulo) {
   const tituloRef = useRef(null);
@@ -19,6 +20,10 @@ function useVistaPedido(titulo) {
   const navegar = useNavigate();
 
   useEffect(() => {
+    // Estas vistas mueven el foco tambien al abrir la pagina, pero gastan la
+    // marca igual: si no, la siguiente vista creeria que es la de abrir y no
+    // lo moveria (comun/apertura.js).
+    esLaDeAbrir();
     document.body.classList.add('is-checkout');
     window.scrollTo({ top: 0, behavior: 'auto' });
     tituloRef.current?.focus({ preventScroll: true });

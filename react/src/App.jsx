@@ -16,6 +16,7 @@ import Globo from './comun/Globo.jsx';
 import { RegionAvisos } from './comun/Avisos.jsx';
 import SaltoContenido from './comun/SaltoContenido.jsx';
 import { VIEJAS, vistaDeRuta } from './comun/vistas.js';
+import { todaviaAbriendo } from './comun/apertura.js';
 import Inicio from './vistas/Inicio.jsx';
 import Nosotros from './vistas/Nosotros.jsx';
 import Contacto from './vistas/Contacto.jsx';
@@ -98,14 +99,14 @@ function App() {
   const aVerificar = paso.antes === 'cuenta-crear' && cual === 'cuenta-verificar';
 
   // Una direccion vieja, o una que no existe: se cambia sin dejar rastro en
-  // Atras y, si es la de abrir la pagina, sin mover el foco (useVista).
-  const alAbrir = { alAbrir: location.key === 'default' };
+  // Atras y, si es la de abrir la pagina, sin mover el foco (useVista lo sabe
+  // por comun/apertura.js).
   let entrada = ENTRADA;
-  if (reducido || location.key === 'default') entrada = false;
+  if (reducido || todaviaAbriendo()) entrada = false;
   else if (aVerificar) entrada = DESDE_LA_DERECHA;
   let vista;
   if (cual) vista = <Vista cual={cual} pathname={pathname} />;
-  else vista = <Navigate to={VIEJAS[pathname] || '/'} replace state={alAbrir} />;
+  else vista = <Navigate to={VIEJAS[pathname] || '/'} replace />;
 
   return (
     <>

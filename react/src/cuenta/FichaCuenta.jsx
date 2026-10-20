@@ -44,10 +44,13 @@ const SALIR = (
 // Lo de dentro de la ficha. Se monta de nuevo cada vez que se abre (la clave
 // de quien la usa): asi el numero de pedidos se vuelve a leer, porque puede
 // haberse pagado uno desde la ultima vez.
-function OpcionesCuenta({ nombre, correo, opcionesRef, alElegir, alSalir }) {
+function OpcionesCuenta({ nombre, correo, ruta, opcionesRef, alElegir, alSalir }) {
   const pedidos = usePedidosGuardados();
   const n = pedidos?.length || 0;
   const guardar = (i) => (el) => { opcionesRef.current[i] = el; };
+  // La opcion de la vista en la que se esta lo dice al lector de pantalla
+  // ("pagina actual"), como la silueta en #/cuenta/entrar.
+  const actual = (a) => (ruta === a ? 'page' : undefined);
   return (
     <>
       <div className="cuenta-menu-cabeza is-dentro">
@@ -57,11 +60,11 @@ function OpcionesCuenta({ nombre, correo, opcionesRef, alElegir, alSalir }) {
           <p className="cuenta-menu-correo">{correo}</p>
         </div>
       </div>
-      <Link ref={guardar(0)} className="cuenta-menu-opcion" to="/cuenta" onClick={() => alElegir('/cuenta')}>
+      <Link ref={guardar(0)} className="cuenta-menu-opcion" to="/cuenta" aria-current={actual('/cuenta')} onClick={() => alElegir('/cuenta')}>
         <svg className="cuenta-icono" {...trazo}>{PERSONA}</svg>
         <span>Mis datos</span>
       </Link>
-      <Link ref={guardar(1)} className="cuenta-menu-opcion" to="/cuenta/pedidos" onClick={() => alElegir('/cuenta/pedidos')}>
+      <Link ref={guardar(1)} className="cuenta-menu-opcion" to="/cuenta/pedidos" aria-current={actual('/cuenta/pedidos')} onClick={() => alElegir('/cuenta/pedidos')}>
         <svg className="cuenta-icono" {...trazo}>{PEDIDOS}</svg>
         <span>Mis pedidos</span>
         {/* Los parentesis solo para el lector: "Mis pedidos (2)". A la vista,
@@ -225,6 +228,7 @@ function FichaCuenta({ alAbrir }) {
           key={vez}
           nombre={nombre}
           correo={correo}
+          ruta={location.pathname}
           opcionesRef={opcionesRef}
           alElegir={alElegir}
           alSalir={alSalir}

@@ -3,20 +3,22 @@
 // pantalla lee y asi dice donde se ha llegado.
 //
 // Al abrir la pagina no se toca nada: el foco y el desplazamiento son los del
-// navegador, como en cualquier pagina que se carga. Se sabe porque la primera
-// direccion de React Router se llama 'default'; las direcciones viejas que se
-// reescriben al abrir (vistas.js) llegan con alAbrir.
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+// navegador, como en cualquier pagina que se carga. Lo dice la marca de
+// apertura.js, que gasta la primera vista que se monta (tambien despues de un
+// desvio, y no al volver con Atras a la direccion con que se abrio).
+import { useEffect, useRef } from 'react';
+import { esLaDeAbrir } from './apertura.js';
 
 function useVista(titulo, tituloRef) {
-  const location = useLocation();
-  const alAbrir = location.key === 'default' || Boolean(location.state?.alAbrir);
+  // Guardado en la vista: en desarrollo, StrictMode monta los efectos dos
+  // veces, y la segunda ya no encontraria la marca.
+  const deAbrir = useRef(null);
 
   // Solo al montarse, a proposito sin dependencias: lo que cambia dentro de
   // la vista (la categoria de la tienda) lo lleva la propia vista.
   useEffect(() => {
-    if (alAbrir) return;
+    if (deAbrir.current === null) deAbrir.current = esLaDeAbrir();
+    if (deAbrir.current) return;
     // 'instant' y no 'auto': html lleva scroll-behavior: smooth, y la vista
     // nueva no tiene que llegar deslizandose desde donde estaba la anterior.
     window.scrollTo({ top: 0, behavior: 'instant' });

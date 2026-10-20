@@ -46,26 +46,29 @@
 
 * { box-sizing: border-box; }
 body { -webkit-user-select: none; -ms-user-select: none; user-select: none; -webkit-touch-callout: none; }
-input, textarea, address, .footer-horario, a[href^="tel:"] { -webkit-user-select: text; -ms-user-select: text; user-select: text; -webkit-touch-callout: default; }
+/* Lo que alguien puede querer copiar: el codigo del recuadro de respaldo (si
+   no se puede seleccionar hay que copiarlo a mano, WCAG 3.3.8), el numero
+   ET-XXXX de un pedido y los datos y el correo de la cuenta. */
+input, textarea, address, .footer-horario, a[href^="tel:"], .codigo-valor, .cuenta-pedido-numero, .cuenta-datos dd, .cuenta-sesion-correo, .cuenta-menu-correo { -webkit-user-select: text; -ms-user-select: text; user-select: text; -webkit-touch-callout: default; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--masa); color: var(--horno); font-family: Georgia, "Times New Roman", serif; font-size: 16px; line-height: 1.55; }
 body::before { position: fixed; inset: 0; z-index: 0; pointer-events: none; content: ""; opacity: .035; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.09'/%3E%3C/svg%3E"); }
 img { display: block; max-width: 100%; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
-section[id] { scroll-margin-top: 96px; }
-/* Lo mismo para todo lo que puede recibir el foco, y sin colgarlo de
-   :focus-visible. El navegador calcula el desplazamiento en el mismo instante
-   en que mueve el foco, cuando la pseudoclase todavia no casa, asi que puesto
-   ahi no servia de nada: medido con elementFromPoint, el elemento seguia
-   acabando debajo de la cabecera fija. Puesto suelto si lo respeta. */
-a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
-  scroll-margin-top: 110px;
-  /* Y por abajo, el hueco del boton flotante de la canasta, que tambien tapa:
-     medido, el signo mas de una ficha acababa debajo de el al tabular en el
-     telefono. 24 px no bastaban; el boton ocupa unos 68 contando su margen. */
-  scroll-margin-bottom: 92px;
-}
+/* Lo que tapa la cabecera fija, para todo lo que el navegador trae a la vista:
+   el foco al tabular, los saltos por ancla, scrollIntoView. Va en la ventana y
+   no en cada elemento: antes era un scroll-margin en una lista de mandos (a,
+   button, input...) y lo que no estaba en ella, como el summary de Mis
+   pedidos, acababa entero debajo de la cabecera con Mayus+Tab (WCAG 2.4.11).
+   Arriba, la cabecera (86 px; 70 en el telefono) y 24 mas para que quepa el
+   anillo del foco. Abajo, el hueco del boton flotante de la canasta, que
+   tambien tapa: el signo mas de una ficha acababa debajo de el al tabular en
+   el telefono; el boton ocupa unos 68 px contando su margen. */
+html { scroll-padding-top: 110px; scroll-padding-bottom: 92px; }
+/* Una seccion no lleva anillo: le basta quedar 12 px por debajo de la
+   cabecera, que es donde caia antes (98 px; 82 en el telefono). */
+section[id] { scroll-margin-top: -12px; }
 :root {
   /* Lo que queda entre el contenido y el borde de la pantalla. Crece con la
      pantalla pero poco: antes el contenido se quedaba en 1180px y en un
@@ -189,8 +192,9 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 .menu-toggle[aria-expanded="true"] span:last-child { transform: translateY(-6px) rotate(-45deg); }
 
 /* Con la cabecera fija, un salto por ancla dejaria el destino escondido
-   detras de ella. Cada destino se guarda su altura. */
-#inicio, #contenido, #catalogo, #historia, #visitanos { scroll-margin-top: 98px; }
+   detras de ella: lo evita el scroll-padding de html, y estos destinos
+   quedan 12 px por debajo de la cabecera, como las secciones. */
+#inicio, #contenido, #catalogo, #historia, #visitanos { scroll-margin-top: -12px; }
 /* En la version en React (react/) los enlaces de seccion no cambian la
    direccion: bajan y le dan el foco a la seccion, que lleva tabindex="-1".
    Es un contenedor y no un mando, asi que no pinta anillo. En el sitio
@@ -644,7 +648,8 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 @media (max-width: 680px) {
   .container { width: min(100% - 32px, 540px); }
   .nav-wrap { min-height: 70px; }
-  #inicio, #contenido, #catalogo, #historia, #visitanos { scroll-margin-top: 82px; }
+  /* La cabecera mide 70 px: 24 por encima para el anillo del foco. */
+  html { scroll-padding-top: 94px; }
   .brand-logo { height: 44px; }
   .menu-toggle { display: block; }
   .main-nav { position: absolute; top: calc(100% + .5rem); right: 16px; left: auto; display: flex; visibility: hidden; width: min(250px, calc(100vw - 32px)); flex-direction: column; align-items: stretch; gap: .15rem; padding: .55rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }
@@ -816,7 +821,9 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* Visible al instante, por lo mismo que el desplegable de Tienda. */
 .cuenta-menu.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
 .cuenta-menu button { padding: .6rem .75rem; background: none; border: 0; border-radius: var(--r-chip); color: inherit; cursor: pointer; font: 700 .9rem Arial, sans-serif; text-align: left; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.cuenta-menu button:hover { background: rgba(255, 255, 255, .1); color: var(--ambar); }
+/* En hover, ambar claro: el ambar de siempre sobre el fondo aclarado se
+   quedaba en 4,19:1 con letra de 14 px. */
+.cuenta-menu button:hover { background: rgba(255, 255, 255, .1); color: var(--ambar-claro); }
 /* Arriba, quien eres o un saludo; es lo primero que se lee al abrirlo. */
 .cuenta-menu-cabeza { padding: .65rem .75rem .75rem; }
 .cuenta-menu-cabeza.is-dentro { display: flex; align-items: center; gap: .75rem; margin-bottom: .3rem; padding-bottom: .9rem; border-bottom: 1px solid rgba(255, 255, 255, .14); }
@@ -832,7 +839,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-menu .cuenta-menu-opcion { display: flex; min-height: 44px; align-items: center; gap: .75rem; }
 .cuenta-menu-opcion > span:not(.cuenta-menu-numero) { flex: 1; }
 .cuenta-menu-opcion .cuenta-icono { width: 20px; height: 20px; flex: 0 0 auto; color: var(--ambar); }
-.cuenta-menu-numero { display: grid; min-width: 24px; height: 22px; padding: 0 7px; place-items: center; background: rgba(215, 155, 74, .2); border-radius: var(--r-pill); color: var(--ambar); font: 700 .74rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }
+.cuenta-menu-numero { display: grid; min-width: 24px; height: 22px; padding: 0 7px; place-items: center; background: rgba(215, 155, 74, .2); border-radius: var(--r-pill); color: var(--papel); font: 700 .74rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .cuenta-menu-numero[hidden] { display: none; }
 .cuenta-menu-raya { margin: .3rem .5rem; border: 0; border-top: 1px solid rgba(255, 255, 255, .14); }
 /* Salir va en el tono de "cerrado" del pie: se distingue sin gritar. */
@@ -889,10 +896,12 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* El +593 no se escribe: va fijo delante del campo, pegado a el, y los dos se
    leen como una sola caja. Asi el numero se teclea como se dice. */
 .cuenta-conprefijo { display: flex; align-items: stretch; }
-.cuenta-prefijo { display: grid; flex: 0 0 auto; place-items: center; padding: 0 .7rem; background: var(--masa); border: 1px solid var(--masa-linea); border-right: 0; border-radius: var(--r-btn) 0 0 var(--r-btn); color: var(--horno-suave); font: 700 .9rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; transition: border-color var(--dur-fast) var(--ease-ui); }
-.cuenta-conprefijo input { min-width: 0; flex: 1; border-radius: 0 var(--r-btn) var(--r-btn) 0; }
-/* El borde del prefijo acompana al del campo, para que la caja siga siendo una. */
-.cuenta-conprefijo:has(input:focus-visible) .cuenta-prefijo { border-color: var(--ambar); }
+.cuenta-prefijo { display: grid; flex: 0 0 auto; place-items: center; padding: 0 .7rem; background: var(--masa); border: 1px solid var(--horno-claro); border-right: 0; border-radius: var(--r-btn) 0 0 var(--r-btn); color: var(--horno-suave); font: 700 .9rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; transition: border-color var(--dur-fast) var(--ease-ui); }
+/* Con .cuenta-campo delante: si no, el redondeo de .cuenta-campo input, que
+   va despues, le ganaba y el campo se despegaba del prefijo. */
+.cuenta-campo .cuenta-conprefijo input { min-width: 0; flex: 1; border-radius: 0 var(--r-btn) var(--r-btn) 0; }
+/* El borde del prefijo acompana al del campo, para que la caja siga siendo
+   una. Con el foco, el anillo rodea a los dos (vease .pago-campo input). */
 .cuenta-conprefijo:has(input.is-mal) .cuenta-prefijo { border-color: var(--corteza); }
 
 /* Lo que debe cumplir la contrasena, debajo del campo y contestando en cada
@@ -934,15 +943,19 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-metodo { display: block; cursor: pointer; }
 .cuenta-metodo input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .cuenta-metodo-caja { display: flex; align-items: center; gap: .85rem; padding: .9rem 1rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.cuenta-metodo-caja::after { width: 20px; height: 20px; flex: 0 0 auto; border: 2px solid var(--masa-linea); border-radius: 50%; content: ""; transition: border var(--dur-fast) var(--ease-ui); }
+/* El circulo es el que dice cual esta elegida, asi que tiene que verse
+   (WCAG 1.4.11): vacio en horno aclarado (4,97:1) y, la elegida, lleno de
+   horno con un punto de papel, como un boton de radio. El ambar solo
+   acompana: sobre el papel se quedaba en 2,1:1. */
+.cuenta-metodo-caja::after { width: 20px; height: 20px; flex: 0 0 auto; border: 2px solid var(--horno-claro); border-radius: 50%; content: ""; transition: border var(--dur-fast) var(--ease-ui); }
 .cuenta-metodo-caja > span { flex: 1; }
 .cuenta-metodo-caja .cuenta-icono { width: 28px; height: 28px; flex: 0 0 auto; color: var(--corteza-oscura); }
 .cuenta-metodo-caja strong { display: block; color: var(--horno); font: 700 .95rem/1.3 Arial, sans-serif; }
 .cuenta-metodo-caja small { display: block; margin-top: .15rem; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
 .cuenta-metodo:hover .cuenta-metodo-caja { border-color: var(--corteza); }
 .cuenta-metodo input:checked + .cuenta-metodo-caja { background: rgba(215, 155, 74, .14); border-color: var(--ambar); }
-.cuenta-metodo input:checked + .cuenta-metodo-caja::after { border: 6px solid var(--ambar); }
-.cuenta-metodo input:focus-visible + .cuenta-metodo-caja { outline: 3px solid var(--horno); outline-offset: 2px; }
+.cuenta-metodo input:checked + .cuenta-metodo-caja::after { border: 6px solid var(--horno); }
+.cuenta-metodo input:focus-visible + .cuenta-metodo-caja { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .cuenta-pagos-hecho { margin: 0 0 1rem; }
 .cuenta-nota.cuenta-nota-izq { text-align: left; }
 /* El boton de ver la contrasena va dentro del campo, a la derecha. El campo
@@ -1110,13 +1123,14 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-direccion { margin-top: .7rem; }
 .canasta-direccion[hidden] { display: none; }
 .canasta-direccion label { display: block; margin-bottom: .35rem; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
-.canasta-direccion input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .9rem/1.3 Arial, sans-serif; }
-.canasta-direccion input:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
+/* Borde y foco como los de los campos del pago (vease .pago-campo input). */
+.canasta-direccion input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: var(--r-btn); color: var(--horno); font: .9rem/1.3 Arial, sans-serif; }
+.canasta-direccion input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 /* Piso y referencia caben juntos en escritorio: son dos datos cortos del mismo
    asunto, y separados hacen el formulario mas largo de lo que es. */
 .dir-detalle { display: grid; gap: .6rem .8rem; margin-top: .7rem; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); }
-.canasta-direccion textarea { width: 100%; margin-top: 0; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .9rem/1.45 Arial, sans-serif; resize: vertical; }
-.canasta-direccion textarea:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
+.canasta-direccion textarea { width: 100%; margin-top: 0; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: var(--r-btn); color: var(--horno); font: .9rem/1.45 Arial, sans-serif; resize: vertical; }
+.canasta-direccion textarea:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .canasta-direccion label small { color: var(--horno-suave); font-weight: 400; }
 .canasta-direccion > label:not(:first-child) { margin-top: .7rem; }
 
@@ -1190,8 +1204,15 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* opacity a 1 porque Firefox aclara los ejemplos por su cuenta, y entonces el
    color de aqui no seria el que se ve. */
 .pago-campo input::placeholder, .cuenta-campo input::placeholder { color: var(--horno-claro); opacity: 1; }
-.pago-campo input, .cuenta-campo input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: .95rem/1.3 Arial, sans-serif; font-variant-numeric: tabular-nums; transition: border-color var(--dur-fast) var(--ease-ui); }
-.pago-campo input:focus-visible, .cuenta-campo input:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
+/* El borde del campo es lo que dice donde se escribe: en horno aclarado
+   (4,97:1 sobre el papel), no en el filete de masa (1,46:1, WCAG 1.4.11). */
+.pago-campo input, .cuenta-campo input { width: 100%; padding: .65rem .8rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: var(--r-btn); color: var(--horno); font: .95rem/1.3 Arial, sans-serif; font-variant-numeric: tabular-nums; transition: border-color var(--dur-fast) var(--ease-ui); }
+/* El foco, el mismo anillo de los enlaces y botones: horno con el halo ambar.
+   Solo en ambar se quedaba en 2,38:1 sobre el papel. */
+.pago-campo input:focus-visible, .cuenta-campo input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+/* Con el +593 delante, el anillo rodea la caja entera y no solo el campo. */
+.cuenta-campo .cuenta-conprefijo input:focus-visible { outline: none; box-shadow: none; }
+.cuenta-conprefijo:has(input:focus-visible) { border-radius: var(--r-btn); outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .pago-campo input.is-mal, .cuenta-campo input.is-mal { border-color: var(--corteza); }
 .pago-campo-error, .cuenta-campo-error { margin: .3rem 0 0; color: var(--corteza-oscura); font: .74rem/1.4 Arial, sans-serif; }
 .pago-campo-error[hidden], .cuenta-campo-error[hidden] { display: none; }
