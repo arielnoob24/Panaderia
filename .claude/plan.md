@@ -481,7 +481,7 @@ las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
 ese repositorio, y `frontend-design` igual: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, fase 4 hecha; sigue la 5)
+## 15. Migración a React (decidida, fase 5 hecha; sigue la 6)
 
 El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
 Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
@@ -555,7 +555,14 @@ Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
 5. **Cuenta**: crear, verificar, entrar, editar, historial, como vistas
    propias (ver "Fase 5: la cuenta").
 6. **Calidad**: `verificar-sitio`, `axe.mjs`, el CI y la skill `publicar`
-   adaptados al *build*; revisión completa de `ux-accesibilidad`.
+   adaptados al *build*; revisión completa de `ux-accesibilidad`. Además:
+   - Cargar con `React.lazy` + `Suspense` las vistas de la cuenta y del pago
+     (`App.jsx`): hoy el JS es un solo archivo de unos 490 kB (154 kB gzip).
+   - Pasar a `.claude/herramientas/` (o a la skill que toque) los scripts de
+     Edge de la fase 5, que hoy viven en el scratchpad de una sesión
+     (`cuenta`, `reenviar`, `recuperar`, `revision-recuperar`,
+     `recuperar-mov`, `pedidos-cuenta`, `metodo`, `pegar-tel`,
+     `movimiento`, `atras3`, `filtros-atras`).
 7. **Cambio**: `react/` pasa a la raíz, fuera `js/` y `herramientas/`, y el
    plan se reescribe para describir la versión en React.
 
@@ -942,6 +949,28 @@ Pendiente de la fase 5:
 - [ ] Tras recargar, la tienda no recuerda el desplazamiento de las
       entradas de antes (Atrás entre categorías da arriba). Se arreglaría
       guardándolo en `sessionStorage`; no urge.
+- [x] Revisión de `calidad-publicacion` (20 de octubre de 2026): sin
+      regresiones en el sitio actual, todo verificado. Arreglado después
+      (`3053e79` de `logica-datos`, `9ff8119` de `frontend`):
+      - **Seguridad**: un código de recuperar acertado y sin usar ya no
+        sobrevive: `entrar`, `verificar`, `salir` y `porVerificar` borran la
+        recuperación, y los 10 minutos se comprueban también en el reductor,
+        al cambiar la contraseña y al pintar el paso de la clave (antes se
+        podía cambiar la contraseña 30 minutos después sin código).
+      - "Cambiar el correo" conserva el código, su hora y sus intentos;
+        pedirlo otra vez con el mismo correo reabre las casillas sin mandar
+        otro. **La espera de 45 s cuenta desde el último código de recuperar
+        que salió** (`envioClave`), aunque fuera de una recuperación
+        anterior.
+      - Los avisos de caducado y de "la cuenta cambió" se ven en el paso del
+        correo.
+      - El código de 6 cifras sale de `crypto.getRandomValues`
+        (`codigoAlAzar()` en `js/cuenta/guardada.js`, para los dos sitios).
+      - En los dos sitios, el anillo del +593 en la caja solo con
+        `@supports selector(:has(*))`; sin `:has`, el campo lleva el suyo.
+      - Comprobado de nuevo en Edge: `revision-recuperar` 32 bien,
+        `recuperar` 106, `cuenta` 230, `verificar-sitio` en orden.
+- [x] **Fase 5 cerrada** el 20 de octubre de 2026.
 - [x] "Iniciar sesión" en todas partes en React (`994f4e7`); el sitio actual
       sigue con "Entrar" en su panel.
 - [x] Aviso en Crear si ya hay una cuenta ("a…@dominio"), y pedidos
