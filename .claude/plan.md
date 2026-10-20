@@ -755,11 +755,12 @@ actual sigue con su panel. Lo que hace cada paso es lo de la sección 7.
 
 | Ruta | Contenido | Si no corresponde (con `replace`) |
 |---|---|---|
-| `#/cuenta/entrar` | Correo y contraseña; "¿No tienes cuenta? Créala" | Con sesión → `#/cuenta` |
-| `#/cuenta/crear` | Nombre, correo, teléfono, dirección (opcional), contraseña con sus 4 requisitos y repetirla; dos columnas en la computadora (datos a la izquierda, contraseña a la derecha), una en el teléfono; "¿Ya tienes cuenta? Entrar" | Con sesión → `#/cuenta` |
+| `#/cuenta/entrar` | Título y botón **"Iniciar sesión"** (el mismo nombre que la cabecera y la hoja de pagar). Correo y contraseña; "¿Olvidaste tu contraseña?"; "¿No tienes cuenta? Créala" | Con sesión → `#/cuenta` |
+| `#/cuenta/crear` | Nombre, correo, teléfono, dirección (opcional), contraseña con sus 4 requisitos y repetirla; dos columnas en la computadora (datos a la izquierda, contraseña a la derecha), una en el teléfono; "¿Ya tienes cuenta? Inicia sesión". Si en el navegador ya hay una cuenta, aviso arriba: "En este navegador ya hay una cuenta (a…@…). Crear otra la reemplaza." | Con sesión → `#/cuenta` |
 | `#/cuenta/verificar` | Código de 6 cifras, "Reenviar" cada 45 s y el recuadro con el código si EmailJS falta o falla | Sin cuenta por verificar → `#/cuenta/entrar` |
 | `#/cuenta` | **Mis datos**, editables ahí mismo (nombre, teléfono, dirección y **forma de pago preferida**, Efectivo o Tarjeta con su dibujo y su frase como en el sitio actual; el correo se ve pero no se cambia), "Guardar" y "Cerrar sesión". "No guardamos tarjetas" sigue dicho junto a la forma de pago | Sin sesión → `#/cuenta/entrar` |
-| `#/cuenta/pedidos` | Una fila por pedido (`ET-XXXX`, fecha, total), más nuevo arriba; cada una se despliega (`<details>`) con el detalle | Sin sesión → `#/cuenta/entrar` |
+| `#/cuenta/recuperar` | Recuperar la contraseña (ver abajo) | Con sesión → `#/cuenta` |
+| `#/cuenta/pedidos` | Una fila por pedido (`ET-XXXX`, fecha, total), más nuevo arriba; cada una se despliega (`<details>`) con el detalle. **Solo los pedidos de esa cuenta** (ver abajo) | Sin sesión → `#/cuenta/entrar` |
 
 - Como las demás vistas: título de pestaña propio, `h1` con el foco al
   llegar, se anuncia, y la transición de vistas.
@@ -779,6 +780,39 @@ actual sigue con su panel. Lo que hace cada paso es lo de la sección 7.
   cerrar sesión, con un reductor puro como el del pedido.
 - Queda fuera: avisar antes de llenar la canasta que pagar pide cuenta, y
   pedir como invitado (siguen en la sección 13).
+
+**Decidido tras la revisión de `ux-accesibilidad`** (usuario, 20 de octubre
+de 2026):
+- **"Iniciar sesión"** en todas partes (cabecera, hoja de pagar, título y
+  botón de la vista); "Entrar" deja de usarse para esa acción.
+- **Una cuenta por navegador, pero sin sorpresas**: Crear avisa si ya hay
+  una (con el correo a medias, `a…@…`) y que crear otra la reemplaza.
+- **Pedidos por cuenta**: el registro de IndexedDB lleva también `correo`
+  (`reciboParaGuardar()` en `js/pedido/cobro.js`, campo nuevo que no rompe
+  los de antes; vale para los dos sitios). Mis pedidos y el "(N)" de la ficha
+  enseñan solo los de la cuenta abierta. Los pedidos viejos sin `correo` se
+  siguen enseñando (son de antes de la regla y no se sabe de quién son).
+- **Recuperar la contraseña** (`#/cuenta/recuperar`, solo React), como lo
+  hacen las empresas, por código al correo:
+  1. "¿Olvidaste tu contraseña?" en Iniciar sesión lleva aquí, con el correo
+     ya puesto si se había escrito.
+  2. Se escribe el correo. Si no es el de la cuenta de este navegador, el
+     mismo error que al iniciar sesión. Si lo es, EmailJS manda un código de
+     6 cifras (texto propio: "para cambiar tu contraseña"), que se escribe en
+     las mismas 6 casillas de verificar.
+  3. El código **caduca a los 10 minutos**, admite **5 intentos** (después
+     hay que pedir otro) y se reenvía cada 45 s.
+  4. Con el código bien: contraseña nueva con los 4 requisitos y repetirla
+     ("Mostrar" en cada una). Se guarda como siempre (PBKDF2 con sal nueva),
+     la vieja deja de valer, y queda la sesión abierta: a `#/confirmar` si se
+     venía de pagar, si no a `#/cuenta`. Datos, verificación y pedidos se
+     conservan. Con `replace`, para que Atrás no vuelva al código.
+  5. **Si el correo no se puede enviar, no se recupera**: "No pudimos enviar
+     el correo. Inténtalo más tarde." Aquí **no** hay recuadro con el código
+     en pantalla (dejaría a cualquiera cambiar la contraseña).
+  6. Límite que se dice en la vista: la cuenta vive en este navegador, así
+     que se recupera desde el mismo navegador donde se creó.
+  7. Mismo movimiento que crear → verificar entre sus pasos.
 
 **Movimiento de la cuenta** (Motion y `frontend-design`, como el resto de
 "Vistas y aspecto"; todo se apaga con `prefers-reduced-motion`):
@@ -825,7 +859,20 @@ Pendiente de la fase 5:
       navegador da siempre (también con el teclado del teléfono y al
       rellenar el código solo).
 - [x] Cuenta compartida con el sitio actual, comprobada en los dos sentidos.
-- [ ] Revisión de `ux-accesibilidad`.
+- [x] Revisión de `ux-accesibilidad` (20 de octubre de 2026): 12 problemas,
+      ninguno de gravedad 4 y axe sin violaciones. Los enlaces del menú que
+      se veían apagados en las capturas miden 12,4:1 en la ventana: era la
+      captura de página entera con `reducedMotion`, no el sitio.
+- [ ] Arreglos de la revisión (en curso): copiar el código, el número de
+      pedido y el correo (`user-select`); pegar el teléfono con 0 o +593;
+      avisos al lector cuando el correo no sale; un solo anuncio del error
+      del código; contraste del foco y del borde de los campos, de la forma
+      de pago elegida y del número de la ficha; `scroll-padding` bajo la
+      cabecera; foco al volver con Atrás a la primera entrada;
+      `aria-current` en la ficha. Varios arreglan también el sitio actual.
+- [ ] "Iniciar sesión" en todas partes.
+- [ ] Aviso en Crear si ya hay una cuenta, y pedidos filtrados por correo.
+- [ ] Recuperar la contraseña (`#/cuenta/recuperar`).
 
 Cómo quedó la parte de `logica-datos` (20 de octubre de 2026):
 - Estado: `src/estado/sesion.js` es el reductor puro (`releer`,
