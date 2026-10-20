@@ -801,15 +801,48 @@ actual sigue con su panel. Lo que hace cada paso es lo de la sección 7.
    sacudidas (WCAG 2.3.3 y marean).
 
 Pendiente de la fase 5:
-- [ ] Rutas y vistas de la cuenta, con sus redirecciones.
-- [ ] Crear y verificar (con EmailJS y el recuadro de respaldo).
-- [ ] Entrar, y de "Ir a pagar" directo a `#/confirmar`.
-- [ ] Mis datos y cerrar sesión.
-- [ ] Mis pedidos.
+- [x] Rutas y vistas de la cuenta, con sus redirecciones (la lógica; la
+      maquetación en dos columnas es de `frontend`).
+- [x] Crear y verificar (con EmailJS y el recuadro de respaldo).
+- [x] Entrar, y de "Ir a pagar" directo a `#/confirmar`.
+- [x] Mis datos y cerrar sesión.
+- [x] Mis pedidos.
 - [ ] Botón y ficha de la cuenta en la cabecera.
-- [ ] Movimiento de la cuenta (los 6 puntos), y el código en 6 casillas.
-- [ ] Cuenta compartida con el sitio actual, comprobada en los dos sentidos.
+- [x] El código en 6 casillas: su teclado (punto 3 de arriba, sin animar).
+- [ ] Movimiento de la cuenta (los 6 puntos).
+- [x] Cuenta compartida con el sitio actual, comprobada en los dos sentidos.
 - [ ] Revisión de `ux-accesibilidad`.
+
+Cómo quedó la parte de `logica-datos` (20 de octubre de 2026):
+- Estado: `src/estado/sesion.js` es el reductor puro (`releer`,
+  `porVerificar`, `codigo`, `envio`, `verificar`, `entrar`, `editar`,
+  `salir`). `SesionProvider` hace lo que no es puro (huella, código al azar,
+  correo) y guarda en un efecto cuando el reductor cuenta un cambio; el evento
+  `storage` vuelve a leer la cuenta. La cuenta por verificar vive solo en
+  memoria hasta que se verifica, como en el sitio actual (recargar en
+  `#/cuenta/verificar` lleva a entrar). El código y la hora del último envío
+  van en el estado: salir de la vista y volver no reinicia los 45 s.
+- Reglas: `leerCuentaGuardada()` se importa de `js/cuenta/guardada.js` y
+  EmailJS de `js/comun/mail.js`. Las reglas de los campos, PBKDF2 y los textos
+  del código están **copiados tal cual** de `account.js` en
+  `src/servicios/cuenta.js`, porque `account.js` arma su panel al importarse
+  y el sitio actual no se tocaba; hasta la fase 7, una regla que cambie se
+  cambia en los dos.
+- Cada vista mira si le toca al llegar, no a cada pintado (como
+  `#/confirmar`): React Router cambia de dirección en una transición que se
+  pinta después del cambio de sesión, y si no, el desvío de la vista ganaría
+  al destino. Los desvíos llevan `alAbrir`, así que abrir la página en una
+  dirección que rebota no mueve el foco (también en `#/confirmar` y
+  `#/comprobante`, que antes lo movían).
+- "Ir a pagar" deja `pagar` en el `state` de la dirección, y pasa de entrar a
+  crear y a verificar. Al terminar se va a `#/confirmar` si se venía de pagar
+  y la canasta tiene algo; si no, a `#/cuenta`.
+- Decidido por `logica-datos`, a confirmar con el usuario: crear → verificar,
+  entrar/verificar → destino y "Cerrar sesión" → `#/` van con `replace`, para
+  que Atrás no vuelva a un formulario ya hecho ni a los datos de una sesión
+  cerrada (como el comprobante). Crear lleva "Dirección (opcional)" como el
+  sitio actual. "Métodos de pago" del sitio actual no tiene vista en React
+  (no está en la tabla); la preferencia guardada se conserva.
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 

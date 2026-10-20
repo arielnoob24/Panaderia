@@ -2,6 +2,7 @@
 // vistas y sus direcciones estan en comun/vistas.js:
 //   #/  #/nosotros  #/tienda-catalogo  #/tienda-<categoria>  #/contacto
 //   #/confirmar  #/comprobante
+//   #/cuenta/entrar  #/cuenta/crear  #/cuenta/verificar  #/cuenta  #/cuenta/pedidos
 // HashRouter las escribe con una barra detras del '#'. Las de antes, sin la
 // barra (#tienda-panes), siguen entrando: React Router le pone la barra al
 // leer la direccion. Las de cuando todo era una pagina (#historia,
@@ -23,6 +24,11 @@ import Confirmar from './pedido/Confirmar.jsx';
 import Comprobante from './pedido/Comprobante.jsx';
 import Canasta from './pedido/Canasta.jsx';
 import BarraDeshacer from './pedido/BarraDeshacer.jsx';
+import Entrar from './cuenta/Entrar.jsx';
+import CrearCuenta from './cuenta/CrearCuenta.jsx';
+import Verificar from './cuenta/Verificar.jsx';
+import MisDatos from './cuenta/MisDatos.jsx';
+import MisPedidos from './cuenta/MisPedidos.jsx';
 
 // La vista que toca. Las de la tienda son una sola: entre categorias el
 // catalogo se queda montado y solo cambia "Filtrar por".
@@ -32,6 +38,11 @@ function Vista({ cual, pathname }) {
   if (cual === 'contacto') return <Contacto />;
   if (cual === 'confirmar') return <Confirmar />;
   if (cual === 'comprobante') return <Comprobante />;
+  if (cual === 'cuenta-entrar') return <Entrar />;
+  if (cual === 'cuenta-crear') return <CrearCuenta />;
+  if (cual === 'cuenta-verificar') return <Verificar />;
+  if (cual === 'cuenta') return <MisDatos />;
+  if (cual === 'cuenta-pedidos') return <MisPedidos />;
   return <Catalogo categoria={categoriaDeRuta(pathname)} />;
 }
 

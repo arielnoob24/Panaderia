@@ -3,17 +3,25 @@
 // Mientras esta arriba, lo de detras del panel queda inert (lo hace Canasta).
 // Escape o tocar lo oscuro es "Seguir viendo la canasta".
 //
-// FASE 4: React ya lee la cuenta del sitio actual (estado/SesionProvider.jsx)
-// y con ella deja pagar; sin ella sale esta hoja. Pero todavia no sabe crear
-// cuentas ni entrar en ellas (fase 5), asi que sus dos botones grandes no
-// hacen nada aun. Cuando llegue la cuenta, abriran el panel en 'crear' o en
-// 'entrar' como en cart.js.
+// Sus dos botones llevan a la cuenta (#/cuenta/entrar o #/cuenta/crear,
+// seccion 15 del plan, fase 5) recordando que se venia de pagar: al entrar con
+// el correo verificado, o al verificarlo, se va directo a #/confirmar con la
+// canasta. La canasta se cierra al cambiar de vista (CanastaProvider), y la
+// vista de la cuenta se lleva el foco a su titulo.
+import { useNavigate } from 'react-router-dom';
 import { IconoPersona } from './iconosPedido.jsx';
+import { useCanasta } from './CanastaProvider.jsx';
 
 function PideCuenta({ pide, principalRef, onVolver }) {
   // Quien llega aqui casi nunca tiene cuenta, asi que la puerta grande es
   // crearla; si en este navegador ya hay una guardada, la grande es entrar.
   const tiene = Boolean(pide?.tiene);
+  const { cerrar } = useCanasta();
+  const navegar = useNavigate();
+  const ir = (paso) => {
+    cerrar();
+    navegar(`/cuenta/${paso}`, { state: { pagar: true } });
+  };
   const alTeclear = (e) => {
     if (e.key !== 'Escape') return;
     e.stopPropagation();
@@ -37,11 +45,10 @@ function PideCuenta({ pide, principalRef, onVolver }) {
           El comprobante del pedido te llega al correo, así que necesitas una cuenta con el correo
           verificado. <strong>Tu canasta se queda tal como está.</strong>
         </p>
-        {/* Sin efecto hasta la fase 5 (la cuenta). */}
-        <button ref={principalRef} className="button button-yellow pide-cuenta-principal" type="button" data-va={tiene ? 'entrar' : 'crear'}>
+        <button ref={principalRef} className="button button-yellow pide-cuenta-principal" type="button" data-va={tiene ? 'entrar' : 'crear'} onClick={() => ir(tiene ? 'entrar' : 'crear')}>
           {tiene ? 'Iniciar sesión' : 'Crear una cuenta'}
         </button>
-        <button className="pide-cuenta-otra" type="button" data-va={tiene ? 'crear' : 'entrar'}>
+        <button className="pide-cuenta-otra" type="button" data-va={tiene ? 'crear' : 'entrar'} onClick={() => ir(tiene ? 'crear' : 'entrar')}>
           {tiene ? 'No tengo cuenta, crear una' : 'Ya tengo cuenta, iniciar sesión'}
         </button>
         <button className="pide-cuenta-volver" type="button" onClick={onVolver}>Seguir viendo la canasta</button>

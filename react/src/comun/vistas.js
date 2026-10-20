@@ -7,6 +7,9 @@
 //   #/tienda-<categoria>  el catalogo con "Filtrar por" puesto
 //   #/contacto            horario, direccion, mapa y contacto
 //   #/confirmar, #/comprobante  el pedido (src/pedido/)
+//   #/cuenta/entrar, #/cuenta/crear, #/cuenta/verificar, #/cuenta (Mis
+//   datos), #/cuenta/pedidos   la cuenta (src/cuenta/); cada una lleva a
+//   otra con replace cuando no corresponde (fase 5 en la seccion 15 del plan)
 // Las tiendas son una sola vista: cambiar de categoria no es cambiar de
 // pagina, y el catalogo no se vuelve a montar.
 import { categoriaDeRuta } from '../catalogo/categorias.js';
@@ -22,6 +25,15 @@ const VIEJAS = {
   '/catalogo': '/tienda-catalogo',
 };
 
+// Las vistas de la cuenta, una por paso.
+const CUENTA = {
+  '/cuenta': 'cuenta',
+  '/cuenta/entrar': 'cuenta-entrar',
+  '/cuenta/crear': 'cuenta-crear',
+  '/cuenta/verificar': 'cuenta-verificar',
+  '/cuenta/pedidos': 'cuenta-pedidos',
+};
+
 // Que vista pide la direccion, o null si no es ninguna.
 function vistaDeRuta(pathname) {
   if (pathname === '/' || pathname === '') return 'inicio';
@@ -29,6 +41,7 @@ function vistaDeRuta(pathname) {
   if (pathname === '/contacto') return 'contacto';
   if (pathname === '/confirmar') return 'confirmar';
   if (pathname === '/comprobante') return 'comprobante';
+  if (CUENTA[pathname]) return CUENTA[pathname];
   const categoria = categoriaDeRuta(pathname);
   return categoria && categoria !== 'todos' ? 'tienda' : null;
 }

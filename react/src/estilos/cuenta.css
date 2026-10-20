@@ -1,0 +1,31 @@
+/* ---- Las vistas de la cuenta (#/cuenta/*) ----------------------------------
+   Lo minimo para que se usen (fase 5, seccion 15 del plan): debajo de la
+   cabecera fija, una columna de ancho legible y las 6 casillas del codigo.
+   Los campos, la lista de requisitos, el recuadro del codigo y el historial
+   usan las clases de styles.css del panel del sitio actual (cuenta-campo,
+   cuenta-reglas, codigo-falso, cuenta-pedido...). La maquetacion en dos
+   columnas y el "Movimiento de la cuenta" son de frontend. */
+
+.cuenta-vista { padding-top: 132px; padding-bottom: 3rem; }
+.cuenta-vista-caja { max-width: 520px; }
+.cuenta-vista-titulo { margin: 0 0 1rem; }
+
+/* En la pagina no hay panel que desplazar ni pie pegado. */
+.cuenta-vista .cuenta-cuerpo { overflow: visible; padding: 0; }
+.cuenta-vista .cuenta-pie { padding: 1rem 0 0; }
+.cuenta-vista .cuenta-pie > .button { width: 100%; }
+
+.cuenta-otro-paso { margin: .9rem 0 0; color: var(--horno-suave); font: .85rem/1.4 Arial, sans-serif; text-align: center; }
+.cuenta-otro-enlace { color: var(--corteza-oscura); font-weight: 700; }
+.cuenta-vista .cuenta-ver-pedidos { display: flex; justify-content: center; margin: .8rem 0; text-decoration: none; }
+.cuenta-vista .cuenta-volver-datos { text-align: center; text-decoration: none; }
+.cuenta-datos-correo { margin-bottom: .2rem; padding-top: 0; border-top: 0; }
+
+/* El codigo: seis casillas en fila, del ancho de una cifra grande. */
+.codigo-casillas { margin: 0 0 .3rem; padding: 0; border: 0; }
+.codigo-leyenda { margin-bottom: .4rem; padding: 0; color: var(--horno); font: 700 .8rem/1.3 Arial, sans-serif; }
+.codigo-fila { display: flex; gap: .45rem; }
+.codigo-casilla { width: 2.8rem; height: 3.2rem; min-width: 0; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); font: 700 1.35rem/1 "Courier New", monospace; text-align: center; }
+.codigo-casilla:focus-visible { border-color: var(--ambar); outline: 2px solid var(--ambar); outline-offset: 1px; }
+.codigo-casilla.is-mal { border-color: var(--corteza); }
+.codigo-error { margin-bottom: .4rem; }
