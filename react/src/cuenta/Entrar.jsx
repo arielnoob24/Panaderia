@@ -7,7 +7,12 @@
 // solo se este pasando) y, si ya salio marcado, sigue lo que se escribe; la
 // contrasena se marca al intentar entrar y se limpia al corregirla. Que no
 // haya cuenta con ese correo o que la contrasena no sea esa se sabe al pulsar
-// "Entrar", y se canta en la region de avisos.
+// "Iniciar sesion", y se canta en la region de avisos.
+//
+// La accion se llama "Iniciar sesion" en todas partes (cabecera, hoja de
+// pagar, titulo y boton), aunque la direccion siga siendo #/cuenta/entrar.
+// "¿Olvidaste tu contrasena?" lleva a #/cuenta/recuperar con el correo que ya
+// se hubiera escrito.
 import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -75,18 +80,18 @@ function FormularioEntrar() {
       avisar(avisoDelCodigo(`Te enviamos un código a ${escrito}.`));
       return;
     }
-    terminar(r, `Entraste como ${r.nombre}.`);
+    terminar(r, `Iniciaste sesión como ${r.nombre}.`);
   };
 
   const alTeclear = useEnterAvanza([correoRef, claveRef], alEntrar);
 
   return (
-    <MarcoCuenta paso="entrar" titulo="Entrar">
+    <MarcoCuenta paso="entrar" titulo="Iniciar sesión">
       <div className="cuenta-formulario" onKeyDown={alTeclear}>
         <div className="cuenta-cuerpo">
           <p className="cuenta-maqueta">
-            <strong>Maqueta académica.</strong> Sin servidor, solo se puede entrar a la cuenta que
-            creaste en este navegador.
+            <strong>Maqueta académica.</strong> Sin servidor, solo se puede iniciar sesión con la
+            cuenta que creaste en este navegador.
           </p>
           <CampoCuenta
             id="entrar-correo"
@@ -120,11 +125,20 @@ function FormularioEntrar() {
               if (errores.clave) marcar('clave', '');
             }}
           />
+          <p className="cuenta-olvide">
+            <Link
+              className="cuenta-otro-enlace cuenta-olvide-enlace"
+              to="/cuenta/recuperar"
+              state={{ pagar: vieneDePagar(location), correo: correo.trim() }}
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </p>
         </div>
         <div className="cuenta-pie">
           <p className="cuenta-aviso" role="alert" hidden={!aviso}><TextoSuave texto={aviso} /></p>
           <button className="button button-yellow cuenta-entrar" type="button" onClick={alEntrar} aria-disabled={ocupado}>
-            Entrar
+            Iniciar sesión
           </button>
           <p className="cuenta-otro-paso">
             ¿No tienes cuenta?{' '}

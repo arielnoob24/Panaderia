@@ -7,7 +7,7 @@
 // la esta leyendo o a punto de pulsar no tiene que ver como se le escapa
 // (WCAG 2.2.1). Al soltarla sigue con lo que le quedaba, como en cart.js.
 //
-// Con la hoja de "Entra a tu cuenta para pagar" arriba, la barra queda inert:
+// Con la hoja de "Inicia sesion para pagar" arriba, la barra queda inert:
 // la hoja es modal y el tabulador da la vuelta solo dentro de ella.
 import { useEffect, useRef, useState } from 'react';
 import { usePedido } from '../estado/PedidoProvider.jsx';

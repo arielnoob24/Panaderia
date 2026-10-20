@@ -79,7 +79,7 @@ function PasoCodigo({ pendiente }) {
       else primera?.focus();
       return;
     }
-    terminar({ direccion }, `Correo verificado. Entraste como ${nombre}.`);
+    terminar({ direccion }, `Correo verificado. Iniciaste sesión como ${nombre}.`);
   };
 
   // Mientras se escribe no se riñe: el error se va al tocar una casilla y

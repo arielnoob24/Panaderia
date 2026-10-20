@@ -9,13 +9,16 @@
 // telefono, direccion, dentro, verificado, metodo), si hay alguna en este
 // navegador (hayCuenta), si se puede pagar (puedePedir), la cuenta que espera
 // su codigo (pendiente) y las acciones: crear, entrar, verificar, reenviar,
-// editar y salir. Lo que pasa en pantalla despues (avisos, foco, a donde se
+// editar y salir; y para recuperar la contrasena, la recuperacion en marcha
+// (sin el codigo) con pedirRecuperar, reenviarRecuperar, comprobarRecuperar,
+// cambiarClave y olvidarRecuperar. Lo que pasa en pantalla despues (avisos, foco, a donde se
 // va) lo decide quien llama, con lo que estas devuelven.
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useRef } from 'react';
 import { reductor } from './sesion.js';
 import {
   leerCuenta, guardarCuenta, escucharCuenta, puedeHuella, calcularHuella,
   nuevoCodigo, envioInicial, mandarCodigo,
+  CADUCA_RECUPERAR, INTENTOS_RECUPERAR, SIN_CORREO_RECUPERAR, mandarCodigoClave,
 } from '../servicios/cuenta.js';
 
 const ContextoSesion = createContext(null);
@@ -25,7 +28,7 @@ const leerParaEstado = () => {
   const { correoGuardado, ...leido } = leerCuenta();
   return leido;
 };
-const iniciar = () => ({ ...leerParaEstado(), pendiente: null, cambios: 0 });
+const iniciar = () => ({ ...leerParaEstado(), pendiente: null, recuperacion: null, cambios: 0 });
 
 // Textos de entrar, los del sitio actual. Se dice cual de los dos fallo, el
 // correo o la contrasena, porque es lo que hace falta para arreglarlo
@@ -126,7 +129,80 @@ function SesionProvider({ children }) {
   const editar = useCallback((datos) => despachar({ tipo: 'editar', ...datos }), []);
   const salir = useCallback(() => despachar({ tipo: 'salir' }), []);
 
-  const { cuenta, hayCuenta, pendiente } = estado;
+  // ---- Recuperar la contrasena ------------------------------------------
+  // El codigo solo cuenta si el correo salio: sin el no hay nada que
+  // escribir, y aqui no se ensena en pantalla. Se espera la respuesta antes
+  // de pasar a las casillas. Devuelve true si salio.
+  const mandarRecuperar = useCallback(async (correo, nombre) => {
+    const codigo = nuevoCodigo();
+    if (!(await mandarCodigoClave(correo, nombre, codigo))) return false;
+    despachar({ tipo: 'recuperar', correo, nombre, codigo, enviadoEn: Date.now() });
+    return true;
+  }, []);
+
+  // El correo escrito: el mismo error que al iniciar sesion si no es el de la
+  // cuenta de este navegador. Devuelve { campo, texto }, { aviso } o { hecho }.
+  const pedirRecuperar = useCallback(async (escrito) => {
+    const { correoGuardado, cuenta: guardada } = leerCuenta();
+    if (!correoGuardado || correoGuardado.toLowerCase() !== escrito.toLowerCase()) {
+      return { campo: 'correo', texto: correoGuardado ? SIN_ESA_CUENTA : SIN_NINGUNA };
+    }
+    // Al correo tal como se guardo, que es al que llegan los comprobantes.
+    return (await mandarRecuperar(correoGuardado, guardada.nombre)) ? { hecho: true } : { aviso: SIN_CORREO_RECUPERAR };
+  }, [mandarRecuperar]);
+
+  // Otro codigo para el mismo correo: '' si salio, o el aviso. Si no sale,
+  // el de antes sigue valiendo (si no ha caducado).
+  const reenviarRecuperar = useCallback(async () => {
+    const r = actual.current.recuperacion;
+    if (!r) return SIN_CORREO_RECUPERAR;
+    return (await mandarRecuperar(r.correo, r.nombre)) ? '' : SIN_CORREO_RECUPERAR;
+  }, [mandarRecuperar]);
+
+  // El codigo escrito: '' si vale, o el error, que dice como seguir.
+  const comprobarRecuperar = useCallback((escrito) => {
+    const r = actual.current.recuperacion;
+    if (!r) return 'Pide un código con "Enviar otro código".';
+    if (Date.now() - r.enviadoEn > CADUCA_RECUPERAR) {
+      return 'El código caducó: dura 10 minutos. Pide otro con "Enviar otro código".';
+    }
+    if (r.intentos >= INTENTOS_RECUPERAR) {
+      return 'Ya no quedan intentos con este código. Pide otro con "Enviar otro código".';
+    }
+    // Las cifras que faltan no gastan un intento: no se ha probado ningun codigo.
+    if (escrito.length !== 6) return 'El código tiene 6 cifras.';
+    if (escrito !== r.codigo) {
+      despachar({ tipo: 'fallaRecuperar' });
+      const quedan = INTENTOS_RECUPERAR - r.intentos - 1;
+      if (quedan === 0) return 'Ese código no es el que enviamos y ya no quedan intentos. Pide otro con "Enviar otro código".';
+      return `Ese código no es el que enviamos. ${quedan === 1 ? 'Te queda 1 intento' : `Te quedan ${quedan} intentos`}.`;
+    }
+    despachar({ tipo: 'aciertaRecuperar' });
+    return '';
+  }, []);
+
+  // La contrasena nueva (ya revisada por el formulario), con sal nueva.
+  // Devuelve { aviso } si no se pudo, o { hecho, nombre, direccion }.
+  const cambiarClave = useCallback(async (clave) => {
+    const r = actual.current.recuperacion;
+    if (!r?.listo) return { aviso: 'Primero escribe el código que te enviamos.' };
+    if (!puedeHuella()) return { aviso: 'Este navegador no puede guardar la contraseña aquí. Abre el sitio por https.' };
+    const huella = await calcularHuella(clave);
+    // Mientras tanto otra pestana pudo crear otra cuenta encima de esta: la
+    // contrasena nueva no puede ir a parar a una cuenta que no es la del codigo.
+    const leido = leerParaEstado();
+    if (leido.cuenta.correo.toLowerCase() !== r.correo.toLowerCase()) {
+      despachar({ tipo: 'olvidarRecuperar' });
+      return { aviso: 'La cuenta de este navegador cambió mientras tanto. Vuelve a pedir el código.' };
+    }
+    despachar({ tipo: 'releer', leido });
+    despachar({ tipo: 'nuevaClave', huella });
+    return { hecho: true, nombre: leido.cuenta.nombre, direccion: leido.cuenta.direccion };
+  }, []);
+
+  const olvidarRecuperar = useCallback(() => despachar({ tipo: 'olvidarRecuperar' }), []);
+
+  const { cuenta, hayCuenta, pendiente, recuperacion } = estado;
   const valor = useMemo(() => ({
     ...cuenta,
     hayCuenta,
@@ -137,8 +213,15 @@ function SesionProvider({ children }) {
     pendiente: pendiente ? {
       ...pendiente.datos, codigo: pendiente.codigo, enviadoEn: pendiente.enviadoEn, envio: pendiente.envio,
     } : null,
+    // Sin el codigo: la pantalla no lo ensena nunca.
+    recuperacion: recuperacion ? {
+      correo: recuperacion.correo, enviadoEn: recuperacion.enviadoEn,
+      intentos: recuperacion.intentos, listo: recuperacion.listo,
+    } : null,
     crear, entrar, verificar, reenviar, editar, salir,
-  }), [cuenta, hayCuenta, pendiente, crear, entrar, verificar, reenviar, editar, salir]);
+    pedirRecuperar, reenviarRecuperar, comprobarRecuperar, cambiarClave, olvidarRecuperar,
+  }), [cuenta, hayCuenta, pendiente, recuperacion, crear, entrar, verificar, reenviar, editar, salir,
+    pedirRecuperar, reenviarRecuperar, comprobarRecuperar, cambiarClave, olvidarRecuperar]);
 
   return <ContextoSesion.Provider value={valor}>{children}</ContextoSesion.Provider>;
 }

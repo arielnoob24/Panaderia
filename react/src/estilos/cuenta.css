@@ -55,6 +55,9 @@ a.nav-cuenta { text-decoration: none; }
 .cuenta-otro-paso { margin: .9rem 0 0; color: var(--horno-suave); font: .85rem/1.4 Arial, sans-serif; text-align: center; }
 .cuenta-otro-enlace { color: var(--corteza-oscura); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .cuenta-otro-enlace:hover { color: var(--horno); }
+/* "¿Olvidaste tu contrasena?", bajo la contrasena de Iniciar sesion (lo
+   minimo para que se vea en su sitio; el ajuste fino es de frontend). */
+.cuenta-olvide { margin: -.2rem 0 .4rem; font: .85rem/1.4 Arial, sans-serif; text-align: right; }
 .cuenta-vista .cuenta-ver-pedidos { display: flex; justify-content: center; margin: .8rem 0; text-decoration: none; }
 .cuenta-vista .cuenta-volver-datos { text-align: center; text-decoration: none; }
 .cuenta-datos-correo { margin-bottom: .2rem; padding-top: 0; border-top: 0; }

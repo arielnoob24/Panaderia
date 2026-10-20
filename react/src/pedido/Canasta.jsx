@@ -164,7 +164,7 @@ function Canasta() {
 
   // ---- Ir a pagar ------------------------------------------------------
   // Pagar pide una cuenta con el correo verificado: el comprobante va a ese
-  // correo. Sin ella sale la hoja de "Entra a tu cuenta para pagar" dentro de
+  // correo. Sin ella sale la hoja de "Inicia sesion para pagar" dentro de
   // la canasta (PideCuenta.jsx), sin echar a nadie a otra parte. Con ella, la
   // canasta se cierra y se va a #/confirmar; si ya se estaba ahi (se abrio con
   // "Editar la canasta"), solo se cierra, sin apilar otra entrada en Atras.

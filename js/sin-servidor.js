@@ -1339,6 +1339,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   };
   var reciboParaGuardar = (r) => ({
     numero: r.numero,
+    correo: r.correo,
     fecha: r.fecha,
     modo: r.modo,
     direccion: r.direccion,

@@ -2,7 +2,8 @@
 // vistas y sus direcciones estan en comun/vistas.js:
 //   #/  #/nosotros  #/tienda-catalogo  #/tienda-<categoria>  #/contacto
 //   #/confirmar  #/comprobante
-//   #/cuenta/entrar  #/cuenta/crear  #/cuenta/verificar  #/cuenta  #/cuenta/pedidos
+//   #/cuenta/entrar  #/cuenta/crear  #/cuenta/verificar  #/cuenta/recuperar
+//   #/cuenta  #/cuenta/pedidos
 // HashRouter las escribe con una barra detras del '#'. Las de antes, sin la
 // barra (#tienda-panes), siguen entrando: React Router le pone la barra al
 // leer la direccion. Las de cuando todo era una pagina (#historia,
@@ -29,6 +30,7 @@ import BarraDeshacer from './pedido/BarraDeshacer.jsx';
 import Entrar from './cuenta/Entrar.jsx';
 import CrearCuenta from './cuenta/CrearCuenta.jsx';
 import Verificar from './cuenta/Verificar.jsx';
+import Recuperar from './cuenta/Recuperar.jsx';
 import MisDatos from './cuenta/MisDatos.jsx';
 import MisPedidos from './cuenta/MisPedidos.jsx';
 
@@ -43,6 +45,7 @@ function Vista({ cual, pathname }) {
   if (cual === 'cuenta-entrar') return <Entrar />;
   if (cual === 'cuenta-crear') return <CrearCuenta />;
   if (cual === 'cuenta-verificar') return <Verificar />;
+  if (cual === 'cuenta-recuperar') return <Recuperar />;
   if (cual === 'cuenta') return <MisDatos />;
   if (cual === 'cuenta-pedidos') return <MisPedidos />;
   return <Catalogo categoria={categoriaDeRuta(pathname)} />;

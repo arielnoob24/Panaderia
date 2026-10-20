@@ -24,7 +24,7 @@ function IconoCanasta() {
   );
 }
 
-// El de la hoja "Entra a tu cuenta para pagar".
+// El de la hoja "Inicia sesion para pagar".
 function IconoPersona() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" focusable="false">

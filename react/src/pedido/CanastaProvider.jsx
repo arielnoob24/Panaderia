@@ -23,7 +23,7 @@ function CanastaProvider({ children }) {
   // pinte: { id, que } con que = 'si' | 'menos' | 'quitar' | 'mas'. Las lineas
   // se rehacen al cambiar, y el boton que tenia el foco puede no existir ya.
   const [focoLinea, setFocoLinea] = useState(null);
-  // La hoja de "Entra a tu cuenta para pagar" ({ tiene } o null). Vive aqui y
+  // La hoja de "Inicia sesion para pagar" ({ tiene } o null). Vive aqui y
   // no en Canasta porque la barra de deshacer tambien la mira: la hoja es
   // modal, y mientras esta arriba la barra sale del cerco del foco.
   const [pide, setPide] = useState(null);

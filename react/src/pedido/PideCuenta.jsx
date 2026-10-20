@@ -1,10 +1,10 @@
-// "Entra a tu cuenta para pagar": la hoja que sube sobre la canasta al pulsar
+// "Inicia sesion para pagar": la hoja que sube sobre la canasta al pulsar
 // "Ir a pagar" sin una cuenta con el correo verificado (seccion 5 del plan).
 // Mientras esta arriba, lo de detras del panel queda inert (lo hace Canasta).
 // Escape o tocar lo oscuro es "Seguir viendo la canasta".
 //
 // Sus dos botones llevan a la cuenta (#/cuenta/entrar o #/cuenta/crear,
-// seccion 15 del plan, fase 5) recordando que se venia de pagar: al entrar con
+// seccion 15 del plan, fase 5) recordando que se venia de pagar: al iniciar sesion con
 // el correo verificado, o al verificarlo, se va directo a #/confirmar con la
 // canasta. La canasta se cierra al cambiar de vista (CanastaProvider), y la
 // vista de la cuenta se lleva el foco a su titulo.
@@ -40,7 +40,7 @@ function PideCuenta({ pide, principalRef, onVolver }) {
     >
       <div className="pide-cuenta-hoja">
         <span className="pide-cuenta-dibujo" aria-hidden="true"><IconoPersona /></span>
-        <h3 id="pide-cuenta-titulo">Entra a tu cuenta para pagar</h3>
+        <h3 id="pide-cuenta-titulo">Inicia sesión para pagar</h3>
         <p id="pide-cuenta-dicho">
           El comprobante del pedido te llega al correo, así que necesitas una cuenta con el correo
           verificado. <strong>Tu canasta se queda tal como está.</strong>

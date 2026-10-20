@@ -174,9 +174,12 @@ const armarRecibo = ({ lineas, entrega, factura, sesion, metodo, numeroTarjeta, 
 };
 
 // Lo que va a IndexedDB (eltradicional/pedidos): el mismo registro que ha
-// guardado siempre el sitio, para que el historial lea igual los de antes.
+// guardado siempre el sitio, para que el historial lea igual los de antes,
+// mas el correo de la cuenta que lo pidio: el historial de React ensena solo
+// los de la cuenta abierta. Los de antes no lo traen y se siguen ensenando.
 const reciboParaGuardar = (r) => ({
   numero: r.numero,
+  correo: r.correo,
   fecha: r.fecha,
   modo: r.modo,
   direccion: r.direccion,

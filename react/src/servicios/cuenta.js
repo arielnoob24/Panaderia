@@ -190,10 +190,43 @@ const MOTIVO_SIN_CORREO = {
 const AVISO_SIN_CORREO = 'No pudimos enviar el correo; el código está en pantalla.';
 const avisoDelCodigo = (enviado) => (MOTIVO_SIN_CORREO[envioInicial()] ? AVISO_SIN_CORREO : enviado);
 
+// ---- Recuperar la contrasena (solo React, fase 5 del plan) -------------
+// El mismo codigo de 6 cifras, con otro texto, por la misma plantilla de
+// EmailJS: asunto y cuerpo viajan como variables. Aqui no hay recuadro de
+// respaldo: con el codigo en pantalla cualquiera que abriera este navegador
+// podria cambiar la contrasena. Si el correo no sale, no se recupera.
+const CADUCA_RECUPERAR = 10 * 60 * 1000;
+const INTENTOS_RECUPERAR = 5;
+const SIN_CORREO_RECUPERAR = 'No pudimos enviar el correo. Inténtalo más tarde.';
+// true si salio. Nunca lanza, como enviarCorreo.
+const mandarCodigoClave = async (para, nombre, codigo) => {
+  if (!buzonListo()) return false;
+  return enviarCorreo(para, nombre,
+    'Tu código para cambiar la contraseña',
+    `Tu código para cambiar tu contraseña de El Tradicional es ${codigo}.\n\n`
+    + 'Caduca en 10 minutos. Si no lo pediste tú, no hagas nada: tu contraseña '
+    + 'sigue siendo la misma. No lo compartas con nadie: nadie de El Tradicional '
+    + 'te lo va a pedir.');
+};
+
+// El correo a medias (ana.perez@gmail.com -> a…@gmail.com): basta para que
+// su dueno lo reconozca y no se lo ensena entero a quien use el navegador.
+const correoAMedias = (correo) => {
+  const arroba = correo.indexOf('@');
+  if (arroba < 1) return '…';
+  return `${correo[0]}…${correo.slice(arroba)}`;
+};
+
 // ---- El historial -----------------------------------------------------
 // Todos los pedidos pagados en este navegador, el mas nuevo primero. Si la
 // base no se abre, una lista vacia: lo mismo que ve quien no ha pedido nada.
 const todosLosPedidos = () => pedidosGuardados(Infinity);
+// Los de una cuenta: los que llevan su correo y los de antes de que se
+// apuntara (sin correo), que no se sabe de quien son y se siguen ensenando.
+const deLaCuenta = (pedidos, correo) => {
+  const suyo = String(correo || '').toLowerCase();
+  return pedidos.filter((p) => !p.correo || String(p.correo).toLowerCase() === suyo);
+};
 
 export {
   soloNueve, puedeHuella, calcularHuella,
@@ -202,5 +235,6 @@ export {
   leerCuenta, guardarCuenta, escucharCuenta,
   REENVIO, nuevoCodigo, buzonListo, envioInicial, mandarCodigo, MOTIVO_SIN_CORREO,
   AVISO_SIN_CORREO, avisoDelCodigo,
-  todosLosPedidos,
+  CADUCA_RECUPERAR, INTENTOS_RECUPERAR, SIN_CORREO_RECUPERAR, mandarCodigoClave, correoAMedias,
+  todosLosPedidos, deLaCuenta,
 };

@@ -19,7 +19,7 @@ import { flushSync } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
-import { REGLAS, soloNueve, fallosCuenta, avisoFaltan, avisoDelCodigo } from '../servicios/cuenta.js';
+import { REGLAS, soloNueve, fallosCuenta, avisoFaltan, avisoDelCodigo, correoAMedias } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
 import MarcaRegla from './MarcaRegla.jsx';
@@ -39,7 +39,7 @@ function CrearCuenta() {
 }
 
 function FormularioCrear() {
-  const { pendiente, crear } = useSesion();
+  const { pendiente, crear, hayCuenta, correo: correoGuardado } = useSesion();
   const avisar = useAvisos();
   const navegar = useNavigate();
   const location = useLocation();
@@ -131,6 +131,15 @@ function FormularioCrear() {
             en este navegador, y de la contraseña solo su huella cifrada. Aun así, no escribas una
             contraseña de verdad.
           </p>
+          {/* Una cuenta por navegador: crear otra pisa la que hay, y eso se
+              dice antes de que pase. El correo a medias basta para que su
+              dueno la reconozca sin ensenarselo a cualquiera. */}
+          {hayCuenta ? (
+            <p className="cuenta-maqueta cuenta-ya-hay">
+              En este navegador ya hay una cuenta
+              {correoGuardado ? ` (${correoAMedias(correoGuardado)})` : ''}. Crear otra la reemplaza.
+            </p>
+          ) : null}
           <div className="cuenta-crear-columnas">
             <div className="cuenta-crear-datos">
               {campo('nombre', { etiqueta: 'Nombre y apellido', type: 'text', autoComplete: 'name', maxLength: 60, placeholder: 'María Pérez' })}
@@ -162,7 +171,7 @@ function FormularioCrear() {
           </button>
           <p className="cuenta-otro-paso">
             ¿Ya tienes cuenta?{' '}
-            <Link className="cuenta-otro-enlace" to="/cuenta/entrar" state={{ pagar: vieneDePagar(location) }}>Entrar</Link>
+            <Link className="cuenta-otro-enlace" to="/cuenta/entrar" state={{ pagar: vieneDePagar(location) }}>Inicia sesión</Link>
           </p>
         </div>
       </div>

@@ -7,7 +7,8 @@
 //   #/tienda-<categoria>  el catalogo con "Filtrar por" puesto
 //   #/contacto            horario, direccion, mapa y contacto
 //   #/confirmar, #/comprobante  el pedido (src/pedido/)
-//   #/cuenta/entrar, #/cuenta/crear, #/cuenta/verificar, #/cuenta (Mis
+//   #/cuenta/entrar, #/cuenta/crear, #/cuenta/verificar, #/cuenta/recuperar,
+//   #/cuenta (Mis
 //   datos), #/cuenta/pedidos   la cuenta (src/cuenta/); cada una lleva a
 //   otra con replace cuando no corresponde (fase 5 en la seccion 15 del plan)
 // Las tiendas son una sola vista: cambiar de categoria no es cambiar de
@@ -31,6 +32,7 @@ const CUENTA = {
   '/cuenta/entrar': 'cuenta-entrar',
   '/cuenta/crear': 'cuenta-crear',
   '/cuenta/verificar': 'cuenta-verificar',
+  '/cuenta/recuperar': 'cuenta-recuperar',
   '/cuenta/pedidos': 'cuenta-pedidos',
 };
 
