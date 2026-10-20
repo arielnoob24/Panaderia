@@ -3,19 +3,10 @@
 // mas pedidos" en el mostrador. Aqui si se baja un poco: es a proposito, el
 // resto de la pagina vive en sus vistas.
 import { useRef } from 'react';
-import { Trigo } from '../comun/iconos.jsx';
+import Franja from '../comun/Franja.jsx';
 import { useVista } from '../comun/useVista.js';
 import Hero from '../catalogo/Hero.jsx';
 import MasPedidos from '../catalogo/MasPedidos.jsx';
-
-// La franja de las espigas: es adorno, y el lector de pantalla se la salta.
-function Franja() {
-  return (
-    <section className="sign-band" aria-hidden="true">
-      <div className="container sign-band-inner"><Trigo /><Trigo derecha /></div>
-    </section>
-  );
-}
 
 function Inicio() {
   const tituloRef = useRef(null);

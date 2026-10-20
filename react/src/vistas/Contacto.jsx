@@ -9,6 +9,8 @@ import { useHorario } from '../comun/useHorario.js';
 import EstadoAbierto from '../comun/EstadoAbierto.jsx';
 import Contactos from '../comun/Contactos.jsx';
 import { IconoPin } from '../comun/iconos.jsx';
+import FondoDibujo from '../comun/FondoDibujo.jsx';
+import Franja from '../comun/Franja.jsx';
 
 // Las dos filas del horario y que dias cubre cada una (0 es domingo, como
 // getDay). Es lo que index.html dice con data-dias.
@@ -24,13 +26,16 @@ function Contacto() {
   const horario = useHorario();
   return (
     <div className="vista vista-contacto">
-      <section id="visitanos" className="contacto-vista" aria-labelledby="contacto-titulo">
+      <section id="visitanos" className="contacto-vista con-fondo" aria-labelledby="contacto-titulo">
+        <FondoDibujo vista="contacto" />
         <div className="container contacto-rejilla">
           <div className="contacto-datos">
             <h1 ref={tituloRef} id="contacto-titulo" tabIndex={-1}>Visítanos en Tena</h1>
             <address className="contacto-direccion">Esquina de Eloy Alfaro<br />y Gabriel Espinosa, Tena</address>
-            <a className="contacto-mapa-enlace" href={MAPA} target="_blank" rel="noopener">
-              <IconoPin grosor="1.4" />Ver en el mapa <span aria-hidden="true">↗</span><span className="sr-only"> (abre en una pestaña nueva)</span>
+            {/* Lo que se viene a hacer aqui es llegar: es el boton principal
+                de la vista, en ambar como "Ver el menu" en el inicio. */}
+            <a className="button button-yellow contacto-mapa-enlace" href={MAPA} target="_blank" rel="noopener">
+              Cómo llegar <IconoPin grosor="1.6" /><span className="sr-only"> (abre Google Maps en una pestaña nueva)</span>
             </a>
           </div>
           <div className="contacto-horario banda-oscura">
@@ -58,6 +63,7 @@ function Contacto() {
           </div>
         </div>
       </section>
+      <Franja className="franja-pie" />
     </div>
   );
 }

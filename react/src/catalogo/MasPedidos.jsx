@@ -10,6 +10,7 @@ import { dinero } from '@raiz/js/comun/state.js';
 import { catalogo } from '../servicios/catalogo.js';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { Chevron } from '../comun/iconos.jsx';
+import FondoDibujo from '../comun/FondoDibujo.jsx';
 import FichaProducto from './FichaProducto.jsx';
 import { useFila } from './useFila.js';
 
@@ -53,7 +54,8 @@ function MasPedidos() {
   );
 
   return (
-    <section className="mostrador banda-oscura" aria-labelledby="mas-pedidos-titulo">
+    <section className="mostrador banda-oscura con-fondo" aria-labelledby="mas-pedidos-titulo">
+      <FondoDibujo vista="inicio" />
       <div className="container">
         <div className="fila-cabeza">
           <h2 id="mas-pedidos-titulo" className="fila-rotulo">Los más pedidos</h2>

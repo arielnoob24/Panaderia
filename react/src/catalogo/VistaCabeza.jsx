@@ -5,6 +5,7 @@
 import { Fragment } from 'react';
 import { CATEGORIAS } from './categorias.js';
 import { Chevron } from '../comun/iconos.jsx';
+import FondoDibujo from '../comun/FondoDibujo.jsx';
 
 // La categoria va primero y en su propia fila. Se elige de un vistazo, con un
 // boton por cada una, y no abriendo un desplegable: son cuatro y caben. Por
@@ -16,7 +17,10 @@ function VistaCabeza({
   orden, onOrden, soloDisponibles, onSolo, cuenta, vacio, onVolver,
 }) {
   return (
-    <div className="vista-cabeza es-catalogo" hidden={!visible}>
+    // En React la cabeza es la banda oscura de la tienda (la parte de horno
+    // del 60-30-10, seccion 15 del plan), con sus panes dibujados detras.
+    <div className="vista-cabeza es-catalogo banda-oscura con-fondo" hidden={!visible}>
+      <FondoDibujo vista="tienda" />
       <button className="vista-volver" type="button" onClick={onVolver}>
         <Chevron izquierda />Volver al inicio
       </button>

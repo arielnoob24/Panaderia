@@ -38,7 +38,11 @@
 
 /* ---- #/ : el mostrador con "Los mas pedidos" -------------------------- */
 
-.mostrador { margin: 4.5rem 0 3.5rem; padding: 3.6rem 0 3.8rem; border-radius: var(--r-band); }
+/* El mostrador es la parte de arriba: las fichas se apoyan en el borde y
+   cuelgan sobre la masa, como el pan en la repisa. Asi el horno no se come
+   la vista entera (60-30-10). */
+.mostrador { margin: 4.5rem 0 3rem; padding: 3.6rem 0 0; background: linear-gradient(var(--horno), var(--horno)) top / 100% 58% no-repeat; border-radius: var(--r-band) var(--r-band) 0 0; }
+.mostrador .fondo-dibujo { bottom: 42%; }
 .mostrador .fila-cabeza { align-items: baseline; margin-bottom: .4rem; }
 .mostrador .fila-rotulo { color: var(--papel); font: 500 clamp(2.2rem, 4.4vw, 3.2rem)/1 Georgia, serif; }
 .mostrador .fila-ver-todo { color: var(--ambar); }
@@ -64,9 +68,31 @@
 .nosotros-texto h1 em { color: var(--corteza-oscura); }
 .nosotros-texto .lead { max-width: 30ch; margin: 0 0 1.2rem; font: italic 1.5rem/1.35 Georgia, serif; }
 .nosotros-texto p:not(.lead) { max-width: 46ch; color: var(--horno-suave); font-size: 1.05rem; line-height: 1.7; }
-.nosotros-principios { margin: 0 0 3.5rem; padding: 3.6rem 0; border-radius: var(--r-band); }
-.nosotros-principios h2 { margin: 0; color: var(--papel); font: 500 clamp(1.8rem, 3.4vw, 2.4rem)/1.1 Georgia, serif; }
-.nosotros-principios .principles { margin: 2rem 0 2.2rem; }
+.nosotros-texto .text-link { margin-top: 1.4rem; }
+.nosotros-principios { margin: 0 0 3rem; }
+.nosotros-principios h2 { margin: 0 0 1.2rem; font: 500 clamp(1.8rem, 3.4vw, 2.4rem)/1.1 Georgia, serif; }
+.nosotros-principios-banda { margin: 0 var(--borde); padding: 1.6rem 0; border-radius: var(--r-card); }
+.nosotros-principios .principles { margin: 0 auto; }
+
+/* ---- La tienda: la cabeza oscura ----------------------------------------- */
+
+/* Titulo, volver y mandos van sobre el horno; las fichas, sobre la masa.
+   Lo de styles.css esta pensado para fondo claro: aqui se pasa a los tonos
+   de texto sobre horno (8,7:1 el mas flojo). */
+.vista-tienda .vista-cabeza { padding: 1.6rem clamp(1.1rem, 3vw, 2.4rem) 1.5rem; border-radius: var(--r-card); }
+.vista-tienda .vista-titulo { color: var(--papel); }
+.vista-tienda .vista-volver { border-color: rgba(255, 255, 255, .3); color: var(--sobre-horno); }
+.vista-tienda .vista-volver:hover { background: rgba(255, 255, 255, .08); border-color: var(--ambar); }
+.vista-tienda .vista-barra { border-top-color: rgba(255, 255, 255, .16); }
+.vista-tienda .vista-mando, .vista-tienda .vista-cuenta { color: var(--sobre-horno-tenue); }
+.vista-tienda .vista-vacio { color: var(--sobre-horno); }
+.vista-tienda .chip { background: transparent; border-color: rgba(255, 255, 255, .3); color: var(--sobre-horno); }
+.vista-tienda .chip:hover { border-color: var(--ambar); }
+/* La categoria puesta, en ambar: es la eleccion que manda en la vista. */
+.vista-tienda .chip-input:checked + .chip { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
+.vista-tienda .chip-input:focus-visible + .chip { outline: 2px solid var(--papel); outline-offset: 2px; box-shadow: none; }
+.vista-tienda .vista-mando select, .vista-tienda .vista-buscar input { border-color: transparent; }
+.vista-tienda .vista-mando select:focus-visible, .vista-tienda .vista-buscar input:focus-visible { outline-color: var(--papel); }
 
 /* ---- #/contacto ---------------------------------------------------------- */
 
@@ -77,9 +103,8 @@
 .contacto-escribir { grid-area: escribir; }
 .contacto-datos h1 { margin: 0 0 1.6rem; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 Georgia, serif; }
 .contacto-direccion { margin: 0; font: normal 1.45rem/1.35 Georgia, serif; }
-/* El enlace al mapa sobre la masa: corteza oscura, que pasa 4,5:1. */
-.contacto-mapa-enlace { display: inline-flex; align-items: center; gap: .45rem; margin-top: .9rem; color: var(--corteza-oscura); font: 700 .9rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-.contacto-mapa-enlace:hover { color: var(--horno); }
+.contacto-mapa-enlace { margin-top: 1.4rem; font-family: Arial, sans-serif; }
+.contacto-mapa-enlace:hover { background: var(--ambar-claro); }
 .contacto-subtitulo { margin: 0 0 1rem; font: 500 1.5rem/1.2 Georgia, serif; }
 .contacto-lista { display: flex; flex-wrap: wrap; gap: 1.2rem 2.6rem; }
 /* .contacto viene del pie oscuro de styles.css; sobre la masa, los tonos de
@@ -109,6 +134,10 @@
 .pie-corto-final .footer-note { padding: 0; border: 0; }
 .pie-corto-final .contacto-ficticio { flex-basis: 100%; }
 
+/* En la tienda los precios van en corteza, como pide el reparto (el 10 %
+   son botones, precios y acentos). Corteza oscura sobre papel: 7,9:1. */
+.product-bottom strong { color: var(--corteza-oscura); }
+
 /* ---- Cortes ------------------------------------------------------------- */
 
 @media (max-width: 900px) {
@@ -116,12 +145,20 @@
 }
 @media (max-width: 680px) {
   .vista-nosotros, .vista-contacto { padding-top: 96px; }
-  .mostrador { margin: 3rem 0 2.5rem; padding: 2.6rem 0 2.8rem; border-radius: var(--r-card); }
-  .nosotros-principios { padding: 2.8rem 0; border-radius: var(--r-card); }
-  .mostrador .fila-barra { background: rgba(255, 255, 255, .2); }
-  .mostrador .fila-avance { background: var(--ambar); }
+  .mostrador { margin: 3rem 0 2rem; padding: 2.2rem 0 0; background-size: 100% 52%; border-radius: var(--r-card) var(--r-card) 0 0; }
+  .mostrador .fondo-dibujo { bottom: 48%; }
+  .mostrador-dicho { margin-bottom: 1.2rem; }
+  .nosotros-principios { margin-bottom: 2.5rem; }
+  .nosotros-principios h2 { font-size: 1.6rem; }
+  .nosotros-principios-banda { margin: 0 8px; padding: 1rem 0; }
   .nosotros-historia { padding-bottom: 3rem; }
-  .pie-corto-fila { align-items: flex-start; flex-direction: column; }
+  /* En el telefono el pie se aprieta: marca y estado en una fila, los dos
+     contactos en otra. Era la mitad de alto de la pantalla. */
+  .pie-corto { padding: 1.4rem 0 1.1rem; }
+  .pie-corto-fila { gap: 1rem 1.4rem; }
+  .pie-corto-contacto { flex-basis: 100%; justify-content: space-between; }
+  .pie-corto .mascot-footer { width: 44px; height: 44px; }
+  .pie-corto-final { margin-top: 1rem; }
 }
 
 /* ---- Motion ---------------------------------------------------------------- */
@@ -133,3 +170,63 @@
 .canasta-cuenta { overflow: hidden; }
 .canasta-cuenta-numero { display: block; }
 .floating-whatsapp.is-latido .canasta-cuenta { animation: none; }
+
+/* ---- Los dibujos del fondo (FondoDibujo.jsx) ------------------------------ */
+
+/* Detras del contenido y delante del fondo de su seccion: isolation hace que
+   el z-index negativo no se vaya detras de la pagina entera. */
+.con-fondo { position: relative; isolation: isolate; }
+.fondo-dibujo { position: absolute; inset: 0; z-index: -1; overflow: hidden; color: var(--corteza); opacity: .22; pointer-events: none; }
+/* Sobre el horno, la linea es ambar y mas tenue: clara sobre oscuro se ve
+   mas que oscura sobre claro con la misma opacidad. Medido donde un trazo
+   pasa justo por debajo de una letra: con .22 sobre la masa el texto mas
+   flojo (horno suave) queda en 5,2:1; sobre el horno, con .12, el enlace
+   ambar queda en 4,65:1 (con .2 bajaba a 4,0). */
+.banda-oscura .fondo-dibujo { color: var(--ambar); opacity: .12; }
+.fondo-pieza { position: absolute; height: auto; overflow: visible; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+/* La linea mide lo mismo aunque la pieza se escale: si no, las grandes
+   pintaban trazo grueso y las chicas casi nada. */
+.fondo-pieza path { vector-effect: non-scaling-stroke; }
+.fondo-pieza.is-arriba-derecha { top: 0; right: 0; }
+.fondo-pieza.is-arriba-izquierda { top: 0; left: 0; }
+.fondo-pieza.is-abajo-derecha { right: 0; bottom: 0; }
+.fondo-pieza.is-abajo-izquierda { bottom: 0; left: 0; }
+
+.fondo-inicio .is-arriba-derecha { top: -30px; right: 15%; width: 330px; }
+.fondo-inicio .is-arriba-izquierda { top: -20px; left: 40%; width: 190px; transform: rotate(-64deg); }
+.fondo-nosotros .is-abajo-derecha { right: 1%; bottom: -50px; width: 300px; }
+.fondo-nosotros .is-arriba-izquierda { top: 20px; left: 38%; width: 300px; }
+.fondo-principios .is-abajo-derecha { right: 2%; bottom: 0; width: 380px; }
+.fondo-tienda .is-arriba-izquierda { top: 14px; left: 14%; width: 230px; }
+.fondo-tienda .is-arriba-derecha { top: 6px; right: 6%; width: 260px; }
+.fondo-contacto .is-abajo-izquierda { bottom: -10px; left: 30%; width: 260px; }
+.fondo-contacto .is-arriba-derecha { top: 0; right: 40%; width: 200px; }
+
+@media (max-width: 680px) {
+  .fondo-dibujo { opacity: .18; }
+  .fondo-inicio .is-arriba-derecha { top: -10px; right: -40px; width: 220px; }
+  .fondo-inicio .is-arriba-izquierda { display: none; }
+  .fondo-nosotros .is-abajo-derecha { right: -60px; width: 280px; }
+  .fondo-nosotros .is-arriba-izquierda { display: none; }
+  .fondo-principios .is-abajo-derecha { right: -80px; width: 280px; }
+  .fondo-tienda .is-arriba-izquierda { display: none; }
+  .fondo-tienda .is-arriba-derecha { top: 4px; right: -40px; width: 170px; }
+  .fondo-contacto .is-abajo-izquierda { left: auto; right: -40px; bottom: auto; top: 40px; width: 200px; }
+  .fondo-contacto .is-arriba-derecha { display: none; }
+}
+
+/* ---- La franja encima del pie (Franja.jsx) ---------------------------------- */
+
+/* La misma franja de espigas del inicio, dada la vuelta: la curva sube y el
+   pie se le monta encima, asi que por sus esquinas redondas asoma la corteza. */
+.franja-pie { margin-top: 2rem; margin-bottom: calc(-1 * var(--r-band)); padding-bottom: var(--r-band); }
+.franja-pie::after { top: -22px; bottom: auto; height: 22px; border-radius: 50% 50% 0 0 / 22px 22px 0 0; }
+.franja-pie .sign-band-inner { min-height: 64px; }
+.franja-pie + * { position: relative; }
+.site-footer { position: relative; z-index: 1; }
+@media (max-width: 680px) {
+  .franja-pie { margin-bottom: calc(-1 * var(--r-card)); padding-bottom: var(--r-card); }
+  .franja-pie .sign-band-inner { min-height: 52px; }
+  .franja-pie .sign-trigo { width: 120px; }
+}
+body.is-vista .franja-pie { display: block; }

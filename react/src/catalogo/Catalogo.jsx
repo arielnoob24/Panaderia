@@ -22,6 +22,7 @@ import { movimientoReducido } from '../comun/useMovimientoReducido.js';
 import { useVista } from '../comun/useVista.js';
 import FichaProducto from './FichaProducto.jsx';
 import VistaCabeza from './VistaCabeza.jsx';
+import Franja from '../comun/Franja.jsx';
 import { filtroDe, nombreCategoria } from './categorias.js';
 
 const { productos } = catalogo;
@@ -220,48 +221,52 @@ function Catalogo({ categoria }) {
     avisar(`${producto.nombre} ${t.valor}, ${dinero(t.precio)}.`);
   }, [avisar]);
 
+  // Encima del pie, la franja de las espigas (la parte de acento de la vista).
   return (
-    <section id="catalogo" className="catalog section-pad vista-tienda">
-      <div className="container">
-        <VistaCabeza
-          visible
-          titulo={titulo}
-          tituloRef={tituloRef}
-          subcategoria={subcategoria}
-          onSub={alSub}
-          busqueda={busqueda}
-          onBusqueda={alBuscar}
-          orden={orden}
-          onOrden={alOrden}
-          soloDisponibles={soloDisponibles}
-          onSolo={alSolo}
-          cuenta={dice}
-          vacio={vacio}
-          onVolver={alVolver}
-        />
-        <p className="catalog-status" role="status" aria-live="polite">{hablar ? estado : ''}</p>
-        <div ref={gridRef} className="product-grid">
-          {productos.map((p) => {
-            const i = cuadro.visibles.get(p);
-            const visible = i !== undefined;
-            const entrando = Boolean(entrada) && visible;
-            return (
-              <FichaProducto
-                key={p.nombre}
-                producto={p}
-                vista="cuadricula"
-                visible={visible}
-                orden={cuadro.puesto.get(p)}
-                retraso={entrando ? retrasoDiagonal(i, entrada.columnas) : undefined}
-                entrando={entrando}
-                elegido={elegidos[p.nombre] ?? 0}
-                onElegir={alElegir}
-              />
-            );
-          })}
+    <>
+      <section id="catalogo" className="catalog section-pad vista-tienda">
+        <div className="container">
+          <VistaCabeza
+            visible
+            titulo={titulo}
+            tituloRef={tituloRef}
+            subcategoria={subcategoria}
+            onSub={alSub}
+            busqueda={busqueda}
+            onBusqueda={alBuscar}
+            orden={orden}
+            onOrden={alOrden}
+            soloDisponibles={soloDisponibles}
+            onSolo={alSolo}
+            cuenta={dice}
+            vacio={vacio}
+            onVolver={alVolver}
+          />
+          <p className="catalog-status" role="status" aria-live="polite">{hablar ? estado : ''}</p>
+          <div ref={gridRef} className="product-grid">
+            {productos.map((p) => {
+              const i = cuadro.visibles.get(p);
+              const visible = i !== undefined;
+              const entrando = Boolean(entrada) && visible;
+              return (
+                <FichaProducto
+                  key={p.nombre}
+                  producto={p}
+                  vista="cuadricula"
+                  visible={visible}
+                  orden={cuadro.puesto.get(p)}
+                  retraso={entrando ? retrasoDiagonal(i, entrada.columnas) : undefined}
+                  entrando={entrando}
+                  elegido={elegidos[p.nombre] ?? 0}
+                  onElegir={alElegir}
+                />
+              );
+            })}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+      <Franja className="franja-pie" />
+    </>
   );
 }
 

@@ -11,6 +11,8 @@ import fotoGrande from '@raiz/assets/img/historia-amasado-760.jpg';
 import { useVista } from '../comun/useVista.js';
 import { useCargaImagen, clases } from '../comun/useCargaImagen.js';
 import { IconoPin } from '../comun/iconos.jsx';
+import FondoDibujo from '../comun/FondoDibujo.jsx';
+import Franja from '../comun/Franja.jsx';
 
 const icono = {
   className: 'principle-icon', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
@@ -23,7 +25,8 @@ function Nosotros() {
   const carga = useCargaImagen();
   return (
     <div className="vista vista-nosotros">
-      <section id="historia" className="nosotros-historia" aria-labelledby="nosotros-titulo">
+      <section id="historia" className="nosotros-historia con-fondo" aria-labelledby="nosotros-titulo">
+        <FondoDibujo vista="nosotros" />
         <div className="container story-grid">
           <div className={clases('story-photo', carga.hueco)}>
             <img
@@ -41,13 +44,19 @@ function Nosotros() {
             <h1 ref={tituloRef} id="nosotros-titulo" tabIndex={-1}>El tiempo es<br /><em>nuestro ingrediente</em></h1>
             <p className="lead">No hacemos pan rápido. Hacemos pan que vale la espera.</p>
             <p>Cada madrugada, nuestro equipo llega cuando la ciudad todavía duerme.</p>
+            <Link className="text-link" to="/contacto" state={{ entrar: true }}>Conoce nuestro local <IconoPin /></Link>
           </div>
         </div>
       </section>
-      <section className="nosotros-principios banda-oscura" aria-labelledby="principios-titulo">
+      {/* El titulo va sobre la masa y solo los principios sobre el horno: la
+          banda entera oscura dejaba la vista casi mitad marron. */}
+      <section className="nosotros-principios" aria-labelledby="principios-titulo">
         <div className="container">
           <h2 id="principios-titulo">Tres cosas que no cambiamos</h2>
-          <div className="principles">
+        </div>
+        <div className="nosotros-principios-banda banda-oscura con-fondo">
+          <FondoDibujo vista="principios" />
+          <div className="container principles">
             <div>
               <span className="principle-mark">
                 <svg {...icono}><path d="M9 2.6h6" /><path d="M9.6 2.6v2.8L8.1 7.1A3 3 0 0 0 7.1 9.4V19a2.4 2.4 0 0 0 2.4 2.4h5A2.4 2.4 0 0 0 16.9 19V9.4a3 3 0 0 0-1-2.3l-1.5-1.7V2.6" /><path d="M7.1 13h9.8" /><circle cx="10.2" cy="16.2" r="1" /><circle cx="13.6" cy="17.8" r=".75" /></svg>
@@ -70,9 +79,9 @@ function Nosotros() {
               <p>Productores que conocemos por su nombre</p>
             </div>
           </div>
-          <Link className="text-link dark" to="/contacto" state={{ entrar: true }}>Conoce nuestro local <IconoPin /></Link>
         </div>
       </section>
+      <Franja className="franja-pie" />
     </div>
   );
 }
