@@ -41,6 +41,8 @@ Proyecto de la materia Desarrollo de Plataformas.
 ```
 index.html              la unica pagina; tiene que estar en la raiz para GitHub Pages
 README.md               como verlo, tocarlo y publicarlo
+bd/
+  BD_EL_TRADICIONAL.sql la base de datos en PostgreSQL (todavia sin conectar)
 assets/
   css/styles.css        todos los estilos
   img/                  logo, mascota, iconos y la foto de portada
@@ -220,6 +222,44 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
 
 Todo va en `try/catch`: en ventana privada no puede tumbar la página.
 
+### La base de datos (`bd/BD_EL_TRADICIONAL.sql`, todavía sin conectar)
+
+El sitio sigue guardando como dice la tabla de arriba. El script crea la base
+relacional que va a reemplazar ese guardado cuando se conecte. Motor:
+**PostgreSQL** (Supabase usa el mismo y tiene plan gratis sin tarjeta).
+
+- **Nombres**: tablas en plural y mayúsculas (`PRODUCTOS`); atributos con el
+  prefijo de 3 letras de su tabla (`PRO_Nombre`); la PK de cada tabla fuerte
+  es su código (`PRO_Codigo`) y una FK conserva el nombre de la PK que
+  referencia. Sin comillas, así que PostgreSQL los guarda en minúsculas.
+- **Códigos**: texto con prefijo que pone una secuencia (`PRO001`,
+  `PED0000001`): 3 dígitos en catálogos, 7 en lo que crece. Excepciones con
+  código oficial: provincias y cantones (INEC) y tipos de identificación (SRI).
+  Las secuencias dejan huecos cuando un insert falla; es normal.
+- **Reglas del profesor**: sin N:N (se resuelven con una débil cuya PK es la
+  unión de las PK de las dos fuertes), sin 1:1, sin herencia; todas las tablas
+  con al menos una relación y en un solo grupo; en 3FN.
+- **25 tablas en 5 grupos**: autenticación y autorización (ROLES, PERMISOS,
+  ROLES_PERMISOS, USUARIOS, VERIFICACIONES), ubicación (PROVINCIAS, CANTONES,
+  DIRECCIONES), catálogo (CATEGORIAS, ETIQUETAS, TARIFAS_IVA, PRODUCTOS,
+  TAMANOS, PRODUCTOS_TAMANOS, ALERGENOS, PRODUCTOS_ALERGENOS), pedidos
+  (TIPOS_ENTREGA, ESTADOS_PEDIDO, PEDIDOS, DETALLES_PEDIDO) y facturación y
+  pagos (TIPOS_IDENTIFICACION, CLIENTES, FACTURAS, METODOS_PAGO, PAGOS).
+- **Lo que se calcula no se guarda**: totales, IVA y lo pagado salen de
+  `VW_PEDIDOS_TOTALES`; si el correo está verificado, de `VW_USUARIOS`. El
+  precio y el IVA de cada línea sí se guardan (son los del día).
+- **Lo que revisa la base**: cédula (módulo 10) y RUC, celular `09XXXXXXXX`,
+  correo en minúsculas, número `ET-XXXX` sin 0/1/I/O, 1–100 por línea,
+  domicilio con dirección del mismo usuario y retiro sin ella, producto
+  agotado, una sola factura vigente por pedido y secuencial de factura sin
+  saltos (el SRI lo exige).
+- **Contraseña**: solo la huella PBKDF2 (32 bytes), la sal (16) y las
+  iteraciones. De la tarjeta, solo los 4 últimos dígitos y la autorización.
+- **Datos iniciales**: roles y permisos, las 24 provincias, los cantones de
+  Napo, el catálogo de `data/productos.json` con sus tamaños, alérgenos
+  comunes, entregas ($0 y $1,50), estados, tipos de identificación,
+  CONSUMIDOR FINAL y formas de pago con su código del SRI.
+
 ## 9. Correo (`js/comun/mail.js`)
 
 EmailJS (gratis): una sola plantilla para el código y el comprobante. Las
@@ -302,6 +342,14 @@ construye (sección 15).
       `escapar()`, que vive en `state.js` (antes solo en `view.js`), y el
       comprobante usa `textContent`. React no tenía el problema.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).
+
+### Base de datos
+- [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).
+- [ ] Revisar el modelo con el profesor.
+- [ ] El IVA de cada producto es una suposición (pan 0%, dulces y bebidas
+      15%): confirmarlo con el contador.
+- [ ] Cuáles alérgenos lleva cada producto (`PRODUCTOS_ALERGENOS`).
+- [ ] Conectar el sitio a la base (servicio gratis, sin tarjeta).
 
 ### SEO
 - [ ] `robots.txt` y `sitemap.xml`.
