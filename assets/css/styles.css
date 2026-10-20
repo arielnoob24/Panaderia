@@ -734,7 +734,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .reveal-x { transform: translateY(18px); }
   .footer-grid { grid-template-columns: 1fr; gap: 1.3rem; }
   .floating-whatsapp { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
-  .deshacer-barra { bottom: calc(74px + env(safe-area-inset-bottom)); }
 }
 
 /* El desglose del pedido: lo que cuesta el pan, lo que cuesta llevarlo y la
@@ -1002,7 +1001,6 @@ body.is-checkout .floating-whatsapp { display: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
   .product-image.is-loading { animation: none; }
   .product-image img { opacity: 1; }
-  .deshacer-barra { animation: none; }
 }
 
 /* ---- Canasta ----------------------------------------------------------
@@ -1308,6 +1306,21 @@ body.is-checkout .floating-whatsapp { display: none; }
 .deshacer-boton { flex: 0 0 auto; padding: .45rem .9rem; background: var(--ambar); border: 0; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
 .deshacer-boton:hover { background: var(--ambar-claro); }
 @keyframes deshacer-entra { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes deshacer-entra-panel { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+/* Lo que cambia la barra va aqui, detras de la regla base: antes estaba en el
+   bloque del telefono, que va mas arriba en la hoja, y perdia contra ella (la
+   barra tapaba el boton flotante de la canasta). */
+@media (max-width: 680px) {
+  /* Por encima del boton flotante: 12 px de margen + 56 de boton + aire. */
+  .deshacer-barra { bottom: calc(76px + env(safe-area-inset-bottom)); }
+}
+/* Con la canasta abierta, la barra va dentro de la gaveta y encima de su pie,
+   para no tapar "Ir a pagar". El pie mide unos 157 px (subtotal, boton y
+   nota); 172 deja aire aunque la nota ocupe dos renglones. */
+body:has(.canasta-panel.is-open) .deshacer-barra { right: 16px; left: auto; bottom: calc(172px + env(safe-area-inset-bottom)); width: calc(min(420px, 100vw) - 32px); transform: none; animation-name: deshacer-entra-panel; }
+@media (prefers-reduced-motion: reduce) {
+  .deshacer-barra, body:has(.canasta-panel.is-open) .deshacer-barra { animation: none; }
+}
 
 /* El telefono y las redes son de ejemplo y el pie lo dice, igual que ya se
    declaran el QR de adorno y los datos bancarios. */

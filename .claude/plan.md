@@ -677,10 +677,15 @@ Van en React y, salvo el de los avisos repetidos, también en el sitio actual.
 Se hacen después de la fase 4, a la vez que las vistas. Gravedad de Nielsen
 entre paréntesis.
 
-- [ ] (3) `frontend`: en el teléfono la barra de deshacer tapa el botón
+- [x] (3) `frontend`: en el teléfono la barra de deshacer tapa el botón
       flotante de la canasta (la regla de `bottom: 74px` del `@media` va antes
       que la base y pierde). Con el panel abierto, la barra va encima del pie
-      de la canasta, sin tapar "Ir a pagar".
+      de la canasta, sin tapar "Ir a pagar". Hecho en `styles.css` (los dos
+      sitios): las reglas van detrás de la base; con el panel abierto
+      (`body:has(.canasta-panel.is-open)`) la barra se pone dentro de la
+      gaveta, 172 px sobre el borde. Medido a 320, 390, 900 y 1280 px sin
+      solaparse. De paso, `prefers-reduced-motion` ya le quita la animación
+      (perdía por lo mismo).
 - [ ] (3) `logica-datos`: React no repite un aviso igual al anterior
       (`Avisos.jsx`); tiene que anunciarlo otra vez, como el sitio actual.
 - [ ] (2) `logica-datos`: con la hoja "Entra a tu cuenta para pagar" abierta,
