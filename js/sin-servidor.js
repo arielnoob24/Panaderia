@@ -58,6 +58,77 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     return { productos };
   };
 
+  // js/comun/horario.js
+  var easterSunday = (year) => {
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = (h + l - 7 * m + 114) % 31 + 1;
+    return new Date(year, month - 1, day);
+  };
+  var dateKey = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+  var holidayKeys = (year) => {
+    const easter = easterSunday(year);
+    const carnival = new Date(easter);
+    carnival.setDate(easter.getDate() - 48);
+    const goodFriday = new Date(easter);
+    goodFriday.setDate(easter.getDate() - 2);
+    return /* @__PURE__ */ new Set([
+      `${year}-1-1`,
+      `${year}-5-1`,
+      `${year}-8-10`,
+      `${year}-10-9`,
+      `${year}-11-2`,
+      `${year}-11-3`,
+      `${year}-12-25`,
+      dateKey(carnival),
+      dateKey(new Date(carnival.getFullYear(), carnival.getMonth(), carnival.getDate() + 1)),
+      dateKey(goodFriday)
+    ]);
+  };
+  var toMinutes = (value) => {
+    const [hours, minutes] = value.split(":").map(Number);
+    return hours * 60 + minutes;
+  };
+  var horarioDeHoy = () => {
+    const now = /* @__PURE__ */ new Date();
+    const day = now.getDay();
+    const festivo = holidayKeys(now.getFullYear()).has(dateKey(now));
+    const hours = day >= 1 && day <= 5 ? "08:00-20:00" : "09:00-21:00";
+    const [abre, cierra] = hours.split("-");
+    const ahora = now.getHours() * 60 + now.getMinutes();
+    return {
+      day,
+      festivo,
+      abre,
+      cierra,
+      abierto: !festivo && ahora >= toMinutes(abre) && ahora < toMinutes(cierra),
+      antesDeAbrir: ahora < toMinutes(abre)
+    };
+  };
+  var estadoDelPie = ({ festivo, abierto: abierto2, antesDeAbrir, abre, cierra }) => {
+    if (festivo) return "Cerrado · día festivo";
+    if (abierto2) return `Abierto · cierra ${cierra}`;
+    if (antesDeAbrir) return `Cerrado · abre ${abre}`;
+    return "Cerrado · abre mañana";
+  };
+  var notaDelHorno = ({ festivo, abierto: abierto2, antesDeAbrir, abre, cierra }) => {
+    if (abierto2) return { titulo: "Horneando ahora mismo", dato: `Abierto hasta las ${cierra}` };
+    if (festivo) return { titulo: "Hoy no horneamos", dato: "Día festivo · volvemos mañana" };
+    if (antesDeAbrir) return { titulo: "El horno se está calentando", dato: `Abrimos a las ${abre}` };
+    return { titulo: "Ya cerramos por hoy", dato: `Mañana abrimos a las ${abre}` };
+  };
+
   // js/comun/ui.js
   var menuToggle = document.querySelector(".menu-toggle");
   var navigation = document.querySelector("#main-nav");
@@ -310,75 +381,12 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   };
   window.addEventListener("scroll", seguirOEsconder, { passive: true });
   window.addEventListener("resize", seguirOEsconder, { passive: true });
-  var easterSunday = (year) => {
-    const a = year % 19;
-    const b = Math.floor(year / 100);
-    const c = year % 100;
-    const d = Math.floor(b / 4);
-    const e = b % 4;
-    const f = Math.floor((b + 8) / 25);
-    const g = Math.floor((b - f + 1) / 3);
-    const h = (19 * a + b - d - g + 15) % 30;
-    const i = Math.floor(c / 4);
-    const k = c % 4;
-    const l = (32 + 2 * e + 2 * i - h - k) % 7;
-    const m = Math.floor((a + 11 * h + 22 * l) / 451);
-    const month = Math.floor((h + l - 7 * m + 114) / 31);
-    const day = (h + l - 7 * m + 114) % 31 + 1;
-    return new Date(year, month - 1, day);
-  };
-  var dateKey = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-  var holidayKeys = (year) => {
-    const easter = easterSunday(year);
-    const carnival = new Date(easter);
-    carnival.setDate(easter.getDate() - 48);
-    const goodFriday = new Date(easter);
-    goodFriday.setDate(easter.getDate() - 2);
-    return /* @__PURE__ */ new Set([
-      `${year}-1-1`,
-      `${year}-5-1`,
-      `${year}-8-10`,
-      `${year}-10-9`,
-      `${year}-11-2`,
-      `${year}-11-3`,
-      `${year}-12-25`,
-      dateKey(carnival),
-      dateKey(new Date(carnival.getFullYear(), carnival.getMonth(), carnival.getDate() + 1)),
-      dateKey(goodFriday)
-    ]);
-  };
-  var toMinutes = (value) => {
-    const [hours, minutes] = value.split(":").map(Number);
-    return hours * 60 + minutes;
-  };
-  var horarioDeHoy = () => {
-    const now = /* @__PURE__ */ new Date();
-    const day = now.getDay();
-    const festivo = holidayKeys(now.getFullYear()).has(dateKey(now));
-    const hours = day >= 1 && day <= 5 ? "08:00-20:00" : "09:00-21:00";
-    const [abre, cierra] = hours.split("-");
-    const ahora = now.getHours() * 60 + now.getMinutes();
-    return {
-      day,
-      festivo,
-      abre,
-      cierra,
-      abierto: !festivo && ahora >= toMinutes(abre) && ahora < toMinutes(cierra),
-      antesDeAbrir: ahora < toMinutes(abre)
-    };
-  };
   var updateOpeningStatus = () => {
     const visita = document.querySelector(".footer-visita");
     const label = visita?.querySelector(".open-label");
     if (!visita || !label) return;
-    const {
-      day,
-      festivo: holiday,
-      abre: opening,
-      cierra: closing,
-      abierto: isOpen,
-      antesDeAbrir
-    } = horarioDeHoy();
+    const h = horarioDeHoy();
+    const { day, abierto: isOpen } = h;
     label.classList.toggle("is-closed", !isOpen);
     label.querySelector(".status-dot")?.classList.toggle("is-closed", !isOpen);
     document.querySelectorAll(".footer-horario div[data-dias]").forEach((fila) => {
@@ -394,30 +402,15 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
         marca.remove();
       }
     });
-    let estado;
-    if (holiday) estado = "Cerrado · día festivo";
-    else if (isOpen) estado = `Abierto · cierra ${closing}`;
-    else if (antesDeAbrir) estado = `Cerrado · abre ${opening}`;
-    else estado = "Cerrado · abre mañana";
-    label.lastChild.textContent = ` ${estado}`;
+    label.lastChild.textContent = ` ${estadoDelPie(h)}`;
     const nota = document.querySelector(".hero-note");
     const notaTitulo = nota?.querySelector(".hero-note-titulo");
     const notaDato = nota?.querySelector(".hero-note-dato");
     if (!notaTitulo || !notaDato) return;
     nota.querySelector(".status-dot")?.classList.toggle("is-closed", !isOpen);
-    if (isOpen) {
-      notaTitulo.textContent = "Horneando ahora mismo";
-      notaDato.textContent = `Abierto hasta las ${closing}`;
-    } else if (holiday) {
-      notaTitulo.textContent = "Hoy no horneamos";
-      notaDato.textContent = "Día festivo · volvemos mañana";
-    } else if (antesDeAbrir) {
-      notaTitulo.textContent = "El horno se está calentando";
-      notaDato.textContent = `Abrimos a las ${opening}`;
-    } else {
-      notaTitulo.textContent = "Ya cerramos por hoy";
-      notaDato.textContent = `Mañana abrimos a las ${opening}`;
-    }
+    const { titulo: titulo2, dato } = notaDelHorno(h);
+    notaTitulo.textContent = titulo2;
+    notaDato.textContent = dato;
   };
   var enterAvanza = (campos2, alFinal) => {
     const visible = (c) => c && !c.disabled && !c.closest("[hidden]");

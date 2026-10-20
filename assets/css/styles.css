@@ -189,6 +189,11 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 /* Con la cabecera fija, un salto por ancla dejaria el destino escondido
    detras de ella. Cada destino se guarda su altura. */
 #inicio, #contenido, #catalogo, #historia, #visitanos { scroll-margin-top: 98px; }
+/* En la version en React (react/) los enlaces de seccion no cambian la
+   direccion: bajan y le dan el foco a la seccion, que lleva tabindex="-1".
+   Es un contenedor y no un mando, asi que no pinta anillo. En el sitio
+   actual estas secciones nunca reciben el foco y la regla no hace nada. */
+#inicio:focus, #contenido:focus, #catalogo:focus, #historia:focus, #visitanos:focus { outline: none; }
 
 .hero { position: relative; display: flex; align-items: center; min-height: 720px; overflow: hidden; color: var(--horno); background: var(--masa); }
 .hero-image { position: absolute; top: 0; right: 0; bottom: 0; width: 52%; background: var(--masa) image-set(url("../img/hero-900.jpg") 1x, url("../img/hero-1600.jpg") 2x) center 55% / cover; opacity: .78; transform: scale(1.035); transition: opacity var(--dur-scene) var(--ease-out), transform 1200ms var(--ease-out); }

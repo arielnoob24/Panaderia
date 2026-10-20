@@ -3,6 +3,7 @@
 // del foco, la cabecera pegajosa, el menu Tienda, los cuadritos de ayuda, las
 // animaciones de entrada y el horario del pie. La canasta y la cuenta toman de
 // aqui el cerco del foco; el catalogo, la region de avisos.
+import { horarioDeHoy, estadoDelPie, notaDelHorno } from './horario.js';
 
 const menuToggle = document.querySelector('.menu-toggle');
 const navigation = document.querySelector('#main-nav');
@@ -315,68 +316,12 @@ window.addEventListener('scroll', seguirOEsconder, { passive: true });
 window.addEventListener('resize', seguirOEsconder, { passive: true });
 
 
-const easterSunday = (year) => {
-  const a = year % 19;
-  const b = Math.floor(year / 100);
-  const c = year % 100;
-  const d = Math.floor(b / 4);
-  const e = b % 4;
-  const f = Math.floor((b + 8) / 25);
-  const g = Math.floor((b - f + 1) / 3);
-  const h = (19 * a + b - d - g + 15) % 30;
-  const i = Math.floor(c / 4);
-  const k = c % 4;
-  const l = (32 + 2 * e + 2 * i - h - k) % 7;
-  const m = Math.floor((a + 11 * h + 22 * l) / 451);
-  const month = Math.floor((h + l - 7 * m + 114) / 31);
-  const day = ((h + l - 7 * m + 114) % 31) + 1;
-  return new Date(year, month - 1, day);
-};
-const dateKey = (date) => `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
-const holidayKeys = (year) => {
-  const easter = easterSunday(year);
-  const carnival = new Date(easter);
-  carnival.setDate(easter.getDate() - 48);
-  const goodFriday = new Date(easter);
-  goodFriday.setDate(easter.getDate() - 2);
-  return new Set([
-    `${year}-1-1`, `${year}-5-1`, `${year}-8-10`, `${year}-10-9`, `${year}-11-2`, `${year}-11-3`, `${year}-12-25`,
-    dateKey(carnival), dateKey(new Date(carnival.getFullYear(), carnival.getMonth(), carnival.getDate() + 1)), dateKey(goodFriday)
-  ]);
-};
-const toMinutes = (value) => {
-  const [hours, minutes] = value.split(':').map(Number);
-  return hours * 60 + minutes;
-};
-// El horario de hoy, en un solo sitio. Antes se calculaba dentro de
-// updateOpeningStatus y no habia manera de preguntarselo desde fuera; la
-// canasta lo necesita para decir hasta que hora se puede pasar a retirar, que
-// es lo unico con forma de tiempo que este sitio puede afirmar sin inventarlo.
-const horarioDeHoy = () => {
-  const now = new Date();
-  const day = now.getDay();
-  const festivo = holidayKeys(now.getFullYear()).has(dateKey(now));
-  const hours = day >= 1 && day <= 5 ? '08:00-20:00' : '09:00-21:00';
-  const [abre, cierra] = hours.split('-');
-  const ahora = now.getHours() * 60 + now.getMinutes();
-  return {
-    day,
-    festivo,
-    abre,
-    cierra,
-    abierto: !festivo && ahora >= toMinutes(abre) && ahora < toMinutes(cierra),
-    antesDeAbrir: ahora < toMinutes(abre),
-  };
-};
-
 const updateOpeningStatus = () => {
   const visita = document.querySelector('.footer-visita');
   const label = visita?.querySelector('.open-label');
   if (!visita || !label) return;
-  const {
-    day, festivo: holiday, abre: opening, cierra: closing,
-    abierto: isOpen, antesDeAbrir,
-  } = horarioDeHoy();
+  const h = horarioDeHoy();
+  const { day, abierto: isOpen } = h;
   label.classList.toggle('is-closed', !isOpen);
   label.querySelector('.status-dot')?.classList.toggle('is-closed', !isOpen);
 
@@ -396,38 +341,18 @@ const updateOpeningStatus = () => {
       marca.remove();
     }
   });
-  // Google y Yelp muestran el estado con la hora, no solo "abierto": es el dato
-  // que responde la pregunta real, "¿me da tiempo a ir?". Ya se calculaba y se tiraba.
-  let estado;
-  if (holiday) estado = 'Cerrado · día festivo';
-  else if (isOpen) estado = `Abierto · cierra ${closing}`;
-  else if (antesDeAbrir) estado = `Cerrado · abre ${opening}`;
-  else estado = 'Cerrado · abre mañana';
-  label.lastChild.textContent = ` ${estado}`;
+  // El texto del estado y el de la nota del horno salen de horario.js, el
+  // mismo calculo que usa la version en React.
+  label.lastChild.textContent = ` ${estadoDelPie(h)}`;
 
-  // La nota del hero decia "Recien salido del horno · Sale a las 17:00" en
-  // texto fijo, con un punto de estado al lado que latia en ambar a cualquier
-  // hora: el CSS de "cerrado" existia para ese punto y nada lo activaba. Era
-  // el sitio afirmando un dato que no tenia, al lado de un horario que si se
-  // calcula. Ahora las dos cosas salen del mismo calculo.
   const nota = document.querySelector('.hero-note');
   const notaTitulo = nota?.querySelector('.hero-note-titulo');
   const notaDato = nota?.querySelector('.hero-note-dato');
   if (!notaTitulo || !notaDato) return;
   nota.querySelector('.status-dot')?.classList.toggle('is-closed', !isOpen);
-  if (isOpen) {
-    notaTitulo.textContent = 'Horneando ahora mismo';
-    notaDato.textContent = `Abierto hasta las ${closing}`;
-  } else if (holiday) {
-    notaTitulo.textContent = 'Hoy no horneamos';
-    notaDato.textContent = 'Día festivo · volvemos mañana';
-  } else if (antesDeAbrir) {
-    notaTitulo.textContent = 'El horno se está calentando';
-    notaDato.textContent = `Abrimos a las ${opening}`;
-  } else {
-    notaTitulo.textContent = 'Ya cerramos por hoy';
-    notaDato.textContent = `Mañana abrimos a las ${opening}`;
-  }
+  const { titulo, dato } = notaDelHorno(h);
+  notaTitulo.textContent = titulo;
+  notaDato.textContent = dato;
 };
 
 // Enter en un campo pasa al siguiente de la lista, como haria Tab, y se salta
