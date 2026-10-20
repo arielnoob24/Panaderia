@@ -366,7 +366,19 @@ Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
    "Los más pedidos", la vista de catálogo, filtros, orden, buscador, rutas
    `#tienda-*`, globo de ayuda, avisos `aria-live` y animaciones de entrada.
    Las fichas llevan el botón de agregar, pero sin efecto hasta la fase 3.
-3. **Canasta**: panel, cantidades, deshacer y vaciar, guardado en `localStorage`.
+3. **Canasta**: botón de la canasta con contador en la cabecera (y flotante
+   en el teléfono), panel lateral, control de cantidad de las fichas (con
+   tamaños como líneas distintas), la foto que vuela a la canasta, quitar con
+   pregunta, la X de cada línea, deshacer 12 s, vaciar, y guardado en
+   `localStorage` con la marca de la cookie y "Tu pedido se guardó…" en el
+   pie. Reglas:
+   - **Mismo formato y mismas claves de `localStorage` y cookie** que el sitio
+     actual, para que un pedido guardado siga ahí cuando React lo reemplace.
+   - "Ir a pagar" ya existe, pero como en React todavía no hay cuenta (fase 5)
+     ni pedido (fase 4), enseña el aviso de "Crear cuenta o entrar" del sitio
+     actual con el botón sin efecto, y un comentario que lo diga.
+   - El reductor del pedido (`agregar`, `cambiar`, `quitar`, `vaciar`,
+     `reponer`) es puro y vive en `src/estado/`; guardar es un efecto aparte.
 4. **Pedido y pago**: `#confirmar`, factura, tarjeta, comprobante e IndexedDB.
 5. **Cuenta**: crear, verificar, entrar, editar, historial.
 6. **Calidad**: `verificar-sitio`, `axe.mjs`, el CI y la skill `publicar`
@@ -460,10 +472,11 @@ sitio actual. Gravedad de Nielsen entre paréntesis.
 No se arregla: Escape en el sitio actual mueve el foco aunque no haya nada
 abierto. React ya lo hace bien, y el sitio actual se retira en la fase 7.
 
-### Vista previa de `mejoras` (decidida el 20 de octubre de 2026)
+### Vista previa de `mejoras` (en pausa: el usuario lo decide al final)
 
-GitHub Pages solo publica `main`. Para ver la versión en React en internet
-mientras se migra, se usa **Netlify** (plan gratis, sin tarjeta):
+El usuario decidirá al final cómo y dónde se publica. Mientras tanto no se
+crea nada en Netlify; `netlify.toml` queda en el repo por si se elige esta
+opción, y no afecta a nada. La propuesta era **Netlify** (plan gratis, sin tarjeta):
 
 - Un sitio de Netlify conectado al repositorio, con **`mejoras` como rama
   publicada**. Cada push a `mejoras` lo reconstruye solo.
