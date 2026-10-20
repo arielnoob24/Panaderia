@@ -805,7 +805,7 @@ fotos de bancos ni inventadas.
 
 Pendiente de este apartado:
 - [ ] Vistas, pie corto, transición, carrusel y direcciones viejas.
-- [ ] Motion en vistas y canasta.
+- [x] Motion en vistas y canasta.
 - [ ] Fondos de trigo, maíz y pan, y 60-30-10 medido en cada vista.
 - [ ] Mapa en `#/contacto`.
 - [ ] Galería (cuando el usuario pase las fotos).

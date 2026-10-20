@@ -9,6 +9,7 @@
 // foco vuelve a donde estaba.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { AnimatePresence } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { dinero } from '@raiz/js/comun/state.js';
 import { usePedido } from '../estado/PedidoProvider.jsx';
@@ -213,20 +214,24 @@ function Canasta() {
           <section className="canasta-paso" data-paso="canasta">
             <div className="canasta-cuerpo">
               <ul className="canasta-lista">
-                {lineas.map(([id, l]) => (
-                  <LineaCanasta
-                    key={id}
-                    id={id}
-                    linea={l}
-                    foto={fotoDeLinea(l.nombre)}
-                    confirmando={porConfirmar?.id === id}
-                    onMenos={alMenos}
-                    onMas={alMas}
-                    onQuitar={pedirQuitar}
-                    onSi={confirmarQuitar}
-                    onNo={cancelarQuitar}
-                  />
-                ))}
+                {/* Las lineas que se van terminan su salida antes de irse del
+                    todo (LineaCanasta.jsx); al abrir la canasta no se anima. */}
+                <AnimatePresence initial={false}>
+                  {lineas.map(([id, l]) => (
+                    <LineaCanasta
+                      key={id}
+                      id={id}
+                      linea={l}
+                      foto={fotoDeLinea(l.nombre)}
+                      confirmando={porConfirmar?.id === id}
+                      onMenos={alMenos}
+                      onMas={alMas}
+                      onQuitar={pedirQuitar}
+                      onSi={confirmarQuitar}
+                      onNo={cancelarQuitar}
+                    />
+                  ))}
+                </AnimatePresence>
               </ul>
               {/* Vacia no se queda en un renglon gris: dice que hacer y lleva a hacerlo. */}
               <div className="canasta-vacio" hidden={hayAlgo}>

@@ -8,7 +8,14 @@
 // sitio del control: preguntar en otra ventana obligaria a mirar a otro lado.
 // Escape contesta que no y se queda aqui (sin subir al panel, que lo
 // entenderia como cerrar la canasta).
+//
+// Con Motion (seccion 15 del plan) la linea entra desde la derecha, de donde
+// llega la gaveta, sale hacia la izquierda al quitarla, y las demas suben a
+// ocupar su hueco en vez de saltar. Solo se anima la posicion (layout
+// "position"): al preguntar "¿Lo quitamos?" la linea cambia de alto, y
+// escalarla deformaria el texto. Con menos movimiento, nada de esto.
 import { useLayoutEffect, useRef } from 'react';
+import { m, useReducedMotion } from 'motion/react';
 import { dinero } from '@raiz/js/comun/state.js';
 import { useCanasta } from './CanastaProvider.jsx';
 import { Basurero } from './iconosPedido.jsx';
@@ -23,8 +30,17 @@ function Foto({ src }) {
   );
 }
 
+const ENTRA = { opacity: 0, x: 28 };
+const ESTA = { opacity: 1, x: 0 };
+const SALE = { opacity: 0, x: -28, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } };
+const MUEVE = { duration: 0.26, ease: [0.16, 1, 0.3, 1] };
+
 function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, onSi, onNo }) {
   const { focoLinea, enfocarLinea } = useCanasta();
+  const reducido = useReducedMotion();
+  const movimiento = reducido
+    ? {}
+    : { layout: 'position', initial: ENTRA, animate: ESTA, exit: SALE, transition: MUEVE };
   const refs = {
     si: useRef(null), menos: useRef(null), quitar: useRef(null), mas: useRef(null),
   };
@@ -46,7 +62,7 @@ function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, 
       onNo(id);
     };
     return (
-      <li className="canasta-linea is-confirmando" data-id={id} onKeyDown={alTeclear}>
+      <m.li className="canasta-linea is-confirmando" data-id={id} onKeyDown={alTeclear} {...movimiento}>
         <Foto src={foto} />
         <div className="canasta-info">
           <h3>{nombre}</h3>
@@ -58,14 +74,14 @@ function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, 
             <button className="canasta-confirma-no" type="button" aria-label={`Cancelar, dejar ${nombre} en la canasta`} onClick={() => onNo(id)}>Cancelar</button>
           </div>
         </div>
-      </li>
+      </m.li>
     );
   }
 
   const ultima = cantidad === 1;
   const tope = enTope(cantidad);
   return (
-    <li className="canasta-linea" data-id={id}>
+    <m.li className="canasta-linea" data-id={id} {...movimiento}>
       <Foto src={foto} />
       <div className="canasta-info">
         <div className="canasta-fila">
@@ -87,7 +103,7 @@ function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, 
           <span className="canasta-subtotal">{dinero(precio * cantidad)}</span>
         </div>
       </div>
-    </li>
+    </m.li>
   );
 }
 
