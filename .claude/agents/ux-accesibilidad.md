@@ -44,6 +44,9 @@ Si te dan un foco ("solo WCAG", "solo el checkout"...), revisa solo eso.
 Si te piden revisar `react/`, sirvela con `npm run build && npm run preview`
 dentro de esa carpeta y prueba ahi. Compara con el sitio actual: lo que en el
 actual ya cumplia y en React no, es un hallazgo de gravedad 3 como minimo.
+Lo que la seccion 15 cambia a proposito ("Vistas y aspecto" y "Fase 5: la
+cuenta", donde la cuenta son vistas `#/cuenta/*` en vez de un panel) no es
+un hallazgo por ser distinto: se revisa contra WCAG y Nielsen como algo nuevo.
 
 ## Las skills que traes cargadas
 

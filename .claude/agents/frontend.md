@@ -50,7 +50,12 @@ La version de `react/` tiene que hacer lo mismo que el sitio actual (secciones
 4 a 11 del plan), **salvo lo que cambia "Vistas y aspecto"** de la seccion 15:
 las vistas, el pie corto, el carrusel, las transiciones, los fondos y Motion
 son solo de React, y su CSS va en `react/src/estilos/`, nunca en
-`assets/css/styles.css` (que sigue sirviendo al sitio actual). Para el diseno
+`assets/css/styles.css` (que sigue sirviendo al sitio actual). Lo mismo con
+la cuenta de la fase 5 ("Fase 5: la cuenta"): en React son vistas
+`#/cuenta/*`, no un panel. De eso es tuyo: sus rutas y redirecciones en
+`App.jsx`, el boton y la ficha de la cuenta en la cabecera, y la maquetacion
+de esas vistas (dos columnas en la computadora, una en el telefono); los
+formularios y lo que hacen son de `logica-datos`. Para el diseno
 sigue la skill `frontend-design`, pero la identidad ya existe (colores de
 `:root`, tipografia, mascota): no se cambia, se aprovecha. Si para algo falta
 una decision, para y pregunta.

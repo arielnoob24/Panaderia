@@ -60,6 +60,12 @@ sin servidor. Lo equivalente a `next/dynamic` es `React.lazy`.
 
 Las reglas de abajo valen igual en React. La version de `react/` tiene que
 hacer lo mismo que el sitio actual; si falta una decision, para y pregunta.
+La excepcion es la forma de la cuenta ("Fase 5: la cuenta" en la seccion 15):
+en React son vistas `#/cuenta/*` y no un panel, y al entrar o verificar
+viniendo de "Ir a pagar" se va directo a `#/confirmar`. Lo que hace cada paso
+es lo de la seccion 7, con las mismas claves de `localStorage` para que la
+cuenta sirva en los dos sitios. Tuyos: `SesionProvider` (que deja de ser de
+solo lectura), `src/servicios/cuenta.js` y los formularios de `src/cuenta/`.
 
 ## Reglas
 

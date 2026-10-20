@@ -21,7 +21,7 @@ react/
     comun/            hooks y piezas de todas las zonas (useAtraparFoco, Avisos, Globo)
     catalogo/         FichaProducto, Mostrador, VistaCatalogo, Filtros...
     pedido/           Canasta, LineaCanasta, Confirmar, Comprobante...
-    cuenta/           PanelCuenta, CrearCuenta, Entrar, MisPedidos...
+    cuenta/           Entrar, CrearCuenta, Verificar, MisDatos, MisPedidos, FichaCuenta
 ```
 
 - Las zonas son las mismas que en `js/` (`comun`, `catalogo`, `pedido`,
@@ -48,7 +48,9 @@ react/
   `aria-controls`, `aria-live`, `aria-invalid` + `aria-describedby`, `inert`
   detras de los paneles. El foco se mueve con `ref`, no con `querySelector`.
 - **Las mismas rutas** (`#tienda-*`, `#confirmar`, `#comprobante`) con React
-  Router, y el mismo comportamiento de Atras.
+  Router, y el mismo comportamiento de Atras. Las vistas nuevas de la
+  seccion 15 (`#/`, `#/nosotros`, `#/contacto`, `#/cuenta/*`) son solo de
+  React; las redirecciones de una vista que no corresponde van con `replace`.
 - **Las mismas reglas**: `revisar()` del catalogo, Luhn, cedula/RUC, PBKDF2,
   los cuatro almacenamientos. Se mueven a `servicios/` o se importan; no se
   reescriben de memoria.
