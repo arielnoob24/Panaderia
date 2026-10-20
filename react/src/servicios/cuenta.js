@@ -15,7 +15,7 @@
 //
 // Todo lo que toca localStorage va en try/catch: en ventana privada falla, y
 // eso no puede tumbar la pagina.
-import { CLAVE_CUENTA, soloNueve, leerCuentaGuardada, correoDeCuenta } from '@raiz/js/cuenta/guardada.js';
+import { CLAVE_CUENTA, soloNueve, codigoAlAzar, leerCuentaGuardada, correoDeCuenta } from '@raiz/js/cuenta/guardada.js';
 import { buzonListo, enviarCorreo } from '@raiz/js/comun/mail.js';
 import { pedidosGuardados } from '@raiz/js/comun/storage.js';
 
@@ -162,7 +162,8 @@ const escucharCuenta = (avisar) => {
 // su propio navegador. Para eso haria falta un servidor, y no lo hay.
 // La espera para reenviar: el plan gratuito de EmailJS da 200 correos al mes.
 const REENVIO = 45;
-const nuevoCodigo = () => String(Math.floor(100000 + Math.random() * 900000));
+// Al azar de verdad (crypto.getRandomValues), el mismo del sitio actual.
+const nuevoCodigo = codigoAlAzar;
 
 // Manda el codigo y dice como fue: 'enviado', 'fallo' o 'sin-buzon'. Nunca
 // lanza (enviarCorreo tampoco): si no sale, el recuadro que imita el correo
@@ -198,6 +199,7 @@ const avisoDelCodigo = (enviado) => (MOTIVO_SIN_CORREO[envioInicial()] ? AVISO_S
 const CADUCA_RECUPERAR = 10 * 60 * 1000;
 const INTENTOS_RECUPERAR = 5;
 const SIN_CORREO_RECUPERAR = 'No pudimos enviar el correo. Inténtalo más tarde.';
+const CADUCO_RECUPERAR = 'El código caducó: dura 10 minutos. Vuelve a pedirlo.';
 // true si salio. Nunca lanza, como enviarCorreo.
 const mandarCodigoClave = async (para, nombre, codigo) => {
   if (!buzonListo()) return false;
@@ -235,6 +237,6 @@ export {
   leerCuenta, guardarCuenta, escucharCuenta,
   REENVIO, nuevoCodigo, buzonListo, envioInicial, mandarCodigo, MOTIVO_SIN_CORREO,
   AVISO_SIN_CORREO, avisoDelCodigo,
-  CADUCA_RECUPERAR, INTENTOS_RECUPERAR, SIN_CORREO_RECUPERAR, mandarCodigoClave, correoAMedias,
+  CADUCA_RECUPERAR, INTENTOS_RECUPERAR, SIN_CORREO_RECUPERAR, CADUCO_RECUPERAR, mandarCodigoClave, correoAMedias,
   todosLosPedidos, deLaCuenta,
 };

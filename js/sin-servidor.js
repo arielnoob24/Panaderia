@@ -2517,6 +2517,15 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     if (d.length > 9 && d.startsWith("593")) d = d.slice(3);
     return d.replace(/^0+/, "").slice(0, 9);
   };
+  var RANGO = 9e5;
+  var TOPE = Math.floor(2 ** 32 / RANGO) * RANGO;
+  var codigoAlAzar = () => {
+    const caja = new Uint32Array(1);
+    do {
+      window.crypto.getRandomValues(caja);
+    } while (caja[0] >= TOPE);
+    return String(1e5 + caja[0] % RANGO);
+  };
   var SIN_CUENTA = {
     nombre: "",
     correo: "",
@@ -2666,7 +2675,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var REENVIO = 45;
   var correoAVerificar = () => datos.correo || sesion.correo;
   var nuevoCodigo = () => {
-    codigoEsperado = String(Math.floor(1e5 + Math.random() * 9e5));
+    codigoEsperado = codigoAlAzar();
     if (codigoValor) codigoValor.textContent = codigoEsperado;
     if (codigoCorreo) codigoCorreo.textContent = correoAVerificar();
   };

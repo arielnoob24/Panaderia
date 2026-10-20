@@ -20,6 +20,19 @@ const soloNueve = (v) => {
   return d.replace(/^0+/, '').slice(0, 9);
 };
 
+// El codigo de 6 cifras que se manda al correo (verificar y, en React,
+// recuperar la contrasena). Sale de crypto.getRandomValues y no de
+// Math.random, que no esta hecho para que no se pueda adivinar. Se descartan
+// los valores del final del rango para que las 900000 salidas sean igual de
+// probables. getRandomValues existe tambien fuera de https (doble clic).
+const RANGO = 900000;
+const TOPE = Math.floor(2 ** 32 / RANGO) * RANGO;
+const codigoAlAzar = () => {
+  const caja = new Uint32Array(1);
+  do { window.crypto.getRandomValues(caja); } while (caja[0] >= TOPE);
+  return String(100000 + (caja[0] % RANGO));
+};
+
 const SIN_CUENTA = {
   nombre: '', correo: '', telefono: '', direccion: '',
   dentro: false, verificado: false, metodo: 'efectivo',
@@ -53,4 +66,4 @@ const correoDeCuenta = (crudo) => {
   try { return crudo ? String(JSON.parse(crudo).correo || '') : ''; } catch (e) { return ''; }
 };
 
-export { CLAVE_CUENTA, soloNueve, leerCuentaGuardada, correoDeCuenta };
+export { CLAVE_CUENTA, soloNueve, codigoAlAzar, leerCuentaGuardada, correoDeCuenta };

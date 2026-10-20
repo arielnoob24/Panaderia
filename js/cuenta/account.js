@@ -10,7 +10,7 @@ import { buzonListo, enviarCorreo } from '../comun/mail.js';
 import { pedidosGuardados, marcaBonita } from '../comun/storage.js';
 // Que se acepta de la cuenta guardada vive en guardada.js, sin DOM, porque la
 // version en React lee la misma cuenta.
-import { CLAVE_CUENTA, soloNueve, leerCuentaGuardada, correoDeCuenta } from './guardada.js';
+import { CLAVE_CUENTA, soloNueve, codigoAlAzar, leerCuentaGuardada, correoDeCuenta } from './guardada.js';
 
 // Maqueta de cuentas. No hay servidor detras, asi que nada de esto viaja a
 // ninguna parte: la cuenta queda escrita en este navegador y en ningun otro
@@ -299,7 +299,7 @@ const REENVIO = 45;
 const correoAVerificar = () => datos.correo || sesion.correo;
 
 const nuevoCodigo = () => {
-  codigoEsperado = String(Math.floor(100000 + Math.random() * 900000));
+  codigoEsperado = codigoAlAzar();
   if (codigoValor) codigoValor.textContent = codigoEsperado;
   if (codigoCorreo) codigoCorreo.textContent = correoAVerificar();
 };

@@ -11,6 +11,10 @@
 // con el en pantalla, cualquiera que abriera este navegador cambiaria la
 // contrasena. El paso en que se esta lo dice la sesion (recuperacion), asi que
 // salir de la vista y volver no pierde el codigo ni reinicia los 45 s.
+// "Cambiar el correo" vuelve al primer paso sin olvidar el codigo: con el
+// mismo correo se vuelve a sus casillas con los intentos que le queden, y no
+// sale otro correo antes de los 45 s. Entrar, verificar o salir lo borran, y
+// un codigo de mas de 10 minutos no abre el paso de la clave.
 //
 // Los errores de cada campo van debajo de el, unidos con aria-describedby, y
 // el foco va al campo: el lector lo lee al llegar. Si el foco ya estaba ahi,
@@ -27,7 +31,8 @@ import { flushSync } from 'react-dom';
 import { Link, useLocation } from 'react-router-dom';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
-import { REENVIO, REGLAS, fallaCorreo } from '../servicios/cuenta.js';
+import { REENVIO, REGLAS, CADUCO_RECUPERAR, fallaCorreo } from '../servicios/cuenta.js';
+import { vigente } from '../estado/sesion.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import PasoQueCambia from './PasoQueCambia.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
@@ -60,9 +65,25 @@ function Recuperar() {
 }
 
 function PasosRecuperar() {
-  const { recuperacion, dentro } = useSesion();
+  const { recuperacion, dentro, caducarRecuperar } = useSesion();
+  const avisar = useAvisos();
+  // Lo que el paso del correo tiene que decir al volver a el: que el codigo
+  // caduco o que la cuenta cambio. Vive aqui porque el paso que lo descubre
+  // (el de la clave) desaparece en ese momento.
+  const [avisoCorreo, setAvisoCorreo] = useState('');
+  const alCorreoCon = (texto) => { setAvisoCorreo(texto); avisar(texto); };
+
+  // Un codigo acertado con sus 10 minutos ya pasados no abre el paso de la
+  // clave: se pinta el del correo y, despues, se olvida el codigo.
+  const caducada = Boolean(recuperacion?.listo) && !vigente(recuperacion, Date.now());
+  useEffect(() => {
+    if (!caducada) return;
+    caducarRecuperar();
+    alCorreoCon(CADUCO_RECUPERAR);
+  }, [caducada]);
+
   let paso = 'correo';
-  if (recuperacion) paso = recuperacion.listo ? 'clave' : 'codigo';
+  if (recuperacion?.enCurso && !caducada) paso = recuperacion.listo ? 'clave' : 'codigo';
   // Al llegar a la vista el foco es del titulo (useVista); al pasar de un
   // paso a otro, el boton pulsado desaparece y el foco va a lo primero que
   // hay que escribir en el paso nuevo.
@@ -77,22 +98,28 @@ function PasosRecuperar() {
       {/* El movimiento entre pasos (frontend): la hoja vieja sale a la
           izquierda y la nueva entra por la derecha (PasoQueCambia.jsx). */}
       <PasoQueCambia paso={paso} orden={PASOS}>
-        {paso === 'correo' ? <PasoCorreo key="correo" enfocar={enfocar} /> : null}
+        {paso === 'correo' ? (
+          <PasoCorreo key="correo" enfocar={enfocar} avisoAntes={avisoCorreo} alLeerAviso={() => setAvisoCorreo('')} />
+        ) : null}
         {paso === 'codigo' ? <PasoCodigo key="codigo" enfocar={enfocar} /> : null}
-        {paso === 'clave' ? <PasoClave key="clave" enfocar={enfocar} /> : null}
+        {paso === 'clave' ? <PasoClave key="clave" enfocar={enfocar} alCorreoCon={alCorreoCon} /> : null}
       </PasoQueCambia>
     </MarcoCuenta>
   );
 }
 
-function PasoCorreo({ enfocar }) {
-  const { pedirRecuperar } = useSesion();
+function PasoCorreo({ enfocar, avisoAntes, alLeerAviso }) {
+  const { pedirRecuperar, recuperacion } = useSesion();
   const avisar = useAvisos();
   const location = useLocation();
-  // El que se habia escrito en Iniciar sesion, para no escribirlo dos veces.
-  const [correo, setCorreo] = useState(() => String(location.state?.correo || ''));
+  // El que se habia escrito en Iniciar sesion, para no escribirlo dos veces;
+  // al volver con "Cambiar el correo", el de antes.
+  const [correo, setCorreo] = useState(() => String(recuperacion?.correo || location.state?.correo || ''));
   const [error, setError] = useState('');
-  const [aviso, setAviso] = useState('');
+  // Lo de este paso, o lo que trae de otro (codigo caducado, cuenta
+  // cambiada), que se suelta al volver a pedir el codigo.
+  const [propio, setAviso] = useState('');
+  const aviso = propio || avisoAntes;
   const [ocupado, setOcupado] = useState(false);
   const correoRef = useRef(null);
   useEffect(() => { if (enfocar) correoRef.current?.focus(); }, [enfocar]);
@@ -103,6 +130,7 @@ function PasoCorreo({ enfocar }) {
     if (ocupado) return;
     const escrito = correo.trim();
     setAviso('');
+    alLeerAviso();
     const mal = fallaCorreo(escrito);
     if (mal) { marcar(mal); senalar(correoRef, avisar, mal); return; }
     setOcupado(true);
@@ -111,7 +139,8 @@ function PasoCorreo({ enfocar }) {
     if (r.campo) { marcar(r.texto); senalar(correoRef, avisar, r.texto); return; }
     if (r.aviso) { setAviso(r.aviso); return; }
     // Las casillas se llevan el foco al montarse (PasoCodigo).
-    avisar(`Te enviamos un código a ${escrito}.`);
+    if (r.reabierto) avisar(`Escribe el código que ya te enviamos a ${escrito}.`);
+    else avisar(`Te enviamos un código a ${escrito}.`);
   };
 
   const alTeclear = useEnterAvanza([correoRef], alPedir);
@@ -250,7 +279,7 @@ function PasoCodigo({ enfocar }) {
   );
 }
 
-function PasoClave({ enfocar }) {
+function PasoClave({ enfocar, alCorreoCon }) {
   const { cambiarClave } = useSesion();
   const avisar = useAvisos();
   const terminar = useTerminarEntrada();
@@ -280,6 +309,9 @@ function PasoClave({ enfocar }) {
     setOcupado(true);
     const r = await cambiarClave(clave);
     setOcupado(false);
+    // Si la recuperacion se acabo (caduco, o la cuenta cambio en otra
+    // pestana), este paso ya no esta: el aviso lo ensena el del correo.
+    if (r.alCorreo) { alCorreoCon(r.aviso); return; }
     if (r.aviso) { setAviso(r.aviso); return; }
     terminar(r, `Contraseña cambiada. Iniciaste sesión como ${r.nombre}.`);
   };
