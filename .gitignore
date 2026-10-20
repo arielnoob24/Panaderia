@@ -1,0 +1,4 @@
+# La version en React (react/) se instala y se construye en cada maquina y en
+# el CI: ni sus dependencias ni lo construido van al repo.
+react/node_modules/
+react/dist/

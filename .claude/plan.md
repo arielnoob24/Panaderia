@@ -66,6 +66,8 @@ js/
     account.js          crear cuenta, verificar el correo y entrar
 herramientas/
   empaquetar.mjs        genera js/sin-servidor.js
+react/                  la version en React mientras se migra (seccion 15)
+.gitignore              react/node_modules/ y react/dist/
 .github/workflows/      el CI: valida y publica
 .claude/                agentes, skills, herramientas de Claude Code y plan.md
                         (como debe funcionar todo; lo leen los agentes)
@@ -253,6 +255,8 @@ El CI comprueba: archivos principales, sintaxis de los módulos,
 `sin-servidor.js` al día, imports con la mayúscula exacta, el catálogo con
 `revisar()`, categorías ↔ menú Tienda, fotos en los dos anchos, portada,
 al menos 4 destacados, palabras prohibidas y espacios al final de línea.
+Además, en un paso aparte, que la versión en React de `react/` instala y
+construye (sección 15).
 
 ## 13. Pendiente
 
@@ -306,7 +310,7 @@ las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
 ese repositorio: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, fase 1 en curso)
+## 15. Migración a React (decidida, fase 1 hecha)
 
 El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
 Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
@@ -326,7 +330,7 @@ lo que pida la clase.
 | Dónde | Carpeta `react/` con su propio `package.json` mientras se migra; en la fase 7 pasa a la raíz y se borra lo viejo | El sitio actual sigue funcionando y validándose durante la migración |
 | Fotos y catálogo | `react/` usa `data/productos.json` y `assets/img/` de la raíz **sin copiarlos** (lo resuelve `vite.config.js`); `revisar()` se reutiliza | Una sola fuente de verdad; el CI ya la valida |
 | Estado | `Context` + `useReducer` para pedido, entrega y sesión; sin Redux | El estado es pequeño; reemplaza a `state.js`, al `puente` y a los `pintar()` a mano |
-| Rutas | **React Router** con `HashRouter`: las mismas `#tienda-*`, `#confirmar`, `#comprobante` | Es lo estándar; con `#` GitHub Pages no necesita el truco del 404 |
+| Rutas | **React Router** con `HashRouter`: las mismas `#tienda-*`, `#confirmar`, `#comprobante`, que `HashRouter` escribe con barra (`#/tienda-panes`); las de antes, sin barra, siguen entrando | Es lo estándar; con `#` GitHub Pages no necesita el truco del 404 |
 | Estilos | Se conserva `styles.css` y sus clases; nada de Tailwind ni Bootstrap | Es la identidad del sitio |
 | Guardado y correo | La lógica de `storage.js` y `mail.js` se conserva, llamada desde hooks | Ya funcionan y no dependen de la interfaz |
 | **Doble clic** | **Se deja.** La versión en React solo se sirve por HTTP; `js/sin-servidor.js` y `herramientas/empaquetar.mjs` desaparecen en la fase 7 | Un sitio publicado se abre por HTTP. Meter todo en un solo archivo quita la caché por archivo y hace la primera carga más pesada |
@@ -352,6 +356,29 @@ Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
 
 Cada fase cierra con el sitio funcionando y la paridad comprobada con las
 secciones 4 a 11.
+
+### Cómo quedó la fase 1 (hecha el 19 de octubre de 2026)
+
+- Versiones fijadas sin `^`: Vite 8.3.4, `@vitejs/plugin-react` 6.1.2, React y
+  React DOM 19.3.1, `react-router-dom` 7.18.4; Node 24.15.0 en el CI.
+- `vite.config.js`: alias `@raiz` hacia la raíz del repo, `server.fs.allow`
+  para que `npm run dev` pueda leerla y `base: './'` para servir bajo
+  `/Panaderia/`.
+- Catálogo: `src/servicios/catalogo.js` importa `data/productos.json` (va dentro
+  del JS construido, sin `fetch`) y lo pasa por `revisar()` y `normalizar()` de
+  `js/catalogo/repo.js`, que ahora exporta las dos. Las fotos entran con
+  `import.meta.glob` sobre `assets/img/productos/*.jpg`: Vite las copia a
+  `dist/assets/` con huella, y en `react/` no hay ninguna copia.
+- Rutas: `/`, `/tienda-catalogo`, una `/tienda-<categoria>` por categoría (React
+  Router no admite `tienda-:categoria` en un mismo tramo), `/confirmar`,
+  `/comprobante`; lo demás vuelve a la portada con `replace`. Las direcciones
+  se ven como `#/tienda-panes`; `#tienda-panes` sin barra sigue abriendo la
+  misma vista porque React Router le añade la barra al leerla.
+- Pendiente para la fase 2: con `HashRouter`, los enlaces de sección
+  (`#catalogo`, `#historia`...) serían rutas; hay que llevarlos con
+  `scrollIntoView` o con otra forma que no toque el `#`.
+- CI: paso "Construir la version en React" (`npm ci && npm run build` en
+  `react/`) detrás de la validación; `ci-local.sh` solo corre la validación.
 
 ### Reparto en `react/`
 

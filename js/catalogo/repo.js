@@ -79,5 +79,7 @@ const cargarProductos = async () => {
   return { productos };
 };
 
-// revisar se exporta para el CI, que valida el JSON con estas mismas reglas.
-export { cargarProductos, RUTA, revisar };
+// revisar se exporta para el CI, que valida el JSON con estas mismas reglas, y
+// revisar y normalizar para la version en React (react/src/servicios/), que
+// las usa tal cual en vez de llevar una copia que se quede atras.
+export { cargarProductos, RUTA, revisar, normalizar };

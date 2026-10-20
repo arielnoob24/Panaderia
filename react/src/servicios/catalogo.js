@@ -1,0 +1,50 @@
+// ---- El catalogo, para la version en React -----------------------------
+// Los datos y las reglas son los de siempre: data/productos.json de la raiz, y
+// revisar() y normalizar() de js/catalogo/repo.js, importados y no copiados.
+// Asi el sitio actual, el CI y esta version comprueban el catalogo con el
+// mismo codigo, y un producto que pasa en uno pasa en los otros.
+import datos from '@raiz/data/productos.json';
+import { revisar, normalizar } from '@raiz/js/catalogo/repo.js';
+
+// El JSON va dentro del paquete que arma Vite en vez de pedirse con fetch:
+// no hay una segunda peticion que pueda fallar y no hace falta esperar.
+// Las fotos, en cambio, no pueden ir dentro: el JSON solo trae la raiz del
+// nombre ("assets/img/productos/pan-redondo") y Vite no sabe que de ahi salen
+// archivos. El glob se lo dice: cada .jpg de la carpeta pasa al build con su
+// huella en el nombre, y aqui queda la direccion final de cada uno.
+const archivos = import.meta.glob('@raiz/assets/img/productos/*.jpg', {
+  eager: true, query: '?url', import: 'default',
+});
+const FOTOS = {};
+Object.entries(archivos).forEach(([ruta, url]) => {
+  // La clave es la ruta tal como la escribe el JSON: 'assets/img/productos/...'.
+  FOTOS[ruta.slice(ruta.indexOf('assets/img/productos/'))] = url;
+});
+
+// La misma foto en dos anchos, como en js/catalogo/view.js.
+const ANCHOS = [420, 840];
+const fotoDe = (p, ancho) => FOTOS[`${p.foto}-${ancho}.jpg`];
+
+// Se lee una sola vez, al cargar el modulo. Nunca lanza: si el catalogo viene
+// mal, la portada lo dice y el resto del sitio sigue en pie, que es lo que
+// hace app.js en el sitio actual.
+const leerCatalogo = () => {
+  try {
+    const crudos = Array.isArray(datos) ? datos : datos.productos;
+    if (!Array.isArray(crudos) || !crudos.length) throw new Error('data/productos.json no trae ningun producto');
+    crudos.forEach(revisar);
+    const productos = crudos.map(normalizar);
+    // Una foto que no esta en la carpeta romperia la ficha sin que nadie se
+    // quejara: mejor saberlo aqui, con el nombre del producto.
+    productos.forEach((p) => ANCHOS.forEach((w) => {
+      if (!fotoDe(p, w)) throw new Error(`falta ${p.foto}-${w}.jpg, la foto de "${p.nombre}"`);
+    }));
+    return { productos, error: null };
+  } catch (error) {
+    return { productos: [], error };
+  }
+};
+
+const catalogo = leerCatalogo();
+
+export { catalogo, fotoDe, ANCHOS };

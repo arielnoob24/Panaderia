@@ -123,6 +123,25 @@ jobs:
           fi
           git diff --check
 
+      # La version en React (react/, seccion 15 del plan) todavia no se
+      # publica: solo se comprueba que instala y construye. npm ci instala lo
+      # que dice package-lock.json, ni una version mas, y falla si no cuadra
+      # con package.json.
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+          cache: npm
+          cache-dependency-path: react/package-lock.json
+
+      - name: Construir la version en React
+        shell: bash
+        working-directory: react
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
+
   deploy:
     needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
