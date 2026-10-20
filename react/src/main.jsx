@@ -16,6 +16,11 @@ import { SesionProvider } from './estado/SesionProvider.jsx';
 import { PedidoProvider } from './estado/PedidoProvider.jsx';
 import { CanastaProvider } from './pedido/CanastaProvider.jsx';
 import App from './App.jsx';
+import { cederDesplazamiento } from './comun/apertura.js';
+
+// Atras y Adelante entre vistas llevan arriba del todo, no adonde se estaba
+// (comun/apertura.js).
+cederDesplazamiento();
 
 // HashRouter y no BrowserRouter: con la ruta despues del '#', GitHub Pages
 // siempre sirve el mismo index.html y no hace falta el truco del 404.

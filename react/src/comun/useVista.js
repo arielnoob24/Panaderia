@@ -19,7 +19,9 @@ function useVista(titulo, tituloRef) {
   useEffect(() => {
     if (deAbrir.current === null) deAbrir.current = esLaDeAbrir();
     if (deAbrir.current) return;
-    // 'instant' y no 'auto': html lleva scroll-behavior: smooth, y la vista
+    // Tambien con Atras y Adelante: el navegador ya no devuelve el
+    // desplazamiento de la entrada (comun/apertura.js), asi que el h1
+    // enfocado queda a la vista. 'instant' y no 'auto': html lleva scroll-behavior: smooth, y la vista
     // nueva no tiene que llegar deslizandose desde donde estaba la anterior.
     window.scrollTo({ top: 0, behavior: 'instant' });
     tituloRef.current?.focus({ preventScroll: true });

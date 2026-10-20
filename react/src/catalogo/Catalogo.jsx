@@ -12,7 +12,7 @@
 //   - Al cambiar el filtro o el orden, las fichas entran escalonadas.
 // Las categorias son la misma vista: entre ellas el catalogo no se vuelve a
 // montar (App.jsx). "Los mas pedidos" de #/ es otra pieza (MasPedidos.jsx).
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { dinero } from '@raiz/js/comun/state.js';
 import { recordarVista, vistaRecordada } from '@raiz/js/comun/storage.js';
@@ -20,6 +20,7 @@ import { catalogo } from '../servicios/catalogo.js';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { movimientoReducido } from '../comun/useMovimientoReducido.js';
 import { useVista } from '../comun/useVista.js';
+import { posicionTienda } from '../comun/apertura.js';
 import FichaProducto from './FichaProducto.jsx';
 import VistaCabeza from './VistaCabeza.jsx';
 import Franja from '../comun/Franja.jsx';
@@ -194,13 +195,31 @@ function Catalogo({ categoria }) {
   // categoria con un enlace (arriba del todo y el foco en el titulo) o Atras y
   // Adelante entre categorias (el foco al titulo; si no, se quedaba en body
   // sin decir donde se estaba). Cambiar el filtro a mano no mueve nada.
+  // Con Atras y Adelante entre categorias se vuelve a donde se estaba en esa
+  // entrada, como hacia el navegador; ahora lo hace la tienda, porque el
+  // navegador ya no devuelve el desplazamiento (comun/apertura.js). Se apunta
+  // al desplazarse, con la clave de la entrada en la que se esta: la clave
+  // cambia antes que los efectos, asi que subir al entrar en otra categoria
+  // ya se apunta en la nueva.
+  const claveActual = useRef(location.key);
+  useLayoutEffect(() => { claveActual.current = location.key; }, [location.key]);
+  useEffect(() => {
+    const apuntar = () => { posicionTienda.set(claveActual.current, window.scrollY); };
+    window.addEventListener('scroll', apuntar, { passive: true });
+    return () => window.removeEventListener('scroll', apuntar);
+  }, []);
+
   const ultimaClave = useRef(location.key);
   useEffect(() => {
     if (ultimaClave.current === location.key) return;
     ultimaClave.current = location.key;
-    const entrar = location.state?.entrar;
-    if (!entrar && tipoNavegacion !== 'POP') return;
+    // La entrada guarda su state.entrar tambien al volver a ella con Atras:
+    // eso no es entrar con el enlace.
+    const vuelta = tipoNavegacion === 'POP';
+    const entrar = location.state?.entrar && !vuelta;
+    if (!entrar && !vuelta) return;
     if (entrar) window.scrollTo({ top: 0, behavior: movimientoReducido() ? 'instant' : 'smooth' });
+    else window.scrollTo({ top: posicionTienda.get(location.key) ?? 0, behavior: 'instant' });
     tituloRef.current?.focus({ preventScroll: true });
   }, [location.key, location.state, tipoNavegacion]);
 
