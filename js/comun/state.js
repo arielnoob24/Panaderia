@@ -27,8 +27,7 @@ const telefonoLargo = (n) => `+593 ${String(n || '').replace(/(\d{2})(\d{3})(\d{
 // Los datos de la tarjeta viven aqui y solo aqui: no se guardan ni se envian
 // a ningun lado, y se borran al salir del paso de pago.
 const tarjeta = { numero: '', vence: '', cvv: '', titular: '' };
-// recibo es lo que armarRecibo() de pedido/cobro.js deja al aprobar.
-const cobro = { metodo: 'efectivo', numero: '', detalle: '', recibo: null };
+const cobro = { metodo: 'efectivo', numero: '', detalle: '' };
 // A nombre de quien va la factura. Por defecto, de quien pide: lo normal es que
 // sean la misma persona, y preguntarlo siempre seria un formulario de mas. Se
 // pide aparte solo cuando alguien dice que la factura va a otro nombre, que es
@@ -44,6 +43,11 @@ const factura = { aOtro: false, nombre: '', ident: '', correo: '', direccion: ''
 const MAX_UNIDADES = 100;
 const ENVIO = 1.50;
 const dinero = (n) => '$' + n.toFixed(2);
+// La direccion en una linea, para el comprobante, el correo y el resumen. Se
+// arma aqui y no en cada sitio: si estuviera escrita tres veces, anadir un
+// campo mas obligaria a acordarse de los tres.
+const direccionEntera = () => [entrega.direccion, entrega.piso, entrega.referencia]
+  .filter(Boolean).join(' · ');
 // Lo que entra en la pagina como HTML y no lo escribio este codigo -los nombres
 // del catalogo, o lo que se recupera de localStorage, que cualquiera puede
 // tocar a mano- se escapa: un '<' en un nombre no puede acabar siendo una
@@ -72,6 +76,6 @@ const puente = {};
 export {
   CLAVE, pedido, entrega, sesion, tarjeta, cobro, factura, puente,
   MAX_UNIDADES, ENVIO,
-  telefonoLargo, dinero, idDe, escapar,
+  telefonoLargo, dinero, direccionEntera, idDe, escapar,
   subtotal, envio, total, unidades,
 };

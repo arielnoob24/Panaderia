@@ -135,8 +135,7 @@ vista.innerHTML =
   + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
   + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
   + '<path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver a la tienda</button>'
-  // h1: es una vista propia, como la de categoria, y su titulo es el de la pagina.
-  + '<h1 class="vista-titulo checkout-titulo" tabindex="-1">Confirmar el pedido</h1>'
+  + '<h2 class="vista-titulo checkout-titulo" tabindex="-1">Confirmar el pedido</h2>'
   + '</div>'
 
   + '<div class="checkout-paso" data-checkout="pedido">'
@@ -168,9 +167,8 @@ vista.innerHTML =
   + '<div class="canasta-direccion" hidden>'
   + '<label for="canasta-dir">¿A dónde lo llevamos?</label>'
   + '<input id="canasta-dir" type="text" autocomplete="street-address" '
-  + 'placeholder="Calle, número y barrio" aria-describedby="canasta-dir-error">'
-  + '<p class="canasta-aviso" id="canasta-dir-error" role="alert" hidden>'
-  + 'Escribe la dirección para poder llevarlo.</p>'
+  + 'placeholder="Calle, número y barrio">'
+  + '<p class="canasta-aviso" role="alert" hidden>Escribe la dirección para poder llevarlo.</p>'
   // Lo que no dice la calle: en que puerta hay que golpear. Son
   // opcionales porque una casa en la esquina no tiene piso ni torre, y pedir
   // un campo que no aplica se contesta con un guion.
@@ -648,26 +646,17 @@ puente.verComprobante = verComprobante;
 radios.forEach((radio) => radio.addEventListener('change', () => {
   if (!radio.checked) return;
   entrega.modo = radio.value === 'domicilio' ? 'domicilio' : 'retiro';
-  verAvisoDir(false);
+  avisoDir.hidden = true;
   pintarPie();
   guardar();
   if (entrega.modo === 'domicilio') campoDir.focus();
 }));
 
-// El aviso de la direccion, con su aria-invalid. Sale al intentar confirmar
-// y tambien al dejar el campo vacio, como los de la tarjeta y la factura.
-function verAvisoDir(ver) {
-  avisoDir.hidden = !ver;
-  campoDir.setAttribute('aria-invalid', String(ver));
-}
 campoDir.addEventListener('input', () => {
   entrega.direccion = campoDir.value.trim().slice(0, 200);
-  if (entrega.direccion) verAvisoDir(false);
+  if (entrega.direccion) avisoDir.hidden = true;
   pintarPie();
   guardar();
-});
-campoDir.addEventListener('blur', () => {
-  if (entrega.modo === 'domicilio' && !entrega.direccion) verAvisoDir(true);
 });
 
 // Los tres campos de detalle se guardan igual, asi que se cablean en bucle.
@@ -749,7 +738,7 @@ resumenEditar?.addEventListener('click', () => abrir());
 // llama checkout.js por el puente porque el campo es de aqui.
 puente.faltaDireccion = () => {
   if (entrega.modo !== 'domicilio' || entrega.direccion) return false;
-  verAvisoDir(true);
+  avisoDir.hidden = false;
   campoDir.focus();
   return true;
 };
