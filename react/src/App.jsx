@@ -19,6 +19,8 @@ import EnlaceSeccion from './comun/EnlaceSeccion.jsx';
 import Portada from './catalogo/Portada.jsx';
 import Confirmar from './pedido/Confirmar.jsx';
 import Comprobante from './pedido/Comprobante.jsx';
+import Canasta from './pedido/Canasta.jsx';
+import BarraDeshacer from './pedido/BarraDeshacer.jsx';
 
 function App() {
   return (
@@ -36,7 +38,10 @@ function App() {
         </Routes>
       </main>
       <Pie />
-      {/* Aqui ira el boton flotante de la canasta (fase 3). */}
+      {/* El boton de la canasta va en la cabecera; el panel y la barra de
+          deshacer, fuera de la pagina, que queda inert detras del panel. */}
+      <Canasta />
+      <BarraDeshacer />
       <RegionAvisos />
       <Globo />
     </>

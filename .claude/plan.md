@@ -63,6 +63,8 @@ js/
     view.js             pinta las fichas y manda el catalogo (orden, filtro, vistas)
   pedido/
     cart.js             la canasta: panel, lineas y control de cantidad
+    guardado.js         que se acepta del pedido guardado y como se escribe
+                        (sin DOM; lo usa tambien react/)
     checkout.js         pago simulado y comprobante
   cuenta/
     account.js          crear cuenta, verificar el correo y entrar
@@ -83,6 +85,7 @@ index.html
         ├── catalogo/repo.js     lee y valida data/productos.json
         ├── catalogo/view.js     fichas, mostrador, vista de catálogo, filtros, rutas
         ├── pedido/cart.js       canasta, pantalla de confirmar, control de cantidad
+        │     ├── pedido/guardado.js  formato del pedido en localStorage (sin DOM)
         │     └── pedido/checkout.js  pago simulado, factura, comprobante
         ├── cuenta/account.js    crear cuenta, verificar correo, entrar, datos, pedidos
         └── comun/ui.js          avisos aria-live, foco, menús, globo de ayuda, horario
@@ -288,6 +291,15 @@ construye (sección 15).
 - [ ] La vista de confirmar (`.checkout-titulo` en `cart.js`) sigue con `h2`
       y sin `h1` (`logica-datos`; en React, en la fase 4).
 - [ ] Decir antes de llenar la canasta que pagar pide cuenta, o permitir invitado.
+- [ ] axe (menores, en los dos sitios): `aside` con `role="dialog"` en la
+      canasta (`aria-allowed-role`; pasar a `div`) y la barra de deshacer fuera
+      de un punto de referencia (`region`).
+- [ ] El panel de la cuenta (`.cuenta-panel.is-open`) tiene la misma
+      transición de `visibility` que tenía la canasta: comprobar si el foco
+      entra al abrirlo (fase 5).
+- [ ] `cart.js` mete el nombre de cada línea (que viene de `localStorage`) con
+      `innerHTML` sin `escapar()`. React no tiene el problema; en el sitio
+      actual, si sigue vivo, pasarlo por `escapar()`.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).
 
 ### SEO
@@ -326,7 +338,7 @@ las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
 ese repositorio: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, fase 2 hecha; sigue la 3)
+## 15. Migración a React (decidida, fase 3 hecha; sigue la 4)
 
 El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
 Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
@@ -471,6 +483,39 @@ sitio actual. Gravedad de Nielsen entre paréntesis.
 
 No se arregla: Escape en el sitio actual mueve el foco aunque no haya nada
 abierto. React ya lo hace bien, y el sitio actual se retira en la fase 7.
+
+### Cómo quedó la fase 3 (hecha el 20 de octubre de 2026)
+
+- Estado: `src/estado/pedido.js` es el reductor puro (`agregar`, `cambiar`,
+  `quitar`, `vaciar`, `reponer` y `olvidar`, que cierra el deshacer); las
+  líneas son pares `[id, línea]` en el orden del `Map` de antes, y el último
+  borrado vive en el mismo estado. `PedidoProvider` lo inicia con lo guardado
+  y guarda en un efecto cuando cambian las líneas. Unidades y subtotal se
+  calculan al pintar.
+- Guardado: lo que se acepta de `localStorage` y cómo se escribe pasó de
+  `cart.js` a `js/pedido/guardado.js` (sin DOM), que usan los dos sitios;
+  misma clave, mismo formato y misma cookie. React reescribe la entrega y la
+  factura que encuentre guardadas (todavía no son suyas: fase 4) sin tocarlas.
+  Comprobado sirviendo los dos en el mismo origen: lo que guarda uno lo lee el
+  otro, en los dos sentidos.
+- Piezas en `src/pedido/`: `BotonCanasta` (en `.nav-acciones`, el mismo `<a
+  role="button">` con `floating-whatsapp is-canasta`), `Canasta`,
+  `LineaCanasta`, `PideCuenta`, `BarraDeshacer`, `ControlCantidad` (el de las
+  fichas, con el HTML de `montarControlesDeFicha`) y `GuardadoPie`. El foco y
+  la animación que cruzan de una a otra van por `CanastaProvider`. El cerco
+  del foco y el `inert` de detrás están en `src/comun/useAtraparFoco.js`, para
+  la cuenta también.
+- "Ir a pagar" enseña siempre el aviso de cuenta; sus dos botones grandes no
+  hacen nada hasta la fase 5 (lo dice un comentario en `PideCuenta.jsx`).
+- Diferencias con el sitio actual, a propósito: React **no guarda al
+  cargar** (el sitio actual reescribe pedido y cookie en cada visita, así que
+  su pie dice siempre "hoy a las" la hora de entrar; React dice la fecha real
+  del último cambio), y la foto de una línea sale aunque el producto esté
+  agotado.
+- Arreglado en los dos sitios: el `+` de la línea de la canasta respeta el
+  tope de 100 (antes solo la ficha), y el panel se hace visible en el acto al
+  abrirse (`visibility 0s`), así que el foco entra en la X de cerrar (antes se
+  quedaba en `body` hasta el primer Tab).
 
 ### Vista previa de `mejoras` (en pausa: el usuario lo decide al final)
 

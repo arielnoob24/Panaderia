@@ -7,11 +7,12 @@
 // (filtro, orden, entrada escalonada) y se lo pasa. Ella pinta y avisa del
 // tamano elegido, que sube al catalogo porque ordenar por precio usa el precio
 // del tamano que se esta viendo, como en el sitio actual.
-import { Fragment, memo } from 'react';
+import { Fragment, memo, useRef } from 'react';
 import { dinero, idDe } from '@raiz/js/comun/state.js';
 import { fotoDe, ANCHOS } from '../servicios/catalogo.js';
 import { useCargaImagen, clases } from '../comun/useCargaImagen.js';
 import { nombreCategoria } from './categorias.js';
+import ControlCantidad from '../pedido/ControlCantidad.jsx';
 
 // Cuanto mide la foto en cada vista, igual que SIZES_CUADRICULA y SIZES_FILA
 // de view.js: sin esto el telefono bajaria la de 840 donde basta la de 420.
@@ -55,23 +56,11 @@ function Tamanos({ producto, elegido, onElegir }) {
 }
 
 // Lo agotado no lleva boton de pedir: lleva dicho que vuelve manana.
-// Lo disponible lleva el mismo control que pone cart.js, cerrado: solo el +.
-// FASE 2: el + se ve y se enfoca como en el sitio actual pero todavia no
-// agrega nada; la canasta, el - y la cantidad llegan en la fase 3.
-function Pedir({ producto, nombre }) {
+// Lo disponible lleva el control de cantidad de la canasta (pedido/), el mismo
+// que pone cart.js: cerrado, solo el +; con algo pedido, quitar, cuenta y sumar.
+function Pedir({ producto, nombre, precio, imagenRef }) {
   if (!producto.disponible) return <span className="card-agotado">Vuelve mañana</span>;
-  return (
-    <div className="card-cantidad">
-      <button
-        className="card-mas"
-        type="button"
-        aria-label={`Añadir ${nombre} a la canasta`}
-        data-tip="Añadir a la canasta"
-      >
-        +
-      </button>
-    </div>
-  );
+  return <ControlCantidad nombre={nombre} precio={precio} imagenRef={imagenRef} />;
 }
 
 function FichaProducto({ producto, vista, visible, orden, retraso, entrando, elegido = 0, onElegir }) {
@@ -82,6 +71,8 @@ function FichaProducto({ producto, vista, visible, orden, retraso, entrando, ele
   const nombre = tamano ? `${producto.nombre} ${tamano.valor}` : producto.nombre;
   const precio = tamano ? tamano.precio : producto.precio;
   const carga = useCargaImagen();
+  // La foto que vuela a la canasta al agregar sale de aqui.
+  const imagenRef = useRef(null);
   return (
     <article
       className={entrando ? 'product-card catalog-enter' : 'product-card'}
@@ -94,6 +85,7 @@ function FichaProducto({ producto, vista, visible, orden, retraso, entrando, ele
       <div className={clases('product-image', carga.hueco)}>
         {/* El src es el de reserva para quien no entienda srcset: el grande. */}
         <img
+          ref={imagenRef}
           src={fotoDe(producto, 840)}
           srcSet={srcSet}
           sizes={SIZES[vista]}
@@ -112,7 +104,7 @@ function FichaProducto({ producto, vista, visible, orden, retraso, entrando, ele
         {producto.tamanos.length > 0 && <Tamanos producto={producto} elegido={elegido} onElegir={onElegir} />}
         <div className="product-bottom">
           <strong>{dinero(precio)}</strong>
-          <Pedir producto={producto} nombre={nombre} />
+          <Pedir producto={producto} nombre={nombre} precio={precio} imagenRef={imagenRef} />
         </div>
       </div>
     </article>

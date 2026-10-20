@@ -8,6 +8,7 @@ import mascota from '@raiz/assets/img/mascota.png';
 import logo from '@raiz/assets/img/logo.png';
 import EnlaceSeccion from './EnlaceSeccion.jsx';
 import MenuTienda from './MenuTienda.jsx';
+import BotonCanasta from '../pedido/BotonCanasta.jsx';
 
 // La historia y el pie son del mismo marron que la barra pegada: cuando alguno
 // pasa por detras de ella, la barra se da la vuelta para no fundirse. Se
@@ -122,8 +123,10 @@ function Cabecera() {
           <EnlaceSeccion a="visitanos" onClick={cerrarMenu}>Contáctanos</EnlaceSeccion>
         </nav>
         <div className="nav-acciones">
-          {/* Aqui iran el boton de la canasta (fase 3) y el de la cuenta
-              (fase 5), delante del menu, como los pone el sitio actual. */}
+          {/* La canasta va delante del menu, como la pone el sitio actual; en
+              el telefono styles.css la deja flotando abajo. El boton de la
+              cuenta ira aqui tambien (fase 5). */}
+          <BotonCanasta />
           <button
             ref={botonMenuRef}
             className="menu-toggle"

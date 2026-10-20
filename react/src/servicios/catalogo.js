@@ -47,4 +47,17 @@ const leerCatalogo = () => {
 
 const catalogo = leerCatalogo();
 
-export { catalogo, fotoDe, ANCHOS };
+// La foto chica del producto de una linea de la canasta, para reconocerlo de
+// un vistazo. Una linea con tamano ("Torta de chocolate 1 libra") usa la de su
+// producto; se prueba primero el nombre exacto y luego el mas largo que encaje,
+// para que un producto cuyo nombre empiece como otro no se lleve su foto.
+const fotoDeLinea = (nombre) => {
+  let elegido = null;
+  for (const p of catalogo.productos) {
+    if (p.nombre === nombre) return fotoDe(p, 420);
+    if (nombre.startsWith(`${p.nombre} `) && (!elegido || p.nombre.length > elegido.nombre.length)) elegido = p;
+  }
+  return elegido ? fotoDe(elegido, 420) : '';
+};
+
+export { catalogo, fotoDe, fotoDeLinea, ANCHOS };

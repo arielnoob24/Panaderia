@@ -8,6 +8,7 @@ import EnlaceSeccion from './EnlaceSeccion.jsx';
 import { useHorario } from './useHorario.js';
 import { useCargaImagen, clases } from './useCargaImagen.js';
 import { IconoPin } from './iconos.jsx';
+import GuardadoPie from '../pedido/GuardadoPie.jsx';
 
 const WHATSAPP = 'https://wa.me/593990000000?text=Hola%2C%20quiero%20hacer%20una%20consulta%20sobre%20El%20Tradicional.';
 
@@ -78,7 +79,7 @@ function Pie() {
           <p className="contacto-ficticio">Teléfono y redes de ejemplo: es un proyecto de clase y todavía no hay números reales que publicar.</p>
         </div>
         <p className="footer-note">© 2026 El Tradicional · Tena, Ecuador</p>
-        {/* Aqui ira "Tu pedido se guardo...", que sale de la canasta (fase 3). */}
+        <GuardadoPie />
       </div>
     </footer>
   );
