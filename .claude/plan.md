@@ -338,7 +338,7 @@ las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
 ese repositorio: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, fase 3 hecha; sigue la 4)
+## 15. Migración a React (decidida, fase 3 hecha; en curso la 4)
 
 El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
 Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
@@ -391,7 +391,23 @@ Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
      actual con el botón sin efecto, y un comentario que lo diga.
    - El reductor del pedido (`agregar`, `cambiar`, `quitar`, `vaciar`,
      `reponer`) es puro y vive en `src/estado/`; guardar es un efecto aparte.
-4. **Pedido y pago**: `#confirmar`, factura, tarjeta, comprobante e IndexedDB.
+4. **Pedido y pago**: `#confirmar`, factura, tarjeta, comprobante e IndexedDB,
+   con todo lo de la sección 6. Reglas:
+   - **Mismas claves y formatos** de `localStorage` (entrega, factura) e
+     IndexedDB (`eltradicional/pedidos`) que el sitio actual; la lógica de
+     validar (Luhn, MM/AA, cédula/RUC, provincia 01–24), el número `ET-XXXX` y
+     el correo se importan de `js/` o se mueven a `src/servicios/`, no se
+     reescriben de memoria.
+   - La cuenta llega en la fase 5, pero **la de este navegador ya existe** en
+     `localStorage` si se creó en el sitio actual. En esta fase React solo la
+     **lee** (un `SesionProvider` de solo lectura en `src/estado/`): con
+     sesión abierta y correo verificado, "Ir a pagar" lleva a `#/confirmar`;
+     si no, sale el aviso de "Crear cuenta o entrar" como ahora. Entrar a
+     `#/confirmar` sin cuenta o con la canasta vacía vuelve a la portada.
+   - `#/comprobante` con `replace`, para que Atrás no vuelva al pago hecho.
+   - La pantalla de confirmar lleva su `h1` (en el sitio actual también).
+   - Al terminar, React ya guarda la entrega y la factura que son suyas: deja
+     de reescribir sin tocar las que encontraba (fase 3).
 5. **Cuenta**: crear, verificar, entrar, editar, historial.
 6. **Calidad**: `verificar-sitio`, `axe.mjs`, el CI y la skill `publicar`
    adaptados al *build*; revisión completa de `ux-accesibilidad`.
@@ -512,6 +528,9 @@ abierto. React ya lo hace bien, y el sitio actual se retira en la fase 7.
   su pie dice siempre "hoy a las" la hora de entrar; React dice la fecha real
   del último cambio), y la foto de una línea sale aunque el producto esté
   agotado.
+- Decidido el 20 de octubre de 2026: **se queda lo de React** y el sitio
+  actual también deja de guardar al cargar; solo guarda cuando cambia el
+  pedido, la entrega o la factura. Así el pie de los dos dice la fecha real.
 - Arreglado en los dos sitios: el `+` de la línea de la canasta respeta el
   tope de 100 (antes solo la ficha), y el panel se hace visible en el acto al
   abrirse (`visibility 0s`), así que el foco entra en la X de cerrar (antes se
