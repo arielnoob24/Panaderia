@@ -310,7 +310,7 @@ las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
 ese repositorio: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, fase 1 hecha)
+## 15. Migración a React (decidida, fase 2 en curso)
 
 El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
 Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
@@ -344,8 +344,12 @@ Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
 
 1. **Andamiaje**: Vite + React en `react/`, `styles.css` importado, el
    catálogo cargado y una ficha pintada.
-2. **Catálogo**: fichas, "Los más pedidos", vista de catálogo, filtros, orden,
-   buscador y rutas `#tienda-*`.
+2. **Catálogo y página**: la página entera menos la canasta y la cuenta
+   (cabecera con menú Tienda y menú del teléfono, portada, franja, historia,
+   pie con horario y estado abierto/cerrado, enlaces de sección), las fichas,
+   "Los más pedidos", la vista de catálogo, filtros, orden, buscador, rutas
+   `#tienda-*`, globo de ayuda, avisos `aria-live` y animaciones de entrada.
+   Las fichas llevan el botón de agregar, pero sin efecto hasta la fase 3.
 3. **Canasta**: panel, cantidades, deshacer y vaciar, guardado en `localStorage`.
 4. **Pedido y pago**: `#confirmar`, factura, tarjeta, comprobante e IndexedDB.
 5. **Cuenta**: crear, verificar, entrar, editar, historial.
@@ -374,9 +378,13 @@ secciones 4 a 11.
   `/comprobante`; lo demás vuelve a la portada con `replace`. Las direcciones
   se ven como `#/tienda-panes`; `#tienda-panes` sin barra sigue abriendo la
   misma vista porque React Router le añade la barra al leerla.
-- Pendiente para la fase 2: con `HashRouter`, los enlaces de sección
-  (`#catalogo`, `#historia`...) serían rutas; hay que llevarlos con
-  `scrollIntoView` o con otra forma que no toque el `#`.
+- Enlaces de sección (decidido el 19 de octubre de 2026): "Saltar al
+  contenido", `#inicio`, `#catalogo`, `#historia` y `#visitanos` **no son
+  rutas**. Al pulsarlos se desplaza suave hasta la sección (sin suavidad con
+  `prefers-reduced-motion`) y el foco pasa a ella (`tabIndex={-1}` +
+  `focus({ preventScroll: true })`), sin tocar la dirección. Para quien usa la
+  página se comporta igual que hoy, y el salto al contenido sigue cumpliendo
+  WCAG 2.4.1.
 - CI: paso "Construir la version en React" (`npm ci && npm run build` en
   `react/`) detrás de la validación; `ci-local.sh` solo corre la validación.
 
