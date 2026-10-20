@@ -19,7 +19,7 @@ import { flushSync } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
-import { REGLAS, soloNueve, fallosCuenta, avisoFaltan } from '../servicios/cuenta.js';
+import { REGLAS, soloNueve, fallosCuenta, avisoFaltan, avisoDelCodigo } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
 import MarcaRegla from './MarcaRegla.jsx';
@@ -88,7 +88,7 @@ function FormularioCrear() {
     setOcupado(false);
     if (problema) { setAviso(problema); return; }
     navegar('/cuenta/verificar', { replace: true, state: { pagar: vieneDePagar(location) } });
-    avisar(`Te enviamos un código a ${d.correo}.`);
+    avisar(avisoDelCodigo(`Te enviamos un código a ${d.correo}.`));
   };
 
   const alTeclear = useEnterAvanza(ORDEN.map((c) => refs[c]), alCrear);
@@ -135,9 +135,11 @@ function FormularioCrear() {
             <div className="cuenta-crear-datos">
               {campo('nombre', { etiqueta: 'Nombre y apellido', type: 'text', autoComplete: 'name', maxLength: 60, placeholder: 'María Pérez' })}
               {campo('correo', { etiqueta: 'Correo', type: 'email', autoComplete: 'email', maxLength: 80, placeholder: 'tu@correo.com' })}
+              {/* Sin maxLength: recortaria lo pegado (0991234567, +593 99...)
+                  antes de que soloNueve le quite el prefijo. */}
               {campo('telefono', {
-                etiqueta: 'Teléfono', type: 'tel', inputMode: 'numeric', autoComplete: 'tel',
-                maxLength: 9, placeholder: '990001122', prefijo: '+593',
+                etiqueta: 'Teléfono', type: 'tel', inputMode: 'numeric', autoComplete: 'tel-national',
+                placeholder: '990001122', prefijo: '+593',
               })}
               {campo('direccion', {
                 etiqueta: 'Dirección', type: 'text', autoComplete: 'street-address', maxLength: 200,

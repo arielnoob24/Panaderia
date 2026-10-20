@@ -114,8 +114,10 @@ panelC.innerHTML =
   + 'su huella cifrada. Aun así, no escribas una contraseña de verdad.</p>'
   + campoHtml('nombre', 'Nombre y apellido', 'type="text" autocomplete="name" maxlength="60" placeholder="María Pérez"')
   + campoHtml('correo', 'Correo', 'type="email" autocomplete="email" maxlength="80" placeholder="tu@correo.com"')
-  + campoHtml('telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel" '
-    + 'maxlength="9" placeholder="990001122"', { prefijo: '+593' })
+  // Sin maxlength: recortaria lo pegado (0991234567, +593 99...) antes de que
+  // soloNueve le quite el prefijo. tel-national, porque el +593 ya esta fijo.
+  + campoHtml('telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel-national" '
+    + 'placeholder="990001122"', { prefijo: '+593' })
   + campoHtml('direccion', 'Dirección', 'type="text" autocomplete="street-address" maxlength="200" '
     + 'placeholder="Calle, número y una referencia"', { opcional: true })
   + campoHtml('clave', 'Contraseña', 'type="password" autocomplete="new-password" maxlength="40"',
@@ -196,8 +198,8 @@ panelC.innerHTML =
   + '<section class="cuenta-paso" data-paso="editar" hidden>'
   + '<div class="cuenta-cuerpo">'
   + campoHtml('editar-nombre', 'Nombre y apellido', 'type="text" autocomplete="name" maxlength="60"')
-  + campoHtml('editar-telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel" '
-    + 'maxlength="9" placeholder="990001122"', { prefijo: '+593' })
+  + campoHtml('editar-telefono', 'Teléfono', 'type="tel" inputmode="numeric" autocomplete="tel-national" '
+    + 'placeholder="990001122"', { prefijo: '+593' })
   + campoHtml('editar-direccion', 'Dirección', 'type="text" autocomplete="street-address" maxlength="200" '
     + 'placeholder="Calle, número y una referencia"', { opcional: true })
   + '<p class="cuenta-nota cuenta-nota-izq">El correo no se cambia aquí: es con el que entras '

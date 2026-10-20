@@ -13,7 +13,7 @@ import { flushSync } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
-import { fallaCorreo } from '../servicios/cuenta.js';
+import { fallaCorreo, avisoDelCodigo } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
 import TextoSuave from './TextoSuave.jsx';
@@ -72,7 +72,7 @@ function FormularioEntrar() {
     if (r.aviso) { setAviso(r.aviso); return; }
     if (r.hecho === 'verificar') {
       navegar('/cuenta/verificar', { replace: true, state: { pagar: vieneDePagar(location) } });
-      avisar(`Te enviamos un código a ${escrito}.`);
+      avisar(avisoDelCodigo(`Te enviamos un código a ${escrito}.`));
       return;
     }
     terminar(r, `Entraste como ${r.nombre}.`);

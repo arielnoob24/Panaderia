@@ -9,7 +9,16 @@
 const CLAVE_CUENTA = 'eltradicional-cuenta';
 
 // El telefono se guarda sin el 0 ni el +593: los nueve digitos del movil.
-const soloNueve = (v) => v.replace(/\D/g, '').replace(/^0+/, '').slice(0, 9);
+// Lo pegado o lo que trae el autorrelleno puede venir con el prefijo del pais
+// (+593 99..., 593 099...): el 593 solo se quita si sobran cifras, porque con
+// nueve o menos es lo que se esta escribiendo a mano. El campo no lleva
+// maxlength: recortaria lo pegado antes de llegar aqui y se perderian las
+// ultimas cifras; el tope de nueve lo pone esta funcion.
+const soloNueve = (v) => {
+  let d = v.replace(/\D/g, '');
+  if (d.length > 9 && d.startsWith('593')) d = d.slice(3);
+  return d.replace(/^0+/, '').slice(0, 9);
+};
 
 const SIN_CUENTA = {
   nombre: '', correo: '', telefono: '', direccion: '',

@@ -176,11 +176,19 @@ const mandarCodigo = async (para, nombre, codigo) => {
     + 'El Tradicional te lo va a pedir.');
   return bien ? 'enviado' : 'fallo';
 };
+// Como sale un codigo nuevo: sin buzon ya se sabe que no llegara; con buzon,
+// esta enviandose y la respuesta llega despues ('enviado' o 'fallo').
+const envioInicial = () => (buzonListo() ? 'enviando' : 'sin-buzon');
 // Por que se ve el codigo en pantalla, con el texto del sitio actual.
 const MOTIVO_SIN_CORREO = {
   'sin-buzon': 'El envío de correo no está configurado en esta copia del sitio.',
   fallo: 'No se pudo enviar el correo: puede ser la red o la cuota del mes.',
 };
+// Lo que oye el lector de pantalla al salir un codigo: si no hay correo que
+// mandar, no se le puede decir que se envio mientras la pantalla dice que no
+// (WCAG 4.1.3). Lo mismo se dice cuando el envio falla despues.
+const AVISO_SIN_CORREO = 'No pudimos enviar el correo; el código está en pantalla.';
+const avisoDelCodigo = (enviado) => (MOTIVO_SIN_CORREO[envioInicial()] ? AVISO_SIN_CORREO : enviado);
 
 // ---- El historial -----------------------------------------------------
 // Todos los pedidos pagados en este navegador, el mas nuevo primero. Si la
@@ -192,6 +200,7 @@ export {
   REGLAS, fallaCorreo, fallaNombre, fallaTelefono, fallosCuenta, fallosEditar, avisoFaltan,
   telefonoBonito, iniciales,
   leerCuenta, guardarCuenta, escucharCuenta,
-  REENVIO, nuevoCodigo, buzonListo, mandarCodigo, MOTIVO_SIN_CORREO,
+  REENVIO, nuevoCodigo, buzonListo, envioInicial, mandarCodigo, MOTIVO_SIN_CORREO,
+  AVISO_SIN_CORREO, avisoDelCodigo,
   todosLosPedidos,
 };

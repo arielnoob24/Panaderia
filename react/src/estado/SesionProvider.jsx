@@ -15,7 +15,7 @@ import { createContext, useCallback, useContext, useEffect, useLayoutEffect, use
 import { reductor } from './sesion.js';
 import {
   leerCuenta, guardarCuenta, escucharCuenta, puedeHuella, calcularHuella,
-  nuevoCodigo, buzonListo, mandarCodigo,
+  nuevoCodigo, envioInicial, mandarCodigo,
 } from '../servicios/cuenta.js';
 
 const ContextoSesion = createContext(null);
@@ -63,7 +63,7 @@ function SesionProvider({ children }) {
     const codigo = nuevoCodigo();
     despachar({
       tipo: 'porVerificar', datos, huella, codigo,
-      enviadoEn: Date.now(), envio: buzonListo() ? 'enviando' : 'sin-buzon',
+      enviadoEn: Date.now(), envio: envioInicial(),
     });
     enviar(datos, codigo);
   }, [enviar]);
@@ -118,7 +118,7 @@ function SesionProvider({ children }) {
     if (!pendiente) return;
     const codigo = nuevoCodigo();
     despachar({
-      tipo: 'codigo', codigo, enviadoEn: Date.now(), envio: buzonListo() ? 'enviando' : 'sin-buzon',
+      tipo: 'codigo', codigo, enviadoEn: Date.now(), envio: envioInicial(),
     });
     enviar(pendiente.datos, codigo);
   }, [enviar]);

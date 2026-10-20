@@ -146,9 +146,10 @@ function FormularioDatos() {
             El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.
           </p>
           {campo('nombre', { etiqueta: 'Nombre y apellido', type: 'text', autoComplete: 'name', maxLength: 60 })}
+          {/* Sin maxLength, como en crear: el tope de nueve lo pone soloNueve. */}
           {campo('telefono', {
-            etiqueta: 'Teléfono', type: 'tel', inputMode: 'numeric', autoComplete: 'tel',
-            maxLength: 9, placeholder: '990001122', prefijo: '+593',
+            etiqueta: 'Teléfono', type: 'tel', inputMode: 'numeric', autoComplete: 'tel-national',
+            placeholder: '990001122', prefijo: '+593',
           })}
           {campo('direccion', {
             etiqueta: 'Dirección', type: 'text', autoComplete: 'street-address', maxLength: 200,

@@ -4,14 +4,16 @@
 // dentro: asi el registro no se queda tapiado (secciones 7 y 9 del plan).
 // Sin una cuenta esperando su codigo no hay nada que verificar: a entrar.
 //
-// El error va por dos sitios, como en el sitio actual: debajo de las casillas,
-// unido con aria-describedby, y en el renglon con role="alert" del pie, que
-// se canta al momento: quien escribio el codigo espera respuesta ahora.
+// El error del codigo va debajo de las casillas, unido con aria-describedby,
+// y el foco vuelve a la primera: al llegar ahi el lector lo lee. No va ademas
+// en el role="alert" del pie, que lo haria oir dos veces; aqui no hay errores
+// que no sean del codigo, asi que el pie no lleva ese renglon.
 import { useEffect, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
-import { REENVIO, MOTIVO_SIN_CORREO } from '../servicios/cuenta.js';
+import { REENVIO, MOTIVO_SIN_CORREO, AVISO_SIN_CORREO, avisoDelCodigo } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CasillasCodigo from './CasillasCodigo.jsx';
 import TextoSuave from './TextoSuave.jsx';
@@ -53,12 +55,28 @@ function PasoCodigo({ pendiente }) {
     return () => window.clearInterval(reloj);
   }, [esperando, pendiente.enviadoEn]);
 
+  // El correo responde despues de salir el codigo: si no llego, la pantalla
+  // pasa a ensenar el codigo, y el lector tiene que saberlo tambien. Solo
+  // cuando cambia, no al llegar a la vista (eso ya lo dijo quien la abrio).
+  const envioAntes = useRef(pendiente.envio);
+  useEffect(() => {
+    if (pendiente.envio === envioAntes.current) return;
+    envioAntes.current = pendiente.envio;
+    if (pendiente.envio === 'fallo') avisar(AVISO_SIN_CORREO);
+  }, [pendiente.envio, avisar]);
+
   const comprobar = (escrito) => {
     const { nombre, direccion } = pendiente;
     const fallo = verificar(escrito);
     if (fallo) {
-      setError(fallo);
-      casillas.current[0]?.focus();
+      // El error tiene que estar escrito antes de mover el foco: lo que se
+      // lee al llegar a la casilla es su aria-describedby. Si el foco ya
+      // estaba en ella (Enter en la primera), no se mueve y no se leeria:
+      // entonces se dice por la region de avisos.
+      flushSync(() => setError(fallo));
+      const primera = casillas.current[0];
+      if (primera && document.activeElement === primera) avisar(fallo);
+      else primera?.focus();
       return;
     }
     terminar({ direccion }, `Correo verificado. Entraste como ${nombre}.`);
@@ -78,7 +96,7 @@ function PasoCodigo({ pendiente }) {
     setError('');
     setAhora(Date.now());
     casillas.current[0]?.focus();
-    avisar('Te enviamos un código nuevo.');
+    avisar(avisoDelCodigo('Te enviamos un código nuevo.'));
   };
 
   const sinCorreo = MOTIVO_SIN_CORREO[pendiente.envio];
@@ -122,7 +140,6 @@ function PasoCodigo({ pendiente }) {
           </button>
         </div>
         <div className="cuenta-pie">
-          <p className="cuenta-aviso" role="alert" hidden={!error}><TextoSuave texto={error} /></p>
           <button className="button button-yellow cuenta-verificar" type="button" onClick={() => comprobar(cifras.join(''))}>
             Verificar el correo
           </button>
