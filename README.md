@@ -9,11 +9,6 @@ GitHub Pages.
 ```
 index.html              la unica pagina; tiene que estar en la raiz para GitHub Pages
 README.md               como verlo, tocarlo y publicarlo
-docs/                   la documentacion
-  plan.md               como debe funcionar todo (lo leen los agentes)
-  explicacion-del-codigo.md
-  accesibilidad-teclado.md
-  auditoria.md
 assets/
   css/styles.css        todos los estilos
   img/                  logo, mascota, iconos y la foto de portada
@@ -40,7 +35,8 @@ js/
 herramientas/
   empaquetar.mjs        genera js/sin-servidor.js
 .github/workflows/      el CI: valida y publica
-.claude/                agentes, skills y herramientas de Claude Code
+.claude/                agentes, skills, herramientas de Claude Code y plan.md
+                        (como debe funcionar todo; lo leen los agentes)
 ```
 
 ## Con que esta hecho
@@ -140,8 +136,7 @@ quien todavia no ha pedido nada.
 - **Teclado.** Todo se puede usar sin raton. Los dos dialogos -canasta y
   cuenta- atrapan el foco mientras estan abiertos, se cierran con `Escape` y lo
   devuelven al boton que los abrio. El menu de Tienda se recorre con las
-  flechas. Hay un enlace para saltar al contenido. En `docs/accesibilidad-teclado.md`
-  esta el recorrido completo.
+  flechas. Hay un enlace para saltar al contenido.
 - **Foco visible.** Ningun `outline: none` sin reemplazo: el foco se marca con
   un anillo propio, y se usa `:focus-visible` para no ensenarlo al pulsar con
   el raton.

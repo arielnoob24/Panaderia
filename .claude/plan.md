@@ -37,11 +37,6 @@ Proyecto de la materia Desarrollo de Plataformas.
 ```
 index.html              la unica pagina; tiene que estar en la raiz para GitHub Pages
 README.md               como verlo, tocarlo y publicarlo
-docs/                   la documentacion
-  plan.md               como debe funcionar todo (lo leen los agentes)
-  explicacion-del-codigo.md
-  accesibilidad-teclado.md
-  auditoria.md
 assets/
   css/styles.css        todos los estilos
   img/                  logo, mascota, iconos y la foto de portada
@@ -68,7 +63,8 @@ js/
 herramientas/
   empaquetar.mjs        genera js/sin-servidor.js
 .github/workflows/      el CI: valida y publica
-.claude/                agentes, skills y herramientas de Claude Code
+.claude/                agentes, skills, herramientas de Claude Code y plan.md
+                        (como debe funcionar todo; lo leen los agentes)
 ```
 
 ### Cómo se llaman los módulos
@@ -238,7 +234,6 @@ EmailJS. `enviarCorreo()` nunca lanza: si falla, el pedido sigue valiendo.
 - Contraste medido (texto 12,4:1; secundario 6,8:1; pie 11,1:1 y 8,7:1).
 - `prefers-reduced-motion` apaga entradas, velos y desplazamiento suave.
 - Objetivos táctiles de al menos 24 px (los botones de ficha, 44 px).
-- El recorrido de teclado está en `docs/accesibilidad-teclado.md`.
 
 ## 12. Calidad y publicación
 
@@ -281,13 +276,24 @@ al menos 4 destacados, palabras prohibidas y espacios al final de línea.
 
 Los agentes viven en `.claude/agents/` y todos leen este plan primero.
 
-| Agente | Se encarga de | Cambia archivos | Skills |
+| Agente | Se encarga de | Cambia archivos | Skills cargadas |
 |---|---|---|---|
-| `frontend` | `index.html`, `styles.css`, `view.js`, `ui.js`, maquetación, responsive, animaciones | Sí | `verificar-sitio` |
-| `logica-datos` | `state.js`, `storage.js`, `repo.js`, `cart.js`, `checkout.js`, `account.js`, `mail.js`, el catálogo | Sí | `verificar-sitio` (+ sigue `nuevo-producto`) |
-| `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | — (usa `.claude/herramientas/axe.mjs`) |
-| `calidad-publicacion` | Revisión de código y seguridad, CI, empaquetar, publicar | Solo lo de publicar | `verificar-sitio`, `publicar` |
+| `frontend` | `index.html`, `assets/css/styles.css`, `js/catalogo/view.js`, `js/comun/ui.js`, maquetación, responsive, animaciones | Sí | `verificar-sitio`, `wcag-audit-patterns` |
+| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo | Sí | `verificar-sitio`, `nielsen-usability-heuristics` (+ sigue `nuevo-producto`) |
+| `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | `wcag-audit-patterns`, `nielsen-usability-heuristics` (+ `.claude/herramientas/axe.mjs`) |
+| `calidad-publicacion` | Revisión de código y seguridad, CI, empaquetar, subir a la rama | Solo lo de publicar | `verificar-sitio`, `publicar` |
 
-Skills del proyecto (`.claude/skills/`): `verificar-sitio`, `publicar`,
-`nuevo-producto` (la invocas tú con `/nuevo-producto`) y `notas-para-explicar`
-(la invocas tú con `/notas-para-explicar`).
+Skills en `.claude/skills/`:
+
+| Skill | Origen | Quién la usa |
+|---|---|---|
+| `verificar-sitio` | propia | `frontend`, `logica-datos`, `calidad-publicacion` |
+| `publicar` | propia | `calidad-publicacion` |
+| `nuevo-producto` | propia, la invocas tú con `/nuevo-producto` | `logica-datos` sigue sus pasos |
+| `notas-para-explicar` | propia, la invocas tú con `/notas-para-explicar` | — |
+| `wcag-audit-patterns` | skills.sh, `wshobson/agents` | `ux-accesibilidad`, `frontend` |
+| `nielsen-usability-heuristics` | skills.sh, `dembrandt/dembrandt-skills` | `ux-accesibilidad`, `logica-datos` |
+
+Las de skills.sh quedan registradas en `skills-lock.json`; `npx skills update -p`
+las actualiza. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
+uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.

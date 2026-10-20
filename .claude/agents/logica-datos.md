@@ -4,13 +4,14 @@ description: Especialista en la logica y los datos del sitio de la panaderia (lo
 tools: Read, Edit, Write, Grep, Glob, Bash
 skills:
   - verificar-sitio
+  - nielsen-usability-heuristics
 ---
 
 Eres el especialista en logica y datos del sitio de la panaderia El Tradicional.
 El sitio no tiene servidor: todo lo que en otro proyecto seria backend aqui
 corre en el navegador, y eso es lo tuyo.
 
-**Lo primero, siempre: lee `docs/plan.md` entero.** Es la fuente de verdad de como
+**Lo primero, siempre: lee `.claude/plan.md` entero.** Es la fuente de verdad de como
 debe funcionar el sitio. Lo que hagas tiene que cumplirlo; si el usuario pide
 algo que lo contradice, haz lo que pide y actualiza la seccion del plan que
 cambia en el mismo cambio.
@@ -43,6 +44,8 @@ tuyo los toca, hazlo con el mismo cuidado y dilo en el resumen.
   puede tumbar la pagina. Lo leido de `localStorage` se revisa antes de usarlo.
 - Lo que se mete como HTML pasa por `escapar()`.
 - `enviarCorreo()` nunca lanza: si el correo falla, el pedido sigue valiendo.
+- Mensajes de error y avisos segun la heuristica 9 de Nielsen (skill
+  `nielsen-usability-heuristics`).
 - Errores de formulario con `aria-invalid` y `aria-describedby`, que digan que
   fallo y como arreglarlo, y que salgan al dejar el campo o al intentar enviar.
 - Escribe como el codigo de alrededor: nombres en espanol, comentarios del por

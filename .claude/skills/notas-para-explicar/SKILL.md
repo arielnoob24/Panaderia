@@ -36,9 +36,5 @@ usuario entienda y recuerde, **no** texto para pegar. Por eso:
 
 ## Donde van
 
-En el chat, salvo que el usuario pida guardarlas. Si las guarda, en un `.md` de
-`docs/` con una primera linea que diga que es material de referencia y no texto
-para entregar. Antes de crear uno nuevo, mirar si `docs/plan.md`,
-`docs/accesibilidad-teclado.md` u otro `.md` de `docs/` ya cubren el tema y
-completar ese. `docs/plan.md` dice como debe funcionar cada parte: es el primer
-sitio donde buscar.
+En el chat, salvo que el usuario pida guardarlas; si las guarda, preguntar donde.
+Empezar siempre por `.claude/plan.md`, que dice como debe funcionar cada parte.
