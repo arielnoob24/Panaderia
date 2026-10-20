@@ -282,15 +282,14 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
 | **Documentos con estados** | Orden de compra, ajuste, orden de producción y rol de pagos: ABI → APR o ANU. Recepción: PEN → REC o CAN. Asiento: ABI (manual) o PEN (generado) → APR, ANU o ERR. El estado va en la cabecera y las líneas lo siguen (guardarlo en cada línea repetiría el dato). Aprobado o anulado, el documento y sus líneas ya no cambian |
 | **Aprobar genera lo siguiente** | Orden de compra aprobada → recepción pendiente + asiento. Ajuste, producción y rol aprobados → asiento. Factura → asiento de venta; anularla → asiento contrario. Un asiento que no cuadra al aprobarlo queda en ERR |
 
-- **51 tablas en 11 grupos**: autenticación y autorización (ROLES, PERMISOS,
+- **48 tablas en 11 grupos**: autenticación y autorización (ROLES, PERMISOS,
   ROLES_PERMISOS, USUARIOS, VERIFICACIONES), ubicación (PROVINCIAS, CANTONES,
   DIRECCIONES), catálogo (CATEGORIAS, ETIQUETAS, TARIFAS_IVA, PRODUCTOS,
   TAMANOS, PRODUCTOS_TAMANOS, ALERGENOS, PRODUCTOS_ALERGENOS), pedidos
   (TIPOS_ENTREGA, ESTADOS_PEDIDO, PEDIDOS, DETALLES_PEDIDO), facturación y
   pagos (TIPOS_IDENTIFICACION, CLIENTES, FACTURAS, METODOS_PAGO, PAGOS),
-  talento humano (DEPARTAMENTOS, CARGOS, EMPLEADOS, EMPLEADOS_CARGOS,
-  CARGAS_FAMILIARES), materiales y recetas (UNIDADES_MEDIDA, METODOS_COSTEO,
-  TIPOS_MATERIAL, MATERIALES, RECETAS), compras (PROVEEDORES,
+  talento humano (CARGOS, EMPLEADOS), materiales y recetas (UNIDADES_MEDIDA,
+  METODOS_COSTEO, TIPOS_MATERIAL, MATERIALES, RECETAS), compras (PROVEEDORES,
   PROVEEDORES_MATERIALES, ORDENES_COMPRA, DETALLES_ORDEN_COMPRA, RECEPCIONES,
   LOTES_MATERIAL), inventario y producción (AJUSTES_INVENTARIO,
   DETALLES_AJUSTE, ORDENES_PRODUCCION, CONSUMOS_PRODUCCION), contabilidad
@@ -318,6 +317,11 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
   - *Del contexto comercial no se hizo*: perchas y bodegas, entregas al
     cliente (las cubren los estados del pedido), crédito y cuentas por cobrar
     de clientes, vendedores y comisiones, centros de costo, cuotas.
+  - *Solo lo que usa una tienda* (decidido el 20 de octubre de 2026): es un
+    solo local, sin sucursales ni departamentos. El empleado guarda su cargo y
+    su sueldo de hoy (sin historia de cargos ni cargas familiares); lo pagado
+    cada mes queda en el rol de pagos. Se quedan la nómina y la contabilidad
+    (el profesor pidió asientos), la recepción y los ajustes, y los alérgenos.
   - *Empleados y usuarios* no se enlazan: sería 1:1. El empleado se conecta
     por lo que hace (compra, recibe, produce, aprueba).
 - **Lo que se calcula no se guarda**: totales, IVA y lo pagado salen de
@@ -336,8 +340,7 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
 - **Datos iniciales**: roles y permisos, las 24 provincias, los cantones de
   Napo, el catálogo de `data/productos.json` con sus tamaños, alérgenos
   comunes, entregas ($0 y $1,50), estados, tipos de identificación,
-  CONSUMIDOR FINAL, formas de pago con su código del SRI, departamentos y
-  cargos, unidades, métodos de costeo, 29 materiales, la receta de cada
+  CONSUMIDOR FINAL, formas de pago con su código del SRI, cargos, unidades, métodos de costeo, 29 materiales, la receta de cada
   producto y tamaño, el plan de cuentas y los conceptos de nómina. Las
   cantidades de las recetas, la vida útil y los mínimos son de ejemplo.
 
@@ -428,7 +431,7 @@ construye (sección 15).
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).
 - [x] Compras, inventario por lotes, recetas, producción con FEFO/FIFO/LIFO/
-      promedio, talento humano, nómina y contabilidad (51 tablas).
+      promedio, talento humano, nómina y contabilidad (48 tablas).
 - [ ] Revisar el modelo con el profesor, sobre todo: el kardex como vista,
       el saldo del lote calculado y las débiles sobre otra débil.
 - [ ] Confirmar las recetas con el panadero y la vida útil de cada material.

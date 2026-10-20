@@ -39,7 +39,7 @@
      estado va en la cabecera y las líneas lo siguen: aprobado o anulado, ni
      el documento ni sus líneas se pueden cambiar.
 
-   Grupos (51 tablas)
+   Grupos (48 tablas)
    1. Autenticación y autorización: ROLES, PERMISOS, ROLES_PERMISOS (débil),
       USUARIOS, VERIFICACIONES
    2. Ubicación: PROVINCIAS, CANTONES, DIRECCIONES
@@ -48,8 +48,7 @@
    4. Pedidos: TIPOS_ENTREGA, ESTADOS_PEDIDO, PEDIDOS, DETALLES_PEDIDO (débil)
    5. Facturación y pagos: TIPOS_IDENTIFICACION, CLIENTES, FACTURAS,
       METODOS_PAGO, PAGOS
-   6. Talento humano: DEPARTAMENTOS, CARGOS, EMPLEADOS, EMPLEADOS_CARGOS
-      (débil), CARGAS_FAMILIARES
+   6. Talento humano: CARGOS, EMPLEADOS
    7. Materiales y recetas: UNIDADES_MEDIDA, METODOS_COSTEO, TIPOS_MATERIAL,
       MATERIALES, RECETAS (débil)
    8. Compras: PROVEEDORES, PROVEEDORES_MATERIALES (débil), ORDENES_COMPRA,
@@ -73,9 +72,7 @@
    PEDIDOS 1:N FACTURAS                    CLIENTES 1:N FACTURAS
    TIPOS_IDENTIFICACION 1:N CLIENTES       PEDIDOS 1:N PAGOS
    METODOS_PAGO 1:N PAGOS
-   DEPARTAMENTOS 1:N CARGOS                EMPLEADOS 1:N DEPARTAMENTOS (responsable)
-   CANTONES 1:N EMPLEADOS                  EMPLEADOS 1:N EMPLEADOS_CARGOS
-   CARGOS 1:N EMPLEADOS_CARGOS             EMPLEADOS 1:N CARGAS_FAMILIARES
+   CARGOS 1:N EMPLEADOS                    CANTONES 1:N EMPLEADOS
    UNIDADES_MEDIDA 1:N MATERIALES (x2)     METODOS_COSTEO 1:N MATERIALES
    TIPOS_MATERIAL 1:N MATERIALES           TARIFAS_IVA 1:N MATERIALES
    PRODUCTOS_TAMANOS 1:N RECETAS           MATERIALES 1:N RECETAS
@@ -680,43 +677,27 @@ CREATE INDEX IX_PAGOS_Metodo ON PAGOS (MPA_Codigo);
    Grupo 6. Talento humano
    ========================================================================== */
 
--- EMP_Codigo es el responsable del departamento. Su llave foránea se crea
--- después de EMPLEADOS, porque cada tabla necesita a la otra.
-CREATE SEQUENCE SEQ_DEPARTAMENTOS MAXVALUE 999;
-CREATE TABLE DEPARTAMENTOS (
-    DEP_Codigo CHAR(6)     NOT NULL DEFAULT 'DEP' || LPAD(nextval('SEQ_DEPARTAMENTOS')::TEXT, 3, '0'),
-    EMP_Codigo CHAR(10),
-    DEP_Nombre VARCHAR(40) NOT NULL,
-    DEP_Activo BOOLEAN     NOT NULL DEFAULT TRUE,
-    CONSTRAINT PK_DEPARTAMENTOS PRIMARY KEY (DEP_Codigo),
-    CONSTRAINT UQ_DEPARTAMENTOS_Nombre UNIQUE (DEP_Nombre),
-    CONSTRAINT CK_DEPARTAMENTOS_Codigo CHECK (DEP_Codigo ~ '^DEP[0-9]{3}$')
-);
-ALTER SEQUENCE SEQ_DEPARTAMENTOS OWNED BY DEPARTAMENTOS.DEP_Codigo;
-
--- Cada cargo es de un departamento: el del empleado sale de su cargo actual.
+-- Es una sola tienda: no hay departamentos, y el cargo dice qué hace cada uno.
 CREATE SEQUENCE SEQ_CARGOS MAXVALUE 999;
 CREATE TABLE CARGOS (
     CAR_Codigo    CHAR(6)      NOT NULL DEFAULT 'CAR' || LPAD(nextval('SEQ_CARGOS')::TEXT, 3, '0'),
-    DEP_Codigo    CHAR(6)      NOT NULL,
     CAR_Nombre    VARCHAR(40)  NOT NULL,
     CAR_Funciones VARCHAR(250),
     CONSTRAINT PK_CARGOS PRIMARY KEY (CAR_Codigo),
     CONSTRAINT UQ_CARGOS_Nombre UNIQUE (CAR_Nombre),
-    CONSTRAINT FK_CARGOS_DEPARTAMENTOS FOREIGN KEY (DEP_Codigo)
-        REFERENCES DEPARTAMENTOS (DEP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT CK_CARGOS_Codigo CHECK (CAR_Codigo ~ '^CAR[0-9]{3}$')
 );
 ALTER SEQUENCE SEQ_CARGOS OWNED BY CARGOS.CAR_Codigo;
-CREATE INDEX IX_CARGOS_Departamento ON CARGOS (DEP_Codigo);
 
 -- Se guardan aunque dejen la empresa (EMP_Activo), por su historia. El cargo
--- y el sueldo no están aquí: cambian con el tiempo (EMPLEADOS_CARGOS).
+-- y el sueldo son los de hoy: si cambian, se actualizan, y lo que se pagó
+-- antes queda en los roles de pago (DETALLES_NOMINA).
 CREATE SEQUENCE SEQ_EMPLEADOS MAXVALUE 9999999;
 CREATE TABLE EMPLEADOS (
     EMP_Codigo          CHAR(10)     NOT NULL DEFAULT 'EMP' || LPAD(nextval('SEQ_EMPLEADOS')::TEXT, 7, '0'),
     CAN_Codigo          CHAR(4)      NOT NULL,   -- donde vive
-    EMP_Cedula          CHAR(10)     NOT NULL,
+    CAR_Codigo          CHAR(6)      NOT NULL,
+    EMP_Cedula         CHAR(10)     NOT NULL,
     EMP_PrimerApellido  VARCHAR(30)  NOT NULL,
     EMP_SegundoApellido VARCHAR(30),
     EMP_PrimerNombre    VARCHAR(30)  NOT NULL,
@@ -730,7 +711,8 @@ CREATE TABLE EMPLEADOS (
     EMP_Foto            VARCHAR(150),
     -- PER permanente, TEM temporal, TER tercerizado, SPR servicios profesionales
     EMP_TipoContrato    CHAR(3)      NOT NULL DEFAULT 'PER',
-    EMP_Banco           VARCHAR(40),
+    EMP_Sueldo          NUMERIC(8,2) NOT NULL,
+    EMP_Banco          VARCHAR(40),
     EMP_CuentaBancaria  VARCHAR(20),
     EMP_FechaIngreso    DATE         NOT NULL DEFAULT CURRENT_DATE,
     EMP_Activo          BOOLEAN      NOT NULL DEFAULT TRUE,
@@ -739,6 +721,8 @@ CREATE TABLE EMPLEADOS (
     CONSTRAINT UQ_EMPLEADOS_Correo UNIQUE (EMP_Correo),
     CONSTRAINT FK_EMPLEADOS_CANTONES FOREIGN KEY (CAN_Codigo)
         REFERENCES CANTONES (CAN_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT FK_EMPLEADOS_CARGOS FOREIGN KEY (CAR_Codigo)
+        REFERENCES CARGOS (CAR_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT CK_EMPLEADOS_Codigo CHECK (EMP_Codigo ~ '^EMP[0-9]{7}$'),
     CONSTRAINT CK_EMPLEADOS_Cedula CHECK (FN_CEDULA_VALIDA(EMP_Cedula)),
     CONSTRAINT CK_EMPLEADOS_Nombres CHECK (btrim(EMP_PrimerApellido) <> '' AND btrim(EMP_PrimerNombre) <> ''),
@@ -749,6 +733,7 @@ CREATE TABLE EMPLEADOS (
         AND EMP_Correo ~ '^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'),
     CONSTRAINT CK_EMPLEADOS_Celular CHECK (EMP_Celular ~ '^09[0-9]{8}$'),
     CONSTRAINT CK_EMPLEADOS_TipoContrato CHECK (EMP_TipoContrato IN ('PER', 'TEM', 'TER', 'SPR')),
+    CONSTRAINT CK_EMPLEADOS_Sueldo CHECK (EMP_Sueldo > 0),
     CONSTRAINT CK_EMPLEADOS_Cuenta CHECK (
         (EMP_Banco IS NULL) = (EMP_CuentaBancaria IS NULL)
         AND EMP_CuentaBancaria ~ '^[0-9]{6,20}$'),
@@ -757,58 +742,7 @@ CREATE TABLE EMPLEADOS (
 );
 ALTER SEQUENCE SEQ_EMPLEADOS OWNED BY EMPLEADOS.EMP_Codigo;
 CREATE INDEX IX_EMPLEADOS_Canton ON EMPLEADOS (CAN_Codigo);
-
-ALTER TABLE DEPARTAMENTOS ADD CONSTRAINT FK_DEPARTAMENTOS_EMPLEADOS FOREIGN KEY (EMP_Codigo)
-    REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE SET NULL;
-CREATE INDEX IX_DEPARTAMENTOS_Responsable ON DEPARTAMENTOS (EMP_Codigo);
-
--- Débil: resuelve EMPLEADOS N:N CARGOS y guarda el crecimiento en la empresa:
--- cada cargo que tuvo, desde cuándo y con qué sueldo. El cargo actual es el
--- que no tiene fecha de fin, y solo puede haber uno.
-CREATE TABLE EMPLEADOS_CARGOS (
-    EMP_Codigo      CHAR(10)     NOT NULL,
-    CAR_Codigo      CHAR(6)      NOT NULL,
-    ECA_FechaInicio DATE         NOT NULL DEFAULT CURRENT_DATE,
-    ECA_FechaFin    DATE,
-    ECA_Sueldo      NUMERIC(8,2) NOT NULL,
-    CONSTRAINT PK_EMPLEADOS_CARGOS PRIMARY KEY (EMP_Codigo, CAR_Codigo),
-    CONSTRAINT FK_EMPLEADOS_CARGOS_EMPLEADOS FOREIGN KEY (EMP_Codigo)
-        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT FK_EMPLEADOS_CARGOS_CARGOS FOREIGN KEY (CAR_Codigo)
-        REFERENCES CARGOS (CAR_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT CK_EMPLEADOS_CARGOS_Sueldo CHECK (ECA_Sueldo > 0),
-    CONSTRAINT CK_EMPLEADOS_CARGOS_Fechas CHECK (ECA_FechaFin >= ECA_FechaInicio)
-);
-CREATE UNIQUE INDEX UX_EMPLEADOS_CARGOS_Actual ON EMPLEADOS_CARGOS (EMP_Codigo) WHERE ECA_FechaFin IS NULL;
-CREATE INDEX IX_EMPLEADOS_CARGOS_Cargo ON EMPLEADOS_CARGOS (CAR_Codigo);
-
--- Personas que dependen del empleado. Un recién nacido puede no tener cédula.
-CREATE SEQUENCE SEQ_CARGAS_FAMILIARES MAXVALUE 9999999;
-CREATE TABLE CARGAS_FAMILIARES (
-    CFA_Codigo          CHAR(10)    NOT NULL DEFAULT 'CFA' || LPAD(nextval('SEQ_CARGAS_FAMILIARES')::TEXT, 7, '0'),
-    EMP_Codigo          CHAR(10)    NOT NULL,
-    CFA_Cedula          CHAR(10),
-    CFA_Apellidos       VARCHAR(60) NOT NULL,
-    CFA_Nombres         VARCHAR(60) NOT NULL,
-    CFA_FechaNacimiento DATE        NOT NULL,
-    CFA_Sexo            CHAR(1)     NOT NULL,
-    -- CON cónyuge, HIJ hijo o hija, PAD padre o madre, OTR otro
-    CFA_Parentesco      CHAR(3)     NOT NULL,
-    -- SOL soltero, CAS casado, DIV divorciado, VIU viudo, UNH unión de hecho
-    CFA_EstadoCivil     CHAR(3)     NOT NULL DEFAULT 'SOL',
-    CFA_Dependiente     BOOLEAN     NOT NULL DEFAULT TRUE,
-    CFA_Activa          BOOLEAN     NOT NULL DEFAULT TRUE,
-    CONSTRAINT PK_CARGAS_FAMILIARES PRIMARY KEY (CFA_Codigo),
-    CONSTRAINT UQ_CARGAS_FAMILIARES_Cedula UNIQUE (EMP_Codigo, CFA_Cedula),
-    CONSTRAINT FK_CARGAS_FAMILIARES_EMPLEADOS FOREIGN KEY (EMP_Codigo)
-        REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT CK_CARGAS_FAMILIARES_Codigo CHECK (CFA_Codigo ~ '^CFA[0-9]{7}$'),
-    CONSTRAINT CK_CARGAS_FAMILIARES_Cedula CHECK (CFA_Cedula IS NULL OR FN_CEDULA_VALIDA(CFA_Cedula)),
-    CONSTRAINT CK_CARGAS_FAMILIARES_Sexo CHECK (CFA_Sexo IN ('H', 'M')),
-    CONSTRAINT CK_CARGAS_FAMILIARES_Parentesco CHECK (CFA_Parentesco IN ('CON', 'HIJ', 'PAD', 'OTR')),
-    CONSTRAINT CK_CARGAS_FAMILIARES_EstadoCivil CHECK (CFA_EstadoCivil IN ('SOL', 'CAS', 'DIV', 'VIU', 'UNH'))
-);
-ALTER SEQUENCE SEQ_CARGAS_FAMILIARES OWNED BY CARGAS_FAMILIARES.CFA_Codigo;
+CREATE INDEX IX_EMPLEADOS_Cargo ON EMPLEADOS (CAR_Codigo);
 
 
 /* =============================================================================
@@ -1271,7 +1205,7 @@ CREATE TABLE CONCEPTOS_NOMINA (
 ALTER SEQUENCE SEQ_CONCEPTOS_NOMINA OWNED BY CONCEPTOS_NOMINA.CNO_Codigo;
 
 -- El rol de pagos de un empleado en un mes. Al crearlo, TG_NOMINAS_INICIAR le
--- pone el sueldo de su cargo actual y el aporte personal al IESS (9,45 %); lo
+-- pone el sueldo de hoy del empleado y el aporte personal al IESS (9,45 %); lo
 -- demás se agrega a mano. ABI -> APR (crea el asiento) o ANU. Ingresos,
 -- descuentos y neto salen de VW_NOMINAS.
 CREATE SEQUENCE SEQ_NOMINAS MAXVALUE 9999999;
@@ -1931,7 +1865,7 @@ CREATE TRIGGER TG_FACTURAS_ASIENTO
 AFTER INSERT OR UPDATE OF FAC_FechaAnulacion ON FACTURAS
 FOR EACH ROW EXECUTE FUNCTION FN_FACTURAS_ASIENTO();
 
--- Un rol nuevo empieza con 30 días del sueldo del cargo actual y el aporte
+-- Un rol nuevo empieza con 30 días del sueldo de hoy del empleado y el aporte
 -- personal al IESS (9,45 % del sueldo).
 CREATE FUNCTION FN_NOMINAS_INICIAR()
 RETURNS TRIGGER
@@ -1939,12 +1873,7 @@ LANGUAGE plpgsql AS $$
 DECLARE
     v_sueldo NUMERIC(8,2);
 BEGIN
-    SELECT ECA_Sueldo INTO v_sueldo
-      FROM EMPLEADOS_CARGOS
-     WHERE EMP_Codigo = NEW.EMP_Codigo AND ECA_FechaFin IS NULL;
-    IF NOT FOUND THEN
-        RAISE EXCEPTION 'El empleado % no tiene un cargo actual', NEW.EMP_Codigo;
-    END IF;
+    SELECT EMP_Sueldo INTO v_sueldo FROM EMPLEADOS WHERE EMP_Codigo = NEW.EMP_Codigo;
     INSERT INTO DETALLES_NOMINA (NOM_Codigo, CNO_Codigo, DNO_Cantidad, DNO_Valor)
     SELECT NEW.NOM_Codigo, c.CNO_Codigo, v.cantidad, v.valor
       FROM (VALUES ('1000', 30, v_sueldo),
@@ -2083,22 +2012,19 @@ SELECT p.PRO_Codigo,
   JOIN TAMANOS t            ON t.TAM_Codigo = pt.TAM_Codigo
   LEFT JOIN ETIQUETAS e     ON e.ETI_Codigo = p.ETI_Codigo;
 
--- Empleados con su cargo actual, su departamento, su sueldo y su edad.
+-- Empleados con su nombre completo, su cargo, su sueldo y su edad.
 CREATE VIEW VW_EMPLEADOS AS
 SELECT e.EMP_Codigo,
        e.EMP_Cedula,
        e.EMP_PrimerApellido || COALESCE(' ' || e.EMP_SegundoApellido, '') || ' '
            || e.EMP_PrimerNombre || COALESCE(' ' || e.EMP_SegundoNombre, '') AS EMP_NombreCompleto,
        c.CAR_Nombre,
-       d.DEP_Nombre,
-       ec.ECA_Sueldo,
-       ec.ECA_FechaInicio,
+       e.EMP_Sueldo,
+       e.EMP_FechaIngreso,
        date_part('year', age(e.EMP_FechaNacimiento))::INTEGER AS EMP_Edad,
        e.EMP_Activo
   FROM EMPLEADOS e
-  LEFT JOIN EMPLEADOS_CARGOS ec ON ec.EMP_Codigo = e.EMP_Codigo AND ec.ECA_FechaFin IS NULL
-  LEFT JOIN CARGOS c            ON c.CAR_Codigo = ec.CAR_Codigo
-  LEFT JOIN DEPARTAMENTOS d     ON d.DEP_Codigo = c.DEP_Codigo;
+  JOIN CARGOS c ON c.CAR_Codigo = e.CAR_Codigo;
 
 -- Proveedores con el tipo de persona, que sale de la identificación: cédula,
 -- o RUC con tercer dígito menor que 6, es persona natural.
@@ -2545,24 +2471,17 @@ SELECT r.ROL_Codigo, p.PER_Codigo
   JOIN ROLES r    ON r.ROL_Nombre = v.rol
   JOIN PERMISOS p ON p.PER_Nombre = v.permiso;
 
-INSERT INTO DEPARTAMENTOS (DEP_Nombre) VALUES
-    ('Producción'), ('Ventas'), ('Bodega'), ('Compras'), ('Administración');
-
-INSERT INTO CARGOS (DEP_Codigo, CAR_Nombre, CAR_Funciones)
-SELECT d.DEP_Codigo, v.cargo, v.funciones
-  FROM (VALUES
-        ('Producción',     'Jefe de producción',     'Planifica las tandas y aprueba las órdenes de producción'),
-        ('Producción',     'Panadero',               'Prepara y hornea el pan'),
-        ('Producción',     'Pastelero',              'Prepara pasteles, galletas y dulces'),
-        ('Producción',     'Ayudante de panadería',  'Pesa ingredientes, limpia y empaca'),
-        ('Ventas',         'Cajero',                 'Cobra, factura y entrega los pedidos en el local'),
-        ('Ventas',         'Repartidor',             'Lleva los pedidos a domicilio'),
-        ('Bodega',         'Bodeguero',              'Recibe lo comprado, cuida los lotes y hace los conteos'),
-        ('Compras',        'Jefe de compras',        'Elige proveedores y genera las órdenes de compra'),
-        ('Administración', 'Administrador',          'Aprueba compras, ajustes y roles de pago'),
-        ('Administración', 'Contador',               'Revisa y aprueba los asientos contables')
-       ) AS v (departamento, cargo, funciones)
-  JOIN DEPARTAMENTOS d ON d.DEP_Nombre = v.departamento;
+INSERT INTO CARGOS (CAR_Nombre, CAR_Funciones) VALUES
+    ('Jefe de producción',    'Planifica las tandas y aprueba las órdenes de producción'),
+    ('Panadero',              'Prepara y hornea el pan'),
+    ('Pastelero',             'Prepara pasteles, galletas y dulces'),
+    ('Ayudante de panadería', 'Pesa ingredientes, limpia y empaca'),
+    ('Cajero',                'Cobra, factura y entrega los pedidos en el local'),
+    ('Repartidor',            'Lleva los pedidos a domicilio'),
+    ('Bodeguero',             'Recibe lo comprado, cuida los lotes y hace los conteos'),
+    ('Jefe de compras',       'Elige proveedores y genera las órdenes de compra'),
+    ('Administrador',         'Aprueba compras, ajustes y roles de pago'),
+    ('Contador',              'Revisa y aprueba los asientos contables');
 
 INSERT INTO UNIDADES_MEDIDA (UMI_Nombre, UMI_Abreviatura) VALUES
     ('Gramo',             'g'),

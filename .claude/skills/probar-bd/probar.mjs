@@ -221,23 +221,25 @@ ok(asientosVenta.length === 3 && asientosVenta.every(a => a.c && a.d === '6.50')
 
 titulo('Talento humano');
 const cargo = (nombre) => unValor(`SELECT car_codigo FROM cargos WHERE car_nombre = $1`, [nombre]);
-const nuevoEmpleado = (cedula, nombre, correo) => unValor(
-  `INSERT INTO empleados (can_codigo, emp_cedula, emp_primerapellido, emp_primernombre, emp_fechanacimiento,
-                          emp_sexo, emp_correo, emp_celular, emp_direccion)
-   VALUES ('1501', $1, 'Grefa', $2, '1990-05-04', 'H', $3, '0981112233', 'Barrio Bellavista, Tena')
-   RETURNING emp_codigo`, [cedula, nombre, correo]);
-const panadero = await nuevoEmpleado('1501234569', 'Carlos', 'carlos@eltradicional.ec');
-const contador = await nuevoEmpleado('1507654323', 'Rosa', 'rosa@eltradicional.ec');
-await q(`INSERT INTO empleados_cargos (emp_codigo, car_codigo, eca_sueldo) VALUES ($1, $2, 600), ($3, $4, 900)`,
-  [panadero, await cargo('Panadero'), contador, await cargo('Contador')]);
-await debeFallar(`INSERT INTO empleados (can_codigo, emp_cedula, emp_primerapellido, emp_primernombre, emp_fechanacimiento, emp_sexo, emp_correo, emp_celular, emp_direccion)
-  VALUES ('1501', '1501234560', 'X', 'Y', '1990-01-01', 'H', 'x@x.ec', '0981112233', 'Tena')`, 'Empleado con cedula invalida');
-await debeFallar(`INSERT INTO empleados (can_codigo, emp_cedula, emp_primerapellido, emp_primernombre, emp_fechanacimiento, emp_sexo, emp_correo, emp_celular, emp_direccion)
-  VALUES ('1501', '1704567898', 'X', 'Y', CURRENT_DATE - 3650, 'H', 'x@x.ec', '0981112233', 'Tena')`, 'Empleado de 10 anios');
-await debeFallar(`INSERT INTO empleados_cargos (emp_codigo, car_codigo, eca_sueldo) VALUES ('${panadero}', '${await cargo('Pastelero')}', 650)`,
-  'Dos cargos actuales a la vez');
-ok((await unValor(`SELECT dep_nombre FROM vw_empleados WHERE emp_codigo = $1`, [panadero])) === 'Producción',
-  'El departamento sale del cargo actual');
+const insertEmpleado = `INSERT INTO empleados (can_codigo, car_codigo, emp_cedula, emp_primerapellido, emp_primernombre,
+                          emp_fechanacimiento, emp_sexo, emp_correo, emp_celular, emp_direccion, emp_sueldo)`;
+const nuevoEmpleado = async (cedula, nombre, correo, cargoNombre, sueldo) => unValor(
+  `${insertEmpleado}
+   VALUES ('1501', $1, $2, 'Grefa', $3, '1990-05-04', 'H', $4, '0981112233', 'Barrio Bellavista, Tena', $5)
+   RETURNING emp_codigo`, [await cargo(cargoNombre), cedula, nombre, correo, sueldo]);
+const panadero = await nuevoEmpleado('1501234569', 'Carlos', 'carlos@eltradicional.ec', 'Panadero', 600);
+const contador = await nuevoEmpleado('1507654323', 'Rosa', 'rosa@eltradicional.ec', 'Contador', 900);
+const pastelero = await cargo('Pastelero');
+await debeFallar(`${insertEmpleado} VALUES ('1501', '${pastelero}', '1501234560', 'X', 'Y', '1990-01-01', 'H', 'x@x.ec', '0981112233', 'Tena', 500)`,
+  'Empleado con cedula invalida');
+await debeFallar(`${insertEmpleado} VALUES ('1501', '${pastelero}', '1704567898', 'X', 'Y', CURRENT_DATE - 3650, 'H', 'x@x.ec', '0981112233', 'Tena', 500)`,
+  'Empleado de 10 anios');
+await debeFallar(`${insertEmpleado} VALUES ('1501', '${pastelero}', '1704567898', 'X', 'Y', '1990-01-01', 'H', 'x@x.ec', '0981112233', 'Tena', 0)`,
+  'Empleado sin sueldo');
+await debeFallar(`${insertEmpleado} VALUES ('1501', 'CAR999', '1704567898', 'X', 'Y', '1990-01-01', 'H', 'x@x.ec', '0981112233', 'Tena', 500)`,
+  'Empleado con un cargo que no existe');
+const fila = (await q(`SELECT car_nombre, emp_sueldo::text s FROM vw_empleados WHERE emp_codigo = $1`, [panadero]))[0];
+ok(fila.car_nombre === 'Panadero' && fila.s === '600.00', `La vista da su cargo y su sueldo (${fila.car_nombre}, ${fila.s})`);
 
 titulo('Compras y recepcion');
 const mat = (nombre) => unValor(`SELECT mat_codigo FROM materiales WHERE mat_nombre = $1`, [nombre]);
