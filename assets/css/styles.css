@@ -166,7 +166,9 @@ a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"]) {
 .nav-grupo.is-open .nav-submenu a:nth-child(1) { transition-delay: 0ms, 0ms, 50ms, 50ms; }
 .nav-grupo.is-open .nav-submenu a:nth-child(2) { transition-delay: 0ms, 0ms, 115ms, 115ms; }
 .nav-grupo.is-open .nav-submenu a:nth-child(3) { transition-delay: 0ms, 0ms, 180ms, 180ms; }
-.nav-submenu a:hover, .nav-submenu a:focus-visible { background: rgba(255, 255, 255, .1); color: var(--ambar); }
+/* Sin velo claro detras: el ambar sobre el velo se quedaba en 4,2:1. La marca
+   de la izquierda dice cual es sin depender solo del color. */
+.nav-submenu a:hover, .nav-submenu a:focus-visible { box-shadow: inset 2px 0 0 var(--ambar); color: var(--ambar); }
 /* Al pasar el cursor lo abre el JavaScript, que mira si lo que entra es un
    raton. Esto es el respaldo para cuando el JavaScript no ha cargado. Va con
    min-width porque en el telefono el desplegable es una sangria y no un panel
@@ -462,8 +464,11 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 @media (max-width: 680px) {
   .vista-barra { flex-direction: column; align-items: stretch; }
   .vista-mandos { flex-direction: column; align-items: stretch; }
-  .vista-mando { justify-content: space-between; }
-  .vista-mando select { flex: 0 0 62%; }
+  /* Si el rotulo y el selector no caben en una linea (texto con mas
+     espaciado, letra grande), el selector baja a la siguiente, pegado a la
+     derecha como siempre, en vez de salirse por el borde. */
+  .vista-mando { flex-wrap: wrap; justify-content: space-between; }
+  .vista-mando select { flex: 0 0 62%; max-width: 100%; margin-left: auto; }
   /* En el telefono el rotulo va encima y los botones debajo, en las filas
      que hagan falta. */
   .vista-chips { justify-content: flex-start; }
@@ -543,9 +548,11 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 .footer-horario div.is-today { margin: 0 -.9rem; padding: .22rem .9rem; background: rgba(215, 155, 74, .12); border-left: 2px solid var(--ambar); }
 .footer-horario dt { color: var(--sobre-horno-tenue); }
 .footer-horario dd { margin: 0; color: var(--sobre-horno); font-variant-numeric: tabular-nums; font-weight: 700; }
-/* La fila de hoy la marca el JS con el mismo dia que ya calcula para abierto/cerrado. */
-.footer-horario div.is-today dt, .footer-horario div.is-today dd { color: var(--ambar); }
-.dia-hoy { margin-left: .5rem; padding: .1rem .38rem; background: rgba(215, 155, 74, .12); border-radius: var(--r-hair); color: var(--ambar); font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; vertical-align: .08em; }
+/* La fila de hoy la marca el JS con el mismo dia que ya calcula para abierto/cerrado.
+   El texto va claro y lo ambar es el filete y la pastilla de "hoy": el ambar
+   sobre el fondo tenido de la fila no llegaba a 4,5:1. */
+.footer-horario div.is-today dt, .footer-horario div.is-today dd { color: var(--sobre-horno); }
+.dia-hoy { margin-left: .5rem; padding: .1rem .38rem; background: var(--ambar); border-radius: var(--r-hair); color: var(--horno); font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; vertical-align: .08em; }
 /* El enlace al mapa sobrevive al panel borrado: en el pie es un enlace claro, como .contacto-valor. */
 .footer-mapa { display: inline-flex; align-items: center; gap: .45rem; margin-top: 1rem; color: var(--ambar); font: 700 .8rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .footer-mapa:hover { color: var(--ambar-claro); }
@@ -641,7 +648,9 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .brand-logo { height: 44px; }
   .menu-toggle { display: block; }
   .main-nav { position: absolute; top: calc(100% + .5rem); right: 16px; left: auto; display: flex; visibility: hidden; width: min(250px, calc(100vw - 32px)); flex-direction: column; align-items: stretch; gap: .15rem; padding: .55rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }
-  .main-nav.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
+  /* Visible al instante, como el submenu de Tienda: en su primer cuadro seguia
+     en hidden y el foco no podia entrar en Nosotros al abrirlo. */
+  .main-nav.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
   /* Dentro del panel oscuro el texto vuelve a ser claro: si heredara el de
      la cabecera seria horno sobre horno. */
   .main-nav { color: var(--sobre-horno); }
@@ -839,7 +848,14 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* El cuadrito que sale al dejar el cursor quieto sobre algo. Va en el cuerpo y
    se coloca por JS, para que ninguna tarjeta con overflow lo recorte. */
 .globo { position: absolute; z-index: 60; max-width: 220px; padding: .42rem .6rem; background: var(--horno); border-radius: var(--r-chip); box-shadow: var(--shadow-float); color: var(--sobre-horno); font: 400 .78rem/1.35 Arial, sans-serif; opacity: 0; pointer-events: none; text-align: center; transform: translateY(4px); transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in); }
-.globo.is-open { opacity: 1; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
+/* Abierto recibe el puntero: se puede llevar el cursor encima para leerlo sin
+   que se vaya (WCAG 1.4.13). El JS no lo cierra si el cursor entra en el. */
+.globo.is-open { opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
+/* Puente invisible sobre los 10 px que lo separan de lo que senala: sin el, el
+   cursor salia al vacio a mitad de camino y el globo se cerraba. */
+.globo::before { position: absolute; right: 0; left: 0; height: 10px; content: ""; }
+.globo:not(.is-abajo)::before { top: 100%; }
+.globo.is-abajo::before { bottom: 100%; }
 .globo[hidden] { display: none; }
 /* La puntita que lo amarra a lo que señala, arriba o abajo segun donde quepa. */
 .globo::after { position: absolute; left: 50%; width: 8px; height: 8px; background: var(--horno); content: ""; transform: translateX(-50%) rotate(45deg); }

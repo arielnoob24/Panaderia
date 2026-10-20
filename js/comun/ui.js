@@ -156,9 +156,13 @@ menuToggle?.addEventListener('click', () => {
 });
 
 navigation?.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
-document.addEventListener('click', (event) => {
+// Un clic fuera lo pliega, y el foco que se va tambien: si no, al tabular mas
+// alla de Contactanos el menu se quedaba abierto tapando lo que tenia el foco.
+const plegarSiEsFuera = (event) => {
   if (navigation?.classList.contains('is-open') && !navigation.contains(event.target) && !menuToggle.contains(event.target)) closeMenu();
-});
+};
+document.addEventListener('click', plegarSiEsFuera);
+document.addEventListener('focusin', plegarSiEsFuera);
 document.addEventListener('keydown', (event) => {
   if (event.key !== 'Escape') return;
   // Si lo abierto era la tienda, el foco vuelve a su boton y no al de menu,
@@ -203,8 +207,9 @@ if (grupo && grupoBoton) {
   // Con las flechas se entra y se recorre. Quien abre con el teclado la deja
   // fijada: si no, el primer movimiento del raton se la cerraria en la cara.
   const submenu = grupo.querySelector('.nav-submenu');
+  // Sin aria-haspopup: anunciaria un menu de aplicacion (role=menu), y esto
+  // es una lista de enlaces que se abre y se cierra; aria-expanded ya lo dice.
   if (submenu) {
-    grupoBoton.setAttribute('aria-haspopup', 'true');
     flechasEnMenu(grupoBoton, submenu, (abierto) => {
       fijada = abierto;
       abrirGrupo(abierto);
@@ -279,13 +284,19 @@ const mostrarTip = (quien, yaMismo) => {
 const mandaElTeclado = () => Boolean(conTip) && document.activeElement === conTip;
 
 document.addEventListener('mouseover', (e) => {
+  // Llevar el cursor encima del globo para leerlo no lo cierra (WCAG 1.4.13).
+  if (globo.contains(e.target)) return;
   const quien = e.target.closest?.('[data-tip]');
   if (quien === conTip || mandaElTeclado()) return;
   esconderTip();
   if (quien) mostrarTip(quien, false);
 });
+// Se esconde al salir de verdad: no al pasar del dibujo del boton a su borde,
+// ni al subir al globo para leerlo.
 document.addEventListener('mouseout', (e) => {
-  if (e.target.closest?.('[data-tip]') && !mandaElTeclado()) esconderTip();
+  const quien = e.target.closest?.('[data-tip]');
+  if (!quien || quien.contains(e.relatedTarget) || globo.contains(e.relatedTarget)) return;
+  if (!mandaElTeclado()) esconderTip();
 });
 // Al tabular si sale; al pulsar con el raton no, que ahi ya se vio el efecto.
 // Un campo de texto casa con :focus-visible siempre, lo enfoque el raton o el

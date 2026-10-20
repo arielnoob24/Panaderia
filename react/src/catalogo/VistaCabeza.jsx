@@ -20,7 +20,8 @@ function VistaCabeza({
       <button className="vista-volver" type="button" onClick={onVolver}>
         <Chevron izquierda />Volver al inicio
       </button>
-      <h2 className="vista-titulo" tabIndex={-1} ref={tituloRef}>{titulo}</h2>
+      {/* Es el h1 de la vista: el de la portada queda apartado con ella. */}
+      <h1 className="vista-titulo" tabIndex={-1} ref={tituloRef}>{titulo}</h1>
       {/* Ordenar y filtrar viven aqui y no en el mostrador: la fila de la
           portada es un escaparate, y ordenar seis no le hace falta a nadie. */}
       <div className="vista-barra">
@@ -78,6 +79,9 @@ function VistaCabeza({
       {/* Una busqueda sin resultados no se queda en una pantalla vacia: se dice
           que no hay y por que. */}
       <p className="vista-vacio" role="status" hidden={!vacio}>{vacio}</p>
+      {/* Los nombres de las fichas son h3: sin este h2 colgarian directamente
+          del h1 y quien recorre los titulos se saltaria un nivel. */}
+      <h2 className="sr-only">Productos</h2>
     </div>
   );
 }

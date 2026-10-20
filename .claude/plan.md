@@ -9,7 +9,7 @@
 > `.claude/CLAUDE.md`. Las secciones 1 a 13 describen el sitio **como está
 > hoy**; la 15 es el siguiente paso.
 
-Última actualización: 19 de octubre de 2026.
+Última actualización: 20 de octubre de 2026.
 
 ---
 
@@ -143,7 +143,12 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
 - Controles: Filtrar por (chips: Todas + 3 categorías), buscador (sin tildes ni
   mayúsculas), Ordenar por, Mostrar (solo disponibles). Ordenar cambia la
   propiedad CSS `order`, no mueve el HTML.
-- "Mostrando X de Y productos", anunciado por `aria-live`.
+- "Mostrando X de Y productos", anunciado por `aria-live` ("en esta categoría"
+  con una puesta, "en todo el catálogo" con Todas). Cambiar el orden no cambia
+  ese aviso: se anuncia el orden ("Ordenado por precio, de menor a mayor").
+- El título de la vista es un `h1` y dice la categoría de "Filtrar por"
+  ("Dulces y pasteles", o "Todo el catálogo" con Todas); la pestaña también
+  ("Dulces y pasteles · Catálogo | El Tradicional").
 - Cada ficha: foto con `srcset`, categoría encima del nombre, sello, tamaños
   (radios), precio y control `− cantidad +` (máximo 100 por producto).
 - Al agregar, la foto vuela a la canasta y se anuncia en la región de avisos.
@@ -277,12 +282,11 @@ construye (sección 15).
 - [x] "Ver en el mapa" mide 131×18 px, pero cumple WCAG 2.5.8 por el espacio libre alrededor.
 - [ ] `user-select: none`: la dirección y el horario ya se copian; los precios y el WhatsApp todavía no.
 - [ ] Probar la fila quieta por defecto en vez de que avance sola.
-- [ ] El menú del teléfono no lleva el foco a "Nosotros" al abrirse: su
-      `visibility` sigue en transición en el primer cuadro. Arreglo probable:
-      `visibility 0s` al abrir, como ya tiene el submenú de Tienda (pasa igual
-      en `react/`).
-- [ ] axe marca el contraste de la fila de hoy del horario (`.is-today`) y que
-      la vista de catálogo no tiene `h1` (pasa igual en `react/`).
+- [x] El menú del teléfono lleva el foco a "Nosotros" al abrirse (`visibility 0s`
+      al abrir, como el submenú de Tienda).
+- [x] Contraste de la fila de hoy del horario y `h1` en la vista de catálogo.
+- [ ] La vista de confirmar (`.checkout-titulo` en `cart.js`) sigue con `h2`
+      y sin `h1` (`logica-datos`; en React, en la fase 4).
 - [ ] Decir antes de llenar la canasta que pagar pide cuenta, o permitir invitado.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).
 
@@ -396,7 +400,9 @@ secciones 4 a 11.
   `prefers-reduced-motion`) y el foco pasa a ella (`tabIndex={-1}` +
   `focus({ preventScroll: true })`), sin tocar la dirección. Para quien usa la
   página se comporta igual que hoy, y el salto al contenido sigue cumpliendo
-  WCAG 2.4.1.
+  WCAG 2.4.1. Abrir una de esas direcciones tal cual (`#historia` pegado, un
+  enlace compartido, otra pestaña) lleva a `#/` con `replace` y baja a la
+  sección sin animar, con el foco en ella (arreglado el 20 de octubre de 2026).
 - CI: paso "Construir la version en React" (`npm ci && npm run build` en
   `react/`) detrás de la validación; `ci-local.sh` solo corre la validación.
 
@@ -429,26 +435,26 @@ secciones 4 a 11.
 Todos para `frontend`, en React y, cuando es CSS o `view.js`, también en el
 sitio actual. Gravedad de Nielsen entre paréntesis.
 
-- [ ] (3) Abrir directamente `#inicio`, `#catalogo`, `#historia`, `#visitanos`
+- [x] (3) Abrir directamente `#inicio`, `#catalogo`, `#historia`, `#visitanos`
       o `#contenido` (dirección pegada, enlace compartido, pestaña nueva) baja
-      a la sección, como en el sitio actual. Hoy React se queda arriba.
-- [ ] (3) Menú del teléfono: el foco entra en "Nosotros" al abrirlo
+      a la sección, como en el sitio actual (antes React se quedaba arriba).
+- [x] (3) Menú del teléfono: el foco entra en "Nosotros" al abrirlo
       (`visibility 0s` en `.main-nav.is-open`).
-- [ ] (3) Contraste de la fila de hoy del horario (`.is-today`, `.dia-hoy`) de
+- [x] (3) Contraste de la fila de hoy del horario (`.is-today`, `.dia-hoy`) de
       al menos 4,5:1.
-- [ ] (2) La vista de catálogo tiene `h1` (`.vista-titulo`).
-- [ ] (2) Contraste del submenú Tienda en hover y foco.
-- [ ] (2) Al volver al inicio y con Atrás/Adelante el foco va a `#inicio` o al
+- [x] (2) La vista de catálogo tiene `h1` (`.vista-titulo`).
+- [x] (2) Contraste del submenú Tienda en hover y foco.
+- [x] (2) Al volver al inicio y con Atrás/Adelante el foco va a `#inicio` o al
       título de la vista, no a `body`.
-- [ ] (2) El menú del teléfono se cierra cuando el foco sale de él.
-- [ ] (2) Se puede pasar el cursor por encima del globo de ayuda sin que se
+- [x] (2) El menú del teléfono se cierra cuando el foco sale de él.
+- [x] (2) Se puede pasar el cursor por encima del globo de ayuda sin que se
       cierre (WCAG 1.4.13).
-- [ ] (2) Sin `aria-haspopup` en la flecha de Tienda.
-- [ ] (1) Se anuncia el cambio de orden; al volver al inicio no se anuncia el
+- [x] (2) Sin `aria-haspopup` en la flecha de Tienda.
+- [x] (1) Se anuncia el cambio de orden; al volver al inicio no se anuncia el
       catálogo viejo; con búsqueda vacía en "Todas" no dice "en esta categoría".
-- [ ] (1) El título de la vista y de la pestaña dicen la categoría
+- [x] (1) El título de la vista y de la pestaña dicen la categoría
       ("Dulces y pasteles · Catálogo | El Tradicional").
-- [ ] (1) Sin desplazamiento horizontal a 320 px con espaciado de texto
+- [x] (1) Sin desplazamiento horizontal a 320 px con espaciado de texto
       aumentado (`.vista-mandos`).
 
 No se arregla: Escape en el sitio actual mueve el foco aunque no haya nada

@@ -494,11 +494,16 @@ const montarCatalogo = (productos) => {
       const cuantos = agotados
         ? `${visibleCount} producto${plural}, ${agotados} agotado${agotados === 1 ? '' : 's'}`
         : `${visibleCount} producto${plural} disponible${plural}`;
+      // Con "Todas" puesto no hay ninguna categoria de la que hablar.
+      const donde = subcategoria === 'todas' ? 'en todo el catálogo' : 'en esta categoría';
       // En la portada, el aviso dice ademas cuantos hay en total: si no, la
       // fila parece el catalogo entero y la cuadricula no la encuentra nadie.
-      catalogStatus.textContent = category === 'todos'
+      const texto = category === 'todos'
         ? `Los ${visibleCount} más pedidos. En todo el catálogo hay ${products.length}.`
-        : `${dice}. ${cuantos} en esta categoría.`;
+        : `${dice}. ${cuantos} ${donde}.`;
+      // Lo mismo otra vez no se escribe: ordenar no cambia cuantos hay, y lo
+      // que se anuncia entonces es el orden (ver el cambio de .vista-orden).
+      if (catalogStatus.textContent !== texto) catalogStatus.textContent = texto;
     }
     productGrid?.mirarPuntas?.();
     if (!animate) return;
@@ -541,7 +546,8 @@ const montarCatalogo = (productos) => {
     + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
     + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
     + '<path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver al inicio</button>'
-    + '<h2 class="vista-titulo" tabindex="-1"></h2>'
+    // Es el h1 de la vista: el de la portada queda apartado con ella.
+    + '<h1 class="vista-titulo" tabindex="-1"></h1>'
     // Ordenar y filtrar viven aqui y no en el mostrador: la fila de la portada
     // es un escaparate de seis, y ordenar seis no le hace falta a nadie.
     + '<div class="vista-barra">'
@@ -582,7 +588,10 @@ const montarCatalogo = (productos) => {
     // el aviso de mas abajo y oirlo dos veces es peor que no oirlo.
     + '<p class="vista-cuenta" aria-hidden="true"></p>'
     + '</div>'
-    + '<p class="vista-vacio" role="status" hidden></p>';
+    + '<p class="vista-vacio" role="status" hidden></p>'
+    // Los nombres de las fichas son h3: sin este h2 colgarian directamente del
+    // h1 y quien recorre los titulos se saltaria un nivel.
+    + '<h2 class="sr-only">Productos</h2>';
   const encabezado = document.querySelector('.catalog .section-heading');
   encabezado?.parentElement.insertBefore(cabeza, encabezado);
   const tituloVista = cabeza.querySelector('.vista-titulo');
@@ -597,9 +606,18 @@ const montarCatalogo = (productos) => {
   // direccion propia.
   NOMBRES.catalogo = 'Todo el catálogo';
 
+  // Ordenar no cambia cuantos se ven, asi que el aviso del catalogo no dice
+  // nada nuevo: se anuncia el orden puesto.
+  const ORDEN_DICHO = {
+    recomendados: 'Ordenado como lo recomendamos.',
+    'precio-asc': 'Ordenado por precio, de menor a mayor.',
+    'precio-desc': 'Ordenado por precio, de mayor a menor.',
+    nombre: 'Ordenado por nombre, de la A a la Z.',
+  };
   selOrden?.addEventListener('change', () => {
     orden = selOrden.value;
     applyFilter(true);
+    avisos.textContent = ORDEN_DICHO[orden] || '';
   });
   selFiltro?.addEventListener('change', () => {
     soloDisponibles = selFiltro.value === 'disponibles';
@@ -621,9 +639,13 @@ const montarCatalogo = (productos) => {
     cabeza.hidden = !enVista;
     cabeza.classList.toggle('es-catalogo', cat === 'catalogo');
     if (encabezado) encabezado.hidden = enVista;
-    if (enVista) tituloVista.textContent = NOMBRES[cat] || 'Catálogo';
+    // Con una categoria puesta en "Filtrar por", el titulo y la pestana dicen
+    // cual: "Todo el catalogo" estando en Dulces no decia donde se estaba.
+    const conFiltro = cat === 'catalogo' && subcategoria !== 'todas' && NOMBRES[subcategoria];
+    const nombre = conFiltro ? NOMBRES[subcategoria] : (NOMBRES[cat] || 'Catálogo');
+    if (enVista) tituloVista.textContent = nombre;
     document.title = enVista
-      ? `${NOMBRES[cat] || 'Catálogo'} | El Tradicional`
+      ? `${nombre}${conFiltro ? ' · Catálogo' : ''} | El Tradicional`
       : 'El Tradicional | Panadería & Pastelería';
   };
 
@@ -673,6 +695,7 @@ const montarCatalogo = (productos) => {
   cajaSub?.addEventListener('change', () => {
     if (categoria !== 'catalogo') return;
     history.replaceState(history.state, '', '#tienda-' + (subcategoria === 'todas' ? 'catalogo' : subcategoria));
+    pintarVista(categoria);
   });
 
   enlacesTienda.forEach((a) => a.addEventListener('click', (e) => {

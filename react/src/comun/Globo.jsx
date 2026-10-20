@@ -68,13 +68,19 @@ function Globo() {
     const mandaElTeclado = () => Boolean(conTip) && document.activeElement === conTip;
 
     const alEntrar = (e) => {
+      // Llevar el cursor encima del globo para leerlo no lo cierra (WCAG 1.4.13).
+      if (globo.contains(e.target)) return;
       const quien = e.target.closest?.('[data-tip]');
       if (quien === conTip || mandaElTeclado()) return;
       esconderTip();
       if (quien) mostrarTip(quien, false);
     };
+    // Se esconde al salir de verdad: no al pasar del dibujo del boton a su
+    // borde, ni al subir al globo para leerlo.
     const alSalir = (e) => {
-      if (e.target.closest?.('[data-tip]') && !mandaElTeclado()) esconderTip();
+      const quien = e.target.closest?.('[data-tip]');
+      if (!quien || quien.contains(e.relatedTarget) || globo.contains(e.relatedTarget)) return;
+      if (!mandaElTeclado()) esconderTip();
     };
     // Al tabular si sale; al pulsar con el raton no, que ahi ya se vio el
     // efecto. Un campo de texto casa con :focus-visible siempre, lo enfoque el

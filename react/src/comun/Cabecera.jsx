@@ -54,8 +54,10 @@ function Cabecera() {
   };
 
   useEffect(() => {
-    // Un clic fuera del menu del telefono lo pliega.
-    const alClicar = (e) => {
+    // Un clic fuera del menu del telefono lo pliega, y el foco que se va
+    // tambien: si no, al tabular mas alla de Contactanos el menu se quedaba
+    // abierto tapando lo que tenia el foco.
+    const plegarSiEsFuera = (e) => {
       if (!abierto.current.menu) return;
       if (navRef.current?.contains(e.target) || botonMenuRef.current?.contains(e.target)) return;
       setMenuAbierto(false);
@@ -77,11 +79,13 @@ function Cabecera() {
     const alCambiarTamano = () => {
       if (window.innerWidth > 680) { setMenuAbierto(false); setTiendaAbierta(false); }
     };
-    document.addEventListener('click', alClicar);
+    document.addEventListener('click', plegarSiEsFuera);
+    document.addEventListener('focusin', plegarSiEsFuera);
     document.addEventListener('keydown', alTeclear);
     window.addEventListener('resize', alCambiarTamano);
     return () => {
-      document.removeEventListener('click', alClicar);
+      document.removeEventListener('click', plegarSiEsFuera);
+      document.removeEventListener('focusin', plegarSiEsFuera);
       document.removeEventListener('keydown', alTeclear);
       window.removeEventListener('resize', alCambiarTamano);
     };

@@ -252,9 +252,11 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     requestAnimationFrame(() => focosDe(navigation)[0]?.focus());
   });
   navigation?.querySelectorAll("a").forEach((link) => link.addEventListener("click", closeMenu));
-  document.addEventListener("click", (event) => {
+  var plegarSiEsFuera = (event) => {
     if (navigation?.classList.contains("is-open") && !navigation.contains(event.target) && !menuToggle.contains(event.target)) closeMenu();
-  });
+  };
+  document.addEventListener("click", plegarSiEsFuera);
+  document.addEventListener("focusin", plegarSiEsFuera);
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
     const tiendaAbierta = grupo?.classList.contains("is-open");
@@ -291,7 +293,6 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     });
     const submenu = grupo.querySelector(".nav-submenu");
     if (submenu) {
-      grupoBoton.setAttribute("aria-haspopup", "true");
       flechasEnMenu(grupoBoton, submenu, (abierto2) => {
         fijada = abierto2;
         abrirGrupo(abierto2);
@@ -349,13 +350,16 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   };
   var mandaElTeclado = () => Boolean(conTip) && document.activeElement === conTip;
   document.addEventListener("mouseover", (e) => {
+    if (globo.contains(e.target)) return;
     const quien = e.target.closest?.("[data-tip]");
     if (quien === conTip || mandaElTeclado()) return;
     esconderTip();
     if (quien) mostrarTip(quien, false);
   });
   document.addEventListener("mouseout", (e) => {
-    if (e.target.closest?.("[data-tip]") && !mandaElTeclado()) esconderTip();
+    const quien = e.target.closest?.("[data-tip]");
+    if (!quien || quien.contains(e.relatedTarget) || globo.contains(e.relatedTarget)) return;
+    if (!mandaElTeclado()) esconderTip();
   });
   var llegoConRaton = false;
   document.addEventListener("pointerdown", () => {
@@ -975,7 +979,9 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       if (catalogStatus) {
         const plural = visibleCount === 1 ? "" : "s";
         const cuantos = agotados ? `${visibleCount} producto${plural}, ${agotados} agotado${agotados === 1 ? "" : "s"}` : `${visibleCount} producto${plural} disponible${plural}`;
-        catalogStatus.textContent = category === "todos" ? `Los ${visibleCount} más pedidos. En todo el catálogo hay ${products.length}.` : `${dice}. ${cuantos} en esta categoría.`;
+        const donde = subcategoria === "todas" ? "en todo el catálogo" : "en esta categoría";
+        const texto = category === "todos" ? `Los ${visibleCount} más pedidos. En todo el catálogo hay ${products.length}.` : `${dice}. ${cuantos} ${donde}.`;
+        if (catalogStatus.textContent !== texto) catalogStatus.textContent = texto;
       }
       productGrid?.mirarPuntas?.();
       if (!animate) return;
@@ -1001,7 +1007,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     const cabeza = document.createElement("div");
     cabeza.className = "vista-cabeza";
     cabeza.hidden = true;
-    cabeza.innerHTML = '<button class="vista-volver" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver al inicio</button><h2 class="vista-titulo" tabindex="-1"></h2><div class="vista-barra"><div class="vista-mandos"><div class="vista-mando vista-chips solo-catalogo" role="radiogroup" aria-labelledby="vista-sub-rotulo"><span id="vista-sub-rotulo">Filtrar por</span>' + [["todas", "Todas"], ...enlacesTienda.map((a) => [a.dataset.filtro, a.textContent.trim()])].map(([valor, texto], i) => `<input class="chip-input" type="radio" name="vista-sub" id="vista-sub-${escapar(valor)}" value="${escapar(valor)}"${i === 0 ? " checked" : ""}><label class="chip" for="vista-sub-${escapar(valor)}">${escapar(texto)}</label>`).join("") + '</div><label class="vista-mando vista-buscar solo-catalogo"><span class="sr-only">Buscar en el catálogo</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input class="vista-busca" type="search" placeholder="Buscar un producto" autocomplete="off"></label><label class="vista-mando"><span>Ordenar por</span><select class="vista-orden"><option value="recomendados">Recomendados</option><option value="precio-asc">Precio: de menor a mayor</option><option value="precio-desc">Precio: de mayor a menor</option><option value="nombre">Nombre: de la A a la Z</option></select></label><label class="vista-mando"><span>Mostrar</span><select class="vista-filtro"><option value="todos">Todos</option><option value="disponibles">Solo los disponibles</option></select></label></div><p class="vista-cuenta" aria-hidden="true"></p></div><p class="vista-vacio" role="status" hidden></p>';
+    cabeza.innerHTML = '<button class="vista-volver" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver al inicio</button><h1 class="vista-titulo" tabindex="-1"></h1><div class="vista-barra"><div class="vista-mandos"><div class="vista-mando vista-chips solo-catalogo" role="radiogroup" aria-labelledby="vista-sub-rotulo"><span id="vista-sub-rotulo">Filtrar por</span>' + [["todas", "Todas"], ...enlacesTienda.map((a) => [a.dataset.filtro, a.textContent.trim()])].map(([valor, texto], i) => `<input class="chip-input" type="radio" name="vista-sub" id="vista-sub-${escapar(valor)}" value="${escapar(valor)}"${i === 0 ? " checked" : ""}><label class="chip" for="vista-sub-${escapar(valor)}">${escapar(texto)}</label>`).join("") + '</div><label class="vista-mando vista-buscar solo-catalogo"><span class="sr-only">Buscar en el catálogo</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg><input class="vista-busca" type="search" placeholder="Buscar un producto" autocomplete="off"></label><label class="vista-mando"><span>Ordenar por</span><select class="vista-orden"><option value="recomendados">Recomendados</option><option value="precio-asc">Precio: de menor a mayor</option><option value="precio-desc">Precio: de mayor a menor</option><option value="nombre">Nombre: de la A a la Z</option></select></label><label class="vista-mando"><span>Mostrar</span><select class="vista-filtro"><option value="todos">Todos</option><option value="disponibles">Solo los disponibles</option></select></label></div><p class="vista-cuenta" aria-hidden="true"></p></div><p class="vista-vacio" role="status" hidden></p><h2 class="sr-only">Productos</h2>';
     const encabezado = document.querySelector(".catalog .section-heading");
     encabezado?.parentElement.insertBefore(cabeza, encabezado);
     const tituloVista2 = cabeza.querySelector(".vista-titulo");
@@ -1012,9 +1018,16 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     const campoBusca = cabeza.querySelector(".vista-busca");
     const vacioVista = cabeza.querySelector(".vista-vacio");
     NOMBRES.catalogo = "Todo el catálogo";
+    const ORDEN_DICHO = {
+      recomendados: "Ordenado como lo recomendamos.",
+      "precio-asc": "Ordenado por precio, de menor a mayor.",
+      "precio-desc": "Ordenado por precio, de mayor a menor.",
+      nombre: "Ordenado por nombre, de la A a la Z."
+    };
     selOrden?.addEventListener("change", () => {
       orden = selOrden.value;
       applyFilter(true);
+      avisos.textContent = ORDEN_DICHO[orden] || "";
     });
     selFiltro?.addEventListener("change", () => {
       soloDisponibles = selFiltro.value === "disponibles";
@@ -1034,8 +1047,10 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
       cabeza.hidden = !enVista;
       cabeza.classList.toggle("es-catalogo", cat === "catalogo");
       if (encabezado) encabezado.hidden = enVista;
-      if (enVista) tituloVista2.textContent = NOMBRES[cat] || "Catálogo";
-      document.title = enVista ? `${NOMBRES[cat] || "Catálogo"} | El Tradicional` : "El Tradicional | Panadería & Pastelería";
+      const conFiltro = cat === "catalogo" && subcategoria !== "todas" && NOMBRES[subcategoria];
+      const nombre = conFiltro ? NOMBRES[subcategoria] : NOMBRES[cat] || "Catálogo";
+      if (enVista) tituloVista2.textContent = nombre;
+      document.title = enVista ? `${nombre}${conFiltro ? " · Catálogo" : ""} | El Tradicional` : "El Tradicional | Panadería & Pastelería";
     };
     const esDeTienda = (cat) => cat !== "todos" && cat !== "catalogo";
     const vistaDe = (cat) => esDeTienda(cat) ? "catalogo" : cat;
@@ -1068,6 +1083,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     cajaSub?.addEventListener("change", () => {
       if (categoria !== "catalogo") return;
       history.replaceState(history.state, "", "#tienda-" + (subcategoria === "todas" ? "catalogo" : subcategoria));
+      pintarVista(categoria);
     });
     enlacesTienda.forEach((a) => a.addEventListener("click", (e) => {
       e.preventDefault();

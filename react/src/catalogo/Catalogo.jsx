@@ -12,7 +12,7 @@
 //   - Ordenar cambia la propiedad CSS order, no el orden de las fichas.
 //   - Al cambiar de vista, las fichas se atenuan 160 ms y entran escalonadas.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType, Link } from 'react-router-dom';
 import { dinero } from '@raiz/js/comun/state.js';
 import { recordarVista, vistaRecordada } from '@raiz/js/comun/storage.js';
 import { catalogo } from '../servicios/catalogo.js';
@@ -25,13 +25,22 @@ import { Chevron } from '../comun/iconos.jsx';
 import FichaProducto from './FichaProducto.jsx';
 import VistaCabeza from './VistaCabeza.jsx';
 import { useFila } from './useFila.js';
-import { vistaDe, filtroDe } from './categorias.js';
+import { vistaDe, filtroDe, nombreCategoria } from './categorias.js';
 
 const { productos } = catalogo;
 const ORDENES = ['recomendados', 'precio-asc', 'precio-desc', 'nombre'];
 // "Todo el catalogo" no es una de las tres de Tienda, pero es una vista con
 // nombre y direccion propia.
 const TITULO_CATALOGO = 'Todo el catálogo';
+
+// Ordenar no cambia cuantos se ven, asi que el aviso del catalogo no dice nada
+// nuevo: se anuncia el orden puesto.
+const ORDEN_DICHO = {
+  recomendados: 'Ordenado como lo recomendamos.',
+  'precio-asc': 'Ordenado por precio, de menor a mayor.',
+  'precio-desc': 'Ordenado por precio, de mayor a menor.',
+  nombre: 'Ordenado por nombre, de la A a la Z.',
+};
 
 // Se busca sin tildes ni mayusculas: quien escribe "limon" quiere el de limón.
 const plano = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
@@ -69,6 +78,7 @@ function Catalogo({ categoria }) {
   const subcategoria = filtroDe(categoria);
   const location = useLocation();
   const navegar = useNavigate();
+  const tipoNavegacion = useNavigationType();
   const avisar = useAvisos();
 
   const [orden, setOrden] = useState(() => recordado(vista).orden);
@@ -181,8 +191,15 @@ function Catalogo({ categoria }) {
     const cuantos = cuadro.agotados
       ? `${n} producto${plural}, ${cuadro.agotados} agotado${cuadro.agotados === 1 ? '' : 's'}`
       : `${n} producto${plural} disponible${plural}`;
-    estado = `${dice}. ${cuantos} en esta categoría.`;
+    // Con "Todas" puesto no hay ninguna categoria de la que hablar.
+    const donde = subcategoria === 'todas' ? 'en todo el catálogo' : 'en esta categoría';
+    estado = `${dice}. ${cuantos} ${donde}.`;
   }
+  // Mientras la vista nueva espera su turno (los 160 ms de la salida), el
+  // aviso se queda en lo que decia: si no, al volver al inicio se anunciaba el
+  // catalogo ya limpio ("Mostrando 17 de 17") antes que "Los 8 mas pedidos".
+  const [estadoDicho, setEstadoDicho] = useState(estado);
+  if (vistaPintada === vista && estadoDicho !== estado) setEstadoDicho(estado);
   let vacio = '';
   if (cuadro.enCatalogo && n === 0) {
     vacio = busqueda
@@ -197,34 +214,49 @@ function Catalogo({ categoria }) {
     recordarVista({ categoria: vistaPintada, orden, soloDisponibles, subcategoria });
   }, [vistaPintada, orden, soloDisponibles, subcategoria]);
 
-  // La vista aparta la portada y la historia (body.is-vista en styles.css) y
-  // le da su nombre a la pestana.
+  // Con una categoria puesta en "Filtrar por", el titulo y la pestana dicen
+  // cual: "Todo el catalogo" estando en Dulces no decia donde se estaba.
+  const nombreFiltro = subcategoria === 'todas' ? null : nombreCategoria(subcategoria);
+  const titulo = nombreFiltro || TITULO_CATALOGO;
+
+  // La vista aparta la portada y la historia (body.is-vista en styles.css).
   useEffect(() => {
-    const enVista = vista !== 'todos';
-    document.body.classList.toggle('is-vista', enVista);
-    document.title = enVista ? `${TITULO_CATALOGO} | El Tradicional` : 'El Tradicional | Panadería & Pastelería';
+    document.body.classList.toggle('is-vista', vista !== 'todos');
     return () => document.body.classList.remove('is-vista');
   }, [vista]);
+  useEffect(() => {
+    if (vista === 'todos') document.title = 'El Tradicional | Panadería & Pastelería';
+    else document.title = nombreFiltro ? `${nombreFiltro} · Catálogo | El Tradicional` : `${TITULO_CATALOGO} | El Tradicional`;
+  }, [vista, nombreFiltro]);
 
-  // Al entrar: arriba del todo y el foco en el titulo de la vista. Con una
-  // seccion pedida (Nosotros desde la vista), se espera a que la portada este
+  // Al entrar: arriba del todo y el foco en el titulo de la vista, o en
+  // #inicio si se vuelve a la portada. Con Atras y Adelante el navegador pone
+  // el desplazamiento, pero el foco se quedaba en body, sin decir donde se
+  // estaba: va al mismo sitio. Con una seccion pedida (Nosotros desde la
+  // vista, o #historia abierto tal cual), se espera a que la portada este
   // pintada para bajar a ella: antes, la cuadricula aun mide lo que media.
-  const ultimaClave = useRef(location.key);
+  // ultimaClave empieza vacia para atender tambien la direccion con la que se
+  // monta: la de una seccion abierta tal cual llega asi (Portada.jsx).
+  const ultimaClave = useRef(null);
   const seccionPendiente = useRef(null);
   useEffect(() => {
     if (ultimaClave.current === location.key) return;
+    const alMontar = ultimaClave.current === null;
     ultimaClave.current = location.key;
-    const { entrar, seccion } = location.state || {};
-    if (seccion) { seccionPendiente.current = seccion; return; }
-    if (!entrar) return;
-    window.scrollTo({ top: 0, behavior: movimientoReducido() ? 'auto' : 'smooth' });
-    if (vista !== 'todos') tituloRef.current?.focus({ preventScroll: true });
-  }, [location.key, location.state, vista]);
+    const { entrar, seccion, alAbrir } = location.state || {};
+    if (seccion) { seccionPendiente.current = { id: seccion, suave: !alAbrir }; return; }
+    // Al cargar la pagina, el foco y el desplazamiento son los del navegador.
+    if (alMontar) return;
+    if (!entrar && tipoNavegacion !== 'POP') return;
+    if (entrar) window.scrollTo({ top: 0, behavior: movimientoReducido() ? 'auto' : 'smooth' });
+    const destino = vista !== 'todos' ? tituloRef.current : document.getElementById('inicio');
+    destino?.focus({ preventScroll: true });
+  }, [location.key, location.state, vista, tipoNavegacion]);
   useEffect(() => {
     if (!seccionPendiente.current || vistaPintada !== vista) return;
-    const id = seccionPendiente.current;
+    const { id, suave } = seccionPendiente.current;
     seccionPendiente.current = null;
-    irASeccionSiSeVe(id);
+    irASeccionSiSeVe(id, suave);
   }, [vistaPintada, vista, location.key]);
 
   // ---- Lo que se toca --------------------------------------------------
@@ -232,7 +264,7 @@ function Catalogo({ categoria }) {
     animarEntrada();
     navegar(`/tienda-${sub === 'todas' ? 'catalogo' : sub}`, { replace: true });
   };
-  const alOrden = (valor) => { setOrden(valor); animarEntrada(); };
+  const alOrden = (valor) => { setOrden(valor); animarEntrada(); avisar(ORDEN_DICHO[valor] || ''); };
   const alSolo = (solo) => { setSoloDisponibles(solo); animarEntrada(); };
   // Mientras se escribe no se anima: las fichas entrando a cada tecla marean.
   const alBuscar = (texto) => setBusqueda(texto);
@@ -257,7 +289,7 @@ function Catalogo({ categoria }) {
       <div className="container">
         <VistaCabeza
           visible={vista !== 'todos'}
-          titulo={TITULO_CATALOGO}
+          titulo={titulo}
           tituloRef={tituloRef}
           subcategoria={subcategoria}
           onSub={alSub}
@@ -280,7 +312,7 @@ function Catalogo({ categoria }) {
           <div><p className="eyebrow">La vitrina</p><h2>Hecho a mano,<br /><em>como en casa</em></h2></div>
           <p className="section-intro">Todo empieza con harina, agua y tiempo. Elige tu favorito, haz tu pedido y pasa a buscarlo calentito.</p>
         </div>
-        <p className="catalog-status" role="status" aria-live="polite">{estado}</p>
+        <p className="catalog-status" role="status" aria-live="polite">{estadoDicho}</p>
         {/* La fila necesita decir que es: sin nombre parecia el catalogo
             entero puesto de lado. Va fuera de la zona para no pasar por debajo
             de las flechas, que estan pegadas a los bordes. */}

@@ -4,7 +4,9 @@
 // la flecha, que es lo que funciona con teclado y con el dedo; con raton,
 // ademas, se asoma al pasar por encima. La lista se recorre con las flechas,
 // Inicio y Fin, y Escape la cierra (eso lo lleva la cabecera, que es quien
-// sabe si tambien hay que plegar el menu del telefono).
+// sabe si tambien hay que plegar el menu del telefono). La flecha no lleva
+// aria-haspopup: anunciaria un menu de aplicacion (role=menu), y esto es una
+// lista de enlaces que se abre y se cierra; aria-expanded ya lo dice.
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { CATEGORIAS } from '../catalogo/categorias.js';
@@ -93,7 +95,6 @@ function MenuTienda({ abierta, setAbierta, botonRef, alElegir }) {
         aria-expanded={abierta}
         aria-controls="nav-tienda"
         aria-label="Categorías de la tienda"
-        aria-haspopup="true"
         onClick={() => {
           fijada.current = !fijada.current;
           setAbierta(fijada.current);

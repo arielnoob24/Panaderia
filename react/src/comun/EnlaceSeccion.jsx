@@ -1,6 +1,8 @@
 // Un enlace a una seccion de la pagina (ver secciones.js). El href se queda
-// como en el sitio actual, para que se lea igual y el clic con la rueda o
-// "copiar enlace" den algo con sentido; el clic normal no lo sigue.
+// como en el sitio actual (#historia, sin barra), para que se lea igual; el
+// clic normal no lo sigue. El clic con la rueda o "copiar enlace" si se lo
+// llevan, y esa direccion abierta en otra pestana baja a la seccion porque
+// Portada.jsx la reconoce.
 import { useIrASeccion } from './secciones.js';
 
 function EnlaceSeccion({ a, onClick, children, ref, ...resto }) {

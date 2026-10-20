@@ -10,6 +10,7 @@ import Hero from './Hero.jsx';
 import Catalogo from './Catalogo.jsx';
 import Historia from './Historia.jsx';
 import { categoriaDeRuta } from './categorias.js';
+import { SECCIONES } from '../comun/secciones.js';
 
 // La franja de las espigas: es adorno, y el lector de pantalla se la salta.
 function Franja() {
@@ -24,8 +25,15 @@ function Franja() {
 function Portada() {
   const { pathname } = useLocation();
   const categoria = categoriaDeRuta(pathname);
-  // Lo que no es una ruta vuelve a la portada, sin dejar rastro en Atras.
-  if (!categoria) return <Navigate to="/" replace />;
+  if (!categoria) {
+    // #historia, #visitanos... abiertos tal cual: React Router los lee como
+    // #/historia. No son rutas, pero se va a la portada y se baja a la seccion
+    // (Catalogo.jsx), como hacia el salto de ancla del sitio actual.
+    const seccion = pathname.slice(1);
+    if (SECCIONES.includes(seccion)) return <Navigate to="/" replace state={{ seccion, alAbrir: true }} />;
+    // Lo demas vuelve a la portada, sin dejar rastro en Atras.
+    return <Navigate to="/" replace />;
+  }
   return (
     <>
       <Hero />
