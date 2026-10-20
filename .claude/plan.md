@@ -236,6 +236,9 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
   navegador).
 - Editar: nombre, teléfono y dirección con las mismas reglas; el correo no se
   edita. Cerrar sesión no borra la cuenta.
+- Métodos de pago: forma de pago preferida (Efectivo o Tarjeta), con la que
+  empieza el pago al confirmar; se puede cambiar ahí. No se guardan tarjetas.
+  En React es un campo de Mis datos (sección 15, fase 5).
 - Pedidos: todo el historial de IndexedDB, más nuevo arriba, cada uno en un
   `<details>`.
 - Enter en un campo pasa al siguiente; en el último, hace la acción.
@@ -753,9 +756,9 @@ actual sigue con su panel. Lo que hace cada paso es lo de la sección 7.
 | Ruta | Contenido | Si no corresponde (con `replace`) |
 |---|---|---|
 | `#/cuenta/entrar` | Correo y contraseña; "¿No tienes cuenta? Créala" | Con sesión → `#/cuenta` |
-| `#/cuenta/crear` | Nombre, correo, teléfono, contraseña con sus 4 requisitos y repetirla; dos columnas en la computadora (datos a la izquierda, contraseña a la derecha), una en el teléfono; "¿Ya tienes cuenta? Entrar" | Con sesión → `#/cuenta` |
+| `#/cuenta/crear` | Nombre, correo, teléfono, dirección (opcional), contraseña con sus 4 requisitos y repetirla; dos columnas en la computadora (datos a la izquierda, contraseña a la derecha), una en el teléfono; "¿Ya tienes cuenta? Entrar" | Con sesión → `#/cuenta` |
 | `#/cuenta/verificar` | Código de 6 cifras, "Reenviar" cada 45 s y el recuadro con el código si EmailJS falta o falla | Sin cuenta por verificar → `#/cuenta/entrar` |
-| `#/cuenta` | **Mis datos**, editables ahí mismo (nombre, teléfono, dirección; el correo se ve pero no se cambia), "Guardar" y "Cerrar sesión" | Sin sesión → `#/cuenta/entrar` |
+| `#/cuenta` | **Mis datos**, editables ahí mismo (nombre, teléfono, dirección y **forma de pago preferida**, Efectivo o Tarjeta con su dibujo y su frase como en el sitio actual; el correo se ve pero no se cambia), "Guardar" y "Cerrar sesión". "No guardamos tarjetas" sigue dicho junto a la forma de pago | Sin sesión → `#/cuenta/entrar` |
 | `#/cuenta/pedidos` | Una fila por pedido (`ET-XXXX`, fecha, total), más nuevo arriba; cada una se despliega (`<details>`) con el detalle | Sin sesión → `#/cuenta/entrar` |
 
 - Como las demás vistas: título de pestaña propio, `h1` con el foco al
@@ -806,6 +809,7 @@ Pendiente de la fase 5:
 - [x] Crear y verificar (con EmailJS y el recuadro de respaldo).
 - [x] Entrar, y de "Ir a pagar" directo a `#/confirmar`.
 - [x] Mis datos y cerrar sesión.
+- [ ] Forma de pago preferida dentro de Mis datos.
 - [x] Mis pedidos.
 - [ ] Botón y ficha de la cuenta en la cabecera.
 - [x] El código en 6 casillas: su teclado (punto 3 de arriba, sin animar).
@@ -837,12 +841,12 @@ Cómo quedó la parte de `logica-datos` (20 de octubre de 2026):
 - "Ir a pagar" deja `pagar` en el `state` de la dirección, y pasa de entrar a
   crear y a verificar. Al terminar se va a `#/confirmar` si se venía de pagar
   y la canasta tiene algo; si no, a `#/cuenta`.
-- Decidido por `logica-datos`, a confirmar con el usuario: crear → verificar,
+- Confirmado por el usuario el 20 de octubre de 2026: crear → verificar,
   entrar/verificar → destino y "Cerrar sesión" → `#/` van con `replace`, para
   que Atrás no vuelva a un formulario ya hecho ni a los datos de una sesión
   cerrada (como el comprobante). Crear lleva "Dirección (opcional)" como el
-  sitio actual. "Métodos de pago" del sitio actual no tiene vista en React
-  (no está en la tabla); la preferencia guardada se conserva.
+  sitio actual. "Métodos de pago" no es una vista en React: la forma de pago
+  preferida es un campo más de Mis datos (ver la tabla).
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 
