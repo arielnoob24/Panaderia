@@ -767,8 +767,8 @@ actual sigue con su panel. Lo que hace cada paso es lo de la sección 7.
 - **Cabecera**: sin sesión, la silueta ("Iniciar sesión / Registrarse") lleva
   a `#/cuenta/entrar`. Con sesión, las iniciales abren una ficha pequeña con
   "Mis datos", "Mis pedidos (N)" y "Cerrar sesión".
-- **Desde "Ir a pagar"**: los dos botones de la hoja "Entra a tu cuenta para
-  pagar" llevan a `#/cuenta/entrar` y `#/cuenta/crear`. Al terminar (entrar
+- **Desde "Ir a pagar"**: los dos botones de la hoja (en React, "Inicia
+  sesión para pagar"; en el sitio actual, "Entra a tu cuenta para pagar") llevan a `#/cuenta/entrar` y `#/cuenta/crear`. Al terminar (entrar
   con el correo verificado, o verificarlo) se va **directo a `#/confirmar`**
   con la canasta. Sin venir de pagar, se termina en `#/cuenta`.
 - Cerrar sesión no borra la cuenta; lleva a `#/`.
@@ -805,8 +805,10 @@ de 2026):
   4. Con el código bien: contraseña nueva con los 4 requisitos y repetirla
      ("Mostrar" en cada una). Se guarda como siempre (PBKDF2 con sal nueva),
      la vieja deja de valer, y queda la sesión abierta: a `#/confirmar` si se
-     venía de pagar, si no a `#/cuenta`. Datos, verificación y pedidos se
-     conservan. Con `replace`, para que Atrás no vuelva al código.
+     venía de pagar, si no a `#/cuenta`. Datos, forma de pago y pedidos se
+     conservan, y la cuenta queda **verificada** (el código llegó a ese
+     correo, que prueba lo mismo que verificarlo). Con `replace`, para que
+     Atrás no vuelva al código.
   5. **Si el correo no se puede enviar, no se recupera**: "No pudimos enviar
      el correo. Inténtalo más tarde." Aquí **no** hay recuadro con el código
      en pantalla (dejaría a cualquiera cambiar la contraseña).
@@ -880,9 +882,20 @@ Pendiente de la fase 5:
       navegador recupera el desplazamiento y el `h1` con el foco queda
       fuera); y el buscador y "Ordenar por" del catálogo con el mismo borde
       y foco que los campos. Los dos, `frontend`.
-- [ ] "Iniciar sesión" en todas partes.
-- [ ] Aviso en Crear si ya hay una cuenta, y pedidos filtrados por correo.
-- [ ] Recuperar la contraseña (`#/cuenta/recuperar`).
+- [x] "Iniciar sesión" en todas partes en React (`994f4e7`); el sitio actual
+      sigue con "Entrar" en su panel.
+- [x] Aviso en Crear si ya hay una cuenta ("a…@dominio"), y pedidos
+      filtrados por correo en `usePedidosGuardados()` (Mis pedidos, Mis datos
+      y el "(N)" de la ficha). `reciboParaGuardar()` guarda `correo` en los
+      dos sitios; el historial del sitio actual no se filtra.
+- [x] Recuperar la contraseña (`#/cuenta/recuperar`, `Recuperar.jsx`): tres
+      pasos (correo, código, clave) con la misma plantilla de EmailJS
+      (asunto y cuerpo van en variables). Las cifras que faltan no gastan
+      intento; si el reenvío falla, el código anterior vale hasta caducar.
+- [ ] `frontend`: maquetación y movimiento de recuperar (clases
+      `recuperar-paso-correo|codigo|clave` con su `key`, `recuperar-dicho`,
+      `recuperar-limite`, `cuenta-olvide`, `cuenta-ya-hay`) y los dibujos de
+      fondo de `cuenta-recuperar`; comentario viejo en `FichaCuenta.jsx`.
 
 Cómo quedó la parte de `logica-datos` (20 de octubre de 2026):
 - Estado: `src/estado/sesion.js` es el reductor puro (`releer`,
