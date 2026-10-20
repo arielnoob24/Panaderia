@@ -932,7 +932,7 @@ Pendiente de la fase 5:
       donde se estaba** (un `Map` por clave de entrada en
       `comun/apertura.js`). El buscador y "Ordenar por" con el borde y el
       foco de los campos, en los dos sitios.
-- [ ] `frontend`: Atrás a una entrada de la tienda abierta con un enlace
+- [x] `frontend` (`56e0732`): Atrás a una entrada de la tienda abierta con un enlace
       limpia orden, "Mostrar" y búsqueda (`Catalogo.jsx` mira
       `state.entrar` sin mirar si es Atrás); no debe limpiarlos.
 - [ ] Tras recargar, la tienda no recuerda el desplazamiento de las
@@ -948,10 +948,16 @@ Pendiente de la fase 5:
       pasos (correo, código, clave) con la misma plantilla de EmailJS
       (asunto y cuerpo van en variables). Las cifras que faltan no gastan
       intento; si el reenvío falla, el código anterior vale hasta caducar.
-- [ ] `frontend`: maquetación y movimiento de recuperar (clases
+- [x] `frontend` (`56e0732`): maquetación y movimiento de recuperar (clases
       `recuperar-paso-correo|codigo|clave` con su `key`, `recuperar-dicho`,
       `recuperar-limite`, `cuenta-olvide`, `cuenta-ya-hay`) y los dibujos de
       fondo de `cuenta-recuperar`; comentario viejo en `FichaCuenta.jsx`.
+      El cambio de paso lo hace `PasoQueCambia.jsx`: la hoja que sale ya no
+      es un componente vivo, sino su nodo de DOM puesto un momento detrás,
+      `inert`, `aria-hidden` y sin ids, animado con `element.animate()`
+      (con `AnimatePresence` la hoja vieja seguía viva y daba el error #520
+      de React). Hacia delante, sale a la izquierda y entra por la derecha;
+      hacia atrás, al revés.
 
 Cómo quedó la parte de `logica-datos` (20 de octubre de 2026):
 - Estado: `src/estado/sesion.js` es el reductor puro (`releer`,
