@@ -59,7 +59,8 @@ js/
     storage.js          los cuatro sitios donde se guarda: local, session, IDB y cookie
     ui.js               barra, foco, cuadritos de ayuda, animaciones y horario
     horario.js          cuentas del horario: feriados con Pascua y textos del
-                        pie y de la nota del horno (sin DOM; lo usa tambien react/)
+                        pie, de la nota del horno y de la hora de retiro
+                        (sin DOM; lo usa tambien react/)
     mail.js             envio de correo por EmailJS
   catalogo/
     repo.js             lee y revisa data/productos.json
@@ -68,9 +69,13 @@ js/
     cart.js             la canasta: panel, lineas y control de cantidad
     guardado.js         que se acepta del pedido guardado y como se escribe
                         (sin DOM; lo usa tambien react/)
+    cobro.js            reglas del pago: factura, tarjeta, numero ET-XXXX,
+                        recibo, correo (sin DOM; lo usa tambien react/)
     checkout.js         pago simulado y comprobante
   cuenta/
     account.js          crear cuenta, verificar el correo y entrar
+    guardada.js         que se acepta de la cuenta guardada (sin DOM; lo usa
+                        tambien react/)
 herramientas/
   empaquetar.mjs        genera js/sin-servidor.js
 react/                  la version en React mientras se migra (seccion 15)
@@ -90,7 +95,9 @@ index.html
         ├── pedido/cart.js       canasta, pantalla de confirmar, control de cantidad
         │     ├── pedido/guardado.js  formato del pedido en localStorage (sin DOM)
         │     └── pedido/checkout.js  pago simulado, factura, comprobante
+        │           └── pedido/cobro.js  reglas del pago y del recibo (sin DOM)
         ├── cuenta/account.js    crear cuenta, verificar correo, entrar, datos, pedidos
+        │     └── cuenta/guardada.js  formato de la cuenta en localStorage (sin DOM)
         └── comun/ui.js          avisos aria-live, foco, menús, globo de ayuda, horario
   Todos usan comun/: state.js (datos compartidos y "puente"), storage.js, mail.js
   Cada carpeta importa las otras con rutas relativas (`../comun/state.js`).
@@ -98,6 +105,11 @@ index.html
 
 - **El puente** (`state.js`): los módulos que se llaman en las dos direcciones
   cuelgan sus funciones en `puente` en vez de importarse mutuamente.
+- **Sin DOM, para los dos sitios**: `horario.js`, `guardado.js`, `cobro.js` y
+  `guardada.js` no tocan la página ni el almacenamiento; reciben datos y
+  devuelven resultados. React los importa con `@raiz`, así que las reglas se
+  escriben una sola vez. Lo que se mete como HTML pasa por `escapar()`
+  (`state.js`).
 - **Doble clic**: el script del final de `index.html` carga `js/app.js` como
   módulo si es HTTP, o `js/sin-servidor.js` (todo junto, con el catálogo
   dentro) si es `file:`. En `file://` no hay cookies: el pie no dice cuándo se
@@ -175,14 +187,17 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
 ## 6. Confirmar el pedido y pagar
 
 - Es otra vista dentro de `<main>`: `#confirmar` y luego `#comprobante`
-  (este con `replaceState`, para que Atrás no vuelva al pago ya hecho).
+  (este con `replaceState`, para que Atrás no vuelva al pago ya hecho). El
+  título de la vista es su `h1` ("Confirmar el pedido", "Pedido confirmado").
 - Izquierda: retiro o domicilio (envío fijo **$1.50**), dirección, cómo paga
   (efectivo o tarjeta) y factura (a mi nombre o a otra persona). Sin mapa.
 - Derecha, pegada al desplazar: lo que lleva, subtotal/envío/total, a qué
   correo llega el comprobante y "Confirmar".
 - Validación: dirección → factura (cédula de 10 o RUC de 13, provincia 01–24)
   → tarjeta (Luhn, MM/AA no vencida, CVV de 3, titular). El foco va al primer
-  error. Los errores salen al dejar el campo o al intentar pagar.
+  error. Los errores salen al dejar el campo o al intentar pagar, con
+  `aria-invalid` y `aria-describedby` (la dirección también). Las reglas y
+  los textos viven en `js/pedido/cobro.js`.
 - Al aprobar (simula 1,5 s): número `ET-XXXX` sin letras confundibles,
   comprobante, correo, guardado en IndexedDB, se vacía la canasta guardada y se
   limpian tarjeta y factura.
@@ -216,10 +231,10 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
 
 | Dónde | Qué | Por qué |
 |---|---|---|
-| `localStorage` | Pedido a medias, entrega, factura y la cuenta. Se escribe solo cuando cambia algo, no al cargar | Tiene que seguir mañana |
+| `localStorage` | Pedido a medias, entrega, factura y la cuenta. Se escribe solo cuando cambia algo, no al cargar (tampoco la dirección que la cuenta rellena al arrancar); al aprobar un pedido se borra | Tiene que seguir mañana |
 | `sessionStorage` | Orden y "Mostrar" del catálogo | Dura lo que la pestaña |
 | IndexedDB `eltradicional/pedidos` | Pedidos pagados, clave = número | Registros que se acumulan |
-| Cookie `eltradicional-guardado` | Fecha del último guardado (1 mes, `SameSite=Lax`); el pie la enseña como "Tu pedido se guardó…" | Corta y caduca sola |
+| Cookie `eltradicional-guardado` | Fecha del último guardado (1 mes, `SameSite=Lax`); el pie la enseña como "Tu pedido se guardó…", y solo si hay algo en la canasta | Corta y caduca sola |
 
 Todo va en `try/catch`: en ventana privada no puede tumbar la página.
 
@@ -300,7 +315,7 @@ EmailJS. `enviarCorreo()` nunca lanza: si falla, el pedido sigue valiendo.
 - `prefers-reduced-motion` apaga entradas, velos y desplazamiento suave.
 - Objetivos táctiles de al menos 24 px, o con espacio libre alrededor como
   permite WCAG 2.5.8 (los tamaños del teléfono miden 22,7 px y pasan así);
-  los botones de ficha, 44 px.
+  los botones de ficha miden 32 px en el teléfono y 34 px en escritorio.
 - Precios con **punto decimal** (`$1.25`), como se escriben los dólares en
   Ecuador; lo hace `dinero()`.
 
@@ -337,8 +352,8 @@ construye (sección 15).
 - [x] El menú del teléfono lleva el foco a "Nosotros" al abrirse (`visibility 0s`
       al abrir, como el submenú de Tienda).
 - [x] Contraste de la fila de hoy del horario y `h1` en la vista de catálogo.
-- [ ] La vista de confirmar (`.checkout-titulo` en `cart.js`) sigue con `h2`
-      y sin `h1` (`logica-datos`; en React, en la fase 4).
+- [x] La vista de confirmar tiene `h1` (`.checkout-titulo`), en los dos sitios;
+      sus `h3` pasaron a `h2` para no saltarse un nivel.
 - [ ] Decir antes de llenar la canasta que pagar pide cuenta, o permitir invitado.
 - [ ] axe (menores, en los dos sitios): `aside` con `role="dialog"` en la
       canasta (`aria-allowed-role`; pasar a `div`) y la barra de deshacer fuera
@@ -397,7 +412,7 @@ las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
 ese repositorio: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, fase 3 hecha; en curso la 4)
+## 15. Migración a React (decidida, fase 4 hecha; sigue la 5)
 
 El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
 Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
@@ -466,7 +481,8 @@ Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
    - `#/comprobante` con `replace`, para que Atrás no vuelva al pago hecho.
    - La pantalla de confirmar lleva su `h1` (en el sitio actual también).
    - Al terminar, React ya guarda la entrega y la factura que son suyas: deja
-     de reescribir sin tocar las que encontraba (fase 3).
+     de reescribir sin tocar las que encontraba (fase 3). Hecho: ver "Cómo
+     quedó la fase 4".
 5. **Cuenta**: crear, verificar, entrar, editar, historial.
 6. **Calidad**: `verificar-sitio`, `axe.mjs`, el CI y la skill `publicar`
    adaptados al *build*; revisión completa de `ux-accesibilidad`.
@@ -596,6 +612,94 @@ abierto. React ya lo hace bien, y el sitio actual se retira en la fase 7.
   tope de 100 (antes solo la ficha), y el panel se hace visible en el acto al
   abrirse (`visibility 0s`), así que el foco entra en la X de cerrar (antes se
   quedaba en `body` hasta el primer Tab).
+
+### Cómo quedó la fase 4 (hecha el 20 de octubre de 2026)
+
+- Reglas sin reescribir: lo que decidía `checkout.js` (factura, Luhn, MM/AA,
+  CVV, titular, los avisos "Para la factura, revisa…" y "Revisa … de la
+  tarjeta", el número `ET-XXXX`, el recibo, el saludo y el cuerpo del correo,
+  el estado del envío) pasó a `js/pedido/cobro.js`, sin DOM, y lo usan los dos
+  sitios. `armarRecibo()` hace un solo objeto del pedido aprobado y de él
+  salen el comprobante, el correo y el registro de IndexedDB
+  (`reciboParaGuardar()`, el mismo formato de siempre). La cuenta guardada se
+  lee con `js/cuenta/guardada.js`, que usan `account.js` y React. La hora de
+  retiro pasó a `textoRetiro()` de `horario.js`. `direccionEntera()` salió de
+  `state.js` (ahora `direccionDe(entrega)` en `cobro.js`).
+- Estado: el reductor de `src/estado/pedido.js` lleva también la entrega y la
+  factura (`entrega`, `factura`, `cumplido`), porque se guardan en el mismo
+  registro, y cuenta los cambios: `PedidoProvider` guarda cuando el contador
+  sube, así que ni lo leído al arrancar ni vaciar al aprobar se escriben. React
+  ya no reescribe la entrega y la factura del sitio actual: son suyas.
+  `PedidoProvider` también guarda el recibo del último pedido y lo olvida al
+  salir de `#/comprobante`.
+- Sesión: `src/estado/SesionProvider.jsx`, de solo lectura, con
+  `useSyncExternalStore` sobre la cuenta de `localStorage`; se vuelve a leer
+  con el evento `storage` (entrar en la cuenta en otra pestaña del sitio
+  actual deja pagar sin recargar). Con sesión y correo verificado, "Ir a
+  pagar" cierra la canasta y va a `#/confirmar`; si no, la hoja de siempre
+  (sus botones siguen sin efecto hasta la fase 5). La dirección de la cuenta
+  rellena el pedido sin guardarse y la forma de pago empieza en la preferida.
+- Piezas en `src/pedido/`: `Confirmar` (la guarda de entrada),
+  `FormularioPedido`, `ElegirEntrega`, `ElegirPago`, `DatosFactura`,
+  `CampoPago`, `ResumenPedido`, `Comprobante` (la guarda), `Recibo`,
+  `CabezaPedido` y `useVistaPedido` (`body.is-checkout`, título de la
+  pestaña, foco en el `h1`; al salir con "Volver a la tienda" o "Listo,
+  cerrar", portada y foco en el botón de la canasta). La tarjeta vive solo en
+  el estado de `FormularioPedido`. Los campos que se guardan recortados no se
+  controlan (`defaultValue`), para poder escribir espacios.
+- Comprobado en Edge, escritorio y teléfono, con los dos sitios en el mismo
+  origen: 142 comprobaciones del recorrido (sin cuenta, sin verificar, canasta
+  vacía, retiro/efectivo, domicilio/tarjeta/factura a otra persona con cada
+  error, foco, Enter, Atrás y Adelante, correo bien y caído), la misma
+  secuencia de errores da los mismos textos, foco y `aria-invalid` en los dos
+  sitios, y los pedidos pagados en uno salen en el historial del otro. axe sin
+  violaciones en confirmar y comprobante de los dos.
+- Diferencias a propósito con el sitio actual:
+  - Se puede entrar a `#/confirmar` con un enlace o recargando si hay cuenta
+    verificada y canasta (el sitio actual limpia la dirección y se queda en el
+    catálogo). Si la canasta se vacía estando dentro, la vista se queda y el
+    botón dice "Tu canasta está vacía", como en el sitio actual.
+  - Al aprobar, React vacía la canasta en el acto (el comprobante sale del
+    recibo); el sitio actual dejaba las líneas en memoria hasta cerrar el
+    comprobante.
+  - "Ir a pagar" desde la canasta abierta con "Editar la canasta" no apila
+    otra entrada en el historial: solo cierra la canasta.
+- Arreglado en los dos sitios: `h1` en la vista de confirmar y sus `h3` a
+  `h2`; la dirección lleva `aria-invalid` y `aria-describedby` y avisa también
+  al dejar el campo vacío; al aprobar se vacían también el correo y la
+  dirección opcionales de la factura (antes quedaban escritos con la factura
+  ya limpia); con la canasta vacía el pie no dice "Tu pedido se guardó…".
+
+### Arreglos de la fase 3 (revisión de `ux-accesibilidad`, 20 de octubre de 2026)
+
+Van en React y, salvo el 1, también en el sitio actual. Se hacen después de
+la fase 4. Gravedad de Nielsen entre paréntesis.
+
+- [ ] (3) `frontend`: en el teléfono la barra de deshacer tapa el botón
+      flotante de la canasta (la regla de `bottom: 74px` del `@media` va antes
+      que la base y pierde). Con el panel abierto, la barra va encima del pie
+      de la canasta, sin tapar "Ir a pagar".
+- [ ] (3) `logica-datos`: React no repite un aviso igual al anterior
+      (`Avisos.jsx`); tiene que anunciarlo otra vez, como el sitio actual.
+- [ ] (2) `logica-datos`: con la hoja "Entra a tu cuenta para pagar" abierta,
+      el Tab no llega a "Deshacer" (la barra sale del cerco mientras tanto).
+- [ ] (2) `logica-datos`: en el tope de 100, el `+` de la ficha y el de la
+      línea dicen "El máximo es 100 por producto" y quedan con `aria-disabled`.
+- [ ] (2) `logica-datos`: Enter o Esc en el campo de cantidad asientan el
+      valor sin `blur()`; el foco sigue en el campo.
+- [ ] (2) `logica-datos`: el reloj de 12 s del deshacer se para mientras la
+      barra tiene el foco o el puntero encima.
+- [ ] (2) `logica-datos`: Atrás/Adelante con el panel abierto lo cierran.
+- [ ] (1) `logica-datos`: el `+`/`−` de una línea avisa "3 de Pan redondo. N
+      productos en la canasta", como la ficha.
+- [x] (1) `logica-datos`: con la canasta vacía el pie no dice "Tu pedido se
+      guardó…" (no enseña nada). Hecho con la fase 4, en los dos sitios.
+- [ ] (1) `frontend`: "Ver la vitrina" deja el foco en `#catalogo`.
+- [ ] (1) `frontend`: con una sola unidad, la línea no enseña la X (el
+      basurero hace lo mismo y tenían el mismo nombre).
+
+React además mejora una cosa: en el sitio actual el `+`/`−` de una línea
+manda el foco a `body` porque se rehace la línea; en React se queda.
 
 ### Vista previa de `mejoras` (en pausa: el usuario lo decide al final)
 
