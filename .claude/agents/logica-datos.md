@@ -8,6 +8,7 @@ skills:
   - componente-react
   - vercel-react-best-practices
   - vercel-composition-patterns
+  - probar-bd
 ---
 
 Eres el especialista en logica y datos del sitio de la panaderia El Tradicional.
@@ -37,15 +38,10 @@ cambia en el mismo cambio.
   la tabla "Reglas del modelo" de la sección 8 del plan y cúmplela entera.
   Si un cambio pide romper una de esas reglas, no lo hagas: pregúntale al
   usuario. Si cambias un producto en el JSON, cambia también sus inserts.
-  Verifica así, porque no hay PostgreSQL instalado:
-  1. Ejecuta el paso 2 del script (lo que va después de `\connect`) en
-     PGlite (`@electric-sql/pglite` instalado en el scratchpad, nunca en el
-     repo).
-  2. Comprueba las reglas en el catálogo de PostgreSQL (`pg_constraint`):
-     cada tabla con al menos una FK que sale o que llega, todas en un solo
-     grupo, ninguna FK cuyas columnas sean una PK o un UNIQUE de la tabla
-     hija (eso sería 1:1), y en cada débil la PK igual a la unión de sus FK.
-  3. Prueba inserts buenos y otros que deben fallar.
+  No hay PostgreSQL instalado: verifica siempre con la skill `probar-bd`
+  después de tocar el script o el JSON, y antes de commitear. Si agregas una
+  tabla con reglas propias, agrégale su prueba en
+  `.claude/skills/probar-bd/probar.mjs`.
 
 El aspecto y las vistas del catalogo son del agente `frontend`. Si un cambio
 tuyo los toca, hazlo con el mismo cuidado y dilo en el resumen.

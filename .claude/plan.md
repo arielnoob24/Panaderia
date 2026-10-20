@@ -373,7 +373,7 @@ Los agentes viven en `.claude/agents/` y todos leen este plan primero.
 | Agente | Se encarga de | Cambia archivos | Skills cargadas |
 |---|---|---|---|
 | `frontend` | `index.html`, `assets/css/styles.css`, `js/catalogo/view.js`, `js/comun/ui.js`, maquetación, responsive, animaciones | Sí | `verificar-sitio`, `wcag-audit-patterns`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` |
-| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo, la base de datos (`bd/`) | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` (+ sigue `nuevo-producto`) |
+| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo, la base de datos (`bd/`) | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns`, `probar-bd` (+ sigue `nuevo-producto`) |
 | `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | `wcag-audit-patterns`, `nielsen-usability-heuristics` (+ `.claude/herramientas/axe.mjs`) |
 | `calidad-publicacion` | Revisión de código y seguridad, CI, empaquetar, subir a la rama | Solo lo de publicar | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
 
@@ -384,6 +384,7 @@ Skills en `.claude/skills/`:
 | `verificar-sitio` | propia | `frontend`, `logica-datos`, `calidad-publicacion` |
 | `publicar` | propia | `calidad-publicacion` |
 | `nuevo-producto` | propia, la invocas tú con `/nuevo-producto` | `logica-datos` sigue sus pasos |
+| `probar-bd` | propia: corre `bd/` en PGlite y comprueba las reglas del modelo, el catálogo y los inserts (`probar.mjs` al lado) | `logica-datos` |
 | `notas-para-explicar` | propia, la invocas tú con `/notas-para-explicar` | — |
 | `wcag-audit-patterns` | skills.sh, `wshobson/agents` | `ux-accesibilidad`, `frontend` |
 | `nielsen-usability-heuristics` | skills.sh, `dembrandt/dembrandt-skills` | `ux-accesibilidad`, `logica-datos` |
