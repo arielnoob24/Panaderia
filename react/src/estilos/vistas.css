@@ -97,13 +97,17 @@
 /* ---- #/contacto ---------------------------------------------------------- */
 
 .contacto-vista { padding: 1.5rem 0 4rem; }
-.contacto-rejilla { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); grid-template-areas: "datos horario" "escribir horario"; gap: 2.6rem clamp(2.5rem, 6vw, 6rem); align-items: start; }
+.contacto-rejilla { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); grid-template-areas: "datos horario" "mapa horario" "mapa escribir"; grid-template-rows: auto auto 1fr; gap: 2.2rem clamp(2.5rem, 6vw, 6rem); align-items: start; }
 .contacto-datos { grid-area: datos; }
+.contacto-mapa { grid-area: mapa; }
+/* El mapa con el radio de las tarjetas y un filete de masa: sin borde, el
+   gris de Google se pegaba a la masa sin limite claro. */
+.contacto-mapa-marco { display: block; width: 100%; aspect-ratio: 4 / 3; max-height: 420px; border: 1px solid var(--masa-linea); border-radius: var(--r-card); background: var(--masa-honda); }
 .contacto-horario { grid-area: horario; }
 .contacto-escribir { grid-area: escribir; }
 .contacto-datos h1 { margin: 0 0 1.6rem; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 Georgia, serif; }
 .contacto-direccion { margin: 0; font: normal 1.45rem/1.35 Georgia, serif; }
-.contacto-mapa-enlace { margin-top: 1.4rem; font-family: Arial, sans-serif; }
+.contacto-mapa-enlace { margin-top: 1rem; font-family: Arial, sans-serif; }
 .contacto-mapa-enlace:hover { background: var(--ambar-claro); }
 .contacto-subtitulo { margin: 0 0 1rem; font: 500 1.5rem/1.2 Georgia, serif; }
 .contacto-lista { display: flex; flex-wrap: wrap; gap: 1.2rem 2.6rem; }
@@ -141,7 +145,7 @@
 /* ---- Cortes ------------------------------------------------------------- */
 
 @media (max-width: 900px) {
-  .contacto-rejilla { grid-template-columns: 1fr; grid-template-areas: "datos" "horario" "escribir"; }
+  .contacto-rejilla { grid-template-columns: 1fr; grid-template-areas: "datos" "mapa" "horario" "escribir"; }
 }
 @media (max-width: 680px) {
   .vista-nosotros, .vista-contacto { padding-top: 96px; }
@@ -199,7 +203,7 @@
 .fondo-principios .is-abajo-derecha { right: 2%; bottom: 0; width: 380px; }
 .fondo-tienda .is-arriba-izquierda { top: 14px; left: 14%; width: 230px; }
 .fondo-tienda .is-arriba-derecha { top: 6px; right: 6%; width: 260px; }
-.fondo-contacto .is-abajo-izquierda { bottom: -10px; left: 30%; width: 260px; }
+.fondo-contacto .is-abajo-izquierda { right: 3%; bottom: -10px; left: auto; width: 230px; }
 .fondo-contacto .is-arriba-derecha { top: 0; right: 40%; width: 200px; }
 
 @media (max-width: 680px) {
