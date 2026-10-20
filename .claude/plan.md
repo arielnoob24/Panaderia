@@ -373,7 +373,8 @@ construye (sección 15).
       de un punto de referencia (`region`).
 - [ ] El panel de la cuenta (`.cuenta-panel.is-open`) tiene la misma
       transición de `visibility` que tenía la canasta: comprobar si el foco
-      entra al abrirlo (fase 5).
+      entra al abrirlo. Solo en el sitio actual: en React la cuenta son
+      vistas, sin panel (fase 5).
 - [x] `cart.js` metía el nombre de cada línea (que viene de `localStorage`) con
       `innerHTML` sin escapar, y el comprobante también. Ahora pasa por
       `escapar()`, que vive en `state.js` (antes solo en `view.js`), y el
@@ -497,7 +498,8 @@ Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
    - Al terminar, React ya guarda la entrega y la factura que son suyas: deja
      de reescribir sin tocar las que encontraba (fase 3). Hecho: ver "Cómo
      quedó la fase 4".
-5. **Cuenta**: crear, verificar, entrar, editar, historial.
+5. **Cuenta**: crear, verificar, entrar, editar, historial, como vistas
+   propias (ver "Fase 5: la cuenta").
 6. **Calidad**: `verificar-sitio`, `axe.mjs`, el CI y la skill `publicar`
    adaptados al *build*; revisión completa de `ux-accesibilidad`.
 7. **Cambio**: `react/` pasa a la raíz, fuera `js/` y `herramientas/`, y el
@@ -740,6 +742,50 @@ Hechos los de `logica-datos` el 20 de octubre de 2026, comprobados en Edge
 después. De paso, el sitio actual ya no manda el foco a `body` al pulsar el
 `+`/`−` de una línea: lo devuelve al mismo botón de la línea rehecha, como
 React.
+
+### Fase 5: la cuenta (decidido el 20 de octubre de 2026)
+
+Siguiendo "Vistas y aspecto", en React la cuenta **no es un panel lateral**:
+cada paso es una vista propia, para que los formularios tengan ancho y no
+haya que desplazarse en una columna estrecha. **Solo en React**: el sitio
+actual sigue con su panel. Lo que hace cada paso es lo de la sección 7.
+
+| Ruta | Contenido | Si no corresponde (con `replace`) |
+|---|---|---|
+| `#/cuenta/entrar` | Correo y contraseña; "¿No tienes cuenta? Créala" | Con sesión → `#/cuenta` |
+| `#/cuenta/crear` | Nombre, correo, teléfono, contraseña con sus 4 requisitos y repetirla; dos columnas en la computadora (datos a la izquierda, contraseña a la derecha), una en el teléfono; "¿Ya tienes cuenta? Entrar" | Con sesión → `#/cuenta` |
+| `#/cuenta/verificar` | Código de 6 cifras, "Reenviar" cada 45 s y el recuadro con el código si EmailJS falta o falla | Sin cuenta por verificar → `#/cuenta/entrar` |
+| `#/cuenta` | **Mis datos**, editables ahí mismo (nombre, teléfono, dirección; el correo se ve pero no se cambia), "Guardar" y "Cerrar sesión" | Sin sesión → `#/cuenta/entrar` |
+| `#/cuenta/pedidos` | Una fila por pedido (`ET-XXXX`, fecha, total), más nuevo arriba; cada una se despliega (`<details>`) con el detalle | Sin sesión → `#/cuenta/entrar` |
+
+- Como las demás vistas: título de pestaña propio, `h1` con el foco al
+  llegar, se anuncia, y la transición de vistas.
+- **Cabecera**: sin sesión, la silueta ("Iniciar sesión / Registrarse") lleva
+  a `#/cuenta/entrar`. Con sesión, las iniciales abren una ficha pequeña con
+  "Mis datos", "Mis pedidos (N)" y "Cerrar sesión".
+- **Desde "Ir a pagar"**: los dos botones de la hoja "Entra a tu cuenta para
+  pagar" llevan a `#/cuenta/entrar` y `#/cuenta/crear`. Al terminar (entrar
+  con el correo verificado, o verificarlo) se va **directo a `#/confirmar`**
+  con la canasta. Sin venir de pagar, se termina en `#/cuenta`.
+- Cerrar sesión no borra la cuenta; lleva a `#/`.
+- **Mismas claves y formatos** de `localStorage` que el sitio actual: una
+  cuenta creada en React sirve en el sitio actual y al revés. PBKDF2, las
+  validaciones y el correo se importan de `js/cuenta/` y `js/comun/` (o se
+  mueven a `src/servicios/`), no se reescriben de memoria.
+- El `SesionProvider` de solo lectura (fase 4) pasa a crear, entrar, editar y
+  cerrar sesión, con un reductor puro como el del pedido.
+- Queda fuera: avisar antes de llenar la canasta que pagar pide cuenta, y
+  pedir como invitado (siguen en la sección 13).
+
+Pendiente de la fase 5:
+- [ ] Rutas y vistas de la cuenta, con sus redirecciones.
+- [ ] Crear y verificar (con EmailJS y el recuadro de respaldo).
+- [ ] Entrar, y de "Ir a pagar" directo a `#/confirmar`.
+- [ ] Mis datos y cerrar sesión.
+- [ ] Mis pedidos.
+- [ ] Botón y ficha de la cuenta en la cabecera.
+- [ ] Cuenta compartida con el sitio actual, comprobada en los dos sentidos.
+- [ ] Revisión de `ux-accesibilidad`.
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 
