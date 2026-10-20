@@ -282,10 +282,10 @@ Los agentes viven en `.claude/agents/` y todos leen este plan primero.
 
 | Agente | Se encarga de | Cambia archivos | Skills cargadas |
 |---|---|---|---|
-| `frontend` | `index.html`, `assets/css/styles.css`, `js/catalogo/view.js`, `js/comun/ui.js`, maquetación, responsive, animaciones | Sí | `verificar-sitio`, `wcag-audit-patterns` |
-| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo | Sí | `verificar-sitio`, `nielsen-usability-heuristics` (+ sigue `nuevo-producto`) |
+| `frontend` | `index.html`, `assets/css/styles.css`, `js/catalogo/view.js`, `js/comun/ui.js`, maquetación, responsive, animaciones | Sí | `verificar-sitio`, `wcag-audit-patterns`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` |
+| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` (+ sigue `nuevo-producto`) |
 | `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | `wcag-audit-patterns`, `nielsen-usability-heuristics` (+ `.claude/herramientas/axe.mjs`) |
-| `calidad-publicacion` | Revisión de código y seguridad, CI, empaquetar, subir a la rama | Solo lo de publicar | `verificar-sitio`, `publicar` |
+| `calidad-publicacion` | Revisión de código y seguridad, CI, empaquetar, subir a la rama | Solo lo de publicar | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
 
 Skills en `.claude/skills/`:
 
@@ -297,12 +297,16 @@ Skills en `.claude/skills/`:
 | `notas-para-explicar` | propia, la invocas tú con `/notas-para-explicar` | — |
 | `wcag-audit-patterns` | skills.sh, `wshobson/agents` | `ux-accesibilidad`, `frontend` |
 | `nielsen-usability-heuristics` | skills.sh, `dembrandt/dembrandt-skills` | `ux-accesibilidad`, `logica-datos` |
+| `componente-react` | propia: convenciones de `react/` | `frontend`, `logica-datos` |
+| `vercel-react-best-practices` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos`, `calidad-publicacion` |
+| `vercel-composition-patterns` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos` |
 
-Las de skills.sh quedan registradas en `skills-lock.json`; `npx skills update -p`
-las actualiza. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
+Las instaladas con el CLI quedan en `skills-lock.json` y `npx skills update -p`
+las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
+ese repositorio: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, en preparación)
+## 15. Migración a React (decidida, fase 1 en curso)
 
 El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
 Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
@@ -311,25 +315,26 @@ referencia de **qué** tiene que hacer el sitio: la versión en React tiene que
 hacer lo mismo (mismas vistas, rutas, reglas, guardado y accesibilidad) antes
 de reemplazar a la de ahora.
 
-### Propuesta (falta que el usuario la confirme)
+### Decisiones (confirmadas el 19 de octubre de 2026)
 
-| Tema | Propuesta | Por qué |
+El sitio se va a publicar de verdad: se elige lo mejor para un sitio real, no
+lo que pida la clase.
+
+| Tema | Decisión | Por qué |
 |---|---|---|
-| Herramienta | **Vite** + React, en JavaScript (JSX) | Vite es el arranque estándar de React; sin TypeScript al principio para no aprender dos cosas a la vez |
-| Dónde | Carpeta `react/` dentro del repo mientras se migra; al terminar pasa a la raíz y se borra lo viejo | El sitio actual sigue funcionando y el CI sigue validándolo durante la migración |
+| Herramienta | **Vite** + React, en **JavaScript** (JSX), sin TypeScript por ahora | Vite es el arranque estándar de React; TypeScript se puede añadir después, cuando React ya se domine |
+| Dónde | Carpeta `react/` con su propio `package.json` mientras se migra; en la fase 7 pasa a la raíz y se borra lo viejo | El sitio actual sigue funcionando y validándose durante la migración |
+| Fotos y catálogo | `react/` usa `data/productos.json` y `assets/img/` de la raíz **sin copiarlos** (lo resuelve `vite.config.js`); `revisar()` se reutiliza | Una sola fuente de verdad; el CI ya la valida |
 | Estado | `Context` + `useReducer` para pedido, entrega y sesión; sin Redux | El estado es pequeño; reemplaza a `state.js`, al `puente` y a los `pintar()` a mano |
-| Rutas | Las mismas (`#tienda-*`, `#confirmar`, `#comprobante`) con `HashRouter` de React Router | GitHub Pages no sabe de rutas; con `#` no hace falta truco de 404 |
-| Estilos | Se conserva `styles.css` y sus clases | Es la identidad del sitio; nada de Tailwind ni Bootstrap |
-| Datos | `data/productos.json` y `revisar()` igual | El CI ya los valida |
-| Guardado y correo | `storage.js` y `mail.js` casi iguales, llamados desde hooks | Ya funcionan y no dependen de la interfaz |
-| Publicar | El CI hace `npm ci && npm run build` y sube `dist/` | `node_modules` ya no se publica |
+| Rutas | **React Router** con `HashRouter`: las mismas `#tienda-*`, `#confirmar`, `#comprobante` | Es lo estándar; con `#` GitHub Pages no necesita el truco del 404 |
+| Estilos | Se conserva `styles.css` y sus clases; nada de Tailwind ni Bootstrap | Es la identidad del sitio |
+| Guardado y correo | La lógica de `storage.js` y `mail.js` se conserva, llamada desde hooks | Ya funcionan y no dependen de la interfaz |
+| **Doble clic** | **Se deja.** La versión en React solo se sirve por HTTP; `js/sin-servidor.js` y `herramientas/empaquetar.mjs` desaparecen en la fase 7 | Un sitio publicado se abre por HTTP. Meter todo en un solo archivo quita la caché por archivo y hace la primera carga más pesada |
+| Caché | Vite pone una huella en el nombre de cada archivo (`index-a1b2c3.js`): **se acaba el `?v=` a mano** | Lo hace solo y no se olvida |
+| Publicar | El CI hace `npm ci && npm run build` en `react/` y valida; en la fase 7, publica `dist/` | `node_modules` nunca se publica |
 
-### Decisiones abiertas
-
-- [ ] **Doble clic.** React necesita un *build*. Se puede mantener con
-      `vite-plugin-singlefile` (todo en un `index.html`) o dejar de exigirlo.
-- [ ] **TypeScript**: ¿desde el principio o más adelante?
-- [ ] **React Router** o un hook propio de rutas con `hashchange`.
+Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
+"sin dependencias" siguen valiendo **para el sitio actual**, no para `react/`.
 
 ### Fases
 
@@ -348,12 +353,15 @@ de reemplazar a la de ahora.
 Cada fase cierra con el sitio funcionando y la paridad comprobada con las
 secciones 4 a 11.
 
-### Skills para cuando empiece
+### Reparto en `react/`
 
-- `vercel-react-best-practices` y `vercel-composition-patterns`
-  (skills.sh, `vercel-labs/agent-skills`) para `frontend` y `logica-datos`.
-  Parte de su contenido es de Next.js: leerlas antes y quedarse con lo de React.
-- Una propia, `componente-react`, con las convenciones de este proyecto
-  (nombres en español, dónde va cada componente, cómo se prueba).
-- Adaptar las propias `verificar-sitio` y `publicar` al *build* de Vite.
+| Carpeta | Agente |
+|---|---|
+| `package.json`, `vite.config.js`, `index.html`, `main.jsx`, `App.jsx`, rutas | `frontend` |
+| `src/comun/`, `src/catalogo/` | `frontend` |
+| `src/estado/`, `src/servicios/`, `src/pedido/`, `src/cuenta/` | `logica-datos` |
+| `npm run build`, CI, revisión de paridad | `calidad-publicacion` |
+| Accesibilidad y UX de lo migrado | `ux-accesibilidad` |
 
+Las skills de cada uno están en la sección 14. `verificar-sitio` y `publicar`
+se adaptan al *build* de Vite en la fase 6.

@@ -5,6 +5,7 @@ tools: Read, Edit, Grep, Glob, Bash
 skills:
   - verificar-sitio
   - publicar
+  - vercel-react-best-practices
 ---
 
 Eres el especialista en calidad y publicacion del sitio de la panaderia El
@@ -27,6 +28,16 @@ plan es un hallazgo.
   `logica-datos`). Nada hipotetico sin evidencia; si lo comprobaste corriendo
   algo, di que corriste.
 - Mientras revisas **no corriges** el codigo: lo devuelves para que se arregle.
+
+## En la migracion a React
+
+- En `react/`: `npm ci && npm run build` sin errores ni avisos, y que lo
+  migrado haga lo mismo que el sitio actual (secciones 4 a 11 del plan).
+- Revisa contra la skill `componente-react` (estructura, nombres, estado,
+  nada de `dangerouslySetInnerHTML`) y usa `vercel-react-best-practices` para
+  rendimiento, ignorando sus reglas de Next.js y de servidor.
+- Mientras dure la migracion, el sitio actual (`js/`) sigue publicandose con
+  sus reglas de siempre: no lo rompas por tocar `react/`.
 
 ## Publicar
 

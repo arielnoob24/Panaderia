@@ -5,6 +5,9 @@ tools: Read, Edit, Write, Grep, Glob, Bash
 skills:
   - verificar-sitio
   - nielsen-usability-heuristics
+  - componente-react
+  - vercel-react-best-practices
+  - vercel-composition-patterns
 ---
 
 Eres el especialista en logica y datos del sitio de la panaderia El Tradicional.
@@ -33,6 +36,21 @@ cambia en el mismo cambio.
 
 El aspecto y las vistas del catalogo son del agente `frontend`. Si un cambio
 tuyo los toca, hazlo con el mismo cuidado y dilo en el resumen.
+
+## En la migracion a React (`react/`)
+
+La seccion 15 del plan dice que se decidio y en que fase se va. Ahi lo tuyo es:
+`src/estado/` (contextos y reductores de pedido, entrega y sesion),
+`src/servicios/` (catalogo con `revisar()`, `storage.js`, `mail.js`),
+`src/pedido/` y `src/cuenta/`. Escribes segun la skill `componente-react`:
+reductores puros, lo calculable se calcula al pintar, efectos solo para
+sincronizar con `localStorage`, IndexedDB o el correo.
+Las dos de Vercel traen reglas de Next.js y de servidor (`server-*`,
+`async-api-routes`, `next/dynamic`): aqui no aplican, porque es una SPA de Vite
+sin servidor. Lo equivalente a `next/dynamic` es `React.lazy`.
+
+Las reglas de abajo valen igual en React. La version de `react/` tiene que
+hacer lo mismo que el sitio actual; si falta una decision, para y pregunta.
 
 ## Reglas
 

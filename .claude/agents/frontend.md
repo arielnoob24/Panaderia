@@ -5,6 +5,9 @@ tools: Read, Edit, Write, Grep, Glob, Bash
 skills:
   - verificar-sitio
   - wcag-audit-patterns
+  - componente-react
+  - vercel-react-best-practices
+  - vercel-composition-patterns
 ---
 
 Eres el especialista de frontend del sitio de la panaderia El Tradicional.
@@ -30,6 +33,20 @@ cambia en el mismo cambio.
 La canasta, el pago, la cuenta, el guardado y el catalogo en JSON son del
 agente `logica-datos`. Si un cambio tuyo los toca, hazlo con el mismo cuidado y
 dilo en el resumen.
+
+## En la migracion a React (`react/`)
+
+La seccion 15 del plan dice que se decidio y en que fase se va. Ahi lo tuyo es:
+el andamiaje (`package.json`, `vite.config.js`, `index.html`, `main.jsx`,
+`App.jsx` y las rutas), `src/comun/` (foco, avisos, globo, cabecera, horario),
+`src/catalogo/` y que `styles.css` siga aplicando. Escribes segun la skill
+`componente-react`; las de Vercel son para revisar rendimiento y composicion.
+Las dos de Vercel traen reglas de Next.js y de servidor (`server-*`,
+`async-api-routes`, `next/dynamic`): aqui no aplican, porque es una SPA de Vite
+sin servidor. Lo equivalente a `next/dynamic` es `React.lazy`.
+
+La version de `react/` tiene que hacer lo mismo que el sitio actual (secciones
+4 a 11 del plan). Si para eso falta una decision, para y pregunta.
 
 ## Como trabajas
 

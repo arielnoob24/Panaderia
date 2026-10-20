@@ -39,6 +39,12 @@ Si te dan un foco ("solo WCAG", "solo el checkout"...), revisa solo eso.
   `#comprobante`, piden sesion verificada), cuenta (menu, entrar, crear,
   verificar, datos, pedidos, pagos) y pie con horario y contacto.
 
+## En la migracion a React
+
+Si te piden revisar `react/`, sirvela con `npm run build && npm run preview`
+dentro de esa carpeta y prueba ahi. Compara con el sitio actual: lo que en el
+actual ya cumplia y en React no, es un hallazgo de gravedad 3 como minimo.
+
 ## Las skills que traes cargadas
 
 - `wcag-audit-patterns`: checklist de WCAG 2.2 por criterio y patrones de
