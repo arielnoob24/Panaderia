@@ -12,40 +12,22 @@ import {
   subtotal, envio, total, unidades,
 } from '../comun/state.js';
 import { marcarActualizacion, olvidarMarca } from '../comun/storage.js';
+import { leerPedidoGuardado, pedidoParaGuardar } from './guardado.js';
 import {
   montarPago, piezasDePago, comprobanteHtml, pintarPago,
   olvidarTarjeta, restablecerPagar, cancelarProceso, limpiarCopiados, reiniciarMetodo,
   cargarFactura,
 } from './checkout.js';
 
+// Que se acepta de lo guardado y como se escribe vive en guardado.js, que es
+// el mismo que usa la version en React: los dos sitios leen el mismo pedido.
 const leerGuardado = () => {
-  try {
-    const crudo = window.localStorage.getItem(CLAVE);
-    if (!crudo) return;
-    // Antes se guardaba solo el array de lineas; se sigue aceptando ese formato.
-    const dato = JSON.parse(crudo);
-    const lineas = Array.isArray(dato) ? dato : (dato.lineas || []);
-    lineas.forEach((l) => {
-      if (l && l.id && l.nombre && l.cantidad > 0) pedido.set(l.id, { nombre: l.nombre, precio: Number(l.precio) || 0, cantidad: Math.min(l.cantidad, MAX_UNIDADES) });
-    });
-    if (!Array.isArray(dato)) {
-      if (dato.modo === 'domicilio') entrega.modo = 'domicilio';
-      if (typeof dato.direccion === 'string') entrega.direccion = dato.direccion.slice(0, 200);
-      if (typeof dato.piso === 'string') entrega.piso = dato.piso.slice(0, 120);
-      if (typeof dato.referencia === 'string') entrega.referencia = dato.referencia.slice(0, 200);
-      if (typeof dato.notas === 'string') entrega.notas = dato.notas.slice(0, 300);
-      // A nombre de quien va la factura tambien sobrevive a recargar: quien pide
-      // para una oficina lo hace siempre a nombre de la misma.
-      const f = dato.factura;
-      if (f && typeof f === 'object') {
-        factura.aOtro = f.aOtro === true;
-        if (typeof f.nombre === 'string') factura.nombre = f.nombre.slice(0, 80);
-        if (typeof f.ident === 'string') factura.ident = f.ident.replace(/\D/g, '').slice(0, 13);
-        if (typeof f.correo === 'string') factura.correo = f.correo.slice(0, 120);
-        if (typeof f.direccion === 'string') factura.direccion = f.direccion.slice(0, 160);
-      }
-    }
-  } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza vacio */ }
+  let crudo = null;
+  try { crudo = window.localStorage.getItem(CLAVE); } catch (e) { /* almacenamiento bloqueado: se empieza vacio */ }
+  const leido = leerPedidoGuardado(crudo);
+  leido.lineas.forEach(([id, l]) => pedido.set(id, l));
+  Object.assign(entrega, leido.entrega);
+  Object.assign(factura, leido.factura);
 };
 const guardar = () => {
   // Cuando se guardo va en dos sitios a la vez, y no por descuido: dentro del
@@ -54,16 +36,7 @@ const guardar = () => {
   // el pedido entero.
   const cuando = marcarActualizacion();
   try {
-    window.localStorage.setItem(CLAVE, JSON.stringify({
-      lineas: [...pedido].map(([id, l]) => ({ id, ...l })),
-      modo: entrega.modo,
-      direccion: entrega.direccion,
-      piso: entrega.piso,
-      referencia: entrega.referencia,
-      notas: entrega.notas,
-      factura: { ...factura },
-      guardado: cuando.toISOString(),
-    }));
+    window.localStorage.setItem(CLAVE, pedidoParaGuardar({ lineas: [...pedido], entrega, factura, cuando }));
   } catch (e) { /* en ventana privada no se puede guardar; el pedido sigue vivo en memoria */ }
   puente.pintarGuardado?.(cuando);
 };
@@ -861,7 +834,9 @@ preguntaVaciar.addEventListener('keydown', (e) => {
 const cambiar = (id, delta) => {
   const l = pedido.get(id);
   if (!l) return;
-  l.cantidad += delta;
+  // El + de la linea tambien respeta el tope: antes solo lo hacia la ficha, y
+  // desde la canasta se podia pasar de cien.
+  l.cantidad = Math.min(l.cantidad + delta, MAX_UNIDADES);
   if (l.cantidad < 1) {
     anotarBorrado(id, { ...l, cantidad: 1 });
     pedido.delete(id);

@@ -1,6 +1,6 @@
 // ---- Empaquetar para abrir sin servidor -------------------------------
 // Abierto con doble clic (file://), el navegador no carga modulos de
-// JavaScript ni deja leer data/productos.json. Este guion junta los 11
+// JavaScript ni deja leer data/productos.json. Este guion junta los 12
 // modulos en un solo script normal, con el catalogo metido dentro, y lo deja
 // en js/sin-servidor.js. index.html solo lo usa cuando la pagina se abre como
 // archivo; servida por HTTP sigue cargando los modulos de siempre.

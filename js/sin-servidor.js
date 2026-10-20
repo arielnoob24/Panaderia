@@ -1139,6 +1139,60 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     });
   };
 
+  // js/pedido/guardado.js
+  var ENTREGA_VACIA = { modo: "retiro", direccion: "", piso: "", referencia: "", notas: "" };
+  var FACTURA_VACIA = { aOtro: false, nombre: "", ident: "", correo: "", direccion: "" };
+  var lineaValida = (l) => {
+    if (!l || typeof l !== "object" || !l.id || !l.nombre) return null;
+    const cantidad = Math.floor(Number(l.cantidad));
+    if (!Number.isFinite(cantidad) || cantidad < 1) return null;
+    return [String(l.id), {
+      nombre: String(l.nombre),
+      precio: Number(l.precio) || 0,
+      cantidad: Math.min(cantidad, MAX_UNIDADES)
+    }];
+  };
+  var leerPedidoGuardado = (crudo) => {
+    const vacio2 = { lineas: [], entrega: { ...ENTREGA_VACIA }, factura: { ...FACTURA_VACIA } };
+    if (!crudo) return vacio2;
+    let dato;
+    try {
+      dato = JSON.parse(crudo);
+    } catch (e) {
+      return vacio2;
+    }
+    if (!dato || typeof dato !== "object") return vacio2;
+    const crudas = Array.isArray(dato) ? dato : Array.isArray(dato.lineas) ? dato.lineas : [];
+    const lineas = crudas.map(lineaValida).filter(Boolean);
+    if (Array.isArray(dato)) return { ...vacio2, lineas };
+    const entrega2 = { ...ENTREGA_VACIA };
+    if (dato.modo === "domicilio") entrega2.modo = "domicilio";
+    if (typeof dato.direccion === "string") entrega2.direccion = dato.direccion.slice(0, 200);
+    if (typeof dato.piso === "string") entrega2.piso = dato.piso.slice(0, 120);
+    if (typeof dato.referencia === "string") entrega2.referencia = dato.referencia.slice(0, 200);
+    if (typeof dato.notas === "string") entrega2.notas = dato.notas.slice(0, 300);
+    const factura2 = { ...FACTURA_VACIA };
+    const f = dato.factura;
+    if (f && typeof f === "object") {
+      factura2.aOtro = f.aOtro === true;
+      if (typeof f.nombre === "string") factura2.nombre = f.nombre.slice(0, 80);
+      if (typeof f.ident === "string") factura2.ident = f.ident.replace(/\D/g, "").slice(0, 13);
+      if (typeof f.correo === "string") factura2.correo = f.correo.slice(0, 120);
+      if (typeof f.direccion === "string") factura2.direccion = f.direccion.slice(0, 160);
+    }
+    return { lineas, entrega: entrega2, factura: factura2 };
+  };
+  var pedidoParaGuardar = ({ lineas, entrega: entrega2, factura: factura2, cuando }) => JSON.stringify({
+    lineas: lineas.map(([id, l]) => ({ id, ...l })),
+    modo: entrega2.modo,
+    direccion: entrega2.direccion,
+    piso: entrega2.piso,
+    referencia: entrega2.referencia,
+    notas: entrega2.notas,
+    factura: { ...factura2 },
+    guardado: cuando.toISOString()
+  });
+
   // js/comun/mail.js
   var BUZON = {
     servicio: "service_u77o0ad",
@@ -1632,45 +1686,20 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
 
   // js/pedido/cart.js
   var leerGuardado = () => {
+    let crudo = null;
     try {
-      const crudo = window.localStorage.getItem(CLAVE);
-      if (!crudo) return;
-      const dato = JSON.parse(crudo);
-      const lineas = Array.isArray(dato) ? dato : dato.lineas || [];
-      lineas.forEach((l) => {
-        if (l && l.id && l.nombre && l.cantidad > 0) pedido.set(l.id, { nombre: l.nombre, precio: Number(l.precio) || 0, cantidad: Math.min(l.cantidad, MAX_UNIDADES) });
-      });
-      if (!Array.isArray(dato)) {
-        if (dato.modo === "domicilio") entrega.modo = "domicilio";
-        if (typeof dato.direccion === "string") entrega.direccion = dato.direccion.slice(0, 200);
-        if (typeof dato.piso === "string") entrega.piso = dato.piso.slice(0, 120);
-        if (typeof dato.referencia === "string") entrega.referencia = dato.referencia.slice(0, 200);
-        if (typeof dato.notas === "string") entrega.notas = dato.notas.slice(0, 300);
-        const f = dato.factura;
-        if (f && typeof f === "object") {
-          factura.aOtro = f.aOtro === true;
-          if (typeof f.nombre === "string") factura.nombre = f.nombre.slice(0, 80);
-          if (typeof f.ident === "string") factura.ident = f.ident.replace(/\D/g, "").slice(0, 13);
-          if (typeof f.correo === "string") factura.correo = f.correo.slice(0, 120);
-          if (typeof f.direccion === "string") factura.direccion = f.direccion.slice(0, 160);
-        }
-      }
+      crudo = window.localStorage.getItem(CLAVE);
     } catch (e) {
     }
+    const leido = leerPedidoGuardado(crudo);
+    leido.lineas.forEach(([id, l]) => pedido.set(id, l));
+    Object.assign(entrega, leido.entrega);
+    Object.assign(factura, leido.factura);
   };
   var guardar = () => {
     const cuando = marcarActualizacion();
     try {
-      window.localStorage.setItem(CLAVE, JSON.stringify({
-        lineas: [...pedido].map(([id, l]) => ({ id, ...l })),
-        modo: entrega.modo,
-        direccion: entrega.direccion,
-        piso: entrega.piso,
-        referencia: entrega.referencia,
-        notas: entrega.notas,
-        factura: { ...factura },
-        guardado: cuando.toISOString()
-      }));
+      window.localStorage.setItem(CLAVE, pedidoParaGuardar({ lineas: [...pedido], entrega, factura, cuando }));
     } catch (e) {
     }
     puente.pintarGuardado?.(cuando);
@@ -2115,7 +2144,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var cambiar = (id, delta) => {
     const l = pedido.get(id);
     if (!l) return;
-    l.cantidad += delta;
+    l.cantidad = Math.min(l.cantidad + delta, MAX_UNIDADES);
     if (l.cantidad < 1) {
       anotarBorrado(id, { ...l, cantidad: 1 });
       pedido.delete(id);

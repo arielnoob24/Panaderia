@@ -1013,7 +1013,9 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-fondo, .cuenta-fondo { position: fixed; inset: 0; z-index: 20; background: rgba(58, 40, 34, .55); opacity: 0; pointer-events: none; transition: opacity var(--dur-base) var(--ease-out); }
 .canasta-fondo.is-open, .cuenta-fondo.is-open { opacity: 1; pointer-events: auto; }
 .canasta-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 21; display: flex; width: min(420px, 100%); flex-direction: column; background: var(--papel); box-shadow: var(--shadow-float); transform: translateX(100%); visibility: hidden; transition: transform var(--dur-base) var(--ease-in), visibility var(--dur-base); }
-.canasta-panel.is-open { transform: none; visibility: visible; transition: transform var(--dur-base) var(--ease-out), visibility var(--dur-base); }
+/* Al abrir, visible en el acto (visibility 0s): con la transicion de antes el panel
+   seguia oculto el primer instante y el foco no podia entrar en la X de cerrar. */
+.canasta-panel.is-open { transform: none; visibility: visible; transition: transform var(--dur-base) var(--ease-out), visibility 0s; }
 @keyframes pago-centra { from { opacity: 0; transform: translate(50%, -50%) scale(.97); } to { opacity: 1; transform: translate(50%, -50%); } }
 .canasta-cabecera, .cuenta-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.5rem 1rem; border-bottom: 1px solid var(--masa-linea); }
 .canasta-cabecera h2, .cuenta-cabecera h2 { margin: 0; font: 500 1.6rem/1.1 Georgia, serif; }
