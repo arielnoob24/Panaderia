@@ -7,6 +7,7 @@
 // leer la direccion. Las de cuando todo era una pagina (#historia,
 // #visitanos...) llevan a su vista con replace; lo demas, a #/.
 import { Navigate, useLocation } from 'react-router-dom';
+import { m, useReducedMotion } from 'motion/react';
 import Cabecera from './comun/Cabecera.jsx';
 import Pie from './comun/Pie.jsx';
 import Globo from './comun/Globo.jsx';
@@ -34,8 +35,21 @@ function Vista({ cual, pathname }) {
   return <Catalogo categoria={categoriaDeRuta(pathname)} />;
 }
 
+// La vista nueva entra con un fundido y sube un poco (seccion 15 del plan):
+// es el unico movimiento de entrada de cada vista. La de antes se va en el
+// acto, sin salida animada: mientras saliera seguiria viva leyendo la
+// direccion nueva (el comprobante, sin recibo, mandaria a #/ a medio camino).
+const ENTRADA = { opacity: 0, y: 14 };
+const QUIETA = { opacity: 1, y: 0 };
+const TRANSICION = { duration: 0.28, ease: [0.16, 1, 0.3, 1] };
+
+// El grupo de la vista: entre categorias de la tienda no hay fundido, porque
+// no se cambia de vista (el catalogo anima sus fichas).
+const grupoDe = (cual) => cual || 'cambiando';
+
 function App() {
   const location = useLocation();
+  const reducido = useReducedMotion();
   const { pathname } = location;
   const cual = vistaDeRuta(pathname);
 
@@ -51,7 +65,17 @@ function App() {
       <SaltoContenido />
       <Cabecera />
       <main id="contenido" tabIndex={-1}>
-        {vista}
+        {/* Al abrir la pagina no hay fundido: la portada ya tiene su entrada
+            propia, y con menos movimiento no se anima nada. */}
+        <m.div
+          key={grupoDe(cual)}
+          className="vista-marco"
+          initial={reducido || location.key === 'default' ? false : ENTRADA}
+          animate={QUIETA}
+          transition={TRANSICION}
+        >
+          {vista}
+        </m.div>
       </main>
       <Pie />
       {/* El boton de la canasta va en la cabecera; el panel y la barra de

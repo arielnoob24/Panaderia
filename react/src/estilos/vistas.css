@@ -51,7 +51,10 @@
 .mostrador .product-card { color: var(--horno); box-shadow: 0 10px 24px rgba(0, 0, 0, .22); }
 /* En las puntas la flecha se apaga pero se queda donde estaba: si tenia el
    foco, lo conserva (aria-disabled, MasPedidos.jsx). */
-.mostrador .fila-flecha[aria-disabled="true"] { opacity: .4; cursor: default; transform: none; }
+/* La escala al pasar el raton la pone Motion (MasPedidos.jsx): la de
+   styles.css se quedaba pisada por el estilo en linea que deja Motion. */
+.mostrador .fila-flecha:hover { transform: none; }
+.mostrador .fila-flecha[aria-disabled="true"] { opacity: .4; cursor: default; }
 .mostrador .fila-flecha[aria-disabled="true"]:hover { background: var(--papel); }
 
 /* ---- #/nosotros --------------------------------------------------------- */
@@ -120,3 +123,13 @@
   .nosotros-historia { padding-bottom: 3rem; }
   .pie-corto-fila { align-items: flex-start; flex-direction: column; }
 }
+
+/* ---- Motion ---------------------------------------------------------------- */
+
+/* El numero de la canasta cambia deslizandose dentro de su pastilla
+   (BotonCanasta.jsx): lo que sale no se ve fuera de ella. El inflado de
+   styles.css al llegar la foto queda para la canasta entera; el numero ya
+   tiene su salto y dos a la vez se pisaban. */
+.canasta-cuenta { overflow: hidden; }
+.canasta-cuenta-numero { display: block; }
+.floating-whatsapp.is-latido .canasta-cuenta { animation: none; }

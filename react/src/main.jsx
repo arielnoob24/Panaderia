@@ -4,6 +4,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
+import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
 // La misma hoja que usa el sitio actual, importada de la raiz y no copiada:
 // las clases de los componentes son las mismas, asi que tiene que aplicar tal
 // cual. Vite resuelve sus url() (las fotos de portada) y las mete en el build.
@@ -18,18 +19,28 @@ import App from './App.jsx';
 
 // HashRouter y no BrowserRouter: con la ruta despues del '#', GitHub Pages
 // siempre sirve el mismo index.html y no hace falta el truco del 404.
+// Motion (seccion 15 del plan): LazyMotion con domAnimation trae solo lo que
+// se usa (opacidad, transformaciones, salida), no el paquete entero; los
+// componentes animados se escriben con m.div y no con motion.div. Con
+// reducedMotion="user", quien pidio menos movimiento al sistema no ve
+// desplazamientos; lo que ademas tiene que quedarse quieto del todo lo mira
+// con useReducedMotion.
 createRoot(document.getElementById('raiz')).render(
   <StrictMode>
-    <HashRouter>
-      <AvisosProvider>
-        <SesionProvider>
-          <PedidoProvider>
-            <CanastaProvider>
-              <App />
-            </CanastaProvider>
-          </PedidoProvider>
-        </SesionProvider>
-      </AvisosProvider>
-    </HashRouter>
+    <LazyMotion features={domAnimation}>
+      <MotionConfig reducedMotion="user">
+        <HashRouter>
+          <AvisosProvider>
+            <SesionProvider>
+              <PedidoProvider>
+                <CanastaProvider>
+                  <App />
+                </CanastaProvider>
+              </PedidoProvider>
+            </SesionProvider>
+          </AvisosProvider>
+        </HashRouter>
+      </MotionConfig>
+    </LazyMotion>
   </StrictMode>,
 );

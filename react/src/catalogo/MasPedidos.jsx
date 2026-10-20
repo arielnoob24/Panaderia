@@ -5,6 +5,7 @@
 // Cada ficha se alcanza con Tab y el navegador la trae a la vista sola.
 import { useCallback, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { m } from 'motion/react';
 import { dinero } from '@raiz/js/comun/state.js';
 import { catalogo } from '../servicios/catalogo.js';
 import { useAvisos } from '../comun/Avisos.jsx';
@@ -33,18 +34,22 @@ function MasPedidos() {
 
   // aria-disabled y no disabled: una flecha que se apaga con el foco dentro
   // lo tiraria a body, y quien va con teclado perderia el sitio.
+  // Encendida, crece un poco bajo el raton y se hunde al pulsarla (Motion);
+  // apagada no responde. Con menos movimiento, MotionConfig quita la escala.
   const flecha = (ir, apagada, nombre, tip) => (
-    <button
+    <m.button
       className="fila-flecha"
       type="button"
       data-ir={ir}
       aria-disabled={apagada}
       aria-label={nombre}
       data-tip={tip}
+      whileHover={apagada ? undefined : { scale: 1.06 }}
+      whileTap={apagada ? undefined : { scale: 0.92 }}
       onClick={() => { if (!apagada) fila.irFlecha(ir); }}
     >
       <Chevron izquierda={ir < 0} />
-    </button>
+    </m.button>
   );
 
   return (
