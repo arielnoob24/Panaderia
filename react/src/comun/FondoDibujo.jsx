@@ -43,6 +43,11 @@ const PIEZAS = {
   'cuenta-verificar': [
     { donde: 'arriba-derecha', caja: '-90 -110 180 230', trazos: [mazorca({ giro: 62 })] },
   ],
+  // Recuperar: un pan enrollado, que da la vuelta sobre si mismo como la
+  // contrasena que se rehace, y unos granos sueltos.
+  'cuenta-recuperar': [
+    { donde: 'arriba-derecha', caja: '-140 -80 280 160', trazos: [enrollado({ x: 10, y: 0, giro: -24, escala: 0.85 }), grano({ x: -110, y: 40, giro: 30 }), grano({ x: 112, y: -44, giro: -24 }), grano({ x: 96, y: 52, giro: 60 })] },
+  ],
   'cuenta-datos': [
     { donde: 'arriba-derecha', caja: '-80 -60 160 110', trazos: [hogaza({ escala: 1 })] },
   ],

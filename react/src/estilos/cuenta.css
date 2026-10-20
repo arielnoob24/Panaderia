@@ -122,6 +122,36 @@ a.nav-cuenta { text-decoration: none; }
 /* El rotulo del boton cambia con un fundido corto ("Guardado ✓"). */
 .cuenta-guardar-rotulo { display: inline-block; }
 
+/* ---- Iniciar sesion y crear: lo que se anadio tras la revision ---------------- */
+
+/* "¿Olvidaste tu contrasena?" justo debajo de la contrasena y a la derecha,
+   donde se mira al no recordarla; mas pequeno que la accion principal. */
+.cuenta-olvide { margin: -.35rem 0 .2rem; text-align: right; font: .82rem/1.4 Arial, sans-serif; }
+.cuenta-olvide-enlace { display: inline-flex; min-height: 24px; align-items: center; }
+/* Ya hay una cuenta en este navegador: no es la nota de la maqueta, es algo
+   que va a pasar si se sigue. Va en ambar, el tono de lo que hay que mirar
+   (como "Pago de prueba"), con el texto en horno. */
+.cuenta-vista .cuenta-ya-hay { background: rgba(215, 155, 74, .16); border-left-color: var(--ambar); color: var(--horno); font-weight: 700; }
+
+/* ---- Recuperar la contrasena -------------------------------------------------- */
+
+/* El titulo es largo: un poco mas de ancho que entrar, para que quepa en una
+   linea en la computadora sin pisar el dibujo. */
+.cuenta-vista-recuperar .cuenta-vista-caja { max-width: 740px; }
+.cuenta-vista-banda .fondo-cuenta-recuperar .is-arriba-derecha { top: 4px; right: 2%; width: 130px; }
+/* Lo que se pide en cada paso, en una frase arriba de la hoja. */
+.recuperar-dicho { margin: 0 0 1rem; color: var(--horno-suave); font: .88rem/1.5 Arial, sans-serif; }
+.recuperar-paso-codigo .recuperar-dicho { margin-bottom: .8rem; }
+/* Los tres pasos en el mismo sitio (PasoQueCambia.jsx). La hoja que se va
+   queda encima sin ocupar sitio, y lo que asoma al moverse de lado no abre
+   desplazamiento horizontal (clip, no hidden: hidden cortaria el margen
+   negativo con que la hoja cuelga de la banda). */
+.pasos-cuenta { position: relative; overflow-x: clip; }
+.paso-marco.is-saliendo { position: absolute; top: 0; right: 0; left: 0; pointer-events: none; }
+/* Fuera del flujo, el margen negativo de la hoja ya no se junta con el de
+   la caja: sin esto, la que sale subiria 3rem. */
+.paso-marco.is-saliendo > .cuenta-formulario { margin-top: 0; }
+
 /* ---- Cortes ---------------------------------------------------------------- */
 
 @media (max-width: 680px) {

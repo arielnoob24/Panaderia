@@ -87,10 +87,13 @@ function Catalogo({ categoria }) {
   // Entrar de nuevo con un enlace estando ya en la tienda (otra categoria desde
   // el menu) la deja limpia. Se ajusta mientras se pinta, al ver una direccion
   // nueva, y no en un efecto: asi no hay un cuadro con lo de antes.
+  // Volver con Atras o Adelante a una entrada abierta con un enlace no es
+  // entrar: esa entrada guarda su state.entrar, pero se vuelve a donde se
+  // estaba, con sus filtros.
   const [claveVista, setClaveVista] = useState(location.key);
   if (claveVista !== location.key) {
     setClaveVista(location.key);
-    if (location.state?.entrar) {
+    if (location.state?.entrar && tipoNavegacion !== 'POP') {
       setOrden('recomendados');
       setSoloDisponibles(false);
       setBusqueda('');

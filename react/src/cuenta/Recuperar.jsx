@@ -29,6 +29,7 @@ import { useSesion } from '../estado/SesionProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { REENVIO, REGLAS, fallaCorreo } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
+import PasoQueCambia from './PasoQueCambia.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
 import CasillasCodigo from './CasillasCodigo.jsx';
 import MarcaRegla from './MarcaRegla.jsx';
@@ -38,6 +39,8 @@ import { useEnterAvanza } from './useEnterAvanza.js';
 import { useTerminarEntrada } from './useTerminarEntrada.js';
 
 const VACIAS = ['', '', '', '', '', ''];
+// Los pasos en orden: PasoQueCambia sabe asi si se avanza o se vuelve.
+const PASOS = ['correo', 'codigo', 'clave'];
 
 // Marca el error y lleva el foco al campo; si ya estaba ahi, el foco no se
 // mueve y el lector no volveria a leer la descripcion: va por los avisos.
@@ -71,9 +74,13 @@ function PasosRecuperar() {
   const enfocar = visto.cambiado;
   return (
     <MarcoCuenta paso="recuperar" titulo="Recuperar la contraseña">
-      {paso === 'correo' ? <PasoCorreo key="correo" enfocar={enfocar} /> : null}
-      {paso === 'codigo' ? <PasoCodigo key="codigo" enfocar={enfocar} /> : null}
-      {paso === 'clave' ? <PasoClave key="clave" enfocar={enfocar} /> : null}
+      {/* El movimiento entre pasos (frontend): la hoja vieja sale a la
+          izquierda y la nueva entra por la derecha (PasoQueCambia.jsx). */}
+      <PasoQueCambia paso={paso} orden={PASOS}>
+        {paso === 'correo' ? <PasoCorreo key="correo" enfocar={enfocar} /> : null}
+        {paso === 'codigo' ? <PasoCodigo key="codigo" enfocar={enfocar} /> : null}
+        {paso === 'clave' ? <PasoClave key="clave" enfocar={enfocar} /> : null}
+      </PasoQueCambia>
     </MarcoCuenta>
   );
 }

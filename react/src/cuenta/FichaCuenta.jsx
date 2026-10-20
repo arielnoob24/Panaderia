@@ -178,7 +178,8 @@ function FichaCuenta({ alAbrir }) {
   // Lo mismo que "Cerrar sesion" de Mis datos: no borra la cuenta y lleva a
   // la portada. Desde una vista de la cuenta, con replace, para que Atras no
   // vuelva a los datos de una sesion cerrada. Si ya se esta en la portada no
-  // hay vista nueva que se lleve el foco: va al circulo, que ahora es "Entrar".
+  // hay vista nueva que se lleve el foco: va al circulo, que ahora es la
+  // silueta de "Iniciar sesion / Registrarse".
   const alSalir = () => {
     const quien = nombre;
     setAbierta(false);
