@@ -15,6 +15,12 @@
    en #/contacto, sin esto, quedaba una franja de masa debajo del pie. */
 #raiz { display: flex; min-height: 100vh; flex-direction: column; }
 #raiz > main { flex: 1 0 auto; }
+/* La vista que se va con movimiento (de crear la cuenta a verificar, App.jsx)
+   sale del flujo y se queda encima de la nueva hasta acabar. Lo que entra o
+   sale de lado no tiene que abrir desplazamiento horizontal: clip recorta
+   sin hacer de main una caja con barra, y lo pegajoso sigue pegandose. */
+#raiz > main { position: relative; overflow-x: clip; }
+.vista-marco.is-saliendo { position: absolute; top: 0; right: 0; left: 0; pointer-events: none; }
 
 /* Debajo de la cabecera fija, que no tiene fondo mientras se esta arriba. */
 .vista-nosotros, .vista-contacto { padding-top: 132px; }

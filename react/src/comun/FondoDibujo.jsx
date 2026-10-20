@@ -32,6 +32,23 @@ const PIEZAS = {
     { donde: 'arriba-izquierda', caja: '-110 -70 220 140', trazos: [barra({ giro: -14, escala: 1 }), grano({ x: 80, y: 46, giro: 20 }), grano({ x: -86, y: -46, giro: -40 })] },
     { donde: 'arriba-derecha', caja: '-120 -80 240 160', trazos: [hogaza({ x: -30, y: 10, escala: 1.1 }), enrollado({ x: 70, y: -30, giro: 18, escala: 0.62 })] },
   ],
+  // Las bandas de la cuenta, una por paso: a la derecha del titulo, que es
+  // corto, y lejos de la hoja de papel que cuelga debajo.
+  'cuenta-entrar': [
+    { donde: 'arriba-derecha', caja: '-170 -70 340 140', trazos: [espiga({ x: -10, y: 30, giro: 104, escala: 0.75 }), grano({ x: -140, y: -20, giro: 30 }), grano({ x: 120, y: 40, giro: -20 })] },
+  ],
+  'cuenta-crear': [
+    { donde: 'arriba-derecha', caja: '-170 -80 340 160', trazos: [espiga({ x: -40, y: 10, giro: 82, escala: 0.8 }), espiga({ x: 60, y: 40, giro: 96, escala: 0.7 }), grano({ x: -150, y: 50, giro: 30 })] },
+  ],
+  'cuenta-verificar': [
+    { donde: 'arriba-derecha', caja: '-90 -110 180 230', trazos: [mazorca({ giro: 62 })] },
+  ],
+  'cuenta-datos': [
+    { donde: 'arriba-derecha', caja: '-80 -60 160 110', trazos: [hogaza({ escala: 1 })] },
+  ],
+  'cuenta-pedidos': [
+    { donde: 'arriba-derecha', caja: '-120 -80 240 160', trazos: [enrollado({ x: -40, y: 0, giro: -12, escala: 0.7 }), barra({ x: 50, y: 20, giro: 10, escala: 0.6 })] },
+  ],
   // #/contacto: maiz cruzado abajo a la izquierda y una hogaza a la derecha.
   contacto: [
     { donde: 'abajo-izquierda', caja: '-110 -120 220 240', trazos: [mazorca({ x: -20, giro: -20 }), mazorca({ x: 30, y: 10, giro: 22, escala: 0.9 })] },

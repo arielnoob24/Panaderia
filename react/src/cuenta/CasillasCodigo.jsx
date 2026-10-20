@@ -84,7 +84,7 @@ function CasillasCodigo({ cifras, onCambio, onEnter, casillasRef, idError, mal }
             // Las casillas no cambian de sitio ni de numero: el indice es su nombre.
             key={i}
             ref={(el) => { casillasRef.current[i] = el; }}
-            className={mal ? 'codigo-casilla is-mal' : 'codigo-casilla'}
+            className={['codigo-casilla', cifra && 'is-llena', mal && 'is-mal'].filter(Boolean).join(' ')}
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"

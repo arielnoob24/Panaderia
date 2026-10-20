@@ -16,6 +16,7 @@ import { useAvisos } from '../comun/Avisos.jsx';
 import { fallaCorreo } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
+import TextoSuave from './TextoSuave.jsx';
 import { Desvio, vieneDePagar } from './Desvio.jsx';
 import { useEnterAvanza } from './useEnterAvanza.js';
 import { useTerminarEntrada } from './useTerminarEntrada.js';
@@ -121,7 +122,7 @@ function FormularioEntrar() {
           />
         </div>
         <div className="cuenta-pie">
-          <p className="cuenta-aviso" role="alert" hidden={!aviso}>{aviso}</p>
+          <p className="cuenta-aviso" role="alert" hidden={!aviso}><TextoSuave texto={aviso} /></p>
           <button className="button button-yellow cuenta-entrar" type="button" onClick={alEntrar} aria-disabled={ocupado}>
             Entrar
           </button>

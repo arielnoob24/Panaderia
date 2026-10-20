@@ -14,6 +14,7 @@ import { useAvisos } from '../comun/Avisos.jsx';
 import { REENVIO, MOTIVO_SIN_CORREO } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CasillasCodigo from './CasillasCodigo.jsx';
+import TextoSuave from './TextoSuave.jsx';
 import { Desvio, vieneDePagar } from './Desvio.jsx';
 import { useTerminarEntrada } from './useTerminarEntrada.js';
 
@@ -115,13 +116,13 @@ function PasoCodigo({ pendiente }) {
             idError="cuenta-codigo-error"
             mal={Boolean(error)}
           />
-          <p className="cuenta-campo-error codigo-error" id="cuenta-codigo-error" hidden={!error}>{error}</p>
+          <p className="cuenta-campo-error codigo-error" id="cuenta-codigo-error" hidden={!error}><TextoSuave texto={error} /></p>
           <button className="codigo-reenviar" type="button" disabled={esperando} onClick={alReenviar}>
             {esperando ? `Enviar otro código en ${quedan}s` : 'Enviar otro código'}
           </button>
         </div>
         <div className="cuenta-pie">
-          <p className="cuenta-aviso" role="alert" hidden={!error}>{error}</p>
+          <p className="cuenta-aviso" role="alert" hidden={!error}><TextoSuave texto={error} /></p>
           <button className="button button-yellow cuenta-verificar" type="button" onClick={() => comprobar(cifras.join(''))}>
             Verificar el correo
           </button>

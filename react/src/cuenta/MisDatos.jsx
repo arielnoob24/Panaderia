@@ -8,7 +8,8 @@
 // Las clases para frontend: cuenta-datos-correo (el correo fijo),
 // cuenta-guardar (el boton que pasa a "Guardado" un momento), cuenta-hecho
 // (el renglon que confirma) y cuenta-salir.
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { AnimatePresence, m, useReducedMotion } from 'motion/react';
 import { flushSync } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { useSesion } from '../estado/SesionProvider.jsx';
@@ -17,12 +18,17 @@ import { useAvisos } from '../comun/Avisos.jsx';
 import { soloNueve, fallosEditar, avisoFaltan } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
+import TextoSuave from './TextoSuave.jsx';
 import { Desvio } from './Desvio.jsx';
 import { useEnterAvanza } from './useEnterAvanza.js';
 import { usePedidosGuardados } from './usePedidosGuardados.js';
 
 const ORDEN = ['nombre', 'telefono', 'direccion'];
 const limpios = (d) => Object.fromEntries(ORDEN.map((c) => [c, d[c].trim()]));
+// Lo que dura "Guardado ✓" en el boton (seccion 15 del plan, "Movimiento de
+// la cuenta", punto 5): lo bastante para verlo sin quedarse esperando.
+const GUARDADO_MS = 2000;
+const CAMBIA = { duration: 0.18, ease: [0.2, 0, 0, 1] };
 
 function MisDatos() {
   // Se mira al llegar y no despues: al cerrar la sesion, la vista se queda
@@ -46,6 +52,16 @@ function FormularioDatos() {
   const [intentado, setIntentado] = useState(false);
   const [aviso, setAviso] = useState('');
   const [hecho, setHecho] = useState('');
+  // Cuantas veces se guardo; mientras no es 0 el boton dice "Guardado ✓". Es
+  // un numero y no un si o no: guardar otra vez dentro de los 2 s los vuelve
+  // a contar desde ahi.
+  const [guardado, setGuardado] = useState(0);
+  const reducido = useReducedMotion();
+  useEffect(() => {
+    if (!guardado) return undefined;
+    const reloj = window.setTimeout(() => setGuardado(0), GUARDADO_MS);
+    return () => window.clearTimeout(reloj);
+  }, [guardado]);
   const refs = { nombre: useRef(null), telefono: useRef(null), direccion: useRef(null) };
 
   // Mismo momento que al crear la cuenta: un campo se marca cuando ya lo
@@ -58,6 +74,7 @@ function FormularioDatos() {
     setDatos((d) => ({ ...d, [campo]: valor }));
     // "Guardamos tus cambios" deja de ser verdad en cuanto se toca algo.
     setHecho('');
+    setGuardado(0);
   };
   const alDejar = (campo) => () => setTocados((t) => (t.has(campo) ? t : new Set(t).add(campo)));
 
@@ -82,6 +99,7 @@ function FormularioDatos() {
     setTocados(new Set());
     setAviso('');
     setHecho('Guardamos tus cambios.');
+    setGuardado((n) => n + 1);
     avisar('Guardamos tus cambios.');
   };
 
@@ -127,12 +145,25 @@ function FormularioDatos() {
             etiqueta: 'Dirección', type: 'text', autoComplete: 'street-address', maxLength: 200,
             placeholder: 'Calle, número y una referencia', opcional: true,
           })}
-          <p className="cuenta-hecho" hidden={!hecho}>{hecho}</p>
+          <p className="cuenta-hecho" hidden={!hecho}><TextoSuave texto={hecho} /></p>
         </div>
         <div className="cuenta-pie">
-          <p className="cuenta-aviso" role="alert" hidden={!aviso}>{aviso}</p>
-          <button className="button button-yellow cuenta-guardar" type="button" onClick={alGuardar}>
-            Guardar los cambios
+          <p className="cuenta-aviso" role="alert" hidden={!aviso}><TextoSuave texto={aviso} /></p>
+          {/* El rotulo cambia con un fundido corto; lo que oye el lector es el
+              aviso "Guardamos tus cambios." de la region de avisos. */}
+          <button className={guardado ? 'button button-yellow cuenta-guardar is-guardado' : 'button button-yellow cuenta-guardar'} type="button" onClick={alGuardar}>
+            <AnimatePresence mode="wait" initial={false}>
+              <m.span
+                key={guardado ? 'guardado' : 'guardar'}
+                className="cuenta-guardar-rotulo"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={reducido ? { duration: 0 } : CAMBIA}
+              >
+                {guardado ? 'Guardado ✓' : 'Guardar los cambios'}
+              </m.span>
+            </AnimatePresence>
           </button>
           <Link className="cuenta-editar cuenta-ver-pedidos" to="/cuenta/pedidos">
             {n ? `Ver mis pedidos (${n})` : 'Ver mis pedidos'}

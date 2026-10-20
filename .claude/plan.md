@@ -811,9 +811,14 @@ Pendiente de la fase 5:
 - [x] Mis datos y cerrar sesión.
 - [ ] Forma de pago preferida dentro de Mis datos.
 - [x] Mis pedidos.
-- [ ] Botón y ficha de la cuenta en la cabecera.
+- [x] Botón y ficha de la cuenta en la cabecera.
 - [x] El código en 6 casillas: su teclado (punto 3 de arriba, sin animar).
-- [ ] Movimiento de la cuenta (los 6 puntos).
+- [x] Movimiento de la cuenta (los 6 puntos), y la maquetación de las vistas.
+- [ ] `logica-datos`: escribir en una casilla del código la **misma cifra**
+      que ya tenía no pasa a la siguiente (React no da `onChange` si el
+      valor no cambia), así que corregir un código con una cifra repetida en
+      su sitio se atasca. Va en `CasillasCodigo.jsx` (`onKeyDown` o
+      `onInput`).
 - [x] Cuenta compartida con el sitio actual, comprobada en los dos sentidos.
 - [ ] Revisión de `ux-accesibilidad`.
 
@@ -847,6 +852,37 @@ Cómo quedó la parte de `logica-datos` (20 de octubre de 2026):
   cerrada (como el comprobante). Crear lleva "Dirección (opcional)" como el
   sitio actual. "Métodos de pago" no es una vista en React: la forma de pago
   preferida es un campo más de Mis datos (ver la tabla).
+
+Cómo quedó la parte de `frontend` (20 de octubre de 2026):
+- Cabecera (`src/cuenta/FichaCuenta.jsx`, en `.nav-acciones` delante de la
+  canasta, también en el teléfono): sin sesión es un **enlace** con la
+  silueta (`aria-label` y globo "Iniciar sesión / Registrarse") a
+  `#/cuenta/entrar`. Con sesión, el botón de las iniciales (`aria-expanded`,
+  `aria-controls`) abre la ficha `.cuenta-menu` de siempre con nombre, correo,
+  "Mis datos", "Mis pedidos" con su número (se vuelve a contar al abrirla) y
+  "Cerrar sesión". Flechas, Inicio y Fin la recorren; Escape la cierra y
+  devuelve el foco; clic, toque o foco fuera la cierran, y navegar también.
+  Abrirla pliega el menú del teléfono. "Cerrar sesión" hace lo de Mis datos
+  (a `#/`, con `replace` si se estaba en `#/cuenta/*`); si ya se está en la
+  portada, el foco va a la silueta.
+- Vistas (`src/estilos/cuenta.css`): como el mostrador de la portada, el
+  `h1` va en una banda de horno (`banda-oscura`, con dibujos de trigo, maíz y
+  pan distintos en cada paso) y el formulario es una hoja de papel que cuelga
+  de ella. Ancho por paso: 600 px entrar y verificar, 640 Mis datos, 760 Mis
+  pedidos, 1000 crear (datos | contraseña, con filete; una columna desde
+  680 px). Sin desplazamiento horizontal a 320 px. Crear cabe entero a
+  1280×900.
+- Movimiento: el ✓ de cada requisito (`MarcaRegla.jsx`) entra con un resorte
+  que se pasa un poco de su tamaño y sale encogiendo; de crear a verificar,
+  crear sale a la izquierda (la única vista que se anima al salir: su propio
+  `AnimatePresence` en `App.jsx`, fuera del flujo e `inert` mientras se va) y
+  verificar entra por la derecha; las casillas se llenan de ámbar con un
+  saltito y se agrupan de tres en tres; Mis pedidos anima la altura y gira la
+  flecha manteniendo el `<details>` (se cierra al acabar de plegarse);
+  "Guardado ✓" 2 s en el botón (vuelve antes si se toca un campo); errores y
+  avisos con un fundido de 220 ms (`TextoSuave.jsx`, dentro del párrafo de
+  siempre, para no romper `aria-describedby` ni el `role="alert"`). Con
+  `prefers-reduced-motion` nada de eso se mueve.
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 

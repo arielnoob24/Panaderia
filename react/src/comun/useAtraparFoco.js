@@ -1,6 +1,7 @@
 // ---- El cerco del foco de los paneles ----------------------------------
 // Lo de atraparFoco() y apagarDetras() de js/comun/ui.js, como hooks. Lo usa
-// la canasta y lo usara la cuenta (fase 5).
+// la canasta. La cuenta no: en React no es un panel sino vistas (#/cuenta/*,
+// fase 5), y su ficha de la cabecera es un desplegable que no atrapa el foco.
 //
 // Mientras un panel esta abierto:
 //   - Tab y Mayus+Tab dan la vuelta dentro de el (y de sus anexos, como la

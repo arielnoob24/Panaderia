@@ -1,8 +1,9 @@
 // ---- La cabecera ------------------------------------------------------
-// Logo, navegacion y el menu del telefono, con el mismo HTML que index.html y
-// el comportamiento de js/comun/ui.js: se pega al bajar 40 px, se da la vuelta
-// sobre las secciones oscuras, el menu del telefono lleva el foco a su primer
-// enlace al abrirse y Escape cierra lo que haya abierto. Cada opcion lleva a
+// Logo, navegacion, la cuenta, la canasta y el menu del telefono, con el
+// mismo HTML que index.html y el comportamiento de js/comun/ui.js: se pega al
+// bajar 40 px, se da la vuelta sobre las secciones oscuras, el menu del
+// telefono lleva el foco a su primer enlace al abrirse y Escape cierra lo
+// que haya abierto. Cada opcion lleva a
 // su vista (comun/vistas.js); la de la vista en la que se esta lleva
 // aria-current="page", que NavLink pone solo.
 import { useEffect, useRef, useState } from 'react';
@@ -11,6 +12,7 @@ import logo from '@raiz/assets/img/logo.png';
 import { Link, NavLink } from 'react-router-dom';
 import MenuTienda from './MenuTienda.jsx';
 import BotonCanasta from '../pedido/BotonCanasta.jsx';
+import FichaCuenta from '../cuenta/FichaCuenta.jsx';
 
 // Las bandas oscuras y el pie son del mismo marron que la barra pegada: cuando
 // alguno pasa por detras de ella, la barra se da la vuelta para no fundirse.
@@ -124,9 +126,11 @@ function Cabecera() {
           <NavLink to="/contacto" state={{ entrar: true }} onClick={cerrarMenu}>Contáctanos</NavLink>
         </nav>
         <div className="nav-acciones">
-          {/* La canasta va delante del menu, como la pone el sitio actual; en
-              el telefono styles.css la deja flotando abajo. El boton de la
-              cuenta ira aqui tambien (fase 5). */}
+          {/* Como en el sitio actual: la cuenta primero, luego la canasta y el
+              menu. En el telefono la cuenta se queda en la barra, al lado del
+              menu, y styles.css deja la canasta flotando abajo. Abrir la
+              ficha de la cuenta pliega el menu del telefono. */}
+          <FichaCuenta alAbrir={cerrarMenu} />
           <BotonCanasta />
           <button
             ref={botonMenuRef}

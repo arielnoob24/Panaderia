@@ -8,6 +8,7 @@
 // a ciegas es donde mas se equivoca uno, sobre todo en el telefono. El foco se
 // queda en el boton, y con un Tab hacia atras se sigue escribiendo.
 import { useState } from 'react';
+import TextoSuave from './TextoSuave.jsx';
 
 function CampoCuenta({
   id, etiqueta, error = '', opcional = false, prefijo = '', clave = false, describe = '',
@@ -54,7 +55,7 @@ function CampoCuenta({
       </label>
       {caja}
       {children}
-      <p className="cuenta-campo-error" id={idError} hidden={!error}>{error}</p>
+      <p className="cuenta-campo-error" id={idError} hidden={!error}><TextoSuave texto={error} /></p>
     </div>
   );
 }

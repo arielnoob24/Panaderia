@@ -22,6 +22,8 @@ import { useAvisos } from '../comun/Avisos.jsx';
 import { REGLAS, soloNueve, fallosCuenta, avisoFaltan } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
+import MarcaRegla from './MarcaRegla.jsx';
+import TextoSuave from './TextoSuave.jsx';
 import { Desvio, vieneDePagar } from './Desvio.jsx';
 import { useEnterAvanza } from './useEnterAvanza.js';
 
@@ -111,6 +113,7 @@ function FormularioCrear() {
         const hecha = r.cumple(datos.clave);
         return (
           <li key={r.id} data-regla={r.id} className={hecha ? 'is-hecha' : undefined}>
+            <MarcaRegla hecha={hecha} />
             {r.texto}
             <span className="sr-only cuenta-regla-estado">{hecha ? ', cumplido' : ', falta'}</span>
           </li>
@@ -151,7 +154,7 @@ function FormularioCrear() {
           </div>
         </div>
         <div className="cuenta-pie">
-          <p className="cuenta-aviso" role="alert" hidden={!aviso}>{aviso}</p>
+          <p className="cuenta-aviso" role="alert" hidden={!aviso}><TextoSuave texto={aviso} /></p>
           <button className="button button-yellow cuenta-crear" type="button" onClick={alCrear} aria-disabled={ocupado}>
             Crear la cuenta
           </button>
