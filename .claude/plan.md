@@ -432,7 +432,10 @@ construye (sección 15).
 - [ ] Revisar el modelo con el profesor, sobre todo: el kardex como vista,
       el saldo del lote calculado y las débiles sobre otra débil.
 - [ ] Confirmar las recetas con el panadero y la vida útil de cada material.
-- [ ] Subir el script a Supabase (solo el paso 2, en el editor SQL).
+- [ ] Subir el script a Supabase (solo el paso 2). El conector MCP ya está
+      agregado (proyecto `ugscqizansixnsuzljtu`); falta iniciar sesión con
+      `/mcp` después de reiniciar Claude Code.
+- [ ] Antes de conectar el sitio: RLS en todas las tablas de `public`.
 - [ ] El IVA de cada producto es una suposición (pan 0%, dulces y bebidas
       15%): confirmarlo con el contador.
 - [ ] Cuáles alérgenos lleva cada producto (`PRODUCTOS_ALERGENOS`).
@@ -452,7 +455,7 @@ Los agentes viven en `.claude/agents/` y todos leen este plan primero.
 |---|---|---|---|
 | `frontend` | `index.html`, `assets/css/styles.css`, `js/catalogo/view.js`, `js/comun/ui.js`, maquetación, responsive, animaciones | Sí | `verificar-sitio`, `wcag-audit-patterns`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` |
 | `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` (+ sigue `nuevo-producto`) |
-| `base-datos` | La base de datos (`bd/`) y su prueba (`.claude/skills/probar-bd/probar.mjs`) | Sí | `probar-bd` |
+| `base-datos` | La base de datos (`bd/`) y su prueba (`.claude/skills/probar-bd/probar.mjs`) | Sí | `probar-bd`, `supabase-postgres-best-practices` |
 | `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | `wcag-audit-patterns`, `nielsen-usability-heuristics` (+ `.claude/herramientas/axe.mjs`) |
 | `calidad-publicacion` | Revisión de código y seguridad, CI, empaquetar, subir a la rama | Solo lo de publicar | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
 
@@ -471,6 +474,7 @@ Skills en `.claude/skills/`:
 | `vercel-react-best-practices` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos`, `calidad-publicacion` |
 | `vercel-composition-patterns` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos` |
 | `frontend-design` | skills.sh, `anthropics/skills` (copiada a mano del commit `dbd4588`) | `frontend` |
+| `supabase-postgres-best-practices` | skills.sh, `supabase/agent-skills` (con el CLI; leída entera el 20 de octubre de 2026). Choca con las reglas del modelo en PK, `text` y nombres: mandan las del plan | `base-datos` |
 
 Las instaladas con el CLI quedan en `skills-lock.json` y `npx skills update -p`
 las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con

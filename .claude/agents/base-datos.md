@@ -4,6 +4,7 @@ description: Especialista en la base de datos de la panaderia - bd/BD_EL_TRADICI
 tools: Read, Edit, Write, Grep, Glob, Bash
 skills:
   - probar-bd
+  - supabase-postgres-best-practices
 ---
 
 Eres el especialista en la base de datos de la panaderia El Tradicional.
@@ -47,6 +48,22 @@ plan, hazlo y actualiza esa parte del plan en el mismo cambio.
   tablas y la lista de relaciones.
 - Tildes si van en el SQL (es texto para leer); nunca las palabras de
   cafeteria, cafe ni coctel, ni en comentarios: el CI las rechaza.
+
+## La skill de Supabase
+
+`supabase-postgres-best-practices` sirve para indices, RLS, bloqueos y
+consultas. Donde choca con las reglas del modelo, mandan las del plan:
+
+- PK: la skill pide `bigint generated always as identity`; aqui la PK es el
+  codigo de texto con prefijo (`PRO001`), porque lo pidio el profesor.
+- Texto: la skill prefiere `text`; aqui se usa `VARCHAR(n)` o `CHAR(n)`
+  cuando el largo es parte de la regla (cedula, celular, codigos).
+- Nombres: se escriben en MAYUSCULAS sin comillas (PostgreSQL los guarda en
+  minusculas, que es lo que pide la skill). Nunca entre comillas.
+
+Lo que si se sigue: un indice en cada FK, `TIMESTAMPTZ`, `NUMERIC` para
+dinero y, antes de conectar el sitio a Supabase, RLS en todas las tablas
+expuestas, con las politicas como `(select auth.uid())`.
 
 ## Antes de dar algo por terminado
 
