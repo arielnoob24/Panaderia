@@ -8,13 +8,15 @@ import {
 import { sesion, entrega, puente, dinero } from '../comun/state.js';
 import { buzonListo, enviarCorreo } from '../comun/mail.js';
 import { pedidosGuardados, marcaBonita } from '../comun/storage.js';
+// Que se acepta de la cuenta guardada vive en guardada.js, sin DOM, porque la
+// version en React lee la misma cuenta.
+import { CLAVE_CUENTA, soloNueve, leerCuentaGuardada, correoDeCuenta } from './guardada.js';
 
 // Maqueta de cuentas. No hay servidor detras, asi que nada de esto viaja a
 // ninguna parte: la cuenta queda escrita en este navegador y en ningun otro
 // sitio. La contrasena no se guarda tal cual: se guarda su huella, un hash
 // PBKDF2 con sal, que sirve para comprobarla al entrar pero no para leerla.
 // Guardarla en claro seria ensenar a hacerlo mal.
-const CLAVE_CUENTA = 'eltradicional-cuenta';
 
 // La huella de la contrasena de la cuenta guardada: { sal, hash } en hex, o
 // null si la cuenta es de antes de que se guardara.
@@ -92,8 +94,8 @@ const REGLAS = [
   { id: 'numero', texto: 'Un número', cumple: (v) => /[0-9]/.test(v) },
 ];
 // El +593 esta fijo delante del campo, asi que el numero va sin el cero de
-// 09... Quien lo escriba de memoria con el cero no se equivoca: se lo come.
-const soloNueve = (v) => v.replace(/\D/g, '').replace(/^0+/, '').slice(0, 9);
+// 09... Quien lo escriba de memoria con el cero no se equivoca: se lo come
+// (soloNueve, de guardada.js).
 const telefonoBonito = (d) => (d ? `+593 ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.slice(5)}` : '');
 
 const reglasHtml = '<ul class="cuenta-reglas" id="cuenta-clave-reglas">'
@@ -528,35 +530,21 @@ const guardarCuenta = () => {
     }));
   } catch (e) { /* en ventana privada no se puede guardar; la sesion sigue viva en memoria */ }
 };
-const correoGuardado = () => {
-  try {
-    const crudo = window.localStorage.getItem(CLAVE_CUENTA);
-    return crudo ? String(JSON.parse(crudo).correo || '') : '';
-  } catch (e) { return ''; }
+const cuentaCruda = () => {
+  try { return window.localStorage.getItem(CLAVE_CUENTA); } catch (e) { return null; }
 };
+const correoGuardado = () => correoDeCuenta(cuentaCruda());
 const huellaGuardada = () => {
   try {
     const h = JSON.parse(window.localStorage.getItem(CLAVE_CUENTA) || '{}').clave;
     return h && typeof h.sal === 'string' && typeof h.hash === 'string' ? h : null;
   } catch (e) { return null; }
 };
+// Almacenamiento bloqueado o dato corrupto: leerCuentaGuardada() da la sesion
+// de fuera y se empieza sin cuenta.
 const leerCuenta = () => {
   huellaClave = huellaGuardada();
-  try {
-    const crudo = window.localStorage.getItem(CLAVE_CUENTA);
-    if (!crudo) return;
-    const dato = JSON.parse(crudo);
-    if (!dato || !dato.nombre || typeof dato.correo !== 'string') return;
-    sesion.nombre = String(dato.nombre).slice(0, 60);
-    sesion.correo = String(dato.correo).slice(0, 80);
-    sesion.telefono = soloNueve(String(dato.telefono || ''));
-    sesion.direccion = String(dato.direccion || '').slice(0, 200);
-    sesion.verificado = dato.verificado === true;
-    sesion.metodo = dato.metodo === 'tarjeta' ? 'tarjeta' : 'efectivo';
-    // Una cuenta guardada antes de que existiera este dato no trae el campo, y
-    // entonces se entra como siempre: solo un cierre expreso deja fuera.
-    sesion.dentro = dato.sesionAbierta !== false;
-  } catch (e) { /* almacenamiento bloqueado o dato corrupto: se empieza fuera */ }
+  Object.assign(sesion, leerCuentaGuardada(cuentaCruda()));
 };
 
 const iniciales = (nombre) => nombre.split(/\s+/).filter(Boolean).slice(0, 2)

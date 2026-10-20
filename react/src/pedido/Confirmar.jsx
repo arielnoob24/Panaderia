@@ -1,17 +1,21 @@
-// Confirmar el pedido y pagar (#/confirmar). Fase 1: solo la ruta; el
-// contenido llega en la fase 4. Le toca a logica-datos.
-import { Link } from 'react-router-dom';
+// Confirmar el pedido y pagar (#/confirmar). Solo se entra con una cuenta con
+// el correo verificado y algo en la canasta; si no, a la portada sin dejar
+// rastro en Atras (seccion 15 del plan, fase 4). Se mira al entrar y no
+// despues: si estando aqui se vacia la canasta (la gaveta se abre encima con
+// "Editar la canasta"), la vista se queda y el boton dice que no hay nada que
+// confirmar, como en el sitio actual; deshacer lo devuelve.
+import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
+import { usePedido } from '../estado/PedidoProvider.jsx';
+import { useSesion } from '../estado/SesionProvider.jsx';
+import FormularioPedido from './FormularioPedido.jsx';
 
 function Confirmar() {
-  return (
-    <section id="confirmar" className="section-pad">
-      <div className="container">
-        <h2>Confirmar el pedido</h2>
-        <p>Esta vista se arma en la fase 4.</p>
-        <p><Link to="/">Volver a la portada</Link></p>
-      </div>
-    </section>
-  );
+  const { lineas } = usePedido();
+  const { puedePedir } = useSesion();
+  const [puedeEntrar] = useState(() => puedePedir && lineas.length > 0);
+  if (!puedeEntrar) return <Navigate to="/" replace />;
+  return <FormularioPedido />;
 }
 
 export default Confirmar;

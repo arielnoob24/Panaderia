@@ -3,9 +3,11 @@
 // Mientras esta arriba, lo de detras del panel queda inert (lo hace Canasta).
 // Escape o tocar lo oscuro es "Seguir viendo la canasta".
 //
-// FASE 3: en React todavia no hay cuenta (fase 5) ni pedido (fase 4), asi que
-// la hoja sale siempre y sus dos botones grandes no hacen nada aun. Cuando
-// llegue la cuenta, abriran el panel en 'crear' o en 'entrar' como en cart.js.
+// FASE 4: React ya lee la cuenta del sitio actual (estado/SesionProvider.jsx)
+// y con ella deja pagar; sin ella sale esta hoja. Pero todavia no sabe crear
+// cuentas ni entrar en ellas (fase 5), asi que sus dos botones grandes no
+// hacen nada aun. Cuando llegue la cuenta, abriran el panel en 'crear' o en
+// 'entrar' como en cart.js.
 import { IconoPersona } from './iconosPedido.jsx';
 
 function PideCuenta({ pide, principalRef, onVolver }) {

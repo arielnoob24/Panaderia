@@ -33,4 +33,14 @@ function IconoPersona() {
   );
 }
 
-export { Basurero, IconoCanasta, IconoPersona };
+// El alfiler de "Como llegar" en la pantalla de confirmar, el mismo de cart.js.
+function IconoRuta() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M12 21.4c0 0-6.6-5.3-6.6-10.1a6.6 6.6 0 0 1 13.2 0c0 4.8-6.6 10.1-6.6 10.1Z" />
+      <circle cx="12" cy="11" r="2.4" />
+    </svg>
+  );
+}
+
+export { Basurero, IconoCanasta, IconoPersona, IconoRuta };

@@ -12,6 +12,7 @@ import {
   subtotal, envio, total, unidades,
 } from '../comun/state.js';
 import { marcarActualizacion, olvidarMarca } from '../comun/storage.js';
+import { textoRetiro } from '../comun/horario.js';
 import { leerPedidoGuardado, pedidoParaGuardar } from './guardado.js';
 import {
   montarPago, piezasDePago, comprobanteHtml, pintarPago,
@@ -135,7 +136,8 @@ vista.innerHTML =
   + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" '
   + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
   + '<path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver a la tienda</button>'
-  + '<h2 class="vista-titulo checkout-titulo" tabindex="-1">Confirmar el pedido</h2>'
+  // h1: es una vista propia, como la de categoria, y su titulo es el de la pagina.
+  + '<h1 class="vista-titulo checkout-titulo" tabindex="-1">Confirmar el pedido</h1>'
   + '</div>'
 
   + '<div class="checkout-paso" data-checkout="pedido">'
@@ -167,8 +169,9 @@ vista.innerHTML =
   + '<div class="canasta-direccion" hidden>'
   + '<label for="canasta-dir">¿A dónde lo llevamos?</label>'
   + '<input id="canasta-dir" type="text" autocomplete="street-address" '
-  + 'placeholder="Calle, número y barrio">'
-  + '<p class="canasta-aviso" role="alert" hidden>Escribe la dirección para poder llevarlo.</p>'
+  + 'placeholder="Calle, número y barrio" aria-describedby="canasta-dir-error">'
+  + '<p class="canasta-aviso" id="canasta-dir-error" role="alert" hidden>'
+  + 'Escribe la dirección para poder llevarlo.</p>'
   // Lo que no dice la calle: en que puerta hay que golpear. Son
   // opcionales porque una casa en la esquina no tiene piso ni torre, y pedir
   // un campo que no aplica se contesta con un guion.
@@ -201,7 +204,8 @@ vista.innerHTML =
   // escribe los datos de la tarjeta. De ahi el boton de al lado, que es la
   // salida: ver el error y poder arreglarlo sin buscar la flecha de arriba.
   + '<div class="pedido-resumen">'
-  + '<div class="resumen-cabeza"><h3 class="recibo-titulo">Tu pedido</h3>'
+  // h2 y no h3: cuelgan del h1 de la vista, sin saltarse un nivel.
+  + '<div class="resumen-cabeza"><h2 class="recibo-titulo">Tu pedido</h2>'
   + '<p class="resumen-cuenta"></p></div>'
   + '<ul class="recibo-lista resumen-lista"></ul>'
   + '<button class="resumen-editar" type="button">Editar la canasta</button>'
@@ -502,16 +506,9 @@ const pintarResumen = () => {
 };
 
 // Hasta que hora se puede pasar a retirar. Sale del horario de verdad, el mismo
-// que calcula el estado del pie: es lo unico con forma de tiempo que este sitio
-// puede afirmar, porque no tiene cola de horno ni reparto que consultar. Un
-// "listo en 20 minutos" seria inventado.
+// que calcula el estado del pie (textoRetiro de horario.js).
 const pintarHoraRetiro = () => {
-  if (!localHora) return;
-  const h = horarioDeHoy();
-  if (h.festivo) localHora.textContent = 'Hoy no horneamos: es día festivo.';
-  else if (h.abierto) localHora.textContent = `Puedes retirarlo hoy hasta las ${h.cierra}.`;
-  else if (h.antesDeAbrir) localHora.textContent = `Hoy abrimos a las ${h.abre}.`;
-  else localHora.textContent = 'Hoy ya cerramos.';
+  if (localHora) localHora.textContent = textoRetiro(horarioDeHoy());
 };
 
 const pintarPie = () => {
@@ -646,17 +643,26 @@ puente.verComprobante = verComprobante;
 radios.forEach((radio) => radio.addEventListener('change', () => {
   if (!radio.checked) return;
   entrega.modo = radio.value === 'domicilio' ? 'domicilio' : 'retiro';
-  avisoDir.hidden = true;
+  verAvisoDir(false);
   pintarPie();
   guardar();
   if (entrega.modo === 'domicilio') campoDir.focus();
 }));
 
+// El aviso de la direccion, con su aria-invalid. Sale al intentar confirmar
+// y tambien al dejar el campo vacio, como los de la tarjeta y la factura.
+function verAvisoDir(ver) {
+  avisoDir.hidden = !ver;
+  campoDir.setAttribute('aria-invalid', String(ver));
+}
 campoDir.addEventListener('input', () => {
   entrega.direccion = campoDir.value.trim().slice(0, 200);
-  if (entrega.direccion) avisoDir.hidden = true;
+  if (entrega.direccion) verAvisoDir(false);
   pintarPie();
   guardar();
+});
+campoDir.addEventListener('blur', () => {
+  if (entrega.modo === 'domicilio' && !entrega.direccion) verAvisoDir(true);
 });
 
 // Los tres campos de detalle se guardan igual, asi que se cablean en bucle.
@@ -738,7 +744,7 @@ resumenEditar?.addEventListener('click', () => abrir());
 // llama checkout.js por el puente porque el campo es de aqui.
 puente.faltaDireccion = () => {
   if (entrega.modo !== 'domicilio' || entrega.direccion) return false;
-  avisoDir.hidden = false;
+  verAvisoDir(true);
   campoDir.focus();
   return true;
 };

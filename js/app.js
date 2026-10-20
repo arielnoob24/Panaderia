@@ -11,7 +11,7 @@ import { montarCatalogo } from './catalogo/view.js';
 import { montarControlesDeFicha, iniciarCanasta } from './pedido/cart.js';
 import { iniciarCuenta } from './cuenta/account.js';
 import { updateOpeningStatus, vigilarImagenes } from './comun/ui.js';
-import { puente } from './comun/state.js';
+import { puente, pedido } from './comun/state.js';
 import { ultimaActualizacion, marcaBonita } from './comun/storage.js';
 
 const catalogStatus = document.querySelector('.catalog-status');
@@ -20,10 +20,12 @@ const pieGuardado = document.querySelector('.footer-guardado');
 // Cuando se guardo por ultima vez lo que hay en este navegador. Sale en el pie
 // y no en la canasta a proposito: no es parte del pedido, es una nota sobre lo
 // que el sitio tiene apuntado de ti, y ahi abajo es donde se mira eso.
-// Sin nada guardado no se escribe nada: un "nunca" no le sirve a nadie.
+// Sin nada guardado no se escribe nada: un "nunca" no le sirve a nadie. Con
+// la canasta vacia tampoco: "tu pedido se guardo" sobre un pedido que no hay
+// no ensena nada (la marca puede ser de un pedido ya pagado o vaciado).
 const pintarGuardado = (fecha = ultimaActualizacion()) => {
   if (!pieGuardado) return;
-  const cuando = marcaBonita(fecha);
+  const cuando = pedido.size ? marcaBonita(fecha) : '';
   pieGuardado.hidden = !cuando;
   pieGuardado.textContent = cuando ? `Tu pedido se guardó ${cuando} en este navegador.` : '';
 };

@@ -78,4 +78,14 @@ const notaDelHorno = ({ festivo, abierto, antesDeAbrir, abre, cierra }) => {
   return { titulo: 'Ya cerramos por hoy', dato: `Mañana abrimos a las ${abre}` };
 };
 
-export { horarioDeHoy, estadoDelPie, notaDelHorno };
+// Hasta que hora se puede pasar a retirar, en la pantalla de confirmar. Es lo
+// unico con forma de tiempo que el sitio puede afirmar: no tiene cola de horno
+// ni reparto que consultar, y un "listo en 20 minutos" seria inventado.
+const textoRetiro = ({ festivo, abierto, antesDeAbrir, abre, cierra }) => {
+  if (festivo) return 'Hoy no horneamos: es día festivo.';
+  if (abierto) return `Puedes retirarlo hoy hasta las ${cierra}.`;
+  if (antesDeAbrir) return `Hoy abrimos a las ${abre}.`;
+  return 'Hoy ya cerramos.';
+};
+
+export { horarioDeHoy, estadoDelPie, notaDelHorno, textoRetiro };

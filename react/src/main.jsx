@@ -1,5 +1,6 @@
 // El arranque: la hoja de estilos de siempre, el enrutador, la region de
-// avisos (que la usan todas las zonas), el pedido, la canasta y la aplicacion.
+// avisos (que la usan todas las zonas), la sesion, el pedido (que necesita la
+// sesion para rellenar la direccion), la canasta y la aplicacion.
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
@@ -8,6 +9,7 @@ import { HashRouter } from 'react-router-dom';
 // cual. Vite resuelve sus url() (las fotos de portada) y las mete en el build.
 import '@raiz/assets/css/styles.css';
 import { AvisosProvider } from './comun/Avisos.jsx';
+import { SesionProvider } from './estado/SesionProvider.jsx';
 import { PedidoProvider } from './estado/PedidoProvider.jsx';
 import { CanastaProvider } from './pedido/CanastaProvider.jsx';
 import App from './App.jsx';
@@ -18,11 +20,13 @@ createRoot(document.getElementById('raiz')).render(
   <StrictMode>
     <HashRouter>
       <AvisosProvider>
-        <PedidoProvider>
-          <CanastaProvider>
-            <App />
-          </CanastaProvider>
-        </PedidoProvider>
+        <SesionProvider>
+          <PedidoProvider>
+            <CanastaProvider>
+              <App />
+            </CanastaProvider>
+          </PedidoProvider>
+        </SesionProvider>
       </AvisosProvider>
     </HashRouter>
   </StrictMode>,

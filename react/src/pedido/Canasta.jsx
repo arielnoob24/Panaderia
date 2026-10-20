@@ -9,6 +9,7 @@
 // foco vuelve a donde estaba.
 import { useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { dinero } from '@raiz/js/comun/state.js';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { unidades, productos } from '../estado/pedido.js';
@@ -16,7 +17,7 @@ import { useAvisos } from '../comun/Avisos.jsx';
 import { useAtraparFoco, apagarDetras } from '../comun/useAtraparFoco.js';
 import { movimientoReducido } from '../comun/useMovimientoReducido.js';
 import { fotoDeLinea } from '../servicios/catalogo.js';
-import { correoGuardado } from '../servicios/guardado.js';
+import { useSesion } from '../estado/SesionProvider.jsx';
 import { useCanasta } from './CanastaProvider.jsx';
 import LineaCanasta from './LineaCanasta.jsx';
 import PideCuenta from './PideCuenta.jsx';
@@ -25,6 +26,9 @@ function Canasta() {
   const { lineas, unidades: n, subtotal, hacer } = usePedido();
   const { abierta, cerrar, barraRef, deshacerRef, tituloRef, enfocarLinea } = useCanasta();
   const avisar = useAvisos();
+  const sesion = useSesion();
+  const navegar = useNavigate();
+  const { pathname } = useLocation();
 
   // Que linea espera un si o un no ({ id, desde }), si se pregunta por
   // vaciar, y la hoja de la cuenta ({ tiene } o null).
@@ -133,11 +137,19 @@ function Canasta() {
   };
 
   // ---- Ir a pagar ------------------------------------------------------
-  // Pagar pide una cuenta con el correo verificado. En la fase 3 no hay
-  // cuenta, asi que siempre sale el aviso (PideCuenta.jsx).
+  // Pagar pide una cuenta con el correo verificado: el comprobante va a ese
+  // correo. Sin ella sale la hoja de "Entra a tu cuenta para pagar" dentro de
+  // la canasta (PideCuenta.jsx), sin echar a nadie a otra parte. Con ella, la
+  // canasta se cierra y se va a #/confirmar; si ya se estaba ahi (se abrio con
+  // "Editar la canasta"), solo se cierra, sin apilar otra entrada en Atras.
   const irAPagar = () => {
     if (!lineas.length) return;
-    flushSync(() => setPide({ tiene: Boolean(correoGuardado()) }));
+    if (sesion.puedePedir) {
+      cerrar();
+      if (pathname !== '/confirmar') navegar('/confirmar');
+      return;
+    }
+    flushSync(() => setPide({ tiene: sesion.hayCuenta }));
     principalRef.current?.focus();
   };
   const volverDePide = () => {
