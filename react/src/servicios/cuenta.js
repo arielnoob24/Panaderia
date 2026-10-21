@@ -2,24 +2,82 @@
 // Leer y guardar la cuenta, la huella de la contrasena, las reglas de cada
 // campo y el codigo que se manda por correo (secciones 7 y 15 del plan).
 //
-// Misma clave y mismo formato de localStorage que el sitio actual: lo que se
-// acepta de lo guardado es leerCuentaGuardada() de js/cuenta/guardada.js,
-// importado, y lo que se escribe es lo mismo que escribe guardarCuenta() de
-// js/cuenta/account.js. Asi una cuenta creada aqui sirve alli y al reves.
-//
-// Las reglas (REGLAS, fallaCorreo, fallaNombre, fallaTelefono), la huella
-// PBKDF2 y los textos del codigo estan copiados TAL CUAL de
-// js/cuenta/account.js, sin reescribirlos: ese archivo no se puede importar
-// porque arma su panel en la pagina al cargarse. Si se cambia una regla, se
-// cambia en los dos sitios hasta que el actual se retire (fase 7).
+// Es la unica fuente de estas reglas en React. Salen del sitio presentado,
+// tal cual: lo que se acepta de lo guardado, el telefono y el codigo al azar
+// de js/cuenta/guardada.js, y la huella PBKDF2, las reglas de cada campo y lo
+// que se escribe al guardar de js/cuenta/account.js. Misma clave y mismo
+// formato de localStorage: una cuenta creada alli sirve aqui y al reves.
 //
 // Todo lo que toca localStorage va en try/catch: en ventana privada falla, y
 // eso no puede tumbar la pagina.
-import { CLAVE_CUENTA, soloNueve, codigoAlAzar, leerCuentaGuardada, correoDeCuenta } from '@raiz/js/cuenta/guardada.js';
-import { buzonListo, enviarCorreo } from '@raiz/js/comun/mail.js';
-import { pedidosGuardados } from '@raiz/js/comun/storage.js';
+import { buzonListo, enviarCorreo } from './mail.js';
+import { pedidosGuardados } from './storage.js';
 
-// ---- La huella de la contrasena (copiado de account.js) ---------------
+// ---- Que se acepta de la cuenta guardada -------------------------------
+// Aqui no se toca localStorage: quien llama lee, con su try/catch, y pasa el
+// texto. La huella de la contrasena va aparte (huellaDe, mas abajo): para
+// pagar no hace falta.
+const CLAVE_CUENTA = 'eltradicional-cuenta';
+
+// El telefono se guarda sin el 0 ni el +593: los nueve digitos del movil.
+// Lo pegado o lo que trae el autorrelleno puede venir con el prefijo del pais
+// (+593 99..., 593 099...): el 593 solo se quita si sobran cifras, porque con
+// nueve o menos es lo que se esta escribiendo a mano. El campo no lleva
+// maxlength: recortaria lo pegado antes de llegar aqui y se perderian las
+// ultimas cifras; el tope de nueve lo pone esta funcion.
+const soloNueve = (v) => {
+  let d = v.replace(/\D/g, '');
+  if (d.length > 9 && d.startsWith('593')) d = d.slice(3);
+  return d.replace(/^0+/, '').slice(0, 9);
+};
+
+// El codigo de 6 cifras que se manda al correo (verificar y, en React,
+// recuperar la contrasena). Sale de crypto.getRandomValues y no de
+// Math.random, que no esta hecho para que no se pueda adivinar. Se descartan
+// los valores del final del rango para que las 900000 salidas sean igual de
+// probables. getRandomValues existe tambien fuera de https (doble clic).
+const RANGO = 900000;
+const TOPE = Math.floor(2 ** 32 / RANGO) * RANGO;
+const codigoAlAzar = () => {
+  const caja = new Uint32Array(1);
+  do { window.crypto.getRandomValues(caja); } while (caja[0] >= TOPE);
+  return String(100000 + (caja[0] % RANGO));
+};
+
+const SIN_CUENTA = {
+  nombre: '', correo: '', telefono: '', direccion: '',
+  dentro: false, verificado: false, metodo: 'efectivo',
+};
+
+// Lo de localStorage lo puede tocar cualquiera a mano, asi que se revisa
+// antes de usarlo. Sin nombre o sin correo no hay cuenta: se esta fuera.
+const leerCuentaGuardada = (crudo) => {
+  if (!crudo) return { ...SIN_CUENTA };
+  let dato;
+  try { dato = JSON.parse(crudo); } catch (e) { return { ...SIN_CUENTA }; }
+  if (!dato || typeof dato !== 'object' || !dato.nombre || typeof dato.correo !== 'string') {
+    return { ...SIN_CUENTA };
+  }
+  return {
+    nombre: String(dato.nombre).slice(0, 60),
+    correo: String(dato.correo).slice(0, 80),
+    telefono: soloNueve(String(dato.telefono || '')),
+    direccion: String(dato.direccion || '').slice(0, 200),
+    verificado: dato.verificado === true,
+    metodo: dato.metodo === 'tarjeta' ? 'tarjeta' : 'efectivo',
+    // Una cuenta guardada antes de que existiera este dato no trae el campo, y
+    // entonces se entra como siempre: solo un cierre expreso deja fuera.
+    dentro: dato.sesionAbierta !== false,
+  };
+};
+
+// Si en este navegador hay alguna cuenta, aunque la sesion este cerrada: la
+// hoja de "Entra a tu cuenta para pagar" ofrece entonces entrar y no crear.
+const correoDeCuenta = (crudo) => {
+  try { return crudo ? String(JSON.parse(crudo).correo || '') : ''; } catch (e) { return ''; }
+};
+
+// ---- La huella de la contrasena ---------------------------------------
 // La contrasena no se guarda tal cual: se guarda su huella, un hash PBKDF2
 // con sal, que sirve para comprobarla al entrar pero no para leerla.
 const VUELTAS = 100000;
@@ -37,7 +95,7 @@ const calcularHuella = async (clave, salHex) => {
   return { sal: aHex(sal), hash: aHex(bits) };
 };
 
-// ---- Las reglas de cada campo (copiado de account.js) -----------------
+// ---- Las reglas de cada campo -----------------------------------------
 // Lo que tiene que cumplir la contrasena, escrito una sola vez: de aqui salen
 // la lista que se ve debajo del campo y la comprobacion de si vale.
 const REGLAS = [

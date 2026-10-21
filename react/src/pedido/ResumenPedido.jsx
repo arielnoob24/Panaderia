@@ -5,8 +5,8 @@
 //
 // Editar se hace en la canasta: si se pudiera cambiar la cantidad aqui, el
 // total cambiaria por debajo mientras alguien escribe los datos de la tarjeta.
-import { dinero } from '@raiz/js/comun/state.js';
-import { textoEnvio } from '@raiz/js/pedido/cobro.js';
+import { dinero } from '../servicios/state.js';
+import { textoEnvio } from '../servicios/cobro.js';
 import { productos } from '../estado/pedido.js';
 
 function ResumenPedido({

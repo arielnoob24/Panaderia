@@ -32,7 +32,7 @@
 //   { tipo: 'sumar', lineas: [{ id, nombre, precio, cantidad }] }
 //                                                      pedir otra vez: suma a
 //                                                      lo que haya, con el tope
-import { MAX_UNIDADES } from '@raiz/js/comun/state.js';
+import { MAX_UNIDADES } from '../servicios/state.js';
 
 const FACTURA_VACIA = { aOtro: false, nombre: '', ident: '', correo: '', direccion: '' };
 

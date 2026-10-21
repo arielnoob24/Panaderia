@@ -14,8 +14,8 @@
 // montar (App.jsx). "Los mas pedidos" de #/ es otra pieza (MasPedidos.jsx).
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-import { dinero } from '@raiz/js/comun/state.js';
-import { recordarVista, vistaRecordada } from '@raiz/js/comun/storage.js';
+import { dinero } from '../servicios/state.js';
+import { recordarVista, vistaRecordada } from '../servicios/storage.js';
 import { catalogo } from '../servicios/catalogo.js';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { movimientoReducido } from '../comun/useMovimientoReducido.js';

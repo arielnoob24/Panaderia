@@ -7,7 +7,7 @@
 // tamano elegido, y como el nombre que se guarda lleva el tamano dentro, cada
 // uno es su propia linea de la canasta.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { MAX_UNIDADES, idDe } from '@raiz/js/comun/state.js';
+import { MAX_UNIDADES, idDe } from '../servicios/state.js';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import {
   cantidadDe, unidades, productos, enTope, avisoTope, consejoTope,

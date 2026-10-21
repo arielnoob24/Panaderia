@@ -1,13 +1,13 @@
 // "¿Como lo quieres?": paso retirando (gratis) o a domicilio ($1.50), con lo
 // de cart.js. Retirando, donde esta el local y hasta que hora se puede pasar
-// (textoRetiro de js/comun/horario.js). A domicilio, la calle, que es lo unico
+// (textoRetiro de servicios/horario.js). A domicilio, la calle, que es lo unico
 // obligatorio, y lo que no dice la calle: piso, una referencia e indicaciones.
 //
 // Los campos de texto no se controlan: React no les reescribe lo tecleado. Lo
 // guardado se recorta (sin espacios a los lados), y si el campo fuera
 // controlado no se podria escribir un espacio entre dos palabras.
-import { ENVIO, dinero } from '@raiz/js/comun/state.js';
-import { textoRetiro } from '@raiz/js/comun/horario.js';
+import { ENVIO, dinero } from '../servicios/state.js';
+import { textoRetiro } from '../servicios/horario.js';
 import { useHorario } from '../comun/useHorario.js';
 import { IconoRuta } from './iconosPedido.jsx';
 

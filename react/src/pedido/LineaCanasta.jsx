@@ -16,7 +16,7 @@
 // escalarla deformaria el texto. Con menos movimiento, nada de esto.
 import { useLayoutEffect, useRef } from 'react';
 import { m, useReducedMotion } from 'motion/react';
-import { dinero } from '@raiz/js/comun/state.js';
+import { dinero } from '../servicios/state.js';
 import { useCanasta } from './CanastaProvider.jsx';
 import { Basurero } from './iconosPedido.jsx';
 import { enTope, consejoTope } from '../estado/pedido.js';

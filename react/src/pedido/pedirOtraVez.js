@@ -11,8 +11,8 @@
 //   - se suma a lo que ya tenga la canasta, con el tope de siempre por linea;
 //   - lo que ya no esta (quitado, agotado o sin ese tamano) se dice por su
 //     nombre: "Ya no tenemos Palanqueta".
-import { MAX_UNIDADES, idDe } from '@raiz/js/comun/state.js';
-import { enLista } from '@raiz/js/pedido/cobro.js';
+import { MAX_UNIDADES, idDe } from '../servicios/state.js';
+import { enLista } from '../servicios/cobro.js';
 
 // Lo que hoy se puede pedir, por id de linea: un producto sin tamanos es una
 // linea; con tamanos, una por tamano, con el nombre y el precio que arma la ficha.

@@ -1,7 +1,7 @@
 // "¿Como quieres pagar?": efectivo o tarjeta, con el HTML de piezasDePago()
 // en checkout.js. La tarjeta es de mentira y lo dice: vive solo en el estado
 // de Confirmar, no se guarda ni se envia, y se pierde al salir de la vista.
-import { textoEfectivo } from '@raiz/js/pedido/cobro.js';
+import { textoEfectivo } from '../servicios/cobro.js';
 import CampoPago from './CampoPago.jsx';
 
 function ElegirPago({ metodo, onMetodo, modo, tarjeta, onTarjeta, onTarjetaSalir, errores, refs }) {

@@ -11,7 +11,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { AnimatePresence } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { dinero } from '@raiz/js/comun/state.js';
+import { dinero } from '../servicios/state.js';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { unidades, productos, enTope, avisoTope } from '../estado/pedido.js';
 import { useAvisos } from '../comun/Avisos.jsx';

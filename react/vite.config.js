@@ -1,7 +1,7 @@
 // ---- Como arma Vite la version en React --------------------------------
 // react/ vive dentro del repo del sitio actual mientras dura la migracion, y
-// lo que comparten (styles.css, las fotos, data/productos.json y las reglas de
-// js/catalogo/repo.js) se queda en la raiz: una sola copia de cada cosa. Este
+// lo que comparten (styles.css, las fotos y data/productos.json) se queda en
+// la raiz: una sola copia de cada cosa. Este
 // archivo es el que le dice a Vite donde encontrarlas.
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';

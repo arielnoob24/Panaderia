@@ -1,10 +1,10 @@
 // La cedula y el RUC de la factura a otro nombre: digito verificador
 // (modulo 10) y la misma regla que FN_CEDULA_VALIDA / FN_RUC_VALIDO de la base.
-// Primero la regla sola (js/pedido/cobro.js, que comparten los dos sitios) y
+// Primero la regla sola (src/servicios/cobro.js, la de React) y
 // despues lo que ve el cliente al dejar el campo, en React y en el sitio actual.
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { VENTANAS, crearCuenta, espera, llegar } from '../arranque.mjs';
+import { REACT_DIR, VENTANAS, crearCuenta, espera, llegar } from '../arranque.mjs';
 
 export const descripcion = 'cedula y RUC con digito verificador, en la regla y en los dos sitios';
 export const limite = 120;
@@ -42,7 +42,7 @@ async function probarCampo(p, ok, donde) {
 
 export default async function cedula(t) {
   // La regla sola, con cedulas a mano.
-  const cobro = await import(pathToFileURL(join(t.RAIZ, 'js', 'pedido', 'cobro.js')).href);
+  const cobro = await import(pathToFileURL(join(REACT_DIR, 'src', 'servicios', 'cobro.js')).href);
   for (const [ident, error] of CASOS) {
     const r = cobro.fallosFactura({ aOtro: true, nombre: 'Luis Tapia', ident }).ident || '';
     t.ok(r === error, `regla ${ident}: "${r}"`);

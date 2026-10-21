@@ -1,6 +1,6 @@
 // "Datos para la factura": a mi nombre (lo normal, nada que rellenar) o a
 // nombre de otra persona, con el HTML de piezasDePago() en checkout.js. Lo que
-// se acepta lo dice fallosFactura() de js/pedido/cobro.js.
+// se acepta lo dice fallosFactura() de servicios/cobro.js.
 //
 // El nombre, el correo y la direccion no se controlan (se guardan recortados,
 // como en ElegirEntrega). La cedula si: solo admite cifras, y al ser

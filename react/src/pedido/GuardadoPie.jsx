@@ -2,8 +2,8 @@
 // Va en el pie y no en la canasta: no es parte del pedido, es una nota sobre
 // lo que el sitio tiene apuntado de ti. Sin nada guardado no dice nada, y con
 // la canasta vacia tampoco: no hay pedido del que hablar.
-// La fecha es la de la cookie (marcaBonita de js/comun/storage.js).
-import { marcaBonita } from '@raiz/js/comun/storage.js';
+// La fecha es la de la cookie (marcaBonita de servicios/storage.js).
+import { marcaBonita } from '../servicios/storage.js';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 
 function GuardadoPie() {

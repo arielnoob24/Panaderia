@@ -6,7 +6,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m } from 'motion/react';
-import { dinero } from '@raiz/js/comun/state.js';
+import { dinero } from '../servicios/state.js';
 import { catalogo } from '../servicios/catalogo.js';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { Chevron } from '../comun/iconos.jsx';

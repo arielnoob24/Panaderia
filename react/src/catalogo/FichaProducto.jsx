@@ -8,7 +8,7 @@
 // tamano elegido, que sube al catalogo porque ordenar por precio usa el precio
 // del tamano que se esta viendo, como en el sitio actual.
 import { Fragment, memo, useRef } from 'react';
-import { dinero, idDe } from '@raiz/js/comun/state.js';
+import { dinero, idDe } from '../servicios/state.js';
 import { fotoDe, ANCHOS } from '../servicios/catalogo.js';
 import { useCargaImagen, clases } from '../comun/useCargaImagen.js';
 import { nombreCategoria } from './categorias.js';

@@ -15,7 +15,7 @@
 // cerrado no se vuelve con Adelante, como en el sitio actual.
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ultimaActualizacion } from '@raiz/js/comun/storage.js';
+import { ultimaActualizacion } from '../servicios/storage.js';
 import { leerGuardado, guardarPedidoAMedias, borrarGuardado } from '../servicios/guardado.js';
 import { reductor, unidades, subtotal } from './pedido.js';
 import { useSesion } from './SesionProvider.jsx';

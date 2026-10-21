@@ -18,8 +18,8 @@
 import { useState } from 'react';
 import { m, useReducedMotion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { dinero } from '@raiz/js/comun/state.js';
-import { marcaBonita } from '@raiz/js/comun/storage.js';
+import { dinero } from '../servicios/state.js';
+import { marcaBonita } from '../servicios/storage.js';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { useCanasta } from '../pedido/CanastaProvider.jsx';

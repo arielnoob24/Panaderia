@@ -3,7 +3,7 @@
 // (seccion 6 del plan). Es lo que arman cart.js y checkout.js en el sitio
 // actual, con las mismas clases y los mismos textos.
 //
-// Las reglas no se escriben aqui: vienen de js/pedido/cobro.js, las mismas
+// Las reglas no se escriben aqui: vienen de servicios/cobro.js, las mismas
 // del sitio actual. Al confirmar se revisa en el orden en que se ve:
 // direccion, factura y tarjeta; el foco va al primer campo que falla. Los
 // errores salen al dejar el campo o al intentar confirmar.
@@ -14,15 +14,15 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { guardarPedido } from '@raiz/js/comun/storage.js';
-import { buzonListo, enviarCorreo } from '@raiz/js/comun/mail.js';
+import { guardarPedido } from '../servicios/storage.js';
+import { buzonListo, enviarCorreo } from '../servicios/mail.js';
 import {
   sumasDe, CAMPOS_FACTURA, fallosFactura, avisoFactura,
   CAMPOS_TARJETA, fallosTarjeta, avisoTarjeta,
   reformatear, grupos4, mmaa, tresCifras, textoBotonPagar,
   numeroDePedido, armarRecibo, reciboParaGuardar, asuntoComprobante, cuerpoComprobante,
   avisoAprobado,
-} from '@raiz/js/pedido/cobro.js';
+} from '../servicios/cobro.js';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';

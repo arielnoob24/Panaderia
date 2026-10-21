@@ -7,7 +7,7 @@
 //
 // Estado:
 //   cuenta     { nombre, correo, telefono, direccion, dentro, verificado,
-//              metodo }, la de leerCuentaGuardada() de js/cuenta/guardada.js.
+//              metodo }, la de leerCuentaGuardada() de servicios/cuenta.js.
 //   huella     { sal, hash } de la contrasena, o null.
 //   hayCuenta  si en este navegador hay alguna cuenta, aunque la sesion este
 //              cerrada.

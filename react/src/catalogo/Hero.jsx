@@ -1,9 +1,9 @@
 // La portada de arriba de #/: titular, "Ver el menu", "Como llegar" y la
 // nota del horno, que dice segun la hora si se esta horneando, si el horno se
-// esta calentando o si ya se cerro (js/comun/horario.js).
+// esta calentando o si ya se cerro (servicios/horario.js).
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { notaDelHorno } from '@raiz/js/comun/horario.js';
+import { notaDelHorno } from '../servicios/horario.js';
 import { useHorario } from '../comun/useHorario.js';
 import { IconoMenu, IconoPin } from '../comun/iconos.jsx';
 

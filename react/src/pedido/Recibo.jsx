@@ -2,10 +2,10 @@
 // checkout.js: el numero (con "Copiar"), lo que cuesta, como se paga y se
 // recibe, a nombre de quien va la factura, lo que se pidio, el correo que se
 // mando y como fue el envio. Todo sale del recibo armado al aprobar
-// (armarRecibo de js/pedido/cobro.js), el mismo del correo y del historial.
+// (armarRecibo de servicios/cobro.js), el mismo del correo y del historial.
 import { useState } from 'react';
-import { dinero } from '@raiz/js/comun/state.js';
-import { textoModo, textoEnvio, saludoComprobante, textoCorreo } from '@raiz/js/pedido/cobro.js';
+import { dinero } from '../servicios/state.js';
+import { textoModo, textoEnvio, saludoComprobante, textoCorreo } from '../servicios/cobro.js';
 import { useVistaPedido } from './useVistaPedido.js';
 import CabezaPedido from './CabezaPedido.jsx';
 
