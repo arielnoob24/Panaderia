@@ -560,13 +560,8 @@ Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
 6. **Calidad**: `verificar-sitio`, `axe.mjs`, el CI y la skill `publicar`
    adaptados al *build*; revisión completa de `ux-accesibilidad` (ver
    "Fase 6: calidad"). Además:
-   - Cargar con `React.lazy` + `Suspense` las vistas de la cuenta y del pago
-     (`App.jsx`): hoy el JS es un solo archivo de unos 490 kB (154 kB gzip).
-   - Pasar a `.claude/herramientas/` (o a la skill que toque) los scripts de
-     Edge de la fase 5, que hoy viven en el scratchpad de una sesión
-     (`cuenta`, `reenviar`, `recuperar`, `revision-recuperar`,
-     `recuperar-mov`, `pedidos-cuenta`, `metodo`, `pegar-tel`,
-     `movimiento`, `atras3`, `filtros-atras`).
+   - Hecho: las vistas de la cuenta y del pago se cargan por partes, y las
+     pruebas de navegador viven en `react/pruebas/` (ver "Fase 6: calidad").
 7. **Cambio**: `react/` pasa a la raíz, fuera `js/` y `herramientas/`, y el
    plan se reescribe para describir la versión en React.
 
@@ -1101,7 +1096,18 @@ Pendiente de la fase 6:
 - [x] `verificar-sitio`, `publicar` y `axe.mjs` con React (`ci-local.sh`
       corre también el build y `npm run probar`; `axe.mjs --react` mide 23
       estados a 1280 y 390 px).
-- [ ] Carga por partes.
+- [x] Carga por partes (`014559a`, `frontend`): las 6 vistas de la cuenta,
+      `#/confirmar` y `#/comprobante` van aparte, en dos grupos (`cuenta` y
+      `pago`, tabla `APARTE` en `comun/cargaPorPartes.js`). Se precargan con
+      el puntero o el foco en la cuenta de la cabecera y en "Ir a pagar", y
+      en reposo tras `load` (no sin red ni con `saveData`). Al navegar se ve
+      la vista anterior hasta que llega la nueva; solo al abrir directamente
+      hay un hueco del alto de la ventana. Si una parte no llega, aviso "No
+      se pudo abrir esta parte" (`FalloDeCarga.jsx`, con su `h1`) con
+      "Reintentar", que **recarga** la página (Chromium recuerda el módulo
+      que falló) y "Volver al inicio". El JS inicial pasa de 491,5 kB (154,6
+      gzip) a 440,3 kB (142,3 gzip): el grueso es react-dom, Motion, el
+      router y el catálogo, no la cuenta.
 - [ ] Revisión de `ux-accesibilidad` de todo React, y arreglos.
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
