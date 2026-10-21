@@ -591,4 +591,5 @@ Pendiente de la fase 7:
 - [x] CI que publica `dist/` (`e77dd80`).
 - [x] Herramientas y skills (`e77dd80`); agentes al día.
 - [x] Plan reescrito; `README.md` al día.
-- [ ] Verificado, fusionado en `main` (con el sí del usuario) y Pages en verde.
+- [x] Verificado (22 pruebas y axe en 46 estados), fusionado en `main` el
+      21 de octubre de 2026 (`666f743`) y Pages en verde.
