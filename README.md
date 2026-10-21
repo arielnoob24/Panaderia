@@ -1,177 +1,144 @@
 # Panaderia El Tradicional
 
-Sitio estatico de una panaderia: catalogo, canasta, pago simulado y cuenta de
-cliente. No hay servidor detras; todo corre en el navegador y se publica en
-GitHub Pages.
+Sitio de una panaderia de Tena: catalogo, canasta, pago simulado, comprobante y
+cuenta de cliente. Esta hecho en React, se construye con Vite y se publica en
+GitHub Pages. No hay servidor detras: todo corre en el navegador.
+
+- En internet: https://arielnoob24.github.io/Panaderia/
+- El sitio que se presento antes de pasar a React queda en la etiqueta git
+  `sitio-presentado`.
 
 ## Como esta repartido
 
 ```
-index.html              la unica pagina; tiene que estar en la raiz para GitHub Pages
-README.md               como verlo, tocarlo y publicarlo
+index.html              la pagina: metadatos, JSON-LD y el aviso sin JavaScript
+package.json            dependencias con version exacta y los scripts
+vite.config.js          la configuracion de Vite
+src/
+  main.jsx, App.jsx     el arranque y las vistas
+  vistas/               Inicio, Nosotros y Contacto
+  catalogo/             la tienda, sus filtros, las fichas y "Los mas pedidos"
+  pedido/               la canasta, confirmar el pedido, el pago y el comprobante
+  cuenta/               iniciar sesion, crear cuenta, verificar, recuperar la
+                        contrasena, Mis datos y Mis pedidos
+  comun/                cabecera, pie, avisos, foco, rutas y horario
+  estado/               el estado del pedido y de la sesion (Context + useReducer)
+  servicios/            las reglas, sin interfaz: catalogo, cobro, cuenta,
+                        guardado y correo
+  estilos/              estilos de las vistas y de la cuenta
 assets/
-  css/styles.css        todos los estilos
-  img/                  logo, mascota, iconos y la foto de portada
+  css/styles.css        los estilos base: colores, tipografia, componentes
+  img/                  logo, mascota y fotos de portada e historia
     productos/          las fotos del catalogo, cada una en 420 y 840 px
 data/
   productos.json        el catalogo: nombre, precio, foto, categoria y tamanos
-js/
-  app.js                el arranque: trae los datos y enciende lo demas
-  sin-servidor.js       todo junto, con el catalogo dentro (generado; es lo
-                        que corre al abrir index.html con doble clic)
-  comun/                lo que usan todas las zonas
-    state.js            lo que comparten los modulos, y el puente entre ellos
-    storage.js          los cuatro sitios donde se guarda: local, session, IDB y cookie
-    ui.js               barra, foco, cuadritos de ayuda, animaciones y horario
-    mail.js             envio de correo por EmailJS
-  catalogo/
-    repo.js             lee y revisa data/productos.json
-    view.js             pinta las fichas y manda el catalogo (orden, filtro, vistas)
-  pedido/
-    cart.js             la canasta: panel, lineas y control de cantidad
-    checkout.js         pago simulado y comprobante
-  cuenta/
-    account.js          crear cuenta, verificar el correo y entrar
-herramientas/
-  empaquetar.mjs        genera js/sin-servidor.js
-.github/workflows/      el CI: valida y publica
-.claude/                agentes, skills, herramientas de Claude Code y plan.md
-                        (como debe funcionar todo; lo leen los agentes)
+pruebas/                pruebas de navegador (npm run probar)
+bd/                     la base de datos en PostgreSQL
+.github/workflows/      el CI: valida, prueba y publica
+.claude/                agentes, skills y plan.md (como debe funcionar todo)
 ```
 
 ## Con que esta hecho
 
-Sin dependencias: lo que hay en el repositorio es lo que corre en el
-navegador. La unica pieza generada es `js/sin-servidor.js`, para abrir el sitio
-sin servidor (ver abajo).
+- **React 19** con componentes de funcion y hooks; el estado compartido va en
+  `Context` + `useReducer`, con reductores puros.
+- **React Router 7** con `HashRouter`: cada opcion del menu es una vista
+  (`#/`, `#/nosotros`, `#/tienda-panes`, `#/contacto`, `#/cuenta`...), asi que
+  Atras y Adelante funcionan y no hay que desplazarse por una pagina larga.
+- **Motion** para el movimiento: el cambio de vista, el contador y las lineas
+  de la canasta, los pasos de la cuenta. Todo se apaga con
+  `prefers-reduced-motion`.
+- **Vite 8** para desarrollar y construir. La cuenta y el pago se cargan aparte,
+  solo cuando hacen falta.
+- **EmailJS** para el codigo de verificacion, el de recuperar la contrasena y
+  el comprobante.
 
-- **HTML5 semantico.** `header`, `nav`, `main`, `footer` y `section`; los
-  dialogos de la canasta y de la cuenta son `aside` con `role="dialog"`.
-- **CSS3** en un solo archivo, con Grid para la cuadricula del catalogo y
-  Flexbox para el resto. Seis puntos de quiebre (420, 680 y 900 px, mas los de
-  `hover` y `prefers-reduced-motion`).
-- **JavaScript ES6+** en modulos nativos (`<script type="module">`): `import`
-  y `export`, `async`/`await`, desestructuracion, plantillas, `Map`, spread y
-  encadenamiento opcional.
-- **EmailJS** para el codigo de verificacion y el comprobante.
-
-Las fotos estan en el repositorio y no en un CDN, asi que el catalogo entero se
-ve sin conexion. Lo unico que sale por red es lo que no se puede traer de otra
-forma, y solo cuando hace falta: el correo al pedir el codigo o el
-comprobante. Sin internet el sitio se usa igual
-de principio a fin; el pago es simulado y no necesita a nadie.
+Las fotos estan en el repositorio y no en un CDN. Lo unico que sale por red,
+aparte de la pagina, es el correo y el mapa de Google en Contacto.
 
 ## Para verlo en tu maquina
 
-Funciona de tres formas, sin servidor dinamico en ninguna:
+Hace falta Node 24.
 
-- **Doble clic en `index.html`.** El navegador no deja que una pagina abierta
-  como archivo (`file://`) cargue modulos de JavaScript ni lea
-  `data/productos.json`, asi que en ese caso `index.html` carga
-  `js/sin-servidor.js`: el mismo codigo en un solo archivo, con el catalogo
-  dentro. Lo unico que no hace asi es escribir en el pie cuando se guardo el
-  pedido, porque el navegador no guarda cookies en `file://`; el pedido se
-  guarda igual.
-- **Live Server** (la extension de VS Code) o cualquier servidor estatico:
+```sh
+npm ci            # instala las dependencias exactas de package-lock.json
+npm run dev       # servidor de desarrollo, se recarga al guardar
+npm run build     # construye el sitio en dist/
+npm run preview   # sirve dist/ como lo serviria GitHub Pages
+```
 
-  ```sh
-  python -m http.server 8000
-  # y abrir http://localhost:8000
-  ```
+Con doble clic en `index.html` no funciona: es una aplicacion de React y se
+abre por HTTP.
 
-- **En internet**, en GitHub Pages: https://arielnoob24.github.io/Panaderia/.
-  Sirve igual en cualquier hosting estatico, como Neocities: se suben los
-  archivos tal cual.
+## Pruebas
 
-Servida por HTTP, la pagina carga los modulos de `js/` de siempre.
+```sh
+npm run probar            # todas las pruebas de navegador, contra dist/
+npm run probar -- humo    # solo una
+```
+
+Recorren la portada, la tienda, la canasta, el pago, la cuenta y Atras y
+Adelante, en escritorio y en el telefono. Usan `playwright-core` con Edge (o
+Chrome con `NAVEGADOR=chrome`), instalado fuera del repositorio en
+`%LOCALAPPDATA%\panaderia-herramientas`.
+
+El CI de GitHub, en cada push: instala, construye sin avisos, revisa cada
+producto del catalogo, que esten sus fotos, que no haya palabras prohibidas, y
+corre la prueba `humo` en Chrome. Solo en `main` publica `dist/` en Pages.
 
 ## Para tocar el catalogo
 
-Meter, quitar o cambiar un producto es editar `data/productos.json`: las
-fichas se pintan desde ahi. Despues hay que correr
-`node herramientas/empaquetar.mjs`, para que la version de doble clic lleve el
-catalogo nuevo; lo mismo al tocar cualquier archivo de `js/`. El CI lo
-comprueba y no publica si se olvida. Cada producto necesita `nombre`, `categoria`,
-`precio`, `foto` y `alt`; `disponible: false` lo marca como agotado, `etiqueta`
-le pone el rotulo de color y `tamanos` le da varias medidas con su precio.
+Meter, quitar o cambiar un producto es editar `data/productos.json`. Cada
+producto necesita `nombre`, `categoria`, `precio`, `foto` y `alt`;
+`disponible: false` lo marca como agotado, `etiqueta` le pone el sello de
+color, `tamanos` le da varias medidas con su precio y `destacado: true` lo
+pone en "Los mas pedidos".
 
 El campo `foto` es la raiz del nombre del archivo, sin ancho ni extension: de
 `assets/img/productos/pan-redondo` salen `pan-redondo-420.jpg` y
-`pan-redondo-840.jpg`, y el navegador elige la que le cabe. Un producto nuevo
-necesita las dos, con esos mismos sufijos; el CI comprueba que esten y no
-publica si falta alguna.
+`pan-redondo-840.jpg`, y el navegador elige la que le cabe. El CI comprueba que
+esten las dos.
 
-Si una categoria nueva no esta en el menu Tienda de `index.html`, sus productos
-quedan inalcanzables: el CI lo comprueba y no publica.
+La categoria tiene que estar en `src/catalogo/categorias.js` (el menu Tienda);
+si no, sus productos quedan inalcanzables y el CI no publica.
 
 ## Donde se guarda cada cosa
 
-Sin servidor, todo lo que sobrevive a cerrar la pagina se queda en el
-navegador. Se usan los cuatro mecanismos, y cada uno porque le toca: lo que
-decide donde va un dato es cuanto tiene que durar y que forma tiene. Las
-funciones estan juntas en `js/comun/storage.js`.
+Sin servidor, lo que sobrevive a cerrar la pagina se queda en el navegador. Se
+usan los cuatro mecanismos, cada uno por lo que tiene que durar el dato. Las
+funciones estan en `src/servicios/storage.js`.
 
 | Donde | Que guarda | Por que ahi |
 | --- | --- | --- |
-| `localStorage` | El pedido a medias (lineas, modo de entrega, direccion y datos de la factura) y la cuenta del cliente. | Tiene que seguir ahi manana. Es el unico sitio que no se vacia al cerrar. |
-| `sessionStorage` | Por donde ibas mirando el catalogo: categoria, orden y filtro. | Dura lo que dura la pestana. Recargar no te mueve de sitio, pero volver otro dia empieza limpio: quien dejo puesto "solo los disponibles" no deberia volver una semana despues a un catalogo a medias sin acordarse de por que. |
-| `IndexedDB` | Los pedidos ya pagados, con su recibo entero. Base `eltradicional`, almacen `pedidos`, clave el numero de pedido. | Son registros que se acumulan y se buscan por numero. En `localStorage` habria que guardar la lista entera en una sola clave y reescribirla completa cada vez. |
-| Cookie | La marca de cuando se guardo por ultima vez (`eltradicional-guardado`, un mes de vida, `SameSite=Lax`). | Es un dato corto que caduca solo y que se lee sin tener que abrir el pedido entero. |
+| `localStorage` | El pedido a medias (lineas, entrega, direccion y factura) y la cuenta. | Tiene que seguir ahi manana. |
+| `sessionStorage` | El orden del catalogo y "solo los disponibles". | Dura lo que dura la pestana: volver otro dia empieza limpio. |
+| `IndexedDB` | Los pedidos pagados, con su recibo y el correo de la cuenta. Base `eltradicional`, almacen `pedidos`, clave el numero. | Son registros que se acumulan y se buscan por numero. |
+| Cookie | Cuando se guardo por ultima vez (`eltradicional-guardado`, un mes, `SameSite=Lax`). | Es un dato corto que caduca solo; el pie la ensena. |
 
-**La marca de ultima actualizacion** se escribe en dos sitios cada vez que algo
-se guarda: dentro del propio pedido en `localStorage`, para saber de cuando es
-lo que se esta recuperando, y en la cookie, que es la que se lee para escribirla
-en el pie de la pagina ("Tu pedido se guardo hoy a las 14:05 en este
-navegador"). Al vaciar la canasta se borra la marca: dejarla puesta seria decir
-que hay guardado algo que ya no esta.
-
-Nada de esto es obligatorio para que el sitio funcione. Cada lectura y cada
-escritura va en su `try`/`catch`, porque en una ventana privada escribir lanza
-una excepcion, y que no se pueda recordar el orden del catalogo no puede tumbar
-la pagina. Si falta `IndexedDB`, el historial sale vacio, que es lo mismo que ve
-quien todavia no ha pedido nada.
+Cada lectura y escritura va en su `try`/`catch`: en una ventana privada
+escribir puede fallar, y eso no puede tumbar la pagina.
 
 ## Accesibilidad
 
-- **Teclado.** Todo se puede usar sin raton. Los dos dialogos -canasta y
-  cuenta- atrapan el foco mientras estan abiertos, se cierran con `Escape` y lo
-  devuelven al boton que los abrio. El menu de Tienda se recorre con las
-  flechas. Hay un enlace para saltar al contenido.
-- **Foco visible.** Ningun `outline: none` sin reemplazo: el foco se marca con
-  un anillo propio, y se usa `:focus-visible` para no ensenarlo al pulsar con
-  el raton.
-- **ARIA donde hace falta y no mas.** `role="dialog"` con `aria-modal` y
-  `aria-labelledby` en los paneles; `aria-expanded` y `aria-controls` en lo que
-  abre y cierra; `aria-live="polite"` en la region de avisos y en el contador
-  del catalogo, para que los cambios se oigan sin interrumpir; `aria-hidden` en
-  los iconos decorativos, que no aportan nada leidos en voz alta.
-- **Errores de formulario accesibles.** Cada campo mal rellenado lleva
-  `aria-invalid="true"` y un `aria-describedby` que apunta al parrafo con el
-  motivo, de forma que el lector de pantalla lo dice junto al campo en vez de
-  dejarlo como un texto suelto en la pagina.
-- **Textos alternativos.** Cada producto trae su `alt` en
-  `data/productos.json`, y `repo.js` se niega a cargar el catalogo si a alguno
-  le falta: sin el, quien usa lector de pantalla no sabe que hay en la foto.
-- **Contraste.** Los pares de texto del tema pasan AA de sobra, comprobados
-  con la formula de luminancia relativa de la WCAG: 12,4:1 el texto principal
-  sobre el fondo claro, 6,8:1 el secundario, 11,1:1 el texto sobre el fondo
-  oscuro del pie y 8,7:1 el secundario de ahi. El unico color por debajo de
-  4,5:1 es `--horno-claro` (4,5:1 justo), y no se usa para texto sino para el
-  puntero de los filtros, donde el minimo que pide la norma es 3:1. Lo que es
-  solo color -las etiquetas de "Agotado" o "De la casa"- lleva tambien su
-  texto, para quien no distingue el verde del rojo.
-- **Movimiento.** Con `prefers-reduced-motion: reduce` se quitan la entrada
-  escalonada de las fichas, el velo del cambio de categoria y el desplazamiento
-  suave.
-- **Formularios con validacion por expresiones regulares.** Correo, telefono
-  (`/^9\d{8}$/`, los nueve digitos de Ecuador tras el +593), los tres digitos
-  del CVV y los cuatro requisitos de la contrasena, cada uno con su regex y su
-  mensaje en castellano.
+El objetivo es WCAG 2.2 nivel AA, y axe no encuentra fallos automaticos.
+
+- **Teclado.** Todo se usa sin raton. La canasta atrapa el foco, se cierra con
+  `Escape` y lo devuelve al boton. El menu Tienda y la ficha de la cuenta se
+  recorren con las flechas. Al cambiar de vista el foco va al titulo.
+- **Foco visible** con un anillo propio y `:focus-visible`.
+- **ARIA donde hace falta y no mas**: `role="dialog"` con `aria-modal`,
+  `aria-expanded`, `aria-current`, `aria-live="polite"` en los avisos y
+  `aria-hidden` en lo decorativo.
+- **Errores de formulario** con `aria-invalid` y `aria-describedby`, que dicen
+  que fallo y como arreglarlo.
+- **Contraste** medido: 12,4:1 el texto principal; los dibujos de fondo no lo
+  bajan de AA.
+- **Movimiento** que se apaga con `prefers-reduced-motion`.
 
 ## Lo que esta simulado
 
-El cobro no existe: no se procesa ningun pago y los datos de la tarjeta no se
-guardan ni se envian. La cuenta se guarda solo en el navegador, y de la
-contrasena solo su huella (PBKDF2 con sal), con la que se comprueba al entrar.
-El correo del codigo y del comprobante si sale de verdad, por EmailJS: las tres claves van en `js/comun/mail.js`, y mientras esten
-vacias el codigo y el comprobante se ensenan en pantalla en vez de enviarse.
+El cobro no existe: no se procesa ningun pago y la tarjeta no se guarda ni se
+envia. La cuenta vive solo en el navegador donde se creo, y de la contrasena
+solo se guarda su huella (PBKDF2 con sal). Los correos si salen de verdad, por
+EmailJS; las claves estan en `src/servicios/mail.js` y son publicas por diseno
+(las protege la lista de dominios del panel de EmailJS).
