@@ -437,10 +437,14 @@ construye (sección 15).
 - [ ] Revisar el modelo con el profesor, sobre todo: el kardex como vista,
       el saldo del lote calculado y las débiles sobre otra débil.
 - [ ] Confirmar las recetas con el panadero y la vida útil de cada material.
-- [ ] Subir el script a Supabase (solo el paso 2). El conector MCP ya está
-      agregado (proyecto `ugscqizansixnsuzljtu`); falta iniciar sesión con
-      `/mcp` después de reiniciar Claude Code.
-- [ ] Antes de conectar el sitio: RLS en todas las tablas de `public`.
+- [x] Base subida a Supabase (proyecto `ugscqizansixnsuzljtu`, 21 de octubre
+      de 2026), con el conector MCP. Las 48 tablas tienen RLS sin políticas
+      (por la API no entra nadie), las vistas usan `security_invoker` y las
+      funciones fijan su `search_path`; está al final del script y
+      `probar-bd` lo comprueba.
+- [ ] Antes de conectar el sitio: escribir las políticas de RLS de lo que
+      el sitio necesite (por ejemplo, leer el catálogo) y decidir cómo entra
+      el usuario (Supabase Auth o la cuenta actual).
 - [ ] El IVA de cada producto es una suposición (pan 0%, dulces y bebidas
       15%): confirmarlo con el contador.
 - [ ] Cuáles alérgenos lleva cada producto (`PRODUCTOS_ALERGENOS`).
@@ -1112,7 +1116,7 @@ Pendiente de la fase 6:
       router y el catálogo, no la cuenta.
 - [x] Revisión de `ux-accesibilidad` de todo React (20 de octubre de
       2026): 15 problemas, ninguno de gravedad 4; axe sin violaciones A/AA.
-- [ ] Arreglos de esa revisión (`frontend`): barra de deshacer que tapa el
+- [x] Arreglos de esa revisión (`frontend`, en `e36c0d7`): barra de deshacer que tapa el
       foco en el teléfono (`scroll-padding-bottom` mientras se ve);
       principios de Nosotros en una columna bajo 420 px; "+" en el tope que
       se vea apagado; elegida visible con contraste alto (`forced-colors`)
@@ -1122,7 +1126,20 @@ Pendiente de la fase 6:
       `#/contacto`; la hoja de pagar con desplazamiento propio en pantallas
       bajas; el buscador anuncia una vez, tras dejar de escribir; "Cambiar
       el correo" mientras crear sale monta una hoja nueva (sin las
-      contraseñas).
+      contraseñas). Hecho así: con la barra visible, `scroll-padding-bottom`
+      de 168 px y el mismo relleno bajo el pie (sin `:has`, los 92 px de
+      antes); principios en una columna bajo 420 px; "+" en el tope apagado
+      (sigue enfocable y el globo dice por qué); en `forced-colors` la
+      elegida en `Highlight` (filtros, tamaños, opciones de confirmar y
+      forma de pago); Esc con el globo abierto se ataja en captura (también
+      en `ui.js`); el fallo de carga reintenta una vez a los 800 ms antes del
+      aviso ("Vuelve a intentarlo. Tu canasta sigue tal como estaba."); el
+      pie de `#/contacto` es el de siempre, con "Horario y cómo llegar" en
+      `aria-current="page"`; la hoja de pagar con `max-height: 100%` y
+      desplazamiento propio; el buscador habla solo por `.catalog-status`,
+      400 ms después de la última tecla; la hoja de crear lleva una clave
+      nueva en cada llegada. Varios valen para los dos sitios; el aviso
+      doble del buscador sigue en el sitio actual (`js/catalogo/view.js`).
 - [x] Arreglos de esa revisión (`logica-datos`, `103c4fe`): nota del comprobante
       cierta ("Tu canasta ya está vacía. El pedido queda en Mis pedidos.");
       "y" al juntar los errores de la tarjeta y sin "cuota del mes";
@@ -1137,7 +1154,7 @@ Pendiente de la fase 6:
       `cedulaValida()`/`rucValido()` de `cobro.js`. Los errores se juntan
       "a, b y c" (`enLista()`). El panel de la cuenta del sitio actual
       también dejó de ser `aside`.
-- [ ] **Sin JavaScript** (solo React): un `<noscript>` que no deja la
+- [x] **Sin JavaScript** (solo React, en `e36c0d7`): un `<noscript>` que no deja la
       página en blanco: "Para comprar en El Tradicional necesitas activar
       JavaScript en tu navegador", con el nombre, la dirección y el
       horario. **Sin enlace a WhatsApp**: la página es para comprar en ella

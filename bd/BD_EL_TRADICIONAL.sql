@@ -2690,4 +2690,35 @@ SELECT c.CUE_Codigo, v.numero, v.nombre, v.tipo
        ) AS v (numero, nombre, tipo, cuenta)
   JOIN CUENTAS_CONTABLES c ON c.CUE_Numero = v.cuenta;
 
+
+/* =============================================================================
+   Seguridad para Supabase: su API deja a cualquiera con la clave pública
+   leer y escribir las tablas del esquema public. Se cierran todas (RLS sin
+   políticas: por la API no entra nadie), las vistas usan los permisos de
+   quien consulta y las funciones fijan dónde buscan las tablas. Al dueño
+   (postgres, el editor SQL) RLS no le aplica. Las políticas se escriben
+   cuando el sitio se conecte.
+   ========================================================================== */
+
+DO $$
+DECLARE
+    r RECORD;
+BEGIN
+    FOR r IN SELECT c.relname, c.relkind
+               FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+              WHERE n.nspname = 'public' AND c.relkind IN ('r', 'v') LOOP
+        IF r.relkind = 'r' THEN
+            EXECUTE format('ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY', r.relname);
+        ELSE
+            EXECUTE format('ALTER VIEW public.%I SET (security_invoker = true)', r.relname);
+        END IF;
+    END LOOP;
+    FOR r IN SELECT p.oid::REGPROCEDURE AS firma
+               FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+              WHERE n.nspname = 'public' LOOP
+        EXECUTE format('ALTER FUNCTION %s SET search_path = public', r.firma);
+    END LOOP;
+END;
+$$;
+
 COMMIT;

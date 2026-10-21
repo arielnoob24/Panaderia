@@ -120,6 +120,14 @@ ok(auth.length >= 3, `Autenticacion y autorizacion con ${auth.length} tablas (mi
 // ---------------------------------------------------------------------------
 // Datos iniciales: el catalogo tiene que ser el de data/productos.json
 // ---------------------------------------------------------------------------
+const abiertas = (await q(`SELECT c.relname FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+  WHERE n.nspname = 'public' AND ((c.relkind = 'r' AND NOT c.relrowsecurity)
+     OR (c.relkind = 'v' AND NOT coalesce(c.reloptions, '{}') @> '{security_invoker=true}'))`)).map(r => r.relname);
+ok(abiertas.length === 0, `Tablas con RLS y vistas con security_invoker (para la API de Supabase)${abiertas.length ? ': faltan ' + abiertas.join(', ') : ''}`);
+const sinRuta = (await q(`SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid = p.pronamespace
+  WHERE n.nspname = 'public' AND NOT coalesce(p.proconfig, '{}') @> '{search_path=public}'`)).map(r => r.proname);
+ok(sinRuta.length === 0, `Funciones con search_path fijo${sinRuta.length ? ': faltan ' + sinRuta.join(', ') : ''}`);
+
 titulo('Datos iniciales contra data/productos.json');
 const json = JSON.parse(readFileSync(rutaJson, 'utf8')).productos;
 const enBd = await q(`SELECT pro_nombre, cat_slug, tam_descripcion, pta_orden, pta_precio::float8 precio,
