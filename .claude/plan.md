@@ -6,10 +6,10 @@
 > coinciden, o se arregla el código o se actualiza el plan en el mismo commit.
 >
 > Cómo se trabaja (conversar → plan → agentes → skills → aplicar) está en
-> `.claude/CLAUDE.md`. Las secciones 1 a 13 describen el sitio **como está
-> hoy**; la 15 es el siguiente paso.
+> `.claude/CLAUDE.md`. Las secciones 1 a 14 describen el sitio **como está
+> hoy** (React); la 15 es la historia corta de cómo se llegó aquí.
 
-Última actualización: 20 de octubre de 2026.
+Última actualización: 21 de octubre de 2026.
 
 ---
 
@@ -17,9 +17,12 @@
 
 Sitio de la panadería y pastelería **El Tradicional** (Tena, Ecuador):
 catálogo, canasta, pedido con pago simulado, comprobante y cuenta de cliente.
-Proyecto de la materia Desarrollo de Plataformas.
+Proyecto de la materia Desarrollo de Plataformas. Hecho en **React** (Vite,
+JavaScript, React Router con `HashRouter`, Motion).
 
 - Publicado en GitHub Pages: https://arielnoob24.github.io/Panaderia/
+- El sitio presentado (antes de React) queda en la etiqueta git
+  `sitio-presentado`.
 - Dirección: esquina de Eloy Alfaro y Gabriel Espinosa, Tena.
 - Horario: lunes a viernes 08:00–20:00; sábado y domingo 09:00–21:00.
 - Teléfono, WhatsApp e Instagram son **de ejemplo** (el pie lo avisa).
@@ -28,98 +31,106 @@ Proyecto de la materia Desarrollo de Plataformas.
 
 | Regla | Por qué |
 |---|---|
-| Sitio **estático**, sin servidor ni base de datos en internet | GitHub Pages solo sirve archivos |
+| Sitio **estático**: GitHub Pages sirve lo que construye Vite (`dist/`); sin servidor propio | GitHub Pages solo sirve archivos |
 | **Solo servicios gratis**, nada que pida tarjeta (ni SMS, ni WhatsApp Business, ni Firebase Blaze) | Proyecto de clase sin presupuesto |
-| **Sin dependencias** en el navegador: lo que está en el repo es lo que corre | Se abre igual por HTTP y con doble clic |
-| Tiene que funcionar **con doble clic** (`file://`) además de por HTTP | La profe puede abrirlo así |
+| Dependencias **con versión exacta** (sin `^`), solo las que diga este plan | Que un `npm ci` de hoy y uno de dentro de un mes construyan lo mismo |
+| Se abre **por HTTP** (Pages, `npm run dev`, `npm run preview`); con doble clic no | Decidido al elegir React: un sitio publicado se abre por HTTP |
 | El CI rechaza las palabras de cafetería, café y cóctel, **también en comentarios** | Es una panadería; lo revisa `ci-cd.yml` |
-| `main` es lo que se presentó y lo que sirve GitHub Pages; las mejoras van en la rama **`mejoras`** y se commitean y pushean ahí sin preguntar | El proyecto ya se entregó: lo publicado no cambia hasta fusionar `mejoras` en `main` |
+| `main` es lo que sirve GitHub Pages; se trabaja en la rama **`mejoras`**, donde se commitea y pushea sin preguntar; a `main` solo cuando el usuario lo pide | Lo publicado no cambia hasta fusionar |
+| Lo guardado en el navegador **no cambia de formato** sin plan (claves de la sección 8) | Quien ya usó el sitio conserva su canasta, su cuenta y sus pedidos |
 | Los informes de clase admiten **máximo 5% de texto de IA** | Pasarse cuesta la mitad de la nota; lo que escribe Claude es referencia |
 | La base de datos (`bd/`) cumple las **reglas del modelo** de la sección 8 | Las pusieron el usuario y el profesor |
 
 ## 3. Cómo está repartido
 
 ```
-index.html              la unica pagina; tiene que estar en la raiz para GitHub Pages
-README.md               como verlo, tocarlo y publicarlo
-bd/
-  BD_EL_TRADICIONAL.sql la base de datos en PostgreSQL (todavia sin conectar)
+index.html              la pagina: <div id="raiz">, metadatos, JSON-LD y el <noscript>
+package.json            versiones exactas; scripts dev, build, preview y probar
+vite.config.js          base './' y el plugin que copia hero-1200.jpg sin huella (og:image)
+src/
+  main.jsx              monta App dentro de HashRouter, LazyMotion, MotionConfig y los proveedores
+  App.jsx               las vistas, la transicion y la carga por partes
+  vistas/               Inicio, Nosotros, Contacto
+  catalogo/             Catalogo, VistaCabeza, FichaProducto, MasPedidos, Hero, categorias.js
+  comun/                cabecera, menu Tienda, pie, avisos, globo, foco, vistas.js (rutas),
+                        apertura.js (abrir la pagina y desplazamiento), cargaPorPartes.js
+  pedido/               canasta, lineas, deshacer, confirmar, factura, pago, comprobante,
+                        pedirOtraVez.js
+  cuenta/               Entrar, CrearCuenta, Verificar, Recuperar, MisDatos, MisPedidos,
+                        FichaCuenta y sus piezas
+  estado/               pedido.js y sesion.js (reductores puros) y sus proveedores
+  servicios/            lo que no es interfaz: state.js, storage.js, mail.js, horario.js,
+                        cobro.js, guardado.js, cuenta.js, catalogo.js, reglasCatalogo.js
+  estilos/              vistas.css y cuenta.css (se cargan despues de styles.css)
 assets/
-  css/styles.css        todos los estilos
-  img/                  logo, mascota, iconos y la foto de portada
+  css/styles.css        la hoja base (colores, componentes)
+  img/                  logo, mascota, portada e historia
     productos/          las fotos del catalogo, cada una en 420 y 840 px
 data/
   productos.json        el catalogo: nombre, precio, foto, categoria y tamanos
-js/
-  app.js                el arranque: trae los datos y enciende lo demas
-  sin-servidor.js       todo junto, con el catalogo dentro (generado; es lo
-                        que corre al abrir index.html con doble clic)
-  comun/                lo que usan todas las zonas
-    state.js            lo que comparten los modulos, y el puente entre ellos
-    storage.js          los cuatro sitios donde se guarda: local, session, IDB y cookie
-    ui.js               barra, foco, cuadritos de ayuda, animaciones y horario
-    horario.js          cuentas del horario: feriados con Pascua y textos del
-                        pie, de la nota del horno y de la hora de retiro
-                        (sin DOM; lo usa tambien react/)
-    mail.js             envio de correo por EmailJS
-  catalogo/
-    repo.js             lee y revisa data/productos.json
-    view.js             pinta las fichas y manda el catalogo (orden, filtro, vistas)
-  pedido/
-    cart.js             la canasta: panel, lineas y control de cantidad
-    guardado.js         que se acepta del pedido guardado y como se escribe
-                        (sin DOM; lo usa tambien react/)
-    cobro.js            reglas del pago: factura, tarjeta, numero ET-XXXX,
-                        recibo, correo (sin DOM; lo usa tambien react/)
-    checkout.js         pago simulado y comprobante
-  cuenta/
-    account.js          crear cuenta, verificar el correo y entrar
-    guardada.js         que se acepta de la cuenta guardada (sin DOM; lo usa
-                        tambien react/)
-herramientas/
-  empaquetar.mjs        genera js/sin-servidor.js
-react/                  la version en React mientras se migra (seccion 15)
-.gitignore              react/node_modules/ y react/dist/
-.github/workflows/      el CI: valida y publica
-.claude/                agentes, skills, herramientas de Claude Code y plan.md
-                        (como debe funcionar todo; lo leen los agentes)
+pruebas/
+  probar.mjs            corre los casos en Edge (o Chrome) contra dist/
+  arranque.mjs          servidor, navegador y ayudas comunes
+  casos/                un caso por archivo
+bd/
+  BD_EL_TRADICIONAL.sql la base de datos en PostgreSQL (seccion 8)
+.github/workflows/      el CI: valida, prueba y publica dist/
+.claude/                agentes, skills, herramientas de Claude Code y este plan
 ```
 
-### Cómo se llaman los módulos
+- **Las reglas viven en `src/servicios/`**, sin DOM: reciben datos y
+  devuelven resultados. `reglasCatalogo.js` (`revisar()`, `normalizar()`) no
+  usa nada de Vite, para que el CI la cargue con node.
+- **El estado**: `Context` + `useReducer`. Los reductores son puros; guardar
+  en el navegador es un efecto aparte, que escribe solo cuando el reductor
+  cuenta un cambio.
+- **Las importaciones** de fotos y datos van desde la raíz del proyecto
+  (`'/assets/...'`, `'/data/productos.json'`); las fotos del catálogo, con
+  `import.meta.glob`. Vite les pone huella al construir.
+- **Carga por partes**: las 6 vistas de la cuenta, `#/confirmar` y
+  `#/comprobante` van aparte (tabla `APARTE` en `comun/cargaPorPartes.js`,
+  grupos `cuenta` y `pago`). Se precargan con el puntero o el foco en la
+  cuenta de la cabecera y en "Ir a pagar", y en reposo tras `load` (no sin
+  red ni con `saveData`). Al navegar se ve la vista anterior hasta que llega
+  la nueva. Si una parte no llega, se reintenta una vez a los 800 ms y, si
+  falla, sale "No se pudo abrir esta parte" (`FalloDeCarga.jsx`, con su
+  `h1`) con "Reintentar" (recarga: Chromium recuerda el módulo que falló) y
+  "Volver al inicio".
+- **Sin JavaScript**: el `<noscript>` de `index.html` enseña la marca, la
+  dirección, el horario y "Para comprar en El Tradicional necesitas activar
+  JavaScript en tu navegador". Sin enlace a WhatsApp: el sitio es para
+  comprar en él.
 
-```
-index.html
-  └── app.js  arranque
-        ├── catalogo/repo.js     lee y valida data/productos.json
-        ├── catalogo/view.js     fichas, mostrador, vista de catálogo, filtros, rutas
-        ├── pedido/cart.js       canasta, pantalla de confirmar, control de cantidad
-        │     ├── pedido/guardado.js  formato del pedido en localStorage (sin DOM)
-        │     └── pedido/checkout.js  pago simulado, factura, comprobante
-        │           └── pedido/cobro.js  reglas del pago y del recibo (sin DOM)
-        ├── cuenta/account.js    crear cuenta, verificar correo, entrar, datos, pedidos
-        │     └── cuenta/guardada.js  formato de la cuenta en localStorage (sin DOM)
-        └── comun/ui.js          avisos aria-live, foco, menús, globo de ayuda, horario
-  Todos usan comun/: state.js (datos compartidos y "puente"), storage.js, mail.js
-  Cada carpeta importa las otras con rutas relativas (`../comun/state.js`).
-```
+## 4. Las vistas y el catálogo
 
-- **El puente** (`state.js`): los módulos que se llaman en las dos direcciones
-  cuelgan sus funciones en `puente` en vez de importarse mutuamente.
-- **Sin DOM, para los dos sitios**: `horario.js`, `guardado.js`, `cobro.js` y
-  `guardada.js` no tocan la página ni el almacenamiento; reciben datos y
-  devuelven resultados. React los importa con `@raiz`, así que las reglas se
-  escriben una sola vez. Lo que se mete como HTML pasa por `escapar()`
-  (`state.js`).
-- **Doble clic**: el script del final de `index.html` carga `js/app.js` como
-  módulo si es HTTP, o `js/sin-servidor.js` (todo junto, con el catálogo
-  dentro) si es `file:`. En `file://` no hay cookies: el pie no dice cuándo se
-  guardó, pero el pedido se guarda igual.
-- **Orden de arranque** (`app.js`): cargar productos → pintar catálogo →
-  controles de ficha → vigilar imágenes → canasta → cuenta → marca de guardado
-  → horario (cada minuto). Si el catálogo falla, se avisa y la canasta y la
-  cuenta siguen funcionando.
+Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
 
-## 4. El catálogo
+| Menú | Ruta | Contenido |
+|---|---|---|
+| Logo / Inicio | `#/` | Portada, la franja y "Los más pedidos" en carrusel, con un enlace a toda la tienda |
+| Nosotros | `#/nosotros` | La historia y los principios (una columna bajo 420 px); la galería cuando haya fotos |
+| Tienda | `#/tienda-catalogo`, `#/tienda-<categoría>` | El catálogo; cambiar de categoría no vuelve a montar la vista |
+| Contáctanos | `#/contacto` | Horario con el día de hoy marcado, abierto/cerrado, dirección, mapa y contacto |
+| — | `#/confirmar`, `#/comprobante` | El pedido (sección 6) |
+| Silueta / iniciales | `#/cuenta/*` | La cuenta (sección 7) |
+
+- **Al cambiar de vista**: arriba del todo, título de pestaña propio, `h1`
+  con el foco (WCAG 2.4.3) y se anuncia. Transición: fundido con un pequeño
+  desplazamiento hacia arriba (unos 280 ms). Al abrir la página no se mueve
+  el foco ni se anima (lo marca `comun/apertura.js`).
+- **Atrás y Adelante**: el desplazamiento lo decide la página
+  (`history.scrollRestoration = 'manual'` tras `load`, `auto` en
+  `pagehide`). Entre vistas, arriba con el foco en el `h1`; entre categorías
+  de la tienda, donde se estaba. Atrás no limpia los filtros.
+- **Direcciones viejas** (de cuando era una sola página): `#historia` →
+  `#/nosotros`, `#visitanos` → `#/contacto`, `#catalogo` →
+  `#/tienda-catalogo`, `#inicio` y `#contenido` → `#/`, con `replace`.
+- **Pie corto** en todas las vistas: marca, abierto/cerrado, WhatsApp,
+  Instagram, la nota de que son de ejemplo, "Tu pedido se guardó…" y el ©. En
+  `#/contacto`, "Horario y cómo llegar" lleva `aria-current="page"`.
+- **Mapa** en `#/contacto`: `iframe` de Google Maps sin clave
+  (`https://maps.google.com/maps?q=-1.004033,-77.812690&z=17&output=embed`),
+  con `title` y `loading="lazy"`, y "Ver en el mapa" debajo.
 
 ### Datos (`data/productos.json`)
 
@@ -129,7 +140,7 @@ Hoy: **17 productos** en 3 categorías (`panes` 6, `dulces` 5,
 | Campo | Obligatorio | Regla |
 |---|---|---|
 | `nombre` | sí | Lo que se ve en la ficha |
-| `categoria` | sí | Tiene que tener su `data-filtro` en el menú Tienda, y al revés |
+| `categoria` | sí | Tiene que estar en `CATEGORIAS` (`src/catalogo/categorias.js`, la lista del menú Tienda), y al revés |
 | `precio` | sí | Número en dólares; con `tamanos`, igual al del primer tamaño |
 | `foto` | sí | Raíz sin ancho ni extensión; existen `-420.jpg` (420×315) y `-840.jpg` (840×630) |
 | `alt` | sí | Describe lo que se ve, no repite el nombre |
@@ -138,123 +149,160 @@ Hoy: **17 productos** en 3 categorías (`panes` 6, `dulces` 5,
 | `tamanos` | no | `[{ valor, precio }]`; cada tamaño es una línea distinta en la canasta |
 | `destacado` | no | `true` = entra en "Los más pedidos"; hacen falta al menos 4 disponibles |
 
-`revisar()` de `js/catalogo/repo.js` valida cada producto; el sitio y el CI usan la
-misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
+`revisar()` de `src/servicios/reglasCatalogo.js` valida cada producto; el
+sitio y el CI usan la misma función. Para añadir uno, la skill
+`/nuevo-producto`.
 
 ### Portada: "Los más pedidos"
 
-- Fila horizontal con los destacados disponibles. Flechas, barra de avance y
-  botón de pausa; la flecha de adelante, en el último, vuelve al primero.
-- Avanza sola cada 4,2 s. Se para con el puntero, el dedo o el foco encima,
-  mientras se agrega algo, con la pestaña oculta, con `prefers-reduced-motion`
-  o con pausa.
-- En el teléfono: flechas debajo, caben dos fichas, el botón de agregar va
-  sobre la foto y la ficha no cambia de alto al agregar.
+Carrusel con `scroll-snap` nativo y botones Anterior/Siguiente que se
+desactivan en los extremos; se arrastra con el dedo, **no avanza solo**, y
+cada ficha se alcanza con Tab.
 
-### Vista de catálogo
+### Vista de la tienda
 
 - Se entra por "Ver el menú", la palabra Tienda (catálogo entero) o una de sus
-  categorías (catálogo con "Filtrar por" ya puesto).
-- Rutas: `#tienda-catalogo`, `#tienda-panes`, `#tienda-dulces`,
-  `#tienda-bebidas-frias`. Entrar usa `pushState`; cambiar el filtro a mano usa
-  `replaceState`. El **Atrás** del navegador vuelve a la vista anterior.
+  categorías (con "Filtrar por" ya puesto). Entrar con un enlace limpia orden,
+  "Mostrar" y búsqueda; Atrás y Adelante no.
 - Controles: Filtrar por (chips: Todas + 3 categorías), buscador (sin tildes ni
-  mayúsculas), Ordenar por, Mostrar (solo disponibles). Ordenar cambia la
-  propiedad CSS `order`, no mueve el HTML.
-- "Mostrando X de Y productos", anunciado por `aria-live` ("en esta categoría"
-  con una puesta, "en todo el catálogo" con Todas). Cambiar el orden no cambia
-  ese aviso: se anuncia el orden ("Ordenado por precio, de menor a mayor").
-- El título de la vista es un `h1` y dice la categoría de "Filtrar por"
-  ("Dulces y pasteles", o "Todo el catálogo" con Todas); la pestaña también
-  ("Dulces y pasteles · Catálogo | El Tradicional").
+  mayúsculas), Ordenar por, Mostrar (solo disponibles).
+- "Mostrando X de Y productos" en una sola región `aria-live`
+  (`.catalog-status`): mientras se escribe en el buscador calla y habla una
+  vez, 400 ms después de la última tecla; sin resultados junta la cuenta y el
+  porqué. El orden se anuncia aparte ("Ordenado por precio, de menor a
+  mayor").
+- El `h1` dice la categoría ("Dulces y pasteles", o "Todo el catálogo"); la
+  pestaña también ("Dulces y pasteles · Catálogo | El Tradicional").
 - Cada ficha: foto con `srcset`, categoría encima del nombre, sello, tamaños
-  (radios), precio y control `− cantidad +` (máximo 100 por producto).
-- Al agregar, la foto vuela a la canasta y se anuncia en la región de avisos.
+  (radios), precio y control `− cantidad +` (máximo 100 por producto). Al
+  agregar, la foto vuela a la canasta y se anuncia.
 
 ## 5. La canasta
 
-- Botón con icono y contador en la cabecera (en el teléfono flota abajo). Sin
-  JavaScript es el enlace a WhatsApp.
-- Panel lateral `aside role="dialog"`: atrapa el foco, se cierra con Esc,
-  tocando fuera o con Atrás/Adelante del navegador, y devuelve el foco al
+- Botón con icono y contador en la cabecera (en el teléfono flota abajo); el
+  número se desliza hacia arriba al añadir y hacia abajo al quitar.
+- Panel lateral (`div role="dialog"` + `aria-modal`): atrapa el foco, se
+  cierra con Esc, tocando fuera o con Atrás/Adelante, y devuelve el foco al
   botón (si quien lo abrió se fue con la vista, al botón de la canasta).
 - Cada línea: foto, −, cantidad, +, y una X que quita el producto entero. Con
-  una unidad, el − pasa a basurero y pregunta "¿Lo quitamos?", y la X no sale
-  (haría lo mismo). El + y el − avisan "3 de Pan redondo. N productos en la
-  canasta" y el foco se queda en el botón pulsado.
+  una unidad, el − pasa a basurero y pregunta "¿Lo quitamos?", y la X no sale.
+  El + y el − avisan "3 de Pan redondo. N productos en la canasta" y el foco
+  se queda en el botón pulsado. Las líneas entran por la derecha, salen por la
+  izquierda y las demás suben a ocupar el hueco (solo la posición).
 - Tope de **100 por producto**: en el tope, el + de la ficha y el de la línea
-  siguen enfocables con `aria-disabled` y, al pulsarlos, avisan "El máximo es
-  100 por producto. Ya hay 100 de … en la canasta."
+  se ven apagados pero siguen enfocables con `aria-disabled` y, al pulsarlos,
+  avisan "El máximo es 100 por producto. Ya hay 100 de … en la canasta."
 - Campo de cantidad de la ficha: Enter asienta lo escrito y Esc lo descarta,
-  los dos sin sacar el foco del campo (con 0 el producto sale y el foco pasa
-  al +).
+  sin sacar el foco del campo (con 0 el producto sale y el foco pasa al +).
 - **Deshacer** durante 12 s al quitar o al vaciar ("¿Quitamos todo lo que hay
-  en la canasta?"). El reloj se para mientras la barra tiene el foco o el
-  puntero encima, y sigue con lo que le quedaba al soltarla.
+  en la canasta?"). El reloj se para con el foco o el puntero encima. Mientras
+  la barra se ve en el teléfono, `scroll-padding-bottom` sube a 168 px para que
+  no tape el foco.
 - "Ir a pagar" exige una **cuenta con el correo verificado**; si no la hay,
-  sube la hoja "Entra a tu cuenta para pagar", modal: mientras está arriba la
-  barra de deshacer queda `inert` y el Tab da la vuelta solo dentro de ella.
-- Vacía, "Ver la vitrina" lleva al catálogo entero (`#tienda-catalogo`, como
-  "Ver el menú") con el foco en su título.
+  sube la hoja "Inicia sesión para pagar" (`alertdialog` modal, con
+  desplazamiento propio en pantallas bajas; la barra de deshacer queda
+  `inert`). Sus botones llevan a iniciar sesión o a crear cuenta, y al
+  terminar se va directo a `#/confirmar`.
+- Vacía, "Ver la vitrina" lleva a `#/tienda-catalogo` con el foco en su título.
+- El globo de ayuda se quita con Esc sin cerrar la canasta.
 
 ## 6. Confirmar el pedido y pagar
 
-- Es otra vista dentro de `<main>`: `#confirmar` y luego `#comprobante`
-  (este con `replaceState`, para que Atrás no vuelva al pago ya hecho). El
-  título de la vista es su `h1` ("Confirmar el pedido", "Pedido confirmado").
+- `#/confirmar` y luego `#/comprobante` (este con `replace`, para que Atrás no
+  vuelva al pago hecho). Sin cuenta verificada o con la canasta vacía,
+  `#/confirmar` vuelve a la portada. Cada una con su `h1` ("Confirmar el
+  pedido", "Pedido confirmado").
 - Izquierda: retiro o domicilio (envío fijo **$1.50**), dirección, cómo paga
-  (efectivo o tarjeta) y factura (a mi nombre o a otra persona). Sin mapa.
+  (efectivo o tarjeta; empieza en la forma preferida de la cuenta) y factura
+  (a mi nombre o a otra persona). Sin mapa.
 - Derecha, pegada al desplazar: lo que lleva, subtotal/envío/total, a qué
   correo llega el comprobante y "Confirmar".
-- Validación: dirección → factura (cédula de 10 con su dígito verificador,
-  módulo 10, o RUC de 13 con la misma regla que la base en `bd/`; provincia
-  01–24; error "Esta cédula no es válida: revisa los números.")
-  → tarjeta (Luhn, MM/AA no vencida, CVV de 3, titular). El foco va al primer
-  error. Los errores salen al dejar el campo o al intentar pagar, con
-  `aria-invalid` y `aria-describedby` (la dirección también). Las reglas y
-  los textos viven en `js/pedido/cobro.js`.
+- Validación: dirección → factura → tarjeta. Factura: cédula de 10 con
+  provincia 01–24, tercer dígito 0–5 y **dígito verificador (módulo 10)**, o
+  RUC de 13 que no termina en 000 (con tercer dígito menor que 6, sus 10
+  primeros son una cédula válida; si no, el tercero es 6 o 9): la misma regla
+  que `FN_CEDULA_VALIDA` y `FN_RUC_VALIDO` de `bd/`. Tarjeta: Luhn, MM/AA no
+  vencida, CVV de 3, titular. El foco va al primer error; los errores salen al
+  dejar el campo o al intentar pagar, con `aria-invalid` y
+  `aria-describedby`, y se juntan "a, b y c". Reglas y textos en
+  `src/servicios/cobro.js`.
+- La tarjeta lleva `autocomplete="off"` a propósito: es de prueba y el
+  navegador no debe guardarla.
 - Al aprobar (simula 1,5 s): número `ET-XXXX` sin letras confundibles,
-  comprobante, correo, guardado en IndexedDB, se vacía la canasta guardada y se
-  limpian tarjeta y factura.
-- **El cobro no existe**: la tarjeta no se guarda ni se envía.
+  comprobante, correo, guardado en IndexedDB (con el `correo` de la cuenta),
+  se vacía la canasta y se limpian tarjeta y factura. El comprobante dice "Tu
+  canasta ya está vacía. El pedido queda en Mis pedidos."
+- **El cobro no existe**: la tarjeta no se guarda ni se envía (en IndexedDB
+  solo "Tarjeta terminada en XXXX").
 
 ## 7. La cuenta
 
-- Botón en la cabecera: fuera de sesión, silueta con "Iniciar sesión /
-  Registrarse"; dentro, iniciales y ficha con "Editar mis datos" y "Ver mis
-  pedidos (N)".
-- Pasos del panel: `crear`, `verificar`, `entrar`, `sesion`, `editar`,
-  `pedidos`.
-- Crear: nombre con apellido, correo (el error dice exactamente qué falta),
-  teléfono de 9 cifras que empieza por 9 (+593 delante), contraseña con 4
-  requisitos visibles mientras se escribe, y repetirla. Botón "Mostrar" en
-  cada contraseña.
-- Verificar: código de 6 cifras por correo; 45 s entre envíos. Si EmailJS no
-  está o falla, el código se enseña en pantalla en un recuadro que imita el
-  correo.
-- Entrar: correo (se revisa al salir del campo) y contraseña, que se compara
-  por su huella **PBKDF2 con sal**. Errores distintos para "no hay cuenta" y
-  "contraseña incorrecta" (aceptable porque la única cuenta es la de ese
-  navegador).
-- Editar: nombre, teléfono y dirección con las mismas reglas; el correo no se
-  edita. Cerrar sesión no borra la cuenta.
-- Métodos de pago: forma de pago preferida (Efectivo o Tarjeta), con la que
-  empieza el pago al confirmar; se puede cambiar ahí. No se guardan tarjetas.
-  En React es un campo de Mis datos (sección 15, fase 5).
-- Pedidos: todo el historial de IndexedDB, más nuevo arriba, cada uno en un
-  `<details>`.
-- Enter en un campo pasa al siguiente; en el último, hace la acción.
+Una cuenta por navegador. Cada paso es una vista propia:
 
-## 8. Dónde se guarda cada cosa (`js/comun/storage.js`)
+| Ruta | Contenido | Si no corresponde (con `replace`) |
+|---|---|---|
+| `#/cuenta/entrar` | "Iniciar sesión": correo y contraseña; "¿Olvidaste tu contraseña?"; "¿No tienes cuenta? Créala" | Con sesión → `#/cuenta` |
+| `#/cuenta/crear` | Nombre con apellido, correo, teléfono, dirección (opcional), contraseña con sus 4 requisitos y repetirla; dos columnas en la computadora, una en el teléfono. Si ya hay una cuenta: "En este navegador ya hay una cuenta (a…@dominio). Crear otra la reemplaza." | Con sesión → `#/cuenta` |
+| `#/cuenta/verificar` | Código de 6 cifras en 6 casillas, "Reenviar" cada 45 s y el recuadro con el código si EmailJS falta o falla | Sin cuenta por verificar → `#/cuenta/entrar` |
+| `#/cuenta/recuperar` | Recuperar la contraseña (abajo) | Con sesión → `#/cuenta` |
+| `#/cuenta` | **Mis datos**, editables ahí mismo: nombre, teléfono, dirección y forma de pago preferida (Efectivo o Tarjeta; "No guardamos tarjetas"); el correo se ve y no se cambia. "Guardar" (pasa a "Guardado ✓" 2 s) y "Cerrar sesión" | Sin sesión → `#/cuenta/entrar` |
+| `#/cuenta/pedidos` | Una fila por pedido de **esta cuenta** (`ET-XXXX`, fecha, total), más nuevo arriba, en `<details>` que se despliega animando la altura; los viejos sin `correo` también. Cada uno con "Pedir otra vez" | Sin sesión → `#/cuenta/entrar` |
+
+- **Cabecera**: sin sesión, la silueta ("Iniciar sesión / Registrarse") lleva
+  a `#/cuenta/entrar`; con sesión, las iniciales abren una ficha con "Mis
+  datos", "Mis pedidos (N)" y "Cerrar sesión" (flechas, Inicio, Fin, Esc,
+  `aria-current` en la vista en la que se está).
+- **Al terminar** de iniciar sesión, verificar o recuperar: a `#/confirmar`
+  si se venía de "Ir a pagar" y la canasta tiene algo; si no, a `#/cuenta`.
+  Cerrar sesión no borra la cuenta y lleva a `#/`. Los pasos van con
+  `replace`: Atrás no vuelve a un formulario ya hecho.
+- **Reglas**: teléfono de 9 cifras que empieza por 9 (+593 delante; al pegar
+  se quitan el 0, el +593 y los espacios; `autocomplete="tel-national"`);
+  contraseña con 4 requisitos visibles (cada ✓ aparece con un rebote) y
+  "Mostrar"; la contraseña se guarda solo como huella **PBKDF2 con sal**.
+  Errores distintos para "no hay cuenta" y "contraseña incorrecta" (la única
+  cuenta es la del navegador). Enter pasa al campo siguiente; en el último,
+  hace la acción. Errores con `aria-invalid` + `aria-describedby`, y fundido
+  suave (sin sacudidas).
+- **Código en 6 casillas**: una cifra por casilla, el foco salta solo,
+  Retroceso vuelve y borra, flechas, pegar en cualquiera lo reparte;
+  `fieldset` con `legend`, "Cifra N de 6", `inputmode="numeric"`,
+  `autocomplete="one-time-code"`. Al llenar la sexta se comprueba; si falla,
+  el error bajo las casillas y el foco a la primera. El código sale de
+  `crypto.getRandomValues`.
+- **Recuperar la contraseña**, por código al correo:
+  1. Se escribe el correo; si no es el de la cuenta, el mismo error que al
+     iniciar sesión. EmailJS manda un código de 6 cifras ("para cambiar tu
+     contraseña", con la misma plantilla).
+  2. El código **caduca a los 10 minutos** y admite **5 intentos**; un
+     código nuevo no sale antes de 45 s desde el último enviado. "Cambiar el
+     correo" conserva el código, su hora y sus intentos.
+  3. Con el código bien: contraseña nueva con los 4 requisitos, repetirla.
+     Sal nueva, la vieja deja de valer, la cuenta queda verificada y con la
+     sesión abierta; datos, forma de pago y pedidos se conservan.
+  4. **Si el correo no sale, no se recupera** (sin recuadro con el código).
+     La recuperación vive solo en memoria y se borra al iniciar o cerrar
+     sesión; los 10 minutos se comprueban también al cambiar la contraseña.
+  5. Solo desde el mismo navegador donde se creó la cuenta (la vista lo dice).
+- **Pedir otra vez** (`pedido/pedirOtraVez.js`, acción `sumar`): mete en la
+  canasta lo de ese pedido que siga disponible, con el mismo tamaño y el
+  precio de hoy, sumado a lo que haya (tope de 100), abre la canasta y avisa
+  qué entró y qué no; el aviso también queda escrito bajo el botón.
+- **Movimiento**: crear sale a la izquierda y verificar entra por la derecha;
+  los pasos de recuperar igual (`PasoQueCambia.jsx`: la hoja que sale es su
+  nodo de DOM, `inert` y sin ids, animado con `element.animate()`).
+
+## 8. Dónde se guarda cada cosa (`src/servicios/storage.js`)
 
 | Dónde | Qué | Por qué |
 |---|---|---|
-| `localStorage` | Pedido a medias, entrega, factura y la cuenta. Se escribe solo cuando cambia algo, no al cargar (tampoco la dirección que la cuenta rellena al arrancar); al aprobar un pedido se borra | Tiene que seguir mañana |
+| `localStorage` | Pedido a medias, entrega, factura y la cuenta (`metodo`, `clave: {sal, hash}`, `verificado`, `sesionAbierta`…). Se escribe solo cuando cambia algo, no al cargar; al aprobar un pedido se borra la canasta | Tiene que seguir mañana |
 | `sessionStorage` | Orden y "Mostrar" del catálogo | Dura lo que la pestaña |
-| IndexedDB `eltradicional/pedidos` | Pedidos pagados, clave = número | Registros que se acumulan |
-| Cookie `eltradicional-guardado` | Fecha del último guardado (1 mes, `SameSite=Lax`); el pie la enseña como "Tu pedido se guardó…", y solo si hay algo en la canasta | Corta y caduca sola |
+| IndexedDB `eltradicional/pedidos` | Pedidos pagados, clave = número, con el `correo` de la cuenta | Registros que se acumulan |
+| Cookie `eltradicional-guardado` | Fecha del último guardado (1 mes, `SameSite=Lax`); el pie la enseña como "Tu pedido se guardó…", solo si hay algo en la canasta | Corta y caduca sola |
 
-Todo va en `try/catch`: en ventana privada no puede tumbar la página.
+Son las mismas claves y formatos que el sitio presentado. Todo va en
+`try/catch`: en ventana privada no puede tumbar la página.
 
 ### La base de datos (`bd/BD_EL_TRADICIONAL.sql`, todavía sin conectar)
 
@@ -346,57 +394,82 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
   producto y tamaño, el plan de cuentas y los conceptos de nómina. Las
   cantidades de las recetas, la vida útil y los mínimos son de ejemplo.
 
-## 9. Correo (`js/comun/mail.js`)
+## 9. Correo (`src/servicios/mail.js`)
 
-EmailJS (gratis): una sola plantilla para el código y el comprobante. Las
-claves son públicas por diseño; las protege la lista de dominios del panel de
-EmailJS. `enviarCorreo()` nunca lanza: si falla, el pedido sigue valiendo.
+EmailJS (gratis, unos 200 correos al mes): una sola plantilla para el código
+de verificar, el de recuperar y el comprobante (asunto y cuerpo van en
+variables). Las claves son públicas por diseño; las protege la lista de
+dominios del panel de EmailJS. `enviarCorreo()` nunca lanza: si falla, el
+pedido sigue valiendo.
 
 ## 10. Aspecto y adaptación
 
-- CSS con variables en `:root` (colores `--masa`, `--horno`, `--ambar`,
-  `--corteza`, `--papel`; sombras, radios, duraciones y curvas).
+- `assets/css/styles.css` es la base, con variables en `:root` (colores
+  `--masa`, `--horno`, `--ambar`, `--corteza`, `--papel`; sombras, radios,
+  duraciones y curvas). Lo propio de las vistas va en `src/estilos/`.
+- **Regla 60-30-10** en cada vista: 60 % `--masa`/`--papel`, 30 % `--horno`,
+  10 % `--ambar`/`--corteza`.
+- **Fondos**: dibujos de línea de trigo, maíz y pan en SVG propio
+  (`comun/trazos.jsx`, `FondoDibujo.jsx`), distintos en cada vista y en cada
+  paso de la cuenta, quietos, `aria-hidden` y tenues (medidos: el texto de
+  encima sigue en AA).
+- **Movimiento** con Motion 13.5.1 (`LazyMotion` + `domAnimation`, `m.*`):
+  transición de vistas, contador y líneas de la canasta, respuesta al pulsar,
+  los ✓ de la contraseña, crear → verificar, los pasos de recuperar, Mis
+  pedidos y "Guardado ✓". Un solo momento de entrada por vista; lo demás
+  responde a lo que hace la persona. Todo se apaga con
+  `prefers-reduced-motion` (`MotionConfig reducedMotion="user"`). Skill:
+  `frontend-design`.
 - Contenido hasta 1440 px; la barra de arriba va de borde a borde, se pega al
-  bajar 40 px y se invierte sobre secciones oscuras.
-- Cortes en 900, 680 y 420 px. El hover solo con `(hover: hover) and (pointer: fine)`,
-  pero en JS **no fiarse de esa media query**: el portátil del usuario es táctil
-  y la da falsa; usar `pointerType`.
-- Clases de estado puestas por JS: `is-open`, `is-loaded`, `is-loading`,
-  `is-visible`, `is-fila`, `is-lleno`, `is-mal`, `is-dentro`.
-- Cache-buster `?v=palabra-AAAAMMDD` en la hoja de estilos y en los dos
-  scripts; se sube en cada cambio.
+  bajar y se invierte sobre secciones oscuras. Cortes en 900, 680 y 420 px.
+- El hover solo con `(hover: hover) and (pointer: fine)`, pero en JS **no
+  fiarse de esa media query**: el portátil del usuario es táctil y la da
+  falsa; usar `pointerType`.
+- Sin cache-buster a mano: Vite pone huella a los nombres de los archivos.
 
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
 
 - Todo con teclado; paneles que atrapan el foco, Esc y devolución del foco;
-  `inert` detrás de los paneles; menú Tienda con flechas; enlace de salto.
-- Foco visible con anillo propio y `:focus-visible`.
-- ARIA solo donde hace falta: `role="dialog"` + `aria-modal`, `aria-expanded`,
-  `aria-controls`, `aria-live="polite"`, `aria-invalid` + `aria-describedby`.
-- Contraste medido (texto 12,4:1; secundario 6,8:1; pie 11,1:1 y 8,7:1).
-- `prefers-reduced-motion` apaga entradas, velos y desplazamiento suave.
-- Objetivos táctiles de al menos 24 px, o con espacio libre alrededor como
-  permite WCAG 2.5.8 (los tamaños del teléfono miden 22,7 px y pasan así);
-  los botones de ficha miden 32 px en el teléfono y 34 px en escritorio.
+  `inert` detrás de los paneles; menú Tienda y ficha de la cuenta con
+  flechas; enlace de salto al contenido.
+- Foco visible: anillo de 3 px en `--horno` con halo ámbar de 5 px. Campos con
+  borde `--horno-claro` (4,97:1). `html { scroll-padding-top/bottom }` para
+  que el foco no quede bajo la cabecera.
+- ARIA solo donde hace falta: `role="dialog"` + `aria-modal`, `alertdialog`,
+  `aria-expanded`, `aria-controls`, `aria-current`, `aria-live="polite"`,
+  `aria-invalid` + `aria-describedby`.
+- Contraste medido (texto 12,4:1; sobre la foto de la portada 8:1 o más;
+  sobre los fondos de trazos 5,7:1 o más).
+- Con `forced-colors`, lo elegido se pinta con `Highlight` (filtros,
+  tamaños, opciones de confirmar, forma de pago).
+- Objetivos de al menos 24 px, o con espacio libre alrededor (WCAG 2.5.8).
+- Se pueden seleccionar el código del recuadro, el `ET-XXXX` y los datos de
+  Mis datos (`user-select: text`).
 - Precios con **punto decimal** (`$1.25`), como se escriben los dólares en
   Ecuador; lo hace `dinero()`.
+- Revisión de `ux-accesibilidad` del 20 de octubre de 2026 sobre todo el
+  sitio: 0 violaciones A/AA con axe, y sus arreglos hechos.
 
 ## 12. Calidad y publicación
 
-1. Cambio en `js/` o en el catálogo → `node herramientas/empaquetar.mjs`.
-2. Subir los `?v=` que toque.
-3. `node .claude/skills/verificar-sitio/verificar.mjs` (Edge, HTTP, móvil y
-   doble clic). `node --check` **no basta**.
-4. Commit solo de los archivos del cambio, mensaje en español.
-5. `bash .claude/skills/publicar/ci-local.sh`.
-6. Push a la rama en la que se trabaja (`mejoras`) y esperar a que `Validar y publicar sitio` salga en verde. Solo un push a `main` publica en Pages; para llevar `mejoras` al sitio se fusiona en `main` cuando el usuario lo pida.
+1. `npm run build` sin errores ni avisos.
+2. `npm run probar` (todas las pruebas de navegador de `pruebas/casos/`, en
+   Edge; `npm run probar -- <nombre>` para una). Lo nuevo que ninguna prueba
+   mira lleva su caso, en escritorio y en el teléfono, en el mismo commit.
+3. Commit solo de los archivos del cambio, por nombre
+   (`git commit -m ... -- <rutas>`: un `git commit` sin rutas se lleva lo que
+   otro agente tenga en el índice), mensaje en español.
+4. `bash .claude/skills/publicar/ci-local.sh`.
+5. Push a `mejoras` y esperar a que `Validar y publicar sitio` salga en verde.
+   Solo un push a `main` publica en Pages; se fusiona cuando el usuario lo
+   pide.
 
-El CI comprueba: archivos principales, sintaxis de los módulos,
-`sin-servidor.js` al día, imports con la mayúscula exacta, el catálogo con
-`revisar()`, categorías ↔ menú Tienda, fotos en los dos anchos, portada,
-al menos 4 destacados, palabras prohibidas y espacios al final de línea.
-Además, en un paso aparte, que la versión en React de `react/` instala y
-construye (sección 15).
+El CI (`validate`, en cualquier rama): `npm ci`, build sin avisos, `revisar()`
+de cada producto, categorías ↔ `CATEGORIAS`, fotos en los dos anchos y de la
+portada, al menos 4 destacados, palabras prohibidas en `index.html`, `src/`,
+`assets/css/` y `data/productos.json`, espacios al final de línea, y la
+prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
+`.claude/herramientas/axe.mjs` mide 46 estados del sitio.
 
 ## 13. Pendiente
 
@@ -405,30 +478,22 @@ construye (sección 15).
 - [ ] Ingredientes y alérgenos por producto (confirmados por el negocio).
 - [ ] Unidad del precio (pieza, funda, docena).
 - [ ] "Horneando ahora mismo" se deduce del horario, no de la realidad.
+- [ ] Galería del local en `#/nosotros` (`assets/img/local/`), cuando el
+      usuario pase fotos reales; sin fotos no se enseña nada.
 
 ### Accesibilidad y UX
-- [ ] Avisar que abren otra pestaña: botón flotante y "Pedir" de reserva sin JS.
-- [x] "Ver en el mapa" mide 131×18 px, pero cumple WCAG 2.5.8 por el espacio libre alrededor.
-- [ ] `user-select: none`: la dirección y el horario ya se copian; los precios y el WhatsApp todavía no.
-- [ ] Probar la fila quieta por defecto en vez de que avance sola (en React ya no avanza sola: queda para el sitio actual).
-- [x] El menú del teléfono lleva el foco a "Nosotros" al abrirse (`visibility 0s`
-      al abrir, como el submenú de Tienda).
-- [x] Contraste de la fila de hoy del horario y `h1` en la vista de catálogo.
-- [x] La vista de confirmar tiene `h1` (`.checkout-titulo`), en los dos sitios;
-      sus `h3` pasaron a `h2` para no saltarse un nivel.
+- [ ] `user-select: none`: los precios, el WhatsApp y los datos del
+      comprobante (salvo el número) todavía no se pueden copiar.
 - [ ] Decir antes de llenar la canasta que pagar pide cuenta, o permitir invitado.
-- [ ] axe (menores, en los dos sitios): `aside` con `role="dialog"` en la
-      canasta (`aria-allowed-role`; pasar a `div`) y la barra de deshacer fuera
-      de un punto de referencia (`region`).
-- [ ] El panel de la cuenta (`.cuenta-panel.is-open`) tiene la misma
-      transición de `visibility` que tenía la canasta: comprobar si el foco
-      entra al abrirlo. Solo en el sitio actual: en React la cuenta son
-      vistas, sin panel (fase 5).
-- [x] `cart.js` metía el nombre de cada línea (que viene de `localStorage`) con
-      `innerHTML` sin escapar, y el comprobante también. Ahora pasa por
-      `escapar()`, que vive en `state.js` (antes solo en `view.js`), y el
-      comprobante usa `textContent`. React no tenía el problema.
+- [ ] axe (menor): la barra de deshacer fuera de un punto de referencia (`region`).
+- [ ] 60-30-10 medido con capturas en cada vista (se ajustó a ojo).
+- [ ] Tras recargar, la tienda no recuerda el desplazamiento de las entradas
+      de antes (Atrás entre categorías da arriba); se arreglaría con
+      `sessionStorage`. No urge.
+- [ ] El caso `reenviar-codigo` todavía espera a que crear acabe de salir y
+      su comentario dice que está "apuntado para frontend"; ya no hace falta.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).
+- [ ] GitHub avisa de que `ubuntu-latest` pasa a Ubuntu 26.
 
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).
@@ -462,24 +527,24 @@ Los agentes viven en `.claude/agents/` y todos leen este plan primero.
 
 | Agente | Se encarga de | Cambia archivos | Skills cargadas |
 |---|---|---|---|
-| `frontend` | `index.html`, `assets/css/styles.css`, `js/catalogo/view.js`, `js/comun/ui.js`, maquetación, responsive, animaciones | Sí | `verificar-sitio`, `wcag-audit-patterns`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` |
-| `logica-datos` | `js/comun/` (state, storage, mail), `js/catalogo/repo.js`, `js/pedido/`, `js/cuenta/`, el catálogo | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` (+ sigue `nuevo-producto`) |
+| `frontend` | `index.html`, `vite.config.js`, `src/main.jsx`, `src/App.jsx`, `src/vistas/`, `src/catalogo/`, `src/comun/`, `src/estilos/`, `assets/css/styles.css`, `FichaCuenta.jsx`, `PasoQueCambia.jsx`; maquetación, responsive y movimiento | Sí | `verificar-sitio`, `wcag-audit-patterns`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns`, `frontend-design` |
+| `logica-datos` | `src/estado/`, `src/servicios/`, `src/pedido/`, `src/cuenta/` (salvo lo de `frontend`), `data/productos.json` | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` (+ sigue `nuevo-producto`) |
 | `base-datos` | La base de datos (`bd/`) y su prueba (`.claude/skills/probar-bd/probar.mjs`) | Sí | `probar-bd`, `supabase-postgres-best-practices` |
 | `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | `wcag-audit-patterns`, `nielsen-usability-heuristics` (+ `.claude/herramientas/axe.mjs`) |
-| `calidad-publicacion` | Revisión de código y seguridad, CI, empaquetar, subir a la rama | Solo lo de publicar | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
+| `calidad-publicacion` | Revisión de código y seguridad, `pruebas/`, CI, `package.json`, publicar | Sí, lo de publicar y las pruebas | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
 
 Skills en `.claude/skills/`:
 
 | Skill | Origen | Quién la usa |
 |---|---|---|
-| `verificar-sitio` | propia | `frontend`, `logica-datos`, `calidad-publicacion` |
-| `publicar` | propia | `calidad-publicacion` |
+| `verificar-sitio` | propia: build sin avisos y `npm run probar` | `frontend`, `logica-datos`, `calidad-publicacion` |
+| `publicar` | propia (`ci-local.sh` al lado) | `calidad-publicacion` |
+| `componente-react` | propia: convenciones de `src/` | `frontend`, `logica-datos` |
 | `nuevo-producto` | propia, la invocas tú con `/nuevo-producto` | `logica-datos` sigue sus pasos |
 | `probar-bd` | propia: corre `bd/` en PGlite y comprueba las reglas del modelo, el catálogo y los inserts (`probar.mjs` al lado) | `base-datos` |
 | `notas-para-explicar` | propia, la invocas tú con `/notas-para-explicar` | — |
 | `wcag-audit-patterns` | skills.sh, `wshobson/agents` | `ux-accesibilidad`, `frontend` |
 | `nielsen-usability-heuristics` | skills.sh, `dembrandt/dembrandt-skills` | `ux-accesibilidad`, `logica-datos` |
-| `componente-react` | propia: convenciones de `react/` | `frontend`, `logica-datos` |
 | `vercel-react-best-practices` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos`, `calidad-publicacion` |
 | `vercel-composition-patterns` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos` |
 | `frontend-design` | skills.sh, `anthropics/skills` (copiada a mano del commit `dbd4588`) | `frontend` |
@@ -487,864 +552,43 @@ Skills en `.claude/skills/`:
 
 Las instaladas con el CLI quedan en `skills-lock.json` y `npx skills update -p`
 las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
-ese repositorio, y `frontend-design` igual: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
+ese repositorio, y `frontend-design` igual: para actualizarlas, volver a
+copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, fase 6 hecha; sigue la 7)
+## 15. Cómo se llegó aquí (migración a React, 19–21 de octubre de 2026)
 
-El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
-Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
-el usuario pida fusionar. Mientras dure, las secciones 1 a 13 siguen siendo la
-referencia de **qué** tiene que hacer el sitio: la versión en React tiene que
-hacer lo mismo (mismas vistas, rutas, reglas, guardado y accesibilidad) antes
-de reemplazar a la de ahora.
+El sitio presentado era HTML, CSS y 10 módulos de JavaScript sin
+dependencias, que se abría también con doble clic (etiqueta
+`sitio-presentado`). El 19 de octubre de 2026 el usuario eligió **React**
+(Vite, JavaScript, React Router, sin doble clic) y se migró en la rama
+`mejoras`, en siete fases, sin cambiar el formato de lo guardado:
 
-### Decisiones (confirmadas el 19 de octubre de 2026)
+1. **Andamiaje**: Vite + React en `react/`, `styles.css` importado.
+2. **Catálogo y página**: cabecera, portada, tienda, filtros, rutas, avisos.
+3. **Canasta**: panel, líneas, deshacer, vaciar, guardado.
+4. **Pedido y pago**: confirmar, factura, tarjeta, comprobante, IndexedDB.
+5. **Cuenta** como vistas propias, con código en 6 casillas, recuperar la
+   contraseña, pedidos por cuenta y "Pedir otra vez". La revisión de calidad
+   encontró que un código de recuperar acertado sobrevivía; se arregló.
+6. **Calidad**: pruebas de navegador en el repositorio (`npm run probar`),
+   prueba de humo en el CI, axe sobre React, carga por partes y una revisión
+   completa de `ux-accesibilidad` con sus arreglos.
+7. **El cambio**: las reglas de `js/` pasaron a `src/servicios/`, `react/`
+   subió a la raíz, se borraron `js/`, `herramientas/` y `netlify.toml`, y
+   Pages pasó a publicar `dist/`.
 
-El sitio se va a publicar de verdad: se elige lo mejor para un sitio real, no
-lo que pida la clase.
-
-| Tema | Decisión | Por qué |
-|---|---|---|
-| Herramienta | **Vite** + React, en **JavaScript** (JSX), sin TypeScript por ahora | Vite es el arranque estándar de React; TypeScript se puede añadir después, cuando React ya se domine |
-| Dónde | Carpeta `react/` con su propio `package.json` mientras se migra; en la fase 7 pasa a la raíz y se borra lo viejo | El sitio actual sigue funcionando y validándose durante la migración |
-| Fotos y catálogo | `react/` usa `data/productos.json` y `assets/img/` de la raíz **sin copiarlos** (lo resuelve `vite.config.js`); `revisar()` se reutiliza | Una sola fuente de verdad; el CI ya la valida |
-| Estado | `Context` + `useReducer` para pedido, entrega y sesión; sin Redux | El estado es pequeño; reemplaza a `state.js`, al `puente` y a los `pintar()` a mano |
-| Rutas | **React Router** con `HashRouter`: las mismas `#tienda-*`, `#confirmar`, `#comprobante`, que `HashRouter` escribe con barra (`#/tienda-panes`); las de antes, sin barra, siguen entrando | Es lo estándar; con `#` GitHub Pages no necesita el truco del 404 |
-| Estilos | Se conserva `styles.css` y sus clases; nada de Tailwind ni Bootstrap | Es la identidad del sitio |
-| Guardado y correo | La lógica de `storage.js` y `mail.js` se conserva, llamada desde hooks | Ya funcionan y no dependen de la interfaz |
-| **Doble clic** | **Se deja.** La versión en React solo se sirve por HTTP; `js/sin-servidor.js` y `herramientas/empaquetar.mjs` desaparecen en la fase 7 | Un sitio publicado se abre por HTTP. Meter todo en un solo archivo quita la caché por archivo y hace la primera carga más pesada |
-| Caché | Vite pone una huella en el nombre de cada archivo (`index-a1b2c3.js`): **se acaba el `?v=` a mano** | Lo hace solo y no se olvida |
-| Publicar | El CI hace `npm ci && npm run build` en `react/` y valida; en la fase 7, publica `dist/` | `node_modules` nunca se publica |
-
-Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
-"sin dependencias" siguen valiendo **para el sitio actual**, no para `react/`.
-
-### Fases
-
-1. **Andamiaje**: Vite + React en `react/`, `styles.css` importado, el
-   catálogo cargado y una ficha pintada.
-2. **Catálogo y página**: la página entera menos la canasta y la cuenta
-   (cabecera con menú Tienda y menú del teléfono, portada, franja, historia,
-   pie con horario y estado abierto/cerrado, enlaces de sección), las fichas,
-   "Los más pedidos", la vista de catálogo, filtros, orden, buscador, rutas
-   `#tienda-*`, globo de ayuda, avisos `aria-live` y animaciones de entrada.
-   Las fichas llevan el botón de agregar, pero sin efecto hasta la fase 3.
-3. **Canasta**: botón de la canasta con contador en la cabecera (y flotante
-   en el teléfono), panel lateral, control de cantidad de las fichas (con
-   tamaños como líneas distintas), la foto que vuela a la canasta, quitar con
-   pregunta, la X de cada línea, deshacer 12 s, vaciar, y guardado en
-   `localStorage` con la marca de la cookie y "Tu pedido se guardó…" en el
-   pie. Reglas:
-   - **Mismo formato y mismas claves de `localStorage` y cookie** que el sitio
-     actual, para que un pedido guardado siga ahí cuando React lo reemplace.
-   - "Ir a pagar" ya existe, pero como en React todavía no hay cuenta (fase 5)
-     ni pedido (fase 4), enseña el aviso de "Crear cuenta o entrar" del sitio
-     actual con el botón sin efecto, y un comentario que lo diga.
-   - El reductor del pedido (`agregar`, `cambiar`, `quitar`, `vaciar`,
-     `reponer`) es puro y vive en `src/estado/`; guardar es un efecto aparte.
-4. **Pedido y pago**: `#confirmar`, factura, tarjeta, comprobante e IndexedDB,
-   con todo lo de la sección 6. Reglas:
-   - **Mismas claves y formatos** de `localStorage` (entrega, factura) e
-     IndexedDB (`eltradicional/pedidos`) que el sitio actual; la lógica de
-     validar (Luhn, MM/AA, cédula/RUC, provincia 01–24), el número `ET-XXXX` y
-     el correo se importan de `js/` o se mueven a `src/servicios/`, no se
-     reescriben de memoria.
-   - La cuenta llega en la fase 5, pero **la de este navegador ya existe** en
-     `localStorage` si se creó en el sitio actual. En esta fase React solo la
-     **lee** (un `SesionProvider` de solo lectura en `src/estado/`): con
-     sesión abierta y correo verificado, "Ir a pagar" lleva a `#/confirmar`;
-     si no, sale el aviso de "Crear cuenta o entrar" como ahora. Entrar a
-     `#/confirmar` sin cuenta o con la canasta vacía vuelve a la portada.
-   - `#/comprobante` con `replace`, para que Atrás no vuelva al pago hecho.
-   - La pantalla de confirmar lleva su `h1` (en el sitio actual también).
-   - Al terminar, React ya guarda la entrega y la factura que son suyas: deja
-     de reescribir sin tocar las que encontraba (fase 3). Hecho: ver "Cómo
-     quedó la fase 4".
-5. **Cuenta**: crear, verificar, entrar, editar, historial, como vistas
-   propias (ver "Fase 5: la cuenta").
-6. **Calidad**: `verificar-sitio`, `axe.mjs`, el CI y la skill `publicar`
-   adaptados al *build*; revisión completa de `ux-accesibilidad` (ver
-   "Fase 6: calidad"). Además:
-   - Hecho: las vistas de la cuenta y del pago se cargan por partes, y las
-     pruebas de navegador viven en `react/pruebas/` (ver "Fase 6: calidad").
-7. **Cambio**: `react/` pasa a la raíz, fuera `js/` y `herramientas/`, y el
-   plan se reescribe para describir la versión en React.
-
-Cada fase cierra con el sitio funcionando y la paridad comprobada con las
-secciones 4 a 11.
-
-### Cómo quedó la fase 1 (hecha el 19 de octubre de 2026)
-
-- Versiones fijadas sin `^`: Vite 8.3.4, `@vitejs/plugin-react` 6.1.2, React y
-  React DOM 19.3.1, `react-router-dom` 7.18.4; Node 24.15.0 en el CI.
-- `vite.config.js`: alias `@raiz` hacia la raíz del repo, `server.fs.allow`
-  para que `npm run dev` pueda leerla y `base: './'` para servir bajo
-  `/Panaderia/`.
-- Catálogo: `src/servicios/catalogo.js` importa `data/productos.json` (va dentro
-  del JS construido, sin `fetch`) y lo pasa por `revisar()` y `normalizar()` de
-  `js/catalogo/repo.js`, que ahora exporta las dos. Las fotos entran con
-  `import.meta.glob` sobre `assets/img/productos/*.jpg`: Vite las copia a
-  `dist/assets/` con huella, y en `react/` no hay ninguna copia.
-- Rutas: `/`, `/tienda-catalogo`, una `/tienda-<categoria>` por categoría (React
-  Router no admite `tienda-:categoria` en un mismo tramo), `/confirmar`,
-  `/comprobante`; lo demás vuelve a la portada con `replace`. Las direcciones
-  se ven como `#/tienda-panes`; `#tienda-panes` sin barra sigue abriendo la
-  misma vista porque React Router le añade la barra al leerla.
-- Enlaces de sección (decidido el 19 de octubre de 2026): "Saltar al
-  contenido", `#inicio`, `#catalogo`, `#historia` y `#visitanos` **no son
-  rutas**. Al pulsarlos se desplaza suave hasta la sección (sin suavidad con
-  `prefers-reduced-motion`) y el foco pasa a ella (`tabIndex={-1}` +
-  `focus({ preventScroll: true })`), sin tocar la dirección. Para quien usa la
-  página se comporta igual que hoy, y el salto al contenido sigue cumpliendo
-  WCAG 2.4.1. Abrir una de esas direcciones tal cual (`#historia` pegado, un
-  enlace compartido, otra pestaña) lleva a `#/` con `replace` y baja a la
-  sección sin animar, con el foco en ella (arreglado el 20 de octubre de 2026).
-- CI: paso "Construir la version en React" (`npm ci && npm run build` en
-  `react/`) detrás de la validación; `ci-local.sh` solo corre la validación.
-
-### Cómo quedó la fase 2 (hecha el 19 de octubre de 2026)
-
-- La página entera menos canasta y cuenta, con las clases y el ARIA de
-  `index.html`. Donde irán la canasta y la cuenta (`.nav-acciones`, botón
-  flotante, "Tu pedido se guardó" del pie) solo hay un comentario.
-- Una sola ruta para la portada y las vistas (`path="*"` → `Portada`): como en
-  `view.js`, la vista aparta la portada con `body.is-vista` y las fichas son
-  siempre las mismas. Entrar con un enlace (`state.entrar`) limpia orden,
-  Mostrar y búsqueda, sube y enfoca el título; Atrás no limpia. "Filtrar por"
-  sale de la dirección y se cambia con `replace`.
-- Reutilizado sin copiar: `recordarVista`/`vistaRecordada` de `storage.js`,
-  `dinero`/`idDe` de `state.js` y el horario, que pasó de `ui.js` a
-  `js/comun/horario.js` (sin DOM) para que lo importen los dos sitios.
-- Lo que se mueve a cada píxel (barra de avance, alto de la fila en el
-  teléfono, el globo) va por `ref` y no por estado.
-- Desde la vista, Nosotros vuelve a la portada (con historial) y baja a
-  #historia cuando ya está pintada; Contáctanos baja al pie sin salir de la
-  vista. El salto al contenido no cambia la dirección.
-- Escape cierra la tienda y el menú del teléfono a la vez y devuelve el foco al
-  botón que corresponde (antes, en el teléfono, iba siempre al del menú).
-- El "+" de cada ficha se ve y se enfoca igual, pero no agrega nada hasta la
-  fase 3; el tamaño elegido sí cambia el precio, el nombre del botón y se
-  anuncia, como hoy.
-
-### Arreglos antes de la fase 3 (revisión de `ux-accesibilidad`, 20 de octubre de 2026)
-
-Todos para `frontend`, en React y, cuando es CSS o `view.js`, también en el
-sitio actual. Gravedad de Nielsen entre paréntesis.
-
-- [x] (3) Abrir directamente `#inicio`, `#catalogo`, `#historia`, `#visitanos`
-      o `#contenido` (dirección pegada, enlace compartido, pestaña nueva) baja
-      a la sección, como en el sitio actual (antes React se quedaba arriba).
-- [x] (3) Menú del teléfono: el foco entra en "Nosotros" al abrirlo
-      (`visibility 0s` en `.main-nav.is-open`).
-- [x] (3) Contraste de la fila de hoy del horario (`.is-today`, `.dia-hoy`) de
-      al menos 4,5:1.
-- [x] (2) La vista de catálogo tiene `h1` (`.vista-titulo`).
-- [x] (2) Contraste del submenú Tienda en hover y foco.
-- [x] (2) Al volver al inicio y con Atrás/Adelante el foco va a `#inicio` o al
-      título de la vista, no a `body`.
-- [x] (2) El menú del teléfono se cierra cuando el foco sale de él.
-- [x] (2) Se puede pasar el cursor por encima del globo de ayuda sin que se
-      cierre (WCAG 1.4.13).
-- [x] (2) Sin `aria-haspopup` en la flecha de Tienda.
-- [x] (1) Se anuncia el cambio de orden; al volver al inicio no se anuncia el
-      catálogo viejo; con búsqueda vacía en "Todas" no dice "en esta categoría".
-- [x] (1) El título de la vista y de la pestaña dicen la categoría
-      ("Dulces y pasteles · Catálogo | El Tradicional").
-- [x] (1) Sin desplazamiento horizontal a 320 px con espaciado de texto
-      aumentado (`.vista-mandos`).
-
-No se arregla: Escape en el sitio actual mueve el foco aunque no haya nada
-abierto. React ya lo hace bien, y el sitio actual se retira en la fase 7.
-
-### Cómo quedó la fase 3 (hecha el 20 de octubre de 2026)
-
-- Estado: `src/estado/pedido.js` es el reductor puro (`agregar`, `cambiar`,
-  `quitar`, `vaciar`, `reponer` y `olvidar`, que cierra el deshacer); las
-  líneas son pares `[id, línea]` en el orden del `Map` de antes, y el último
-  borrado vive en el mismo estado. `PedidoProvider` lo inicia con lo guardado
-  y guarda en un efecto cuando cambian las líneas. Unidades y subtotal se
-  calculan al pintar.
-- Guardado: lo que se acepta de `localStorage` y cómo se escribe pasó de
-  `cart.js` a `js/pedido/guardado.js` (sin DOM), que usan los dos sitios;
-  misma clave, mismo formato y misma cookie. React reescribe la entrega y la
-  factura que encuentre guardadas (todavía no son suyas: fase 4) sin tocarlas.
-  Comprobado sirviendo los dos en el mismo origen: lo que guarda uno lo lee el
-  otro, en los dos sentidos.
-- Piezas en `src/pedido/`: `BotonCanasta` (en `.nav-acciones`, el mismo `<a
-  role="button">` con `floating-whatsapp is-canasta`), `Canasta`,
-  `LineaCanasta`, `PideCuenta`, `BarraDeshacer`, `ControlCantidad` (el de las
-  fichas, con el HTML de `montarControlesDeFicha`) y `GuardadoPie`. El foco y
-  la animación que cruzan de una a otra van por `CanastaProvider`. El cerco
-  del foco y el `inert` de detrás están en `src/comun/useAtraparFoco.js`, para
-  la cuenta también.
-- "Ir a pagar" enseña siempre el aviso de cuenta; sus dos botones grandes no
-  hacen nada hasta la fase 5 (lo dice un comentario en `PideCuenta.jsx`).
-- Diferencias con el sitio actual, a propósito: React **no guarda al
-  cargar** (el sitio actual reescribe pedido y cookie en cada visita, así que
-  su pie dice siempre "hoy a las" la hora de entrar; React dice la fecha real
-  del último cambio), y la foto de una línea sale aunque el producto esté
-  agotado.
-- Decidido el 20 de octubre de 2026: **se queda lo de React** y el sitio
-  actual también deja de guardar al cargar; solo guarda cuando cambia el
-  pedido, la entrega o la factura. Así el pie de los dos dice la fecha real.
-  Hecho el 20 de octubre: tampoco guarda la dirección que la cuenta rellena
-  al arrancar (sí al entrar o al editar la cuenta).
-- Arreglado en los dos sitios: el `+` de la línea de la canasta respeta el
-  tope de 100 (antes solo la ficha), y el panel se hace visible en el acto al
-  abrirse (`visibility 0s`), así que el foco entra en la X de cerrar (antes se
-  quedaba en `body` hasta el primer Tab).
-
-### Cómo quedó la fase 4 (hecha el 20 de octubre de 2026)
-
-- Reglas sin reescribir: lo que decidía `checkout.js` (factura, Luhn, MM/AA,
-  CVV, titular, los avisos "Para la factura, revisa…" y "Revisa … de la
-  tarjeta", el número `ET-XXXX`, el recibo, el saludo y el cuerpo del correo,
-  el estado del envío) pasó a `js/pedido/cobro.js`, sin DOM, y lo usan los dos
-  sitios. `armarRecibo()` hace un solo objeto del pedido aprobado y de él
-  salen el comprobante, el correo y el registro de IndexedDB
-  (`reciboParaGuardar()`, el mismo formato de siempre). La cuenta guardada se
-  lee con `js/cuenta/guardada.js`, que usan `account.js` y React. La hora de
-  retiro pasó a `textoRetiro()` de `horario.js`. `direccionEntera()` salió de
-  `state.js` (ahora `direccionDe(entrega)` en `cobro.js`).
-- Estado: el reductor de `src/estado/pedido.js` lleva también la entrega y la
-  factura (`entrega`, `factura`, `cumplido`), porque se guardan en el mismo
-  registro, y cuenta los cambios: `PedidoProvider` guarda cuando el contador
-  sube, así que ni lo leído al arrancar ni vaciar al aprobar se escriben. React
-  ya no reescribe la entrega y la factura del sitio actual: son suyas.
-  `PedidoProvider` también guarda el recibo del último pedido y lo olvida al
-  salir de `#/comprobante`.
-- Sesión: `src/estado/SesionProvider.jsx`, de solo lectura, con
-  `useSyncExternalStore` sobre la cuenta de `localStorage`; se vuelve a leer
-  con el evento `storage` (entrar en la cuenta en otra pestaña del sitio
-  actual deja pagar sin recargar). Con sesión y correo verificado, "Ir a
-  pagar" cierra la canasta y va a `#/confirmar`; si no, la hoja de siempre
-  (sus botones siguen sin efecto hasta la fase 5). La dirección de la cuenta
-  rellena el pedido sin guardarse y la forma de pago empieza en la preferida.
-- Piezas en `src/pedido/`: `Confirmar` (la guarda de entrada),
-  `FormularioPedido`, `ElegirEntrega`, `ElegirPago`, `DatosFactura`,
-  `CampoPago`, `ResumenPedido`, `Comprobante` (la guarda), `Recibo`,
-  `CabezaPedido` y `useVistaPedido` (`body.is-checkout`, título de la
-  pestaña, foco en el `h1`; al salir con "Volver a la tienda" o "Listo,
-  cerrar", portada y foco en el botón de la canasta). La tarjeta vive solo en
-  el estado de `FormularioPedido`. Los campos que se guardan recortados no se
-  controlan (`defaultValue`), para poder escribir espacios.
-- Comprobado en Edge, escritorio y teléfono, con los dos sitios en el mismo
-  origen: 142 comprobaciones del recorrido (sin cuenta, sin verificar, canasta
-  vacía, retiro/efectivo, domicilio/tarjeta/factura a otra persona con cada
-  error, foco, Enter, Atrás y Adelante, correo bien y caído), la misma
-  secuencia de errores da los mismos textos, foco y `aria-invalid` en los dos
-  sitios, y los pedidos pagados en uno salen en el historial del otro. axe sin
-  violaciones en confirmar y comprobante de los dos.
-- Diferencias a propósito con el sitio actual:
-  - Se puede entrar a `#/confirmar` con un enlace o recargando si hay cuenta
-    verificada y canasta (el sitio actual limpia la dirección y se queda en el
-    catálogo). Si la canasta se vacía estando dentro, la vista se queda y el
-    botón dice "Tu canasta está vacía", como en el sitio actual.
-  - Al aprobar, React vacía la canasta en el acto (el comprobante sale del
-    recibo); el sitio actual dejaba las líneas en memoria hasta cerrar el
-    comprobante.
-  - "Ir a pagar" desde la canasta abierta con "Editar la canasta" no apila
-    otra entrada en el historial: solo cierra la canasta.
-- Arreglado en los dos sitios: `h1` en la vista de confirmar y sus `h3` a
-  `h2`; la dirección lleva `aria-invalid` y `aria-describedby` y avisa también
-  al dejar el campo vacío; al aprobar se vacían también el correo y la
-  dirección opcionales de la factura (antes quedaban escritos con la factura
-  ya limpia); con la canasta vacía el pie no dice "Tu pedido se guardó…".
-
-### Arreglos de la fase 3 (revisión de `ux-accesibilidad`, 20 de octubre de 2026)
-
-Van en React y, salvo el de los avisos repetidos, también en el sitio actual.
-Se hacen después de la fase 4, a la vez que las vistas. Gravedad de Nielsen
-entre paréntesis.
-
-- [x] (3) `frontend`: en el teléfono la barra de deshacer tapa el botón
-      flotante de la canasta (la regla de `bottom: 74px` del `@media` va antes
-      que la base y pierde). Con el panel abierto, la barra va encima del pie
-      de la canasta, sin tapar "Ir a pagar". Hecho en `styles.css` (los dos
-      sitios): las reglas van detrás de la base; con el panel abierto
-      (`body:has(.canasta-panel.is-open)`) la barra se pone dentro de la
-      gaveta, 172 px sobre el borde. Medido a 320, 390, 900 y 1280 px sin
-      solaparse. De paso, `prefers-reduced-motion` ya le quita la animación
-      (perdía por lo mismo).
-- [x] (3) `logica-datos`: React no repite un aviso igual al anterior
-      (`Avisos.jsx`); tiene que anunciarlo otra vez, como el sitio actual.
-      Hecho: cada aviso lleva un contador y su texto va en un `Fragment` con
-      esa clave, así que es un nodo nuevo aunque diga lo mismo.
-- [x] (2) `logica-datos`: con la hoja "Entra a tu cuenta para pagar" abierta,
-      el Tab no llega a "Deshacer" (la barra sale del cerco mientras tanto).
-      Hecho: la barra queda `inert` con la hoja arriba (en React la hoja pasó
-      de `Canasta` a `CanastaProvider` para que la barra lo sepa).
-- [x] (2) `logica-datos`: en el tope de 100, el `+` de la ficha y el de la
-      línea dicen "El máximo es 100 por producto" y quedan con `aria-disabled`.
-      Hecho: también el globo (`data-tip`); pulsarlo no vuela ni guarda nada.
-      Falta que `frontend` lo vea apagado en `styles.css` (como
-      `.canasta-enviar[aria-disabled="true"]`).
-- [x] (2) `logica-datos`: Enter o Esc en el campo de cantidad asientan el
-      valor sin `blur()`; el foco sigue en el campo. En el sitio actual, Esc
-      no sube a la página (allí se llevaba el foco al botón del menú).
-- [x] (2) `logica-datos`: el reloj de 12 s del deshacer se para mientras la
-      barra tiene el foco o el puntero encima. Al soltarla sigue con lo que le
-      quedaba; un borrado nuevo vuelve a dar 12 s.
-- [x] (2) `logica-datos`: Atrás/Adelante con el panel abierto lo cierran.
-      Antes de pintar la vista nueva, para que no siga `inert`. Si quien abrió
-      el panel se fue con la vista ("Editar la canasta" de `#confirmar`), el
-      foco va al botón de la canasta.
-- [x] (1) `logica-datos`: el `+`/`−` de una línea avisa "3 de Pan redondo. N
-      productos en la canasta", como la ficha.
-- [x] (1) `logica-datos`: con la canasta vacía el pie no dice "Tu pedido se
-      guardó…" (no enseña nada). Hecho con la fase 4, en los dos sitios.
-- [x] (1) `logica-datos`: "Ver la vitrina" de la canasta vacía lleva al catálogo y deja
-      el foco en su título (en React, a `#/tienda-catalogo` cuando haya vistas).
-      Hecho en los dos: el sitio actual llama a `abrirCategoria('catalogo')`
-      de `view.js` por el puente; React navega a `#/tienda-catalogo` con
-      `state.entrar`, como "Ver el menú". Si las vistas nuevas cambian cómo se
-      entra al catálogo, hay que ajustar `verVitrina` en `Canasta.jsx`.
-- [x] (1) `logica-datos`: con una sola unidad, la línea no enseña la X (el
-      basurero hace lo mismo y tenían el mismo nombre).
-
-Hechos los de `logica-datos` el 20 de octubre de 2026, comprobados en Edge
-(escritorio y teléfono, los dos sitios) con un caso que fallaba antes y pasa
-después. De paso, el sitio actual ya no manda el foco a `body` al pulsar el
-`+`/`−` de una línea: lo devuelve al mismo botón de la línea rehecha, como
-React.
-
-### Fase 5: la cuenta (decidido el 20 de octubre de 2026)
-
-Siguiendo "Vistas y aspecto", en React la cuenta **no es un panel lateral**:
-cada paso es una vista propia, para que los formularios tengan ancho y no
-haya que desplazarse en una columna estrecha. **Solo en React**: el sitio
-actual sigue con su panel. Lo que hace cada paso es lo de la sección 7.
-
-| Ruta | Contenido | Si no corresponde (con `replace`) |
-|---|---|---|
-| `#/cuenta/entrar` | Título y botón **"Iniciar sesión"** (el mismo nombre que la cabecera y la hoja de pagar). Correo y contraseña; "¿Olvidaste tu contraseña?"; "¿No tienes cuenta? Créala" | Con sesión → `#/cuenta` |
-| `#/cuenta/crear` | Nombre, correo, teléfono, dirección (opcional), contraseña con sus 4 requisitos y repetirla; dos columnas en la computadora (datos a la izquierda, contraseña a la derecha), una en el teléfono; "¿Ya tienes cuenta? Inicia sesión". Si en el navegador ya hay una cuenta, aviso arriba: "En este navegador ya hay una cuenta (a…@…). Crear otra la reemplaza." | Con sesión → `#/cuenta` |
-| `#/cuenta/verificar` | Código de 6 cifras, "Reenviar" cada 45 s y el recuadro con el código si EmailJS falta o falla | Sin cuenta por verificar → `#/cuenta/entrar` |
-| `#/cuenta` | **Mis datos**, editables ahí mismo (nombre, teléfono, dirección y **forma de pago preferida**, Efectivo o Tarjeta con su dibujo y su frase como en el sitio actual; el correo se ve pero no se cambia), "Guardar" y "Cerrar sesión". "No guardamos tarjetas" sigue dicho junto a la forma de pago | Sin sesión → `#/cuenta/entrar` |
-| `#/cuenta/recuperar` | Recuperar la contraseña (ver abajo) | Con sesión → `#/cuenta` |
-| `#/cuenta/pedidos` | Una fila por pedido (`ET-XXXX`, fecha, total), más nuevo arriba; cada una se despliega (`<details>`) con el detalle. **Solo los pedidos de esa cuenta** (ver abajo) | Sin sesión → `#/cuenta/entrar` |
-
-- Como las demás vistas: título de pestaña propio, `h1` con el foco al
-  llegar, se anuncia, y la transición de vistas.
-- **Cabecera**: sin sesión, la silueta ("Iniciar sesión / Registrarse") lleva
-  a `#/cuenta/entrar`. Con sesión, las iniciales abren una ficha pequeña con
-  "Mis datos", "Mis pedidos (N)" y "Cerrar sesión".
-- **Desde "Ir a pagar"**: los dos botones de la hoja (en React, "Inicia
-  sesión para pagar"; en el sitio actual, "Entra a tu cuenta para pagar") llevan a `#/cuenta/entrar` y `#/cuenta/crear`. Al terminar (entrar
-  con el correo verificado, o verificarlo) se va **directo a `#/confirmar`**
-  con la canasta. Sin venir de pagar, se termina en `#/cuenta`.
-- Cerrar sesión no borra la cuenta; lleva a `#/`.
-- **Mismas claves y formatos** de `localStorage` que el sitio actual: una
-  cuenta creada en React sirve en el sitio actual y al revés. PBKDF2, las
-  validaciones y el correo se importan de `js/cuenta/` y `js/comun/` (o se
-  mueven a `src/servicios/`), no se reescriben de memoria.
-- El `SesionProvider` de solo lectura (fase 4) pasa a crear, entrar, editar y
-  cerrar sesión, con un reductor puro como el del pedido.
-- Queda fuera: avisar antes de llenar la canasta que pagar pide cuenta, y
-  pedir como invitado (siguen en la sección 13).
-
-**Decidido tras la revisión de `ux-accesibilidad`** (usuario, 20 de octubre
-de 2026):
-- **"Iniciar sesión"** en todas partes (cabecera, hoja de pagar, título y
-  botón de la vista); "Entrar" deja de usarse para esa acción.
-- **Una cuenta por navegador, pero sin sorpresas**: Crear avisa si ya hay
-  una (con el correo a medias, `a…@…`) y que crear otra la reemplaza.
-- **Pedidos por cuenta**: el registro de IndexedDB lleva también `correo`
-  (`reciboParaGuardar()` en `js/pedido/cobro.js`, campo nuevo que no rompe
-  los de antes; vale para los dos sitios). Mis pedidos y el "(N)" de la ficha
-  enseñan solo los de la cuenta abierta. Los pedidos viejos sin `correo` se
-  siguen enseñando (son de antes de la regla y no se sabe de quién son).
-- **Recuperar la contraseña** (`#/cuenta/recuperar`, solo React), como lo
-  hacen las empresas, por código al correo:
-  1. "¿Olvidaste tu contraseña?" en Iniciar sesión lleva aquí, con el correo
-     ya puesto si se había escrito.
-  2. Se escribe el correo. Si no es el de la cuenta de este navegador, el
-     mismo error que al iniciar sesión. Si lo es, EmailJS manda un código de
-     6 cifras (texto propio: "para cambiar tu contraseña"), que se escribe en
-     las mismas 6 casillas de verificar.
-  3. El código **caduca a los 10 minutos**, admite **5 intentos** (después
-     hay que pedir otro) y se reenvía cada 45 s.
-  4. Con el código bien: contraseña nueva con los 4 requisitos y repetirla
-     ("Mostrar" en cada una). Se guarda como siempre (PBKDF2 con sal nueva),
-     la vieja deja de valer, y queda la sesión abierta: a `#/confirmar` si se
-     venía de pagar, si no a `#/cuenta`. Datos, forma de pago y pedidos se
-     conservan, y la cuenta queda **verificada** (el código llegó a ese
-     correo, que prueba lo mismo que verificarlo). Con `replace`, para que
-     Atrás no vuelva al código.
-  5. **Si el correo no se puede enviar, no se recupera**: "No pudimos enviar
-     el correo. Inténtalo más tarde." Aquí **no** hay recuadro con el código
-     en pantalla (dejaría a cualquiera cambiar la contraseña).
-  6. Límite que se dice en la vista: la cuenta vive en este navegador, así
-     que se recupera desde el mismo navegador donde se creó.
-  7. Mismo movimiento que crear → verificar entre sus pasos.
-
-**Movimiento de la cuenta** (Motion y `frontend-design`, como el resto de
-"Vistas y aspecto"; todo se apaga con `prefers-reduced-motion`):
-1. **Requisitos de la contraseña**: cada uno se marca con un ✓ que aparece
-   con un pequeño rebote al cumplirse y se quita si deja de cumplirse.
-2. **De crear a verificar**: el formulario sale hacia la izquierda y el paso
-   del código entra desde la derecha, para que se lea como el paso siguiente.
-3. **Código en 6 casillas** (esto sí cambia el uso, no solo el aspecto):
-   una cifra por casilla, el foco salta solo a la siguiente, Retroceso en una
-   casilla vacía vuelve a la anterior y borra, las flechas se mueven entre
-   ellas, y pegar el código (en cualquier casilla) lo reparte entero. Van en
-   un `fieldset` con `legend` "Código de 6 cifras" y cada una con su
-   `aria-label` ("Cifra 1 de 6"…), `inputmode="numeric"` y
-   `autocomplete="one-time-code"` en la primera. Al llenar la sexta se
-   comprueba solo; si falla, el error va bajo las casillas y el foco a la
-   primera.
-4. **Mis pedidos**: cada fila se despliega animando la altura en vez de
-   saltar, y su flecha gira. Sigue siendo un `<details>` (funciona con
-   teclado y lector de pantalla).
-5. **Guardar en Mis datos**: el botón pasa a "Guardado ✓" unos 2 s, además
-   del aviso `aria-live`.
-6. **Errores**: el mensaje aparece con un fundido suave bajo el campo. Sin
-   sacudidas (WCAG 2.3.3 y marean).
-
-Pendiente de la fase 5:
-- [x] Rutas y vistas de la cuenta, con sus redirecciones (la lógica; la
-      maquetación en dos columnas es de `frontend`).
-- [x] Crear y verificar (con EmailJS y el recuadro de respaldo).
-- [x] Entrar, y de "Ir a pagar" directo a `#/confirmar`.
-- [x] Mis datos y cerrar sesión.
-- [x] Forma de pago preferida dentro de Mis datos (`FormaDePago.jsx`: el
-      `fieldset` `.cuenta-metodos` del sitio actual, con leyenda visible, y
-      "No guardamos tarjetas" debajo). Se guarda con "Guardar los cambios"
-      en el campo `metodo` de siempre; `#/confirmar` empieza con ella.
-      Comprobado en los dos sentidos con el sitio actual.
-- [x] Mis pedidos.
-- [x] Botón y ficha de la cuenta en la cabecera.
-- [x] El código en 6 casillas: su teclado (punto 3 de arriba, sin animar).
-- [x] Movimiento de la cuenta (los 6 puntos), y la maquetación de las vistas.
-- [x] `logica-datos`: escribir en una casilla del código la **misma cifra**
-      que ya tenía no pasa a la siguiente (React no da `onChange` si el
-      valor no cambia), así que corregir un código con una cifra repetida en
-      su sitio se atasca. Arreglado: las casillas escuchan `onInput`, que el
-      navegador da siempre (también con el teclado del teléfono y al
-      rellenar el código solo).
-- [x] Cuenta compartida con el sitio actual, comprobada en los dos sentidos.
-- [x] Revisión de `ux-accesibilidad` (20 de octubre de 2026): 12 problemas,
-      ninguno de gravedad 4 y axe sin violaciones. Los enlaces del menú que
-      se veían apagados en las capturas miden 12,4:1 en la ventana: era la
-      captura de página entera con `reducedMotion`, no el sitio.
-- [x] Arreglos de la revisión (`5e081a6` de `logica-datos`, `ee4553c` de
-      `frontend`, 20 de octubre de 2026). En los dos sitios: se pueden
-      seleccionar el código del recuadro, el `ET-XXXX` y el correo; el
-      teléfono pegado con 0, +593 o espacios queda bien (`soloNueve` quita
-      el 593, sin `maxlength`, `autocomplete="tel-national"`); los campos
-      llevan borde `--horno-claro` (4,97:1) y foco con anillo `--horno` y
-      halo ámbar; la forma de pago elegida, aro de `--horno`; el número de la
-      ficha en `--papel` (9,52:1); `html { scroll-padding-top/bottom }` en vez
-      de `scroll-margin` por elemento. Solo React: avisos al lector cuando el
-      correo no sale ("No pudimos enviar el correo; el código está en
-      pantalla."), el error del código se anuncia una vez, "abrir la página"
-      lo marca `comun/apertura.js` (no la clave `default`) y el foco vuelve
-      al `h1` con Atrás, y `aria-current="page"` en la ficha.
-- [x] Desplazamiento con Atrás/Adelante (`429b1de`, solo React hasta la
-      fase 7): lo decide la página (`history.scrollRestoration = 'manual'`
-      tras `load`, `auto` otra vez en `pagehide`). **Entre vistas, arriba
-      del todo** con el foco en el `h1`; **entre categorías de la tienda,
-      donde se estaba** (un `Map` por clave de entrada en
-      `comun/apertura.js`). El buscador y "Ordenar por" con el borde y el
-      foco de los campos, en los dos sitios.
-- [x] `frontend` (`56e0732`): Atrás a una entrada de la tienda abierta con un enlace
-      limpia orden, "Mostrar" y búsqueda (`Catalogo.jsx` mira
-      `state.entrar` sin mirar si es Atrás); no debe limpiarlos.
-- [ ] Tras recargar, la tienda no recuerda el desplazamiento de las
-      entradas de antes (Atrás entre categorías da arriba). Se arreglaría
-      guardándolo en `sessionStorage`; no urge.
-- [x] Revisión de `calidad-publicacion` (20 de octubre de 2026): sin
-      regresiones en el sitio actual, todo verificado. Arreglado después
-      (`3053e79` de `logica-datos`, `9ff8119` de `frontend`):
-      - **Seguridad**: un código de recuperar acertado y sin usar ya no
-        sobrevive: `entrar`, `verificar`, `salir` y `porVerificar` borran la
-        recuperación, y los 10 minutos se comprueban también en el reductor,
-        al cambiar la contraseña y al pintar el paso de la clave (antes se
-        podía cambiar la contraseña 30 minutos después sin código).
-      - "Cambiar el correo" conserva el código, su hora y sus intentos;
-        pedirlo otra vez con el mismo correo reabre las casillas sin mandar
-        otro. **La espera de 45 s cuenta desde el último código de recuperar
-        que salió** (`envioClave`), aunque fuera de una recuperación
-        anterior.
-      - Los avisos de caducado y de "la cuenta cambió" se ven en el paso del
-        correo.
-      - El código de 6 cifras sale de `crypto.getRandomValues`
-        (`codigoAlAzar()` en `js/cuenta/guardada.js`, para los dos sitios).
-      - En los dos sitios, el anillo del +593 en la caja solo con
-        `@supports selector(:has(*))`; sin `:has`, el campo lleva el suyo.
-      - Comprobado de nuevo en Edge: `revision-recuperar` 32 bien,
-        `recuperar` 106, `cuenta` 230, `verificar-sitio` en orden.
-- [x] **Fase 5 cerrada** el 20 de octubre de 2026.
-- [x] "Iniciar sesión" en todas partes en React (`994f4e7`); el sitio actual
-      sigue con "Entrar" en su panel.
-- [x] Aviso en Crear si ya hay una cuenta ("a…@dominio"), y pedidos
-      filtrados por correo en `usePedidosGuardados()` (Mis pedidos, Mis datos
-      y el "(N)" de la ficha). `reciboParaGuardar()` guarda `correo` en los
-      dos sitios; el historial del sitio actual no se filtra.
-- [x] Recuperar la contraseña (`#/cuenta/recuperar`, `Recuperar.jsx`): tres
-      pasos (correo, código, clave) con la misma plantilla de EmailJS
-      (asunto y cuerpo van en variables). Las cifras que faltan no gastan
-      intento; si el reenvío falla, el código anterior vale hasta caducar.
-- [x] `frontend` (`56e0732`): maquetación y movimiento de recuperar (clases
-      `recuperar-paso-correo|codigo|clave` con su `key`, `recuperar-dicho`,
-      `recuperar-limite`, `cuenta-olvide`, `cuenta-ya-hay`) y los dibujos de
-      fondo de `cuenta-recuperar`; comentario viejo en `FichaCuenta.jsx`.
-      El cambio de paso lo hace `PasoQueCambia.jsx`: la hoja que sale ya no
-      es un componente vivo, sino su nodo de DOM puesto un momento detrás,
-      `inert`, `aria-hidden` y sin ids, animado con `element.animate()`
-      (con `AnimatePresence` la hoja vieja seguía viva y daba el error #520
-      de React). Hacia delante, sale a la izquierda y entra por la derecha;
-      hacia atrás, al revés.
-
-Cómo quedó la parte de `logica-datos` (20 de octubre de 2026):
-- Estado: `src/estado/sesion.js` es el reductor puro (`releer`,
-  `porVerificar`, `codigo`, `envio`, `verificar`, `entrar`, `editar`,
-  `salir`). `SesionProvider` hace lo que no es puro (huella, código al azar,
-  correo) y guarda en un efecto cuando el reductor cuenta un cambio; el evento
-  `storage` vuelve a leer la cuenta. La cuenta por verificar vive solo en
-  memoria hasta que se verifica, como en el sitio actual (recargar en
-  `#/cuenta/verificar` lleva a entrar). El código y la hora del último envío
-  van en el estado: salir de la vista y volver no reinicia los 45 s.
-- Reglas: `leerCuentaGuardada()` se importa de `js/cuenta/guardada.js` y
-  EmailJS de `js/comun/mail.js`. Las reglas de los campos, PBKDF2 y los textos
-  del código están **copiados tal cual** de `account.js` en
-  `src/servicios/cuenta.js`, porque `account.js` arma su panel al importarse
-  y el sitio actual no se tocaba; hasta la fase 7, una regla que cambie se
-  cambia en los dos.
-- Cada vista mira si le toca al llegar, no a cada pintado (como
-  `#/confirmar`): React Router cambia de dirección en una transición que se
-  pinta después del cambio de sesión, y si no, el desvío de la vista ganaría
-  al destino. Los desvíos llevan `alAbrir`, así que abrir la página en una
-  dirección que rebota no mueve el foco (también en `#/confirmar` y
-  `#/comprobante`, que antes lo movían).
-- "Ir a pagar" deja `pagar` en el `state` de la dirección, y pasa de entrar a
-  crear y a verificar. Al terminar se va a `#/confirmar` si se venía de pagar
-  y la canasta tiene algo; si no, a `#/cuenta`.
-- Confirmado por el usuario el 20 de octubre de 2026: crear → verificar,
-  entrar/verificar → destino y "Cerrar sesión" → `#/` van con `replace`, para
-  que Atrás no vuelva a un formulario ya hecho ni a los datos de una sesión
-  cerrada (como el comprobante). Crear lleva "Dirección (opcional)" como el
-  sitio actual. "Métodos de pago" no es una vista en React: la forma de pago
-  preferida es un campo más de Mis datos (ver la tabla).
-
-Cómo quedó la parte de `frontend` (20 de octubre de 2026):
-- Cabecera (`src/cuenta/FichaCuenta.jsx`, en `.nav-acciones` delante de la
-  canasta, también en el teléfono): sin sesión es un **enlace** con la
-  silueta (`aria-label` y globo "Iniciar sesión / Registrarse") a
-  `#/cuenta/entrar`. Con sesión, el botón de las iniciales (`aria-expanded`,
-  `aria-controls`) abre la ficha `.cuenta-menu` de siempre con nombre, correo,
-  "Mis datos", "Mis pedidos" con su número (se vuelve a contar al abrirla) y
-  "Cerrar sesión". Flechas, Inicio y Fin la recorren; Escape la cierra y
-  devuelve el foco; clic, toque o foco fuera la cierran, y navegar también.
-  Abrirla pliega el menú del teléfono. "Cerrar sesión" hace lo de Mis datos
-  (a `#/`, con `replace` si se estaba en `#/cuenta/*`); si ya se está en la
-  portada, el foco va a la silueta.
-- Vistas (`src/estilos/cuenta.css`): como el mostrador de la portada, el
-  `h1` va en una banda de horno (`banda-oscura`, con dibujos de trigo, maíz y
-  pan distintos en cada paso) y el formulario es una hoja de papel que cuelga
-  de ella. Ancho por paso: 600 px entrar y verificar, 640 Mis datos, 760 Mis
-  pedidos, 1000 crear (datos | contraseña, con filete; una columna desde
-  680 px). Sin desplazamiento horizontal a 320 px. Crear cabe entero a
-  1280×900.
-- Movimiento: el ✓ de cada requisito (`MarcaRegla.jsx`) entra con un resorte
-  que se pasa un poco de su tamaño y sale encogiendo; de crear a verificar,
-  crear sale a la izquierda (la única vista que se anima al salir: su propio
-  `AnimatePresence` en `App.jsx`, fuera del flujo e `inert` mientras se va) y
-  verificar entra por la derecha; las casillas se llenan de ámbar con un
-  saltito y se agrupan de tres en tres; Mis pedidos anima la altura y gira la
-  flecha manteniendo el `<details>` (se cierra al acabar de plegarse);
-  "Guardado ✓" 2 s en el botón (vuelve antes si se toca un campo); errores y
-  avisos con un fundido de 220 ms (`TextoSuave.jsx`, dentro del párrafo de
-  siempre, para no romper `aria-describedby` ni el `role="alert"`). Con
-  `prefers-reduced-motion` nada de eso se mueve.
-
-### Fase 6: calidad (decidido el 20 de octubre de 2026)
-
-Que un cambio que rompa React no pueda salir en verde, y que las pruebas no
-dependan de una sesión de Claude.
-
-1. **Pruebas de navegador en el repositorio**, en `react/pruebas/`: las de
-   Edge de la fase 5 (hoy en el scratchpad de una sesión) pasan aquí, con
-   un arranque común (servir `dist/`, abrir el navegador, cerrar todo al
-   salir, límite de tiempo en cada espera) y una sola orden,
-   `npm run probar` en `react/`, que las corre todas una tras otra y sale
-   con código 1 si alguna falla. `npm run probar -- <nombre>` corre una.
-   playwright-core sigue fuera del repositorio
-   (`%LOCALAPPDATA%\panaderia-herramientas`), como en `verificar-sitio`.
-2. **CI**: el paso de React además falla si el build da avisos, busca las
-   palabras prohibidas en `react/src` (código y CSS), y pasa **una prueba
-   rápida en Chrome** (`npm run probar -- humo`): la portada arranca, se
-   añade algo a la canasta, se crea una cuenta con el código del recuadro y
-   se llega a `#/cuenta`. Sin `pageerror`. Las largas solo en local.
-3. **`verificar-sitio` y `publicar`**: además del sitio actual, construyen
-   React y corren `npm run probar` (todas) antes de commitear. Se
-   actualizan sus `SKILL.md` y `ci-local.sh`.
-4. **`axe.mjs`** también sobre React: cada vista y los estados de la cuenta
-   y del pago, a 1280 y 390 px.
-5. **Carga por partes**: las vistas de la cuenta, `#/confirmar` y
-   `#/comprobante` con `React.lazy` + `Suspense` (lo demás, en el archivo
-   principal). Mientras carga, nada que salte: la vista llega con su
-   transición de siempre. El foco y el anuncio de vista no cambian.
-6. **Revisión completa de `ux-accesibilidad`** de todo React (no solo la
-   cuenta), y sus arreglos.
-
-Reparto: 1 a 4, `calidad-publicacion`; 5, `frontend`; 6, `ux-accesibilidad`.
-
-Pendiente de la fase 6:
-- [x] Pruebas en `react/pruebas/` y `npm run probar` (20 de octubre de 2026):
-      `probar.mjs` (sirve una copia de `dist/` y la raíz en puertos libres,
-      Edge en Windows y Chrome en lo demás, `NAVEGADOR` lo cambia),
-      `arranque.mjs` y 15 casos en `casos/`, entre ellos `humo`. Todos tardan
-      unos 7 minutos; `humo`, unos 5 s.
-- [x] CI: avisos del build, palabras prohibidas en `react/src` y
-      `react/index.html`, prueba de humo en el Chrome del runner.
-- [x] `verificar-sitio`, `publicar` y `axe.mjs` con React (`ci-local.sh`
-      corre también el build y `npm run probar`; `axe.mjs --react` mide 23
-      estados a 1280 y 390 px).
-- [x] Carga por partes (`014559a`, `frontend`): las 6 vistas de la cuenta,
-      `#/confirmar` y `#/comprobante` van aparte, en dos grupos (`cuenta` y
-      `pago`, tabla `APARTE` en `comun/cargaPorPartes.js`). Se precargan con
-      el puntero o el foco en la cuenta de la cabecera y en "Ir a pagar", y
-      en reposo tras `load` (no sin red ni con `saveData`). Al navegar se ve
-      la vista anterior hasta que llega la nueva; solo al abrir directamente
-      hay un hueco del alto de la ventana. Si una parte no llega, aviso "No
-      se pudo abrir esta parte" (`FalloDeCarga.jsx`, con su `h1`) con
-      "Reintentar", que **recarga** la página (Chromium recuerda el módulo
-      que falló) y "Volver al inicio". El JS inicial pasa de 491,5 kB (154,6
-      gzip) a 440,3 kB (142,3 gzip): el grueso es react-dom, Motion, el
-      router y el catálogo, no la cuenta.
-- [x] Revisión de `ux-accesibilidad` de todo React (20 de octubre de
-      2026): 15 problemas, ninguno de gravedad 4; axe sin violaciones A/AA.
-- [x] Arreglos de esa revisión (`frontend`, en `e36c0d7`): barra de deshacer que tapa el
-      foco en el teléfono (`scroll-padding-bottom` mientras se ve);
-      principios de Nosotros en una columna bajo 420 px; "+" en el tope que
-      se vea apagado; elegida visible con contraste alto (`forced-colors`)
-      en filtros y tamaños; Esc con el globo a la vista solo quita el globo;
-      el aviso de fallo de carga no culpa a la red ("No se pudo abrir esta
-      parte. Vuelve a intentarlo."); contactos también en el pie de
-      `#/contacto`; la hoja de pagar con desplazamiento propio en pantallas
-      bajas; el buscador anuncia una vez, tras dejar de escribir; "Cambiar
-      el correo" mientras crear sale monta una hoja nueva (sin las
-      contraseñas). Hecho así: con la barra visible, `scroll-padding-bottom`
-      de 168 px y el mismo relleno bajo el pie (sin `:has`, los 92 px de
-      antes); principios en una columna bajo 420 px; "+" en el tope apagado
-      (sigue enfocable y el globo dice por qué); en `forced-colors` la
-      elegida en `Highlight` (filtros, tamaños, opciones de confirmar y
-      forma de pago); Esc con el globo abierto se ataja en captura (también
-      en `ui.js`); el fallo de carga reintenta una vez a los 800 ms antes del
-      aviso ("Vuelve a intentarlo. Tu canasta sigue tal como estaba."); el
-      pie de `#/contacto` es el de siempre, con "Horario y cómo llegar" en
-      `aria-current="page"`; la hoja de pagar con `max-height: 100%` y
-      desplazamiento propio; el buscador habla solo por `.catalog-status`,
-      400 ms después de la última tecla; la hoja de crear lleva una clave
-      nueva en cada llegada. Varios valen para los dos sitios; el aviso
-      doble del buscador sigue en el sitio actual (`js/catalogo/view.js`).
-- [x] Arreglos de esa revisión (`logica-datos`, `103c4fe`): nota del comprobante
-      cierta ("Tu canasta ya está vacía. El pedido queda en Mis pedidos.");
-      "y" al juntar los errores de la tarjeta y sin "cuota del mes";
-      `aside.checkout-resumen` y `aside role="dialog"` de la canasta pasan a
-      `div`/`section` (en los dos sitios); dígito verificador de la cédula y
-      el RUC (sección 6, en los dos sitios). La tarjeta sigue con
-      `autocomplete="off"` a propósito: es de prueba y no debe guardarla el
-      navegador. Hecho así: la regla de la cédula y el RUC es la de
-      `FN_CEDULA_VALIDA` y `FN_RUC_VALIDO` de `bd/` (cédula: provincia 01–24,
-      tercer dígito 0–5, módulo 10; RUC: no termina en 000, y con tercer
-      dígito <6 sus 10 primeros son una cédula válida, si no es 6 o 9), en
-      `cedulaValida()`/`rucValido()` de `cobro.js`. Los errores se juntan
-      "a, b y c" (`enLista()`). El panel de la cuenta del sitio actual
-      también dejó de ser `aside`.
-- [x] **Sin JavaScript** (solo React, en `e36c0d7`): un `<noscript>` que no deja la
-      página en blanco: "Para comprar en El Tradicional necesitas activar
-      JavaScript en tu navegador", con el nombre, la dirección y el
-      horario. **Sin enlace a WhatsApp**: la página es para comprar en ella
-      (decidido por el usuario). `frontend`.
-- [x] **"Pedir lo mismo otra vez"** (`103c4fe`) en cada pedido de Mis pedidos (solo
-      React): mete en la canasta los productos de ese pedido que sigan en el
-      catálogo y disponibles, con el tamaño de entonces y **el precio de
-      hoy**; si la canasta ya tenía algo, se suma (con el tope de 100 por
-      línea). Abre la canasta y avisa qué entró y qué no ("Ya no tenemos
-      Pan de yuca"); si no entra nada, solo el aviso. `logica-datos` (la
-      acción) y `frontend` (el botón en el `<details>`). Hecho:
-      `pedirOtraVez()` pura en `pedido/pedirOtraVez.js` y la acción
-      `{ tipo: 'sumar', lineas }` del reductor; el aviso se anuncia y además
-      queda escrito bajo el botón (`.cuenta-pedido-nota`), para que quien
-      mira la pantalla vea qué pasó aunque no entre nada.
-
-- [x] **Fase 6 cerrada** el 21 de octubre de 2026: `ci-local.sh` en orden
-      sobre `e36c0d7`, con `npm run probar` 23 de 23 (1.162 comprobaciones,
-      unos 9 min) y axe sobre React sin fallos automáticos.
-- [ ] Menor: el caso `reenviar-codigo` todavía espera a que crear acabe de
-      salir y su comentario dice que está "apuntado para frontend"; ya no
-      hace falta (la hoja de crear lleva clave nueva en cada llegada).
-- [ ] GitHub avisa de que las acciones v4 del CI usan Node 20 (obsoleto) y
-      de que `ubuntu-latest` pasa a Ubuntu 26: subir versiones cuando toque.
-
-### Fase 7: el cambio (decidido el 21 de octubre de 2026)
-
-React pasa a ser el sitio. Se hace en `mejoras`; al terminar y verificar, se
-le pregunta al usuario una última vez y se fusiona en `main` (decidido: al
-terminar la fase 7, no esperar a una entrega).
-
-1. **Etiqueta** `sitio-presentado` en el `main` de hoy (`git tag` + push de
-   la etiqueta), para poder volver o enseñar el sitio presentado.
-2. **React deja de importar de `js/`** (`logica-datos`). Lo que hoy toma con
-   `@raiz/js/...` pasa a `src/` sin reescribirse: `state.js`, `storage.js`,
-   `horario.js` y `mail.js` a `src/comun/` o `src/servicios/`; `cobro.js` y
-   `guardado.js` a `src/pedido/` o `src/servicios/`; `guardada.js` a
-   `src/servicios/` (y la copia de reglas de `servicios/cuenta.js` que se
-   hizo en la fase 5 vuelve a ser una sola); `repo.js` (`revisar()`) a
-   `src/servicios/catalogo.js`. Sigue funcionando `npm run probar` entero.
-3. **`react/` a la raíz** (`calidad-publicacion`): `package.json`,
-   `package-lock.json`, `vite.config.js`, `index.html`, `src/` y
-   `pruebas/` suben un nivel; `@raiz` pasa a ser la propia raíz (o se
-   quita). `assets/` (fotos, logo, `styles.css`) y `data/productos.json` se
-   quedan donde están (`bd/` y `probar-bd` leen el catálogo de ahí).
-4. **Se borra lo viejo**: `js/` entero, `herramientas/` (`empaquetar.mjs`),
-   el `index.html` viejo, `netlify.toml` (decidido: sin Netlify; antes de
-   fusionar se mira en local con `npm run preview`) y los casos de
-   `react/pruebas` que prueban el sitio actual (`codigo-sitio-actual`, y la
-   parte del sitio actual de `cedula`, `recuperar`, `pegar-telefono`,
-   `forma-de-pago`, `cuenta`).
-5. **CI y Pages**: `validate` instala, construye (sin avisos), busca las
-   palabras prohibidas en `src/`, `index.html`, `assets/css/` y
-   `data/productos.json`, revisa el catálogo con `revisar()` de su nuevo
-   sitio (y sus fotos, destacados y categorías ↔ menú, ahora en
-   `src/`), y pasa `humo`. `deploy` publica **`dist/`**, no la raíz.
-6. **Herramientas y skills**: `verificar-sitio` pasa a ser solo React (o
-   se funde con `npm run probar`); `publicar` sin `empaquetar` ni `?v=`
-   (Vite pone huellas en los nombres); `ci-local.sh` y `axe.mjs` sin el
-   sitio actual; `componente-react` sin el prefijo `react/`; agentes con
-   sus archivos nuevos.
-7. **Plan reescrito**: las secciones 1 a 13 describen la versión React
-   (rutas, vistas, cuenta, guardado, pruebas), sin el sitio viejo ni el
-   doble clic; la sección 15 queda como historia corta de la migración. Los
-   pendientes que eran solo del sitio actual se borran. `README.md` al día.
-8. **Verificar y fusionar**: `npm ci && npm run build`, `npm run probar`
-   entero, `axe.mjs`, CI en verde en `mejoras`; se pregunta al usuario y se
-   fusiona en `main`; el deploy de Pages en verde y el sitio publicado
-   abre (portada, tienda, canasta, cuenta) en la dirección de Pages.
-
-Lo guardado en el navegador (claves de `localStorage`, IndexedDB, cookie)
-**no cambia**: quien usó el sitio presentado conserva su canasta, su cuenta
-y sus pedidos al llegar la versión React.
+Por el camino el usuario decidió también: una vista por cada opción del menú
+(menos desplazamiento), fondos de trigo, maíz y pan, la regla 60-30-10,
+Motion en vistas, canasta y cuenta, el mapa en contacto, sin vista previa en
+Netlify, y que sin JavaScript no se enlace a WhatsApp.
 
 Pendiente de la fase 7:
-- [ ] Etiqueta `sitio-presentado`.
-- [x] React sin imports de `js/` (`7751f09`): todo en `src/servicios/`.
-      Nuevos `storage.js`, `mail.js`, `horario.js` y `cobro.js` (tal cual) y
-      `state.js` (solo lo que React usa: `CLAVE`, `MAX_UNIDADES`, `ENVIO`,
-      `telefonoLargo`, `dinero`, `idDe`); `guardado.js` de `js/pedido/` se
-      unió a `servicios/guardado.js`, `guardada.js` a `servicios/cuenta.js`
-      (una sola fuente otra vez) y `revisar()`/`normalizar()` de `repo.js` a
-      `servicios/catalogo.js`. Hasta el paso 4 las reglas están también en
-      `js/`: **congeladas**, no se cambian.
-- [ ] `revisar()` y `normalizar()` a un archivo propio sin nada de Vite
-      (`servicios/reglasCatalogo.js`), para que el CI las use con node;
-      `catalogo.js` las importa de ahí.
-- [ ] `react/` a la raíz y fuera lo viejo.
-- [ ] CI que publica `dist/`.
-- [ ] Herramientas, skills y agentes.
-- [ ] Plan y README reescritos.
+- [x] Etiqueta `sitio-presentado`.
+- [x] React sin imports de `js/` (`7751f09`) y `revisar()` en
+      `reglasCatalogo.js` (`21b4df5`).
+- [x] `react/` a la raíz y fuera lo viejo (`00ecc9c`, `79d08f7`).
+- [x] CI que publica `dist/` (`e77dd80`).
+- [x] Herramientas y skills (`e77dd80`); agentes al día.
+- [x] Plan reescrito; `README.md` al día.
 - [ ] Verificado, fusionado en `main` (con el sí del usuario) y Pages en verde.
-
-### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
-
-El usuario quiere menos desplazamiento y una página que no se vea vacía y se
-sienta fluida. **Solo en React**: el sitio actual se queda como está (recibe
-solo arreglos) y, desde aquí, la comparación de paridad deja de aplicar a lo
-que cambia este apartado. Lo hace `frontend`, con la skill `frontend-design`.
-El CSS nuevo va en `react/src/estilos/`, importado después de `styles.css`;
-`assets/css/styles.css` no se toca para esto.
-
-**Vistas en lugar de una sola página larga.** Cada opción del menú de arriba es
-una ruta propia; esto sustituye a la decisión de la fase 1 de que Nosotros y
-Contáctanos bajaran por la misma página:
-
-| Menú | Ruta | Contenido |
-|---|---|---|
-| Logo / Inicio | `#/` | Portada (hero), la franja y debajo **"Los más pedidos" en carrusel**, con un enlace a toda la tienda. Aquí sí se baja un poco: es a propósito |
-| Nosotros | `#/nosotros` | La historia y, cuando haya fotos, la galería del local |
-| Tienda | `#/tienda-*` | Como ahora |
-| Contáctanos | `#/contacto` | Horario completo con el día de hoy marcado, abierto/cerrado, dirección, **mapa** y contacto |
-
-- **Pie corto** en todas las vistas: marca, abierto/cerrado, WhatsApp e
-  Instagram, "Tu pedido se guardó…" y el ©. El horario completo y la
-  dirección pasan a `#/contacto`.
-- Al cambiar de vista: arriba del todo, título de la pestaña propio, `h1` en
-  cada vista y el foco en él (WCAG 2.4.3), y se anuncia como hoy las vistas
-  de la tienda. El enlace de salto al contenido sigue igual.
-- Las direcciones viejas siguen entrando con `replace`: `#historia` →
-  `#/nosotros`, `#visitanos` → `#/contacto`, `#catalogo` → `#/tienda-catalogo`,
-  `#inicio` → `#/`.
-- **Transición: fundido suave**. La vista nueva aparece con opacidad y un
-  pequeño desplazamiento hacia arriba (unos 280 ms); sin animación con
-  `prefers-reduced-motion`.
-- **Carrusel** de "Los más pedidos": `scroll-snap` nativo con botones
-  Anterior/Siguiente, se arrastra con el dedo, sin avance automático, cada
-  ficha alcanzable con Tab y los botones se desactivan en los extremos.
-
-**Animaciones con Motion** (`motion`, versión exacta, sin `^`): la transición
-de vistas, las líneas de la canasta que entran, salen y se reacomodan, el
-contador de la canasta que salta al añadir y la respuesta al pulsar. Siguiendo
-`frontend-design`: un solo momento de entrada orquestado por vista (no un
-fundido en cada sección) y el resto, movimiento que responde a lo que hace la
-persona. Todo con `useReducedMotion` / `MotionConfig reducedMotion="user"`.
-
-**Fondo que no se vea vacío**: ilustraciones de línea de **trigo, maíz y pan**
-en SVG propio (dibujadas aquí, sin bancos de imágenes), detrás del contenido,
-`aria-hidden`, en tonos de la paleta y lo bastante tenues para no bajar el
-contraste del texto de encima (se mide). Distintas en cada vista, sin
-movimiento propio.
-
-**Regla 60-30-10 en cada vista**: 60 % `--masa`/`--papel` (fondo), 30 %
-`--horno` (texto, bandas oscuras, pie), 10 % `--ambar`/`--corteza` (botones,
-precios, acentos). Se comprueba con capturas de cada vista en escritorio y en
-el teléfono, contando la proporción de píxeles de cada grupo.
-
-**Mapa** en `#/contacto`: `iframe` de Google Maps sin clave
-(`https://maps.google.com/maps?q=-1.004033,-77.812690&z=17&output=embed`), con
-`title`, `loading="lazy"` y el enlace "Ver en el mapa" de siempre debajo.
-
-**Galería del local**: _pendiente de fotos reales del usuario_ (horno, local,
-proceso), en `assets/img/local/`. Sin fotos no se enseña nada; no se usan
-fotos de bancos ni inventadas.
-
-Pendiente de este apartado:
-- [x] Vistas, pie corto, transición, carrusel y direcciones viejas (`4077276`).
-- [x] Motion en vistas y canasta.
-- [x] Fondos de trigo, maíz y pan (`df04b9a`).
-- [ ] 60-30-10 medido con capturas en cada vista (se ajustó a ojo, sin medir).
-- [x] Mapa en `#/contacto` (`c274fd4`).
-- [ ] Galería (cuando el usuario pase las fotos).
-- [ ] Revisión de `ux-accesibilidad` de todo lo anterior.
-
-### Vista previa de `mejoras` (en pausa: el usuario lo decide al final)
-
-El usuario decidirá al final cómo y dónde se publica. Mientras tanto no se
-crea nada en Netlify; `netlify.toml` queda en el repo por si se elige esta
-opción, y no afecta a nada. La propuesta era **Netlify** (plan gratis, sin tarjeta):
-
-- Un sitio de Netlify conectado al repositorio, con **`mejoras` como rama
-  publicada**. Cada push a `mejoras` lo reconstruye solo.
-- La configuración vive en `netlify.toml` en la raíz: base `react`, orden
-  `npm run build`, carpeta `dist`, Node 24.15.0. Netlify clona el repo
-  entero, así que `@raiz` encuentra el catálogo y las fotos.
-- Solo enseña `react/`. El sitio actual de la rama se ve en local.
-- Lo crea el usuario una vez desde netlify.com (requiere su cuenta de GitHub).
-  La dirección queda anotada aquí: _pendiente_.
-- Al terminar la fase 7, `main` pasa a ser React y la vista previa se puede
-  borrar o dejar para revisar ramas futuras.
-
-### Reparto en `react/`
-
-| Carpeta | Agente |
-|---|---|
-| `package.json`, `vite.config.js`, `index.html`, `main.jsx`, `App.jsx`, rutas | `frontend` |
-| `src/comun/`, `src/catalogo/` | `frontend` |
-| `src/estado/`, `src/servicios/`, `src/pedido/`, `src/cuenta/` | `logica-datos` |
-| `npm run build`, CI, revisión de paridad | `calidad-publicacion` |
-| Accesibilidad y UX de lo migrado | `ux-accesibilidad` |
-
-Las skills de cada uno están en la sección 14. `verificar-sitio` y `publicar`
-se adaptan al *build* de Vite en la fase 6.
