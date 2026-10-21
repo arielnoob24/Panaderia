@@ -21,45 +21,35 @@ cambia en el mismo cambio.
 
 ## Lo tuyo
 
-- `js/comun/state.js`: el pedido (`Map`), entrega, sesion, tarjeta, factura, el
-  `puente` entre modulos y los calculos (subtotal, envio de $1,50, total).
-- `js/comun/storage.js`: los cuatro sitios donde se guarda y por que cada uno.
-- `js/catalogo/repo.js`: `revisar()` y `normalizar()`; el CI usa la misma funcion.
-- `js/pedido/cart.js`: panel de la canasta, deshacer, vaciar, control de cantidad de
-  las fichas y la vista `#confirmar` / `#comprobante`.
-- `js/pedido/checkout.js`: Luhn, vencimiento, CVV, factura (cedula/RUC), aprobar y el
-  recibo.
-- `js/cuenta/account.js`: crear, verificar, entrar, editar, pedidos, la huella PBKDF2.
-- `js/comun/mail.js`: EmailJS.
+- `src/estado/`: `pedido.js` y `sesion.js` (reductores puros) y sus
+  proveedores; los calculos (subtotal, envio de $1.50, total) se hacen al
+  pintar.
+- `src/servicios/`: `state.js`, `storage.js` (los cuatro sitios donde se
+  guarda y por que cada uno), `reglasCatalogo.js` (`revisar()` y
+  `normalizar()`; el CI usa la misma funcion), `catalogo.js`, `cobro.js`
+  (Luhn, vencimiento, CVV, cedula con modulo 10 y RUC), `cuenta.js` (crear,
+  verificar, entrar, recuperar, la huella PBKDF2), `mail.js` (EmailJS),
+  `guardado.js` y `horario.js`.
+- `src/pedido/`: la canasta, sus lineas, deshacer, vaciar, `#/confirmar`,
+  factura, pago, `#/comprobante` y `pedirOtraVez.js`.
+- `src/cuenta/`: los formularios de cada vista de la cuenta y lo que hacen,
+  incluido el teclado de las 6 casillas del codigo (`FichaCuenta.jsx` y
+  `PasoQueCambia.jsx` son de `frontend`).
 - `data/productos.json`: para agregar, cambiar o quitar productos sigue paso a
   paso `.claude/skills/nuevo-producto/SKILL.md`.
 - La base de datos (`bd/`) es del agente `base-datos`. Si cambias un
   producto en el JSON, dilo en el resumen: sus inserts y su receta en la
   base tienen que cambiar también.
 
-El aspecto y las vistas del catalogo son del agente `frontend`. Si un cambio
+El aspecto, las vistas y sus rutas son del agente `frontend`. Si un cambio
 tuyo los toca, hazlo con el mismo cuidado y dilo en el resumen.
 
-## En la migracion a React (`react/`)
-
-La seccion 15 del plan dice que se decidio y en que fase se va. Ahi lo tuyo es:
-`src/estado/` (contextos y reductores de pedido, entrega y sesion),
-`src/servicios/` (catalogo con `revisar()`, `storage.js`, `mail.js`),
-`src/pedido/` y `src/cuenta/`. Escribes segun la skill `componente-react`:
-reductores puros, lo calculable se calcula al pintar, efectos solo para
-sincronizar con `localStorage`, IndexedDB o el correo.
-Las dos de Vercel traen reglas de Next.js y de servidor (`server-*`,
-`async-api-routes`, `next/dynamic`): aqui no aplican, porque es una SPA de Vite
-sin servidor. Lo equivalente a `next/dynamic` es `React.lazy`.
-
-Las reglas de abajo valen igual en React. La version de `react/` tiene que
-hacer lo mismo que el sitio actual; si falta una decision, para y pregunta.
-La excepcion es la forma de la cuenta ("Fase 5: la cuenta" en la seccion 15):
-en React son vistas `#/cuenta/*` y no un panel, y al entrar o verificar
-viniendo de "Ir a pagar" se va directo a `#/confirmar`. Lo que hace cada paso
-es lo de la seccion 7, con las mismas claves de `localStorage` para que la
-cuenta sirva en los dos sitios. Tuyos: `SesionProvider` (que deja de ser de
-solo lectura), `src/servicios/cuenta.js` y los formularios de `src/cuenta/`.
+Escribes segun la skill `componente-react`: reductores puros, lo calculable se
+calcula al pintar, efectos solo para sincronizar con `localStorage`, IndexedDB
+o el correo. Las dos de Vercel traen reglas de Next.js y de servidor
+(`server-*`, `async-api-routes`, `next/dynamic`) que aqui no aplican, porque es
+una SPA de Vite sin servidor; lo equivalente a `next/dynamic` es `React.lazy`.
+Si falta una decision, para y pregunta.
 
 ## Reglas
 
@@ -67,9 +57,10 @@ solo lectura), `src/servicios/cuenta.js` y los formularios de `src/cuenta/`.
   Firebase Blaze. El correo va por EmailJS.
 - El cobro es simulado: la tarjeta nunca se guarda ni se envia a ningun sitio.
 - La contrasena nunca se guarda tal cual, solo su huella con sal.
+- Lo guardado no cambia de clave ni de formato sin plan (seccion 8).
 - Todo acceso a almacenamiento en `try/catch`: en ventana privada falla y no
   puede tumbar la pagina. Lo leido de `localStorage` se revisa antes de usarlo.
-- Lo que se mete como HTML pasa por `escapar()`.
+- Nada de `dangerouslySetInnerHTML`: JSX ya escapa los textos.
 - `enviarCorreo()` nunca lanza: si el correo falla, el pedido sigue valiendo.
 - Mensajes de error y avisos segun la heuristica 9 de Nielsen (skill
   `nielsen-usability-heuristics`).
@@ -81,12 +72,12 @@ solo lectura), `src/servicios/cuenta.js` y los formularios de `src/cuenta/`.
 
 ## Antes de dar algo por terminado
 
-1. `node herramientas/empaquetar.mjs` (tambien si solo tocaste el JSON).
-2. Sube el `?v=` de `js/app.js` y de `js/sin-servidor.js` en `index.html`.
-3. Corre la skill `verificar-sitio`. Para recorridos que no cubre (pagar,
-   verificar el correo, el historial), escribe un script con playwright-core en
-   el scratchpad.
-4. Si cambiaste una regla del catalogo, comprueba que el CI la siga validando
+1. Corre la skill `verificar-sitio` (`npm run build` sin avisos y
+   `npm run probar`, tambien si solo tocaste el JSON).
+2. Lo nuevo que ninguna prueba mira (pagar, verificar el correo, recuperar,
+   Mis pedidos) lleva su caso en `pruebas/casos/`, en escritorio y en movil,
+   en el mismo cambio.
+3. Si cambiaste una regla del catalogo, comprueba que el CI la siga validando
    (`.github/workflows/ci-cd.yml`).
 
 No commitees ni publiques: eso lo hace quien te llamo o el agente

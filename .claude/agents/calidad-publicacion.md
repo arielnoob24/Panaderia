@@ -19,43 +19,40 @@ plan es un hallazgo.
 
 - Mira el diff (`git diff`, `git status --short`) y el codigo de alrededor
   antes de concluir nada.
-- Busca, de mas a menos grave: el sitio no arranca (por HTTP o con doble
-  clic), regresiones de lo que describe el plan, seguridad (HTML sin
-  `escapar()`, datos de la tarjeta guardados o enviados, contrasena en claro,
-  lectura de `localStorage` sin revisar), accesibilidad rota, rendimiento.
-- Cada hallazgo con archivo y linea (`js/pedido/cart.js:592`), la ruta de ejecucion que
+- Busca, de mas a menos grave: el sitio no arranca (`npm ci && npm run build`
+  sin avisos y `npm run probar`), regresiones de lo que describe el plan,
+  seguridad (`dangerouslySetInnerHTML`, datos de la tarjeta guardados o
+  enviados, contrasena en claro, lectura de `localStorage` sin revisar, un
+  codigo de verificar o recuperar que sobrevive), lo guardado que cambia de
+  formato, accesibilidad rota, rendimiento.
+- Revisa contra la skill `componente-react` (estructura, nombres, estado) y
+  usa `vercel-react-best-practices` para rendimiento, ignorando sus reglas de
+  Next.js y de servidor.
+- Cada hallazgo con archivo y linea (`src/pedido/Canasta.jsx:120`), la ruta de ejecucion que
   lo provoca y el arreglo propuesto, y a que agente le toca (`frontend` o
   `logica-datos`). Nada hipotetico sin evidencia; si lo comprobaste corriendo
   algo, di que corriste.
 - Mientras revisas **no corriges** el codigo: lo devuelves para que se arregle.
 
-## En la migracion a React
+## Las pruebas
 
-- En `react/`: `npm ci && npm run build` sin errores ni avisos, y que lo
-  migrado haga lo mismo que el sitio actual (secciones 4 a 11 del plan).
-- Revisa contra la skill `componente-react` (estructura, nombres, estado,
-  nada de `dangerouslySetInnerHTML`) y usa `vercel-react-best-practices` para
-  rendimiento, ignorando sus reglas de Next.js y de servidor.
-- Las pruebas de navegador de React viven en `react/pruebas/` y se corren
-  con `npm run probar` en `react/` (todas) o `npm run probar -- <nombre>`
-  (una). Antes de dar por bueno un cambio de `react/`, todas en verde; en el
-  CI corre solo `humo` ("Fase 6: calidad" en la seccion 15). Una prueba
-  nueva va ahi, con el arranque comun, nunca en el scratchpad.
-- La vista previa de Netlify esta en pausa (seccion 15): no existe hasta
-  que el plan tenga su direccion.
-- Mientras dure la migracion, el sitio actual (`js/`) sigue publicandose con
-  sus reglas de siempre: no lo rompas por tocar `react/`.
+- Viven en `pruebas/` y se corren con `npm run probar` (todas) o
+  `npm run probar -- <nombre>` (una). Antes de dar por bueno un cambio, todas
+  en verde; en el CI corre solo `humo`, en Chrome.
+- Una prueba nueva va en `pruebas/casos/`, con el arranque comun de
+  `pruebas/arranque.mjs`, nunca en el scratchpad.
 
 ## Publicar
 
 Sigue la skill `publicar` al pie de la letra. Lo que mas se olvida:
 
-- `node herramientas/empaquetar.mjs` si cambio `js/` o el catalogo, y el `?v=`.
-- Commitear solo los archivos del cambio, por nombre. No entran PDFs de la
+- Commitear solo los archivos del cambio, por nombre y con
+  `git commit -m ... -- <rutas>`: un commit sin rutas se lleva lo que otro
+  agente o sesion tenga en el indice. No entran PDFs de la
   clase ni `.md` sueltos sin seguimiento que no sean del cambio.
 - El CI rechaza las palabras de cafeteria, cafe y coctel tambien en comentarios.
-- No decir "publicado" hasta que `Validar y publicar sitio` termine en verde, y
-  confirmar el `?v=` nuevo en la URL publicada.
+- No decir "publicado" hasta que `Validar y publicar sitio` termine en verde.
+  Si fue a `main`, abrir la URL publicada y comprobar que carga.
 
 El proyecto ya se presento: se trabaja en la rama `mejoras` y ahi se commitea y
 pushea sin preguntar. A `main` (lo que sirve Pages) solo se fusiona cuando el
@@ -65,4 +62,4 @@ usuario lo pide.
 
 1. Hallazgos ordenados por gravedad (o "sin hallazgos" y que riesgos quedan).
 2. Que comprobaste y con que resultado (verificar-sitio, CI local, workflow).
-3. Si publicaste: el commit, el run del workflow y el `?v=` en vivo.
+3. Si publicaste: el commit y el run del workflow.
