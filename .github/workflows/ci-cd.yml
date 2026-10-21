@@ -124,9 +124,9 @@ jobs:
           git diff --check
 
       # La version en React (react/, seccion 15 del plan) todavia no se
-      # publica: solo se comprueba que instala y construye. npm ci instala lo
-      # que dice package-lock.json, ni una version mas, y falla si no cuadra
-      # con package.json.
+      # publica: se comprueba que instala, construye sin avisos y arranca.
+      # npm ci instala lo que dice package-lock.json, ni una version mas, y
+      # falla si no cuadra con package.json.
       - name: Preparar Node
         uses: actions/setup-node@v4
         with:
@@ -134,13 +134,43 @@ jobs:
           cache: npm
           cache-dependency-path: react/package-lock.json
 
+      - name: Instalar la version en React
+        shell: bash
+        working-directory: react
+        run: npm ci
+
+      # Un aviso del build (un import que no se resuelve, un trozo demasiado
+      # grande) no para a Vite, pero casi siempre es algo roto: aqui si para.
+      # Las palabras prohibidas se buscan tambien en react/, que el paso de
+      # arriba no mira. ci-local.sh corre este paso tal cual.
       - name: Construir la version en React
         shell: bash
         working-directory: react
         run: |
           set -euo pipefail
-          npm ci
-          npm run build
+          salida=$(mktemp)
+          npm run build 2>&1 | tee "$salida"
+          if grep -Eiq '\(!\)|warn' "$salida"; then
+            echo 'El build de React dio avisos (arriba): hay que dejarlo sin ninguno.'
+            exit 1
+          fi
+          if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html $(find src -name '*.js' -o -name '*.jsx' -o -name '*.css'); then
+            echo 'Se encontro una referencia no permitida a cafeteria, cafe o cocteles en react/.'
+            exit 1
+          fi
+
+      # La prueba de humo (react/pruebas/casos/humo.mjs) en el Chrome que ya
+      # trae el runner: arranca, agrega a la canasta y crea una cuenta. Las
+      # largas se corren en local con npm run probar. playwright-core va a una
+      # carpeta temporal, fuera del repo y de package.json.
+      - name: Prueba de humo en Chrome
+        shell: bash
+        working-directory: react
+        env:
+          NAVEGADOR: chrome
+          PANADERIA_HERRAMIENTAS: ${{ runner.temp }}/panaderia-herramientas
+        timeout-minutes: 5
+        run: npm run probar -- humo
 
   deploy:
     needs: validate

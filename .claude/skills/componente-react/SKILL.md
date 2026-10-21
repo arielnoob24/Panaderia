@@ -69,9 +69,12 @@ react/
 ## Antes de dar algo por terminado
 
 1. Dentro de `react/`: `npm run build` sin errores ni avisos.
-2. `npm run preview` y comprobar el cambio en Edge con un script de
-   playwright-core en el scratchpad (mismo arranque que
-   `.claude/skills/verificar-sitio/verificar.mjs`), en escritorio y en movil
-   (`hasTouch: true, isMobile: true`, 390 px).
+2. `npm run probar` (todas las pruebas de navegador de `react/pruebas/`, en
+   Edge; `npm run probar -- <nombre>` para una). Lo que el cambio trae y
+   ninguna prueba mira se comprueba con un caso nuevo en
+   `react/pruebas/casos/<nombre>.mjs` (el arranque comun esta en
+   `react/pruebas/arranque.mjs`), en escritorio y en movil
+   (`VENTANAS.escritorio` y `VENTANAS.movil`, que es tactil a 390 px), y entra
+   en el mismo commit. Nada de scripts sueltos en el scratchpad para React.
 3. Comparar con el sitio actual: lo que se migro tiene que hacer lo mismo.
 4. Si el cambio pide algo que el plan no dice, se para y se pregunta.

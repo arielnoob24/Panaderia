@@ -34,13 +34,21 @@ cambio: PDFs de la clase,
 El `?v=` lleva una palabra del cambio y la fecha: `fila-20261008`. Sin eso el
 navegador sigue sirviendo el archivo viejo desde su cache.
 
+En `react/` no hay `?v=`: Vite pone la huella en el nombre de cada archivo.
+
 ## 3. Revisar antes de commitear
 
 ```bash
 node .claude/skills/verificar-sitio/verificar.mjs
+cd react && npm run build && npm run probar   # unos 7 minutos
 ```
 
-Si falla, se arregla antes de seguir (ver la skill `verificar-sitio`).
+Las dos versiones, aunque el cambio sea solo de una: `react/` usa el catalogo,
+las fotos y reglas de `js/`. El build sin avisos; `npm run probar` corre todas
+las pruebas de `react/pruebas/` y tiene que acabar en `N de N en orden`. Si
+falla, se arregla antes de seguir (ver la skill `verificar-sitio`). Si el
+cambio trae algo que ninguna prueba mira, se le agrega un caso en
+`react/pruebas/casos/` y entra en el mismo commit.
 
 ## 4. Commitear
 
@@ -55,13 +63,21 @@ el sistema.
 bash .claude/skills/publicar/ci-local.sh
 ```
 
-Corre el mismo paso de validacion de `.github/workflows/ci-cd.yml`, leido del
-propio archivo. Va despues del commit porque el CI compara `js/sin-servidor.js`
-con lo commiteado. Lo que mas lo tumba:
+Corre lo mismo que `.github/workflows/ci-cd.yml`, leido del propio archivo:
+el paso de validacion del sitio actual, el build de React (sin avisos y sin las
+palabras prohibidas en `react/`) y, en vez de solo la prueba de humo del CI,
+**todas** las pruebas de navegador (`npm run probar`, con Edge). Si falta
+`react/node_modules`, hace `npm ci`. Va despues del commit porque el CI compara
+`js/sin-servidor.js` con lo commiteado. Tarda unos 7 minutos. Lo que mas lo
+tumba:
 
 - **La palabra prohibida**: el CI rechaza `cafe`, `cafeteria`, `coctel` (con o sin
-  tilde) en `index.html`, `assets/css/styles.css`, `data/productos.json` y `js/*.js`,
-  **tambien dentro de comentarios y ejemplos**.
+  tilde) en `index.html`, `assets/css/styles.css`, `data/productos.json`, `js/*.js`,
+  `react/index.html` y `react/src` (JS, JSX y CSS), **tambien dentro de
+  comentarios y ejemplos**.
+- Un aviso de `npm run build` (un import que no se resuelve, un trozo de mas de
+  500 kB).
+- Una prueba de `react/pruebas/` que falla: el resumen del final dice cual.
 - Espacios al final de linea (`git diff --check`).
 - Una foto del catalogo sin su `-420.jpg` o `-840.jpg`.
 
@@ -81,6 +97,10 @@ No digas que esta subido hasta que el workflow `Validar y publicar sitio`
 termine en verde. En `mejoras` solo valida; el job de publicar solo corre en
 `main`. Si falla, `gh run view <id> --log-failed`, arreglar y volver a
 publicar con un commit nuevo (lo pusheado no se reescribe).
+
+En GitHub el job valida el sitio actual, construye React sin avisos y pasa la
+prueba de humo (`npm run probar -- humo`) en el Chrome del runner; si falla
+solo la de humo, su log dice que comprobacion fue.
 
 ## 7. Confirmar en vivo (solo si se pusheo a main)
 

@@ -1091,9 +1091,16 @@ dependan de una sesión de Claude.
 Reparto: 1 a 4, `calidad-publicacion`; 5, `frontend`; 6, `ux-accesibilidad`.
 
 Pendiente de la fase 6:
-- [ ] Pruebas en `react/pruebas/` y `npm run probar`.
-- [ ] CI: avisos del build, palabras prohibidas en `react/src`, prueba de humo.
-- [ ] `verificar-sitio`, `publicar` y `axe.mjs` con React.
+- [x] Pruebas en `react/pruebas/` y `npm run probar` (20 de octubre de 2026):
+      `probar.mjs` (sirve una copia de `dist/` y la raíz en puertos libres,
+      Edge en Windows y Chrome en lo demás, `NAVEGADOR` lo cambia),
+      `arranque.mjs` y 15 casos en `casos/`, entre ellos `humo`. Todos tardan
+      unos 7 minutos; `humo`, unos 5 s.
+- [x] CI: avisos del build, palabras prohibidas en `react/src` y
+      `react/index.html`, prueba de humo en el Chrome del runner.
+- [x] `verificar-sitio`, `publicar` y `axe.mjs` con React (`ci-local.sh`
+      corre también el build y `npm run probar`; `axe.mjs --react` mide 23
+      estados a 1280 y 390 px).
 - [ ] Carga por partes.
 - [ ] Revisión de `ux-accesibilidad` de todo React, y arreglos.
 
