@@ -84,8 +84,10 @@ function Recibo({ recibo: r }) {
             <div className="recibo-pie">
               <p className="recibo-copiado" role="status" hidden={!copiado}>{copiado}</p>
               <button className="button button-yellow canasta-listo" type="button" onClick={salir}>Listo, cerrar</button>
+              {/* En React la canasta se vacia al aprobar, no al cerrar (el
+                  sitio actual si la vacia al cerrar, y alli la nota es otra). */}
               <p className="canasta-nota">
-                Apunta o copia el número antes de cerrar: al cerrar, el pedido queda cumplido y la canasta se vacía.
+                Tu canasta ya está vacía. El pedido queda en Mis pedidos.
               </p>
             </div>
           </div>

@@ -55,7 +55,9 @@ const borrarGuardado = () => {
 // Panel, fondo y region de avisos se crean desde JavaScript: sin JS no hacen falta.
 const fondo = document.createElement('div');
 fondo.className = 'canasta-fondo';
-const panel = document.createElement('aside');
+// div y no aside: es un dialogo, y un aside es una region complementaria que
+// el lector anunciaria aparte (axe: rol no permitido en aside).
+const panel = document.createElement('div');
 panel.className = 'canasta-panel';
 panel.setAttribute('role', 'dialog');
 panel.setAttribute('aria-modal', 'true');
@@ -198,7 +200,7 @@ vista.innerHTML =
 
   // La columna del resumen lleva dentro el boton de confirmar: es lo ultimo que
   // se lee, justo debajo del total, y no al final de un formulario largo.
-  + '<aside class="checkout-resumen">'
+  + '<div class="checkout-resumen">'
   // Lo que llevas, de solo lectura: editar se hace en la canasta. Si se pudiera
   // cambiar la cantidad aqui, el total cambiaria por debajo mientras alguien
   // escribe los datos de la tarjeta. De ahi el boton de al lado, que es la
@@ -220,7 +222,7 @@ vista.innerHTML =
   + '</dl>'
   + piezas.canal
   + piezas.pie
-  + '</aside>'
+  + '</div>'
   + '</div></div>'
 
   + '<div class="checkout-paso" data-checkout="comprobante" hidden>'

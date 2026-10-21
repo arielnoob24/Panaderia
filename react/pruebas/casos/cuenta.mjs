@@ -89,7 +89,7 @@ async function recorrido(t, nombre, ventana) {
   // ---- Verificar ----
   await p.waitForSelector('.codigo-falso', { timeout: 5000 }).catch(() => {});
   ok(await p.isVisible('.codigo-falso'), 'no sale el recuadro con el codigo con EmailJS caido');
-  ok((await p.textContent('.cuenta-maqueta-codigo')).includes('No se pudo enviar el correo'), 'motivo del recuadro');
+  ok((await p.textContent('.cuenta-maqueta-codigo')).includes('No pudimos enviarte el correo en este momento.'), 'motivo del recuadro');
   const codigo = (await p.textContent('.codigo-valor')).trim();
   ok(/^\d{6}$/.test(codigo), `codigo: ${codigo}`);
   ok((await p.title()) === 'Verificar tu correo | El Tradicional', 'titulo verificar');

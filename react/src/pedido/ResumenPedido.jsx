@@ -15,7 +15,8 @@ function ResumenPedido({
 }) {
   const apagado = procesando || vacia;
   return (
-    <aside className="checkout-resumen">
+    // div y no aside: es una columna de la vista, no contenido aparte.
+    <div className="checkout-resumen">
       <div className="pedido-resumen">
         {/* h2: cuelgan del h1 de la vista, sin saltarse un nivel. */}
         <div className="resumen-cabeza">
@@ -54,7 +55,7 @@ function ResumenPedido({
         </button>
         <p className="canasta-nota">Simulación académica: no se cobra ni un centavo.</p>
       </div>
-    </aside>
+    </div>
   );
 }
 

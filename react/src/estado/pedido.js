@@ -29,6 +29,9 @@
 //   { tipo: 'factura', campo, valor }                  un dato de la factura
 //   { tipo: 'cumplido' }                               pedido aprobado: canasta
 //                                                      vacia y factura limpia
+//   { tipo: 'sumar', lineas: [{ id, nombre, precio, cantidad }] }
+//                                                      pedir otra vez: suma a
+//                                                      lo que haya, con el tope
 import { MAX_UNIDADES } from '@raiz/js/comun/state.js';
 
 const FACTURA_VACIA = { aOtro: false, nombre: '', ident: '', correo: '', direccion: '' };
@@ -107,6 +110,18 @@ function reductor(estado, accion) {
       // otra vez en esta visita, es a la misma puerta. La factura vuelve a ser
       // a nombre de quien pide.
       return { ...estado, lineas: [], borrado: null, factura: { ...FACTURA_VACIA } };
+    case 'sumar': {
+      // Lo de un pedido anterior (pedido/pedirOtraVez.js): cada linea se suma
+      // a la que ya haya, hasta el tope, con el nombre y el precio de hoy.
+      let lineas = estado.lineas;
+      for (const l of accion.lineas || []) {
+        const antes = lineaDe(lineas, l.id);
+        const cantidad = recortar((antes ? antes.cantidad : 0) + (Number(l.cantidad) || 0));
+        if (cantidad < 1 || (antes && antes.cantidad === cantidad)) continue;
+        lineas = poner(lineas, l.id, { ...antes, nombre: l.nombre, precio: l.precio, cantidad });
+      }
+      return lineas === estado.lineas ? estado : cambio(estado, { lineas });
+    }
     default:
       return estado;
   }

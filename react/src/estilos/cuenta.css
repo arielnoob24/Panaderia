@@ -116,6 +116,12 @@ a.nav-cuenta { text-decoration: none; }
 .cuenta-vista .cuenta-pedido[open] summary::after { transform: translateY(-70%) rotate(45deg); }
 .cuenta-vista .cuenta-pedido.is-abierto summary::after { transform: translateY(-30%) rotate(-135deg); }
 .cuenta-vista .cuenta-historial-vacio { margin: .5rem 0 1rem; }
+/* "Pedir otra vez" (logica-datos): lo minimo para que se vea como boton y
+   se pueda tocar (44 px); el aspecto lo pule frontend. */
+.cuenta-pedido-acciones { margin: .9rem 0 .2rem; }
+.cuenta-pedido-otra { min-height: 44px; padding: .5rem 1rem; border: 1px solid var(--corteza-oscura); border-radius: var(--r-chip); background: var(--papel); color: var(--horno); font: 700 .9rem Arial, sans-serif; cursor: pointer; }
+.cuenta-pedido-otra:hover { background: var(--ambar-claro); }
+.cuenta-pedido-nota { margin: .2rem 0 .4rem; font: .88rem/1.45 Arial, sans-serif; color: var(--horno); }
 
 /* ---- Mis datos ------------------------------------------------------------- */
 

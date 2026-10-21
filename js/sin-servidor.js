@@ -1234,6 +1234,23 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   };
   var direccionDe = (entrega2) => [entrega2.direccion, entrega2.piso, entrega2.referencia].filter(Boolean).join(" · ");
   var CAMPOS_FACTURA = [["nombre", "el nombre"], ["ident", "la cédula o el RUC"]];
+  var provinciaValida = (d) => Number(d.slice(0, 2)) >= 1 && Number(d.slice(0, 2)) <= 24;
+  var cedulaValida = (d) => {
+    if (!/^\d{10}$/.test(d) || !provinciaValida(d) || Number(d[2]) > 5) return false;
+    let suma = 0;
+    for (let i = 0; i < 9; i += 1) {
+      let n = Number(d[i]) * (i % 2 === 0 ? 2 : 1);
+      if (n > 9) n -= 9;
+      suma += n;
+    }
+    return (10 - suma % 10) % 10 === Number(d[9]);
+  };
+  var rucValido = (d) => {
+    if (!/^\d{13}$/.test(d) || d.endsWith("000") || !provinciaValida(d)) return false;
+    const tercero = Number(d[2]);
+    if (tercero < 6) return cedulaValida(d.slice(0, 10));
+    return tercero === 6 || tercero === 9;
+  };
   var fallosFactura = (factura2) => {
     const fallos = {};
     if (!factura2.aOtro) return fallos;
@@ -1242,8 +1259,12 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     if (!digitos) fallos.ident = "Escribe la cédula o el RUC.";
     else if (digitos.length !== 10 && digitos.length !== 13) {
       fallos.ident = "La cédula tiene 10 dígitos y el RUC 13.";
-    } else if (Number(digitos.slice(0, 2)) < 1 || Number(digitos.slice(0, 2)) > 24) {
+    } else if (!provinciaValida(digitos)) {
       fallos.ident = "Los dos primeros dígitos no son de una provincia del Ecuador.";
+    } else if (digitos.length === 10 && !cedulaValida(digitos)) {
+      fallos.ident = "Esta cédula no es válida: revisa los números.";
+    } else if (digitos.length === 13 && !rucValido(digitos)) {
+      fallos.ident = "Este RUC no es válido: revisa los números.";
     }
     return fallos;
   };
@@ -1286,8 +1307,9 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     return fallos;
   };
   var nombresDe = (campos2, claves) => campos2.filter(([c]) => claves.includes(c)).map(([, n]) => n);
-  var avisoFactura = (claves) => `Para la factura, revisa ${nombresDe(CAMPOS_FACTURA, claves).join(" y ")}.`;
-  var avisoTarjeta = (claves) => `Revisa ${nombresDe(CAMPOS_TARJETA, claves).join(", ")} de la tarjeta.`;
+  var enLista = (nombres) => nombres.length < 2 ? nombres.join("") : `${nombres.slice(0, -1).join(", ")} y ${nombres[nombres.length - 1]}`;
+  var avisoFactura = (claves) => `Para la factura, revisa ${enLista(nombresDe(CAMPOS_FACTURA, claves))}.`;
+  var avisoTarjeta = (claves) => `Revisa ${enLista(nombresDe(CAMPOS_TARJETA, claves))} de la tarjeta.`;
   var reformatear = (valor, cursor, agrupar) => {
     const corte = cursor === null || cursor === void 0 ? valor.length : cursor;
     const antes = valor.slice(0, corte).replace(/\D/g, "").length;
@@ -1380,7 +1402,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
     }
     if (estado === "enviando") return "Enviando el comprobante a tu correo…";
     if (estado === "enviado") return `Comprobante enviado a ${r.correo}. Si no lo ves, mira en la carpeta de spam.`;
-    return `No se pudo enviar el correo (puede ser la red o la cuota del mes). Tu pedido quedó registrado igual: apunta el número ${r.numero}.`;
+    return `No pudimos enviarte el correo en este momento. Tu pedido quedó registrado igual: apunta el número ${r.numero}.`;
   };
   var avisoAprobado = (numero) => `Pago aprobado. Pedido ${numero}. Es una simulación: no se cobró nada.`;
 
@@ -1784,7 +1806,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   };
   var fondo = document.createElement("div");
   fondo.className = "canasta-fondo";
-  var panel2 = document.createElement("aside");
+  var panel2 = document.createElement("div");
   panel2.className = "canasta-panel";
   panel2.setAttribute("role", "dialog");
   panel2.setAttribute("aria-modal", "true");
@@ -1795,7 +1817,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   vista.id = "confirmar";
   vista.className = "checkout section-pad";
   vista.hidden = true;
-  vista.innerHTML = '<div class="container"><div class="vista-cabeza checkout-cabeza"><button class="vista-volver checkout-volver" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver a la tienda</button><h1 class="vista-titulo checkout-titulo" tabindex="-1">Confirmar el pedido</h1></div><div class="checkout-paso" data-checkout="pedido"><div class="checkout-grid"><div class="checkout-datos">' + piezas.aviso + '<fieldset class="canasta-entrega"><legend>¿Cómo lo quieres?</legend><div class="canasta-opciones"><label><input type="radio" name="canasta-entrega" value="retiro" checked><span>Paso retirando<small>Gratis</small></span></label><label><input type="radio" name="canasta-entrega" value="domicilio"><span>A domicilio<small>' + dinero(ENVIO) + '</small></span></label></div><div class="canasta-local"><p class="canasta-local-titulo">Esquina de Eloy Alfaro y Gabriel Espinosa</p><p class="canasta-local-dato">Tena, Napo. Te esperamos en el mostrador.</p><a class="mapa-ruta" href="https://www.google.com/maps/dir/?api=1&destination=-1.004033,-77.812690" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21.4c0 0-6.6-5.3-6.6-10.1a6.6 6.6 0 0 1 13.2 0c0 4.8-6.6 10.1-6.6 10.1Z"/><circle cx="12" cy="11" r="2.4"/></svg>Cómo llegar <span aria-hidden="true">↗</span><span class="sr-only"> (abre en una pestaña nueva)</span></a><p class="canasta-local-hora"></p></div><div class="canasta-direccion" hidden><label for="canasta-dir">¿A dónde lo llevamos?</label><input id="canasta-dir" type="text" autocomplete="street-address" placeholder="Calle, número y barrio" aria-describedby="canasta-dir-error"><p class="canasta-aviso" id="canasta-dir-error" role="alert" hidden>Escribe la dirección para poder llevarlo.</p><div class="dir-detalle"><div><label for="canasta-piso">Piso, departamento u oficina</label><input id="canasta-piso" type="text" autocomplete="address-line2" placeholder="Torre B, piso 3, dpto. 302"></div><div><label for="canasta-ref">Una referencia para encontrarlo</label><input id="canasta-ref" type="text" placeholder="Portón verde, frente a la cancha"></div></div><label for="canasta-notas">Indicaciones para quien entrega <small>(opcional)</small></label><textarea id="canasta-notas" rows="2" maxlength="300" placeholder="Timbre dañado, llamar al llegar. Hay perro."></textarea></div></fieldset>' + piezas.metodos + piezas.factura + '</div><aside class="checkout-resumen"><div class="pedido-resumen"><div class="resumen-cabeza"><h2 class="recibo-titulo">Tu pedido</h2><p class="resumen-cuenta"></p></div><ul class="recibo-lista resumen-lista"></ul><button class="resumen-editar" type="button">Editar la canasta</button></div><dl class="canasta-desglose"><div><dt>Subtotal</dt><dd class="desglose-subtotal">$0.00</dd></div><div><dt>Envío</dt><dd class="desglose-envio">Gratis</dd></div><div class="desglose-suma"><dt>Total</dt><dd class="desglose-total">$0.00</dd></div></dl>' + piezas.canal + piezas.pie + '</aside></div></div><div class="checkout-paso" data-checkout="comprobante" hidden>' + comprobanteHtml() + "</div></div>";
+  vista.innerHTML = '<div class="container"><div class="vista-cabeza checkout-cabeza"><button class="vista-volver checkout-volver" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg>Volver a la tienda</button><h1 class="vista-titulo checkout-titulo" tabindex="-1">Confirmar el pedido</h1></div><div class="checkout-paso" data-checkout="pedido"><div class="checkout-grid"><div class="checkout-datos">' + piezas.aviso + '<fieldset class="canasta-entrega"><legend>¿Cómo lo quieres?</legend><div class="canasta-opciones"><label><input type="radio" name="canasta-entrega" value="retiro" checked><span>Paso retirando<small>Gratis</small></span></label><label><input type="radio" name="canasta-entrega" value="domicilio"><span>A domicilio<small>' + dinero(ENVIO) + '</small></span></label></div><div class="canasta-local"><p class="canasta-local-titulo">Esquina de Eloy Alfaro y Gabriel Espinosa</p><p class="canasta-local-dato">Tena, Napo. Te esperamos en el mostrador.</p><a class="mapa-ruta" href="https://www.google.com/maps/dir/?api=1&destination=-1.004033,-77.812690" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 21.4c0 0-6.6-5.3-6.6-10.1a6.6 6.6 0 0 1 13.2 0c0 4.8-6.6 10.1-6.6 10.1Z"/><circle cx="12" cy="11" r="2.4"/></svg>Cómo llegar <span aria-hidden="true">↗</span><span class="sr-only"> (abre en una pestaña nueva)</span></a><p class="canasta-local-hora"></p></div><div class="canasta-direccion" hidden><label for="canasta-dir">¿A dónde lo llevamos?</label><input id="canasta-dir" type="text" autocomplete="street-address" placeholder="Calle, número y barrio" aria-describedby="canasta-dir-error"><p class="canasta-aviso" id="canasta-dir-error" role="alert" hidden>Escribe la dirección para poder llevarlo.</p><div class="dir-detalle"><div><label for="canasta-piso">Piso, departamento u oficina</label><input id="canasta-piso" type="text" autocomplete="address-line2" placeholder="Torre B, piso 3, dpto. 302"></div><div><label for="canasta-ref">Una referencia para encontrarlo</label><input id="canasta-ref" type="text" placeholder="Portón verde, frente a la cancha"></div></div><label for="canasta-notas">Indicaciones para quien entrega <small>(opcional)</small></label><textarea id="canasta-notas" rows="2" maxlength="300" placeholder="Timbre dañado, llamar al llegar. Hay perro."></textarea></div></fieldset>' + piezas.metodos + piezas.factura + '</div><div class="checkout-resumen"><div class="pedido-resumen"><div class="resumen-cabeza"><h2 class="recibo-titulo">Tu pedido</h2><p class="resumen-cuenta"></p></div><ul class="recibo-lista resumen-lista"></ul><button class="resumen-editar" type="button">Editar la canasta</button></div><dl class="canasta-desglose"><div><dt>Subtotal</dt><dd class="desglose-subtotal">$0.00</dd></div><div><dt>Envío</dt><dd class="desglose-envio">Gratis</dd></div><div class="desglose-suma"><dt>Total</dt><dd class="desglose-total">$0.00</dd></div></dl>' + piezas.canal + piezas.pie + '</div></div></div><div class="checkout-paso" data-checkout="comprobante" hidden>' + comprobanteHtml() + "</div></div>";
   document.querySelector("#contenido")?.append(vista);
   var barraDeshacer = document.createElement("div");
   barraDeshacer.className = "deshacer-barra";
@@ -2613,7 +2635,7 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   var nombreMetodo = (valor) => METODOS_CUENTA.find((m) => m.valor === valor)?.nombre || "Efectivo";
   var fondoC = document.createElement("div");
   fondoC.className = "cuenta-fondo";
-  var panelC = document.createElement("aside");
+  var panelC = document.createElement("div");
   panelC.className = "cuenta-panel";
   panelC.setAttribute("role", "dialog");
   panelC.setAttribute("aria-modal", "true");
@@ -2711,7 +2733,7 @@ Caduca cuando pidas otro. No lo compartas con nadie: nadie de El Tradicional te 
       return;
     }
     codigoEstado.hidden = true;
-    verAtajo("No se pudo enviar el correo: puede ser la red o la cuota del mes.");
+    verAtajo("No pudimos enviarte el correo en este momento.");
   };
   var cuentaAtras = () => {
     window.clearInterval(relojReenvio);

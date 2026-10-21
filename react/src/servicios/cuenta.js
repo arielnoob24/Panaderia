@@ -183,7 +183,7 @@ const envioInicial = () => (buzonListo() ? 'enviando' : 'sin-buzon');
 // Por que se ve el codigo en pantalla, con el texto del sitio actual.
 const MOTIVO_SIN_CORREO = {
   'sin-buzon': 'El envío de correo no está configurado en esta copia del sitio.',
-  fallo: 'No se pudo enviar el correo: puede ser la red o la cuota del mes.',
+  fallo: 'No pudimos enviarte el correo en este momento.',
 };
 // Lo que oye el lector de pantalla al salir un codigo: si no hay correo que
 // mandar, no se le puede decir que se envio mientras la pantalla dice que no

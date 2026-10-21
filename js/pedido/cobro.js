@@ -29,13 +29,40 @@ const direccionDe = (entrega) => [entrega.direccion, entrega.piso, entrega.refer
   .filter(Boolean).join(' · ');
 
 // ---- Datos para la factura ----
-// Dos reglas y nada mas, porque la factura de verdad no se emite aqui: el nombre
-// no puede estar vacio y el documento tiene que tener forma de cedula o de RUC.
-// No se comprueba el digito verificador: eso valida que el numero exista, no que
-// sea de quien dice, y en una maqueta sin SRI detras daria una falsa sensacion de
-// haberlo verificado.
+// El nombre no puede estar vacio y el documento tiene que ser una cedula o un
+// RUC que valgan, con la misma regla que la base (FN_CEDULA_VALIDA y
+// FN_RUC_VALIDO en bd/BD_EL_TRADICIONAL.sql): si el sitio aceptara un numero
+// que la base rechaza, el pedido no se podria guardar con su factura. Eso
+// prueba que el numero esta bien formado, no que sea de quien lo escribe.
 // Los campos en el orden en que se ven, con como se nombran en el aviso.
 const CAMPOS_FACTURA = [['nombre', 'el nombre'], ['ident', 'la cédula o el RUC']];
+
+// Los dos primeros digitos son la provincia, del 01 al 24.
+const provinciaValida = (d) => Number(d.slice(0, 2)) >= 1 && Number(d.slice(0, 2)) <= 24;
+
+// Cedula: 10 digitos, provincia, tercer digito menor que 6 y el decimo es el
+// verificador por modulo 10 (los impares por 2, restando 9 si pasan de 9).
+const cedulaValida = (d) => {
+  if (!/^\d{10}$/.test(d) || !provinciaValida(d) || Number(d[2]) > 5) return false;
+  let suma = 0;
+  for (let i = 0; i < 9; i += 1) {
+    let n = Number(d[i]) * (i % 2 === 0 ? 2 : 1);
+    if (n > 9) n -= 9;
+    suma += n;
+  }
+  return (10 - (suma % 10)) % 10 === Number(d[9]);
+};
+
+// RUC: 13 digitos, provincia y establecimiento distinto de 000. El de persona
+// natural (tercer digito menor que 6) es su cedula mas el establecimiento; el
+// de entidades publicas (6) y sociedades (9) no se revisa por modulo 11,
+// porque el SRI ya emite RUC que no lo cumplen.
+const rucValido = (d) => {
+  if (!/^\d{13}$/.test(d) || d.endsWith('000') || !provinciaValida(d)) return false;
+  const tercero = Number(d[2]);
+  if (tercero < 6) return cedulaValida(d.slice(0, 10));
+  return tercero === 6 || tercero === 9;
+};
 
 const fallosFactura = (factura) => {
   const fallos = {};
@@ -45,10 +72,12 @@ const fallosFactura = (factura) => {
   if (!digitos) fallos.ident = 'Escribe la cédula o el RUC.';
   else if (digitos.length !== 10 && digitos.length !== 13) {
     fallos.ident = 'La cédula tiene 10 dígitos y el RUC 13.';
-  } else if (Number(digitos.slice(0, 2)) < 1 || Number(digitos.slice(0, 2)) > 24) {
-    // Los dos primeros digitos son la provincia, del 01 al 24. Es la unica
-    // comprobacion que se puede hacer sin inventarse una validacion completa.
+  } else if (!provinciaValida(digitos)) {
     fallos.ident = 'Los dos primeros dígitos no son de una provincia del Ecuador.';
+  } else if (digitos.length === 10 && !cedulaValida(digitos)) {
+    fallos.ident = 'Esta cédula no es válida: revisa los números.';
+  } else if (digitos.length === 13 && !rucValido(digitos)) {
+    fallos.ident = 'Este RUC no es válido: revisa los números.';
   }
   return fallos;
 };
@@ -101,8 +130,11 @@ const fallosTarjeta = (tarjeta, hoy = new Date()) => {
 // El aviso de debajo del boton cuando algo falla: dice que revisar, en el
 // orden en que se ve en pantalla. Recibe las claves que fallaron.
 const nombresDe = (campos, claves) => campos.filter(([c]) => claves.includes(c)).map(([, n]) => n);
-const avisoFactura = (claves) => `Para la factura, revisa ${nombresDe(CAMPOS_FACTURA, claves).join(' y ')}.`;
-const avisoTarjeta = (claves) => `Revisa ${nombresDe(CAMPOS_TARJETA, claves).join(', ')} de la tarjeta.`;
+// Como se dice en voz alta: "el número, el CVV y el titular".
+const enLista = (nombres) => (nombres.length < 2 ? nombres.join('')
+  : `${nombres.slice(0, -1).join(', ')} y ${nombres[nombres.length - 1]}`);
+const avisoFactura = (claves) => `Para la factura, revisa ${enLista(nombresDe(CAMPOS_FACTURA, claves))}.`;
+const avisoTarjeta = (claves) => `Revisa ${enLista(nombresDe(CAMPOS_TARJETA, claves))} de la tarjeta.`;
 
 // Lo que se teclea en la tarjeta se reescribe con su forma (grupos de cuatro,
 // MM/AA). El cursor vuelve a la misma posicion contada en digitos, no en
@@ -237,7 +269,9 @@ const textoCorreo = (estado, r) => {
   }
   if (estado === 'enviando') return 'Enviando el comprobante a tu correo…';
   if (estado === 'enviado') return `Comprobante enviado a ${r.correo}. Si no lo ves, mira en la carpeta de spam.`;
-  return 'No se pudo enviar el correo (puede ser la red o la cuota del mes). Tu pedido '
+  // Sin hablar de cuotas ni de servicios: a quien compra solo le sirve saber
+  // que el pedido vale igual y que se quede con el numero.
+  return 'No pudimos enviarte el correo en este momento. Tu pedido '
     + `quedó registrado igual: apunta el número ${r.numero}.`;
 };
 
@@ -245,8 +279,8 @@ const avisoAprobado = (numero) => `Pago aprobado. Pedido ${numero}. Es una simul
 
 export {
   envioDe, sumasDe, direccionDe,
-  CAMPOS_FACTURA, fallosFactura, facturaTexto, avisoFactura,
-  CAMPOS_TARJETA, luhn, fallosTarjeta, avisoTarjeta,
+  CAMPOS_FACTURA, cedulaValida, rucValido, fallosFactura, facturaTexto, avisoFactura,
+  CAMPOS_TARJETA, luhn, fallosTarjeta, avisoTarjeta, enLista,
   reformatear, grupos4, mmaa, tresCifras,
   textoEfectivo, textoBotonPagar,
   numeroDePedido, detalleDe, armarRecibo, reciboParaGuardar,

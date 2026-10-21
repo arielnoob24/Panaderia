@@ -59,7 +59,8 @@ const nombreMetodo = (valor) => METODOS_CUENTA.find((m) => m.valor === valor)?.n
 
 const fondoC = document.createElement('div');
 fondoC.className = 'cuenta-fondo';
-const panelC = document.createElement('aside');
+// div y no aside, como el panel de la canasta: es un dialogo.
+const panelC = document.createElement('div');
 panelC.className = 'cuenta-panel';
 panelC.setAttribute('role', 'dialog');
 panelC.setAttribute('aria-modal', 'true');
@@ -342,7 +343,7 @@ const mandarCodigo = async () => {
     return;
   }
   codigoEstado.hidden = true;
-  verAtajo('No se pudo enviar el correo: puede ser la red o la cuota del mes.');
+  verAtajo('No pudimos enviarte el correo en este momento.');
 };
 
 // La espera para reenviar. Ya no es un detalle de maqueta: los correos salen

@@ -1,5 +1,5 @@
 // ---- El panel de la canasta --------------------------------------------
-// El aside role="dialog" de cart.js, con sus mismas clases: cabecera con el
+// El panel role="dialog" de cart.js, con sus mismas clases: cabecera con el
 // titulo y la X, la lista, "Tu canasta esta vacia" cuando no hay nada, vaciar
 // con pregunta, y el pie con el subtotal e "Ir a pagar". Siempre esta montado:
 // styles.css lo esconde con visibility y lo desliza con is-open.
@@ -201,7 +201,8 @@ function Canasta() {
   return (
     <>
       <div className={abierta ? 'canasta-fondo is-open' : 'canasta-fondo'} onClick={cerrar}></div>
-      <aside
+      {/* div y no aside: es un dialogo; un aside con role="dialog" no vale (axe). */}
+      <div
         ref={panelRef}
         className={abierta ? 'canasta-panel is-open' : 'canasta-panel'}
         role="dialog"
@@ -278,7 +279,7 @@ function Canasta() {
           </section>
         </div>
         <PideCuenta pide={pide} principalRef={principalRef} onVolver={volverDePide} />
-      </aside>
+      </div>
     </>
   );
 }
