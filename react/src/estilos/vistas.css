@@ -256,3 +256,9 @@ body.is-vista .franja-pie { display: block; }
 .vista-fallo-acciones { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; }
 .vista-fallo .button[aria-disabled="true"] { cursor: progress; opacity: .75; }
 @media (max-width: 680px) { .vista-fallo { padding-top: 120px; } }
+
+/* Colores forzados: la categoria puesta se marca con Highlight, como en
+   styles.css; esta regla pesa mas que aquella y le pisaria el ambar. */
+@media (forced-colors: active) {
+  .vista-tienda .chip-input:checked + .chip { forced-color-adjust: none; background: Highlight; border-color: Highlight; color: HighlightText; }
+}

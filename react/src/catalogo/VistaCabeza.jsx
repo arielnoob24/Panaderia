@@ -81,8 +81,9 @@ function VistaCabeza({
         <p className="vista-cuenta" aria-hidden="true">{cuenta}</p>
       </div>
       {/* Una busqueda sin resultados no se queda en una pantalla vacia: se dice
-          que no hay y por que. */}
-      <p className="vista-vacio" role="status" hidden={!vacio}>{vacio}</p>
+          que no hay y por que. Sin role="status": lo dice el aviso del
+          catalogo, que ya lleva la cuenta, y dos avisos a la vez se pisaban. */}
+      <p className="vista-vacio" hidden={!vacio}>{vacio}</p>
       {/* Los nombres de las fichas son h3: sin este h2 colgarian directamente
           del h1 y quien recorre los titulos se saltaria un nivel. */}
       <h2 className="sr-only">Productos</h2>

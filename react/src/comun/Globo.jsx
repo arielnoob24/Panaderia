@@ -87,9 +87,14 @@ function Globo() {
     // raton o el teclado, asi que para distinguirlos hay que recordar como se llego.
     let llegoConRaton = false;
     const alApuntar = () => { llegoConRaton = true; };
+    // Escape con el cuadrito a la vista solo lo esconde (WCAG 1.4.13): se
+    // ataja aqui, en la captura del documento, antes de que llegue al cerco
+    // de la canasta, que si no se cerraba tambien.
     const alTeclear = (e) => {
       llegoConRaton = false;
-      if (e.key === 'Escape') esconderTip();
+      if (e.key !== 'Escape' || !conTip) return;
+      esconderTip();
+      e.stopPropagation();
     };
     const alEnfocar = (e) => {
       const quien = e.target.closest?.('[data-tip]');

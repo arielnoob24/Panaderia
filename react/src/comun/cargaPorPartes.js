@@ -15,6 +15,15 @@
 // con su fundido de siempre (App.jsx).
 import { lazy } from 'react';
 
+// Si el archivo no llega se vuelve a pedir una vez, solo, antes de decir
+// nada: un corte de un instante (el telefono que cambia de antena) no tiene
+// por que acabar en el aviso. Donde el navegador recuerda el fallo, el
+// segundo intento falla enseguida y no cuesta nada.
+const ESPERA_REINTENTO = 800;
+const conUnReintento = (importar) => importar().catch(() => new Promise((listo) => {
+  setTimeout(listo, ESPERA_REINTENTO);
+}).then(importar));
+
 // Una vista aparte: su archivo se pide una sola vez, lo pida el lazy o
 // precargar. Si falla se olvida la promesa, aunque en Chrome y Edge volver a
 // pedirlo no sirve hasta recargar (FalloDeCarga.jsx).
@@ -23,7 +32,7 @@ function aparte(importar, grupo) {
   const vista = {
     traer() {
       if (!promesa) {
-        promesa = importar().catch((error) => {
+        promesa = conUnReintento(importar).catch((error) => {
           promesa = null;
           throw error;
         });

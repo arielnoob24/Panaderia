@@ -1123,26 +1123,36 @@ Pendiente de la fase 6:
       bajas; el buscador anuncia una vez, tras dejar de escribir; "Cambiar
       el correo" mientras crear sale monta una hoja nueva (sin las
       contraseñas).
-- [ ] Arreglos de esa revisión (`logica-datos`): nota del comprobante
+- [x] Arreglos de esa revisión (`logica-datos`, `103c4fe`): nota del comprobante
       cierta ("Tu canasta ya está vacía. El pedido queda en Mis pedidos.");
       "y" al juntar los errores de la tarjeta y sin "cuota del mes";
       `aside.checkout-resumen` y `aside role="dialog"` de la canasta pasan a
       `div`/`section` (en los dos sitios); dígito verificador de la cédula y
       el RUC (sección 6, en los dos sitios). La tarjeta sigue con
       `autocomplete="off"` a propósito: es de prueba y no debe guardarla el
-      navegador.
+      navegador. Hecho así: la regla de la cédula y el RUC es la de
+      `FN_CEDULA_VALIDA` y `FN_RUC_VALIDO` de `bd/` (cédula: provincia 01–24,
+      tercer dígito 0–5, módulo 10; RUC: no termina en 000, y con tercer
+      dígito <6 sus 10 primeros son una cédula válida, si no es 6 o 9), en
+      `cedulaValida()`/`rucValido()` de `cobro.js`. Los errores se juntan
+      "a, b y c" (`enLista()`). El panel de la cuenta del sitio actual
+      también dejó de ser `aside`.
 - [ ] **Sin JavaScript** (solo React): un `<noscript>` que no deja la
       página en blanco: "Para comprar en El Tradicional necesitas activar
       JavaScript en tu navegador", con el nombre, la dirección y el
       horario. **Sin enlace a WhatsApp**: la página es para comprar en ella
       (decidido por el usuario). `frontend`.
-- [ ] **"Pedir lo mismo otra vez"** en cada pedido de Mis pedidos (solo
+- [x] **"Pedir lo mismo otra vez"** (`103c4fe`) en cada pedido de Mis pedidos (solo
       React): mete en la canasta los productos de ese pedido que sigan en el
       catálogo y disponibles, con el tamaño de entonces y **el precio de
       hoy**; si la canasta ya tenía algo, se suma (con el tope de 100 por
       línea). Abre la canasta y avisa qué entró y qué no ("Ya no tenemos
       Pan de yuca"); si no entra nada, solo el aviso. `logica-datos` (la
-      acción) y `frontend` (el botón en el `<details>`).
+      acción) y `frontend` (el botón en el `<details>`). Hecho:
+      `pedirOtraVez()` pura en `pedido/pedirOtraVez.js` y la acción
+      `{ tipo: 'sumar', lineas }` del reductor; el aviso se anuncia y además
+      queda escrito bajo el botón (`.cuenta-pedido-nota`), para que quien
+      mira la pantalla vea qué pasó aunque no entre nada.
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 

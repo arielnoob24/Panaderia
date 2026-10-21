@@ -382,8 +382,10 @@ var CATALOGO_EMBEBIDO = {"productos":[{"nombre":"Pan redondo","categoria":"panes
   });
   document.addEventListener("focusout", esconderTip);
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") esconderTip();
-  });
+    if (e.key !== "Escape" || !conTip) return;
+    esconderTip();
+    e.stopPropagation();
+  }, true);
   var seguirOEsconder = () => {
     if (!conTip) return;
     if (document.activeElement === conTip) colocarTip(conTip);

@@ -44,6 +44,9 @@ const ORDEN_DICHO = {
   nombre: 'Ordenado por nombre, de la A a la Z.',
 };
 
+// Lo que se espera tras la ultima tecla para decir cuantos hay.
+const ESPERA_BUSQUEDA = 400;
+
 // Se busca sin tildes ni mayusculas: quien escribe "limon" quiere el de limón.
 const plano = (t) => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
@@ -174,6 +177,18 @@ function Catalogo({ categoria }) {
       ? `No encontramos nada que se llame «${busqueda.trim()}». Prueba con otra palabra o quita algún filtro.`
       : 'No hay productos con estos filtros.';
   }
+  // Sin nada que mostrar, el aviso dice tambien por que: es el unico que
+  // habla (el texto grande de la vista es mudo), y dos avisos a la vez se
+  // pisaban.
+  const anuncio = vacio && !catalogo.error ? `${dice}. ${vacio}` : estado;
+  // Mientras se escribe el aviso calla: decia la cuenta a cada tecla. Habla
+  // una vez, cuando la busqueda lleva un momento quieta.
+  const [busquedaQuieta, setBusquedaQuieta] = useState(busqueda);
+  useEffect(() => {
+    const reloj = setTimeout(() => setBusquedaQuieta(busqueda), ESPERA_BUSQUEDA);
+    return () => clearTimeout(reloj);
+  }, [busqueda]);
+  const dicho = hablar && busquedaQuieta === busqueda ? anuncio : '';
 
   // ---- Lo que se recuerda, el titulo y el foco --------------------------
   // Donde estabas se apunta en cada cambio, no al salir: de la pagina se sale
@@ -264,7 +279,7 @@ function Catalogo({ categoria }) {
             vacio={vacio}
             onVolver={alVolver}
           />
-          <p className="catalog-status" role="status" aria-live="polite">{hablar ? estado : ''}</p>
+          <p className="catalog-status" role="status" aria-live="polite">{dicho}</p>
           <div ref={gridRef} className="product-grid">
             {productos.map((p) => {
               const i = cuadro.visibles.get(p);

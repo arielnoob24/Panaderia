@@ -93,9 +93,10 @@ function App() {
   const { pathname } = location;
   const cual = vistaDeRuta(pathname);
   // De que vista se viene: decide por donde entra la nueva. Se ajusta
-  // mientras se pinta, para que la vista nueva ya nazca sabiendolo.
-  const [paso, setPaso] = useState({ antes: null, ahora: cual });
-  if (paso.ahora !== cual) setPaso({ antes: paso.ahora, ahora: cual });
+  // mientras se pinta, para que la vista nueva ya nazca sabiendolo. Cada
+  // llegada lleva su numero (vez), tambien la que vuelve con Atras.
+  const [paso, setPaso] = useState({ antes: null, ahora: cual, vez: 0 });
+  if (paso.ahora !== cual) setPaso({ antes: paso.ahora, ahora: cual, vez: paso.vez + 1 });
   const aVerificar = paso.antes === 'cuenta-crear' && cual === 'cuenta-verificar';
 
   // Una direccion vieja, o una que no existe: se cambia sin dejar rastro en
@@ -138,7 +139,11 @@ function App() {
                 la vista nueva que la que se va. */}
             <AnimatePresence custom={{ siguiente: cual, reducido }}>
               {cual === 'cuenta-crear' ? (
-                <VistaQueSale key="cuenta-crear" initial={entrada} animate={QUIETA} transition={TRANSICION}>
+                // La clave es la de cada llegada: volver a crear mientras la
+                // anterior todavia se va ("Cambiar el correo" o Atras desde
+                // verificar) monta una hoja nueva, y no rescata la que salia
+                // con las contrasenas escritas.
+                <VistaQueSale key={`cuenta-crear-${paso.vez}`} initial={entrada} animate={QUIETA} transition={TRANSICION}>
                   {vista}
                 </VistaQueSale>
               ) : null}

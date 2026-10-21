@@ -1,7 +1,7 @@
 // ---- Si una vista aparte no llega ------------------------------------------
 // La cuenta y el pago vienen en su propio archivo (comun/cargaPorPartes.js).
-// Si no llega (sin red, o un archivo viejo que ya no esta tras publicar), la
-// pagina no se queda en blanco: en el sitio de la vista sale un aviso corto
+// Si no llega ni al segundo intento (sin red, o un archivo viejo que ya no
+// esta tras publicar), la pagina no se queda en blanco: en el sitio de la vista sale un aviso corto
 // con "Reintentar". La cabecera, la canasta y el pie siguen funcionando, y
 // navegar a otra vista quita el aviso.
 //
@@ -19,6 +19,7 @@ import { useVista } from './useVista.js';
 
 const reintentar = () => window.location.reload();
 
+// El aviso no culpa a la red: tambien sale tras publicar, con la red bien.
 // El aviso es una vista como las demas: su titulo de pestana y su h1 con el
 // foco al llegar navegando, asi el lector de pantalla dice lo que paso.
 function AvisoFallo() {
@@ -28,7 +29,7 @@ function AvisoFallo() {
     <div className="vista vista-fallo">
       <div className="container vista-fallo-hoja">
         <h1 ref={tituloRef} tabIndex={-1}>No se pudo abrir esta parte</h1>
-        <p>Revisa tu conexión a internet y vuelve a intentarlo. Tu canasta sigue tal como estaba.</p>
+        <p>Vuelve a intentarlo. Tu canasta sigue tal como estaba.</p>
         <div className="vista-fallo-acciones">
           <button className="button button-yellow" type="button" onClick={reintentar}>Reintentar</button>
           <Link className="text-link" to="/">Volver al inicio</Link>

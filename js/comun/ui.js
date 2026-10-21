@@ -314,7 +314,13 @@ document.addEventListener('focusin', (e) => {
   else mostrarTip(quien, true);
 });
 document.addEventListener('focusout', esconderTip);
-document.addEventListener('keydown', (e) => { if (e.key === 'Escape') esconderTip(); });
+// Escape con el cuadrito a la vista solo lo esconde (WCAG 1.4.13): se ataja
+// antes de que llegue a nadie mas, que si no cerraba tambien la canasta.
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape' || !conTip) return;
+  esconderTip();
+  e.stopPropagation();
+}, true);
 // Si la pagina se mueve debajo, el cuadrito se queda apuntando al vacio. Pero
 // tabular hasta un boton ya desplaza la pagina: ahi no hay que esconderlo
 // -se iria en el mismo instante en que sale- sino seguirlo.

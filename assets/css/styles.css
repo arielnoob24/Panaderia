@@ -380,6 +380,11 @@ body.is-vista .fila-pausa { display: none; }
 .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
 /* Ya dentro del grupo el mas no se levanta: sentado en la pastilla solo cambia de tono. */
 .card-cantidad.is-lleno .card-mas:hover, .card-cantidad.is-lleno .card-mas:focus-visible { transform: none; }
+/* En el tope de 100 el mas sigue enfocable (al pulsarlo dice por que), pero
+   tiene que verse apagado: sin el ambar, que es lo que invita a tocarlo, y sin
+   levantarse. */
+.card-cantidad .card-mas[aria-disabled="true"], .card-cantidad .card-mas[aria-disabled="true"]:hover, .card-cantidad .card-mas[aria-disabled="true"]:focus-visible,
+.canasta-cantidad [data-mas][aria-disabled="true"], .canasta-cantidad [data-mas][aria-disabled="true"]:hover, .canasta-cantidad [data-mas][aria-disabled="true"]:focus-visible { background: var(--masa); box-shadow: inset 0 0 0 1px var(--masa-linea); color: var(--horno-claro); cursor: not-allowed; transform: none; }
 .card-cantidad .card-menos { color: var(--corteza-oscura); }
 .card-cantidad .card-menos:hover, .card-cantidad .card-menos:focus-visible { background: var(--masa); }
 .card-cantidad .card-icono { width: 17px; height: 17px; }
@@ -743,6 +748,17 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .footer-grid { grid-template-columns: 1fr; gap: 1.3rem; }
   .floating-whatsapp { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
 }
+/* Por debajo de 420 px, tres columnas son de unos 90 px: con el espaciado de
+   texto aumentado (WCAG 1.4.12) la tercera se salia y se cortaba. Una
+   columna, pero no los rectangulos largos de antes: cada principio en una
+   fila corta, el dibujo y el numero a la izquierda y el texto al lado. */
+@media (max-width: 420px) {
+  .principles { grid-template-columns: minmax(0, 1fr); }
+  .principles > div { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: .8rem; align-items: start; padding: .8rem .9rem; text-align: left; }
+  .principles .principle-mark { grid-row: span 2; margin-bottom: 0; }
+  .principles h3 { margin: 0 0 .2rem; font-size: .95rem; }
+  .principles p { font-size: .78rem; line-height: 1.4; }
+}
 
 /* El desglose del pedido: lo que cuesta el pan, lo que cuesta llevarlo y la
    suma. Hasta que no se elige como se recibe no se puede escribir. */
@@ -997,6 +1013,7 @@ body.is-checkout .floating-whatsapp { display: none; }
   .card-cantidad.is-lleno { margin-top: calc(75% - 34px - .7rem); background: var(--papel); box-shadow: var(--shadow-contact); }
   .card-cantidad .card-mas { box-shadow: inset 0 0 0 1px var(--corteza), 0 2px 6px rgba(43, 28, 22, .25); }
   .card-cantidad.is-lleno .card-mas { box-shadow: inset 0 0 0 1px var(--corteza); }
+  .card-cantidad.is-lleno .card-mas[aria-disabled="true"] { box-shadow: inset 0 0 0 1px var(--masa-linea); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1289,6 +1306,10 @@ body.is-checkout .floating-whatsapp { display: none; }
 .pide-cuenta { position: absolute; inset: 0; z-index: 2; display: flex; align-items: flex-end; background: rgba(58, 40, 34, .6); animation: pide-fondo var(--dur-base) var(--ease-out) both; }
 .pide-cuenta[hidden] { display: none; }
 .pide-cuenta-hoja { display: grid; width: 100%; justify-items: center; gap: .55rem; padding: 1.8rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom)); background: var(--papel); border-radius: 22px 22px 0 0; box-shadow: 0 -14px 34px rgba(58, 40, 34, .3); text-align: center; animation: pide-sube var(--dur-slow) var(--ease-out) both; }
+/* En pantallas bajas (el telefono tumbado, 640x360) la hoja mide mas que la
+   gaveta y, pegada abajo, se salia por arriba con el titulo fuera. Se queda
+   en el alto de la gaveta y lo que sobra se desplaza dentro de ella. */
+.pide-cuenta-hoja { max-height: 100%; overflow-y: auto; overscroll-behavior: contain; }
 .pide-cuenta-dibujo { display: grid; width: 68px; height: 68px; margin-bottom: .3rem; place-items: center; background: var(--ambar); border-radius: 50%; box-shadow: 0 0 0 8px rgba(215, 155, 74, .2); color: var(--horno); }
 .pide-cuenta-dibujo svg { width: 34px; height: 34px; }
 .pide-cuenta-hoja h3 { margin: 0; color: var(--horno); font: 500 1.5rem/1.2 Georgia, serif; }
@@ -1342,6 +1363,16 @@ body.is-checkout .floating-whatsapp { display: none; }
 @media (max-width: 680px) {
   /* Por encima del boton flotante: 12 px de margen + 56 de boton + aire. */
   .deshacer-barra { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  /* Mientras se ve, la barra tapa tambien lo que trae el foco desde abajo:
+     a 320x700 cubria entera la ficha que se tabulaba (WCAG 2.4.11). Se
+     guarda su sitio: 76 px por debajo, unos 60 de barra (algo mas si el
+     texto da dos renglones) y aire para el anillo del foco. Sin :has() se
+     queda en los 92 px de siempre. */
+  html:has(.deshacer-barra:not([hidden])) { scroll-padding-bottom: calc(168px + env(safe-area-inset-bottom)); }
+  /* Lo ultimo del pie no puede subir mas que el final de la pagina: mientras
+     esta la barra, el pie se alarga lo mismo por abajo, y asi los contactos
+     tambien quedan por encima de ella. */
+  html:has(.deshacer-barra:not([hidden])) .site-footer { padding-bottom: calc(168px + env(safe-area-inset-bottom)); }
 }
 /* Con la canasta abierta, la barra va dentro de la gaveta y encima de su pie,
    para no tapar "Ir a pagar". El pie mide unos 157 px (subtotal, boton y
@@ -1367,4 +1398,21 @@ body:has(.canasta-panel.is-open) .deshacer-barra { right: 16px; left: auto; bott
   .canasta-panel, .canasta-fondo, .cuenta-panel, .cuenta-fondo { transition: none; }
   .canasta-paso { animation: none; }
   .pago-girando { animation: none; }
+}
+
+/* ---- Colores forzados ----------------------------------------------------
+   Con el contraste alto de Windows el navegador pinta todos los fondos y
+   bordes con los colores del sistema, y la opcion elegida (que aqui se marca
+   por el fondo) quedaba igual que las demas. Se pinta con Highlight, que es
+   como el sistema marca lo seleccionado; forced-color-adjust: none deja
+   ponerlo, y solo en etiquetas de texto plano, para que nada herede un color
+   que no sea del sistema. La forma de pago ya cambia de forma (el circulo se
+   llena); a su caja se le suma un borde grueso, sin tocar el texto de dentro. */
+@media (forced-colors: active) {
+  .tamano-input:checked + .tamano, .chip-input:checked + .chip, .canasta-opciones input:checked + span { forced-color-adjust: none; background: Highlight; border-color: Highlight; color: HighlightText; }
+  .canasta-opciones input:checked + span small { color: HighlightText; }
+  .cuenta-metodo input:checked + .cuenta-metodo-caja { outline: 3px solid Highlight; outline-offset: -1px; }
+  .cuenta-metodo input:checked + .cuenta-metodo-caja::after { border-color: Highlight; }
+  /* El mas en el tope pierde el ambar, que en este modo ya no se ve: lo dice el color de lo desactivado. */
+  .card-cantidad .card-mas[aria-disabled="true"], .canasta-cantidad [data-mas][aria-disabled="true"] { color: GrayText; }
 }
