@@ -1180,6 +1180,64 @@ Pendiente de la fase 6:
 - [ ] GitHub avisa de que las acciones v4 del CI usan Node 20 (obsoleto) y
       de que `ubuntu-latest` pasa a Ubuntu 26: subir versiones cuando toque.
 
+### Fase 7: el cambio (decidido el 21 de octubre de 2026)
+
+React pasa a ser el sitio. Se hace en `mejoras`; al terminar y verificar, se
+le pregunta al usuario una última vez y se fusiona en `main` (decidido: al
+terminar la fase 7, no esperar a una entrega).
+
+1. **Etiqueta** `sitio-presentado` en el `main` de hoy (`git tag` + push de
+   la etiqueta), para poder volver o enseñar el sitio presentado.
+2. **React deja de importar de `js/`** (`logica-datos`). Lo que hoy toma con
+   `@raiz/js/...` pasa a `src/` sin reescribirse: `state.js`, `storage.js`,
+   `horario.js` y `mail.js` a `src/comun/` o `src/servicios/`; `cobro.js` y
+   `guardado.js` a `src/pedido/` o `src/servicios/`; `guardada.js` a
+   `src/servicios/` (y la copia de reglas de `servicios/cuenta.js` que se
+   hizo en la fase 5 vuelve a ser una sola); `repo.js` (`revisar()`) a
+   `src/servicios/catalogo.js`. Sigue funcionando `npm run probar` entero.
+3. **`react/` a la raíz** (`calidad-publicacion`): `package.json`,
+   `package-lock.json`, `vite.config.js`, `index.html`, `src/` y
+   `pruebas/` suben un nivel; `@raiz` pasa a ser la propia raíz (o se
+   quita). `assets/` (fotos, logo, `styles.css`) y `data/productos.json` se
+   quedan donde están (`bd/` y `probar-bd` leen el catálogo de ahí).
+4. **Se borra lo viejo**: `js/` entero, `herramientas/` (`empaquetar.mjs`),
+   el `index.html` viejo, `netlify.toml` (decidido: sin Netlify; antes de
+   fusionar se mira en local con `npm run preview`) y los casos de
+   `react/pruebas` que prueban el sitio actual (`codigo-sitio-actual`, y la
+   parte del sitio actual de `cedula`, `recuperar`, `pegar-telefono`,
+   `forma-de-pago`, `cuenta`).
+5. **CI y Pages**: `validate` instala, construye (sin avisos), busca las
+   palabras prohibidas en `src/`, `index.html`, `assets/css/` y
+   `data/productos.json`, revisa el catálogo con `revisar()` de su nuevo
+   sitio (y sus fotos, destacados y categorías ↔ menú, ahora en
+   `src/`), y pasa `humo`. `deploy` publica **`dist/`**, no la raíz.
+6. **Herramientas y skills**: `verificar-sitio` pasa a ser solo React (o
+   se funde con `npm run probar`); `publicar` sin `empaquetar` ni `?v=`
+   (Vite pone huellas en los nombres); `ci-local.sh` y `axe.mjs` sin el
+   sitio actual; `componente-react` sin el prefijo `react/`; agentes con
+   sus archivos nuevos.
+7. **Plan reescrito**: las secciones 1 a 13 describen la versión React
+   (rutas, vistas, cuenta, guardado, pruebas), sin el sitio viejo ni el
+   doble clic; la sección 15 queda como historia corta de la migración. Los
+   pendientes que eran solo del sitio actual se borran. `README.md` al día.
+8. **Verificar y fusionar**: `npm ci && npm run build`, `npm run probar`
+   entero, `axe.mjs`, CI en verde en `mejoras`; se pregunta al usuario y se
+   fusiona en `main`; el deploy de Pages en verde y el sitio publicado
+   abre (portada, tienda, canasta, cuenta) en la dirección de Pages.
+
+Lo guardado en el navegador (claves de `localStorage`, IndexedDB, cookie)
+**no cambia**: quien usó el sitio presentado conserva su canasta, su cuenta
+y sus pedidos al llegar la versión React.
+
+Pendiente de la fase 7:
+- [ ] Etiqueta `sitio-presentado`.
+- [ ] React sin imports de `js/`.
+- [ ] `react/` a la raíz y fuera lo viejo.
+- [ ] CI que publica `dist/`.
+- [ ] Herramientas, skills y agentes.
+- [ ] Plan y README reescritos.
+- [ ] Verificado, fusionado en `main` (con el sí del usuario) y Pages en verde.
+
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 
 El usuario quiere menos desplazamiento y una página que no se vea vacía y se
