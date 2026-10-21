@@ -17,10 +17,15 @@ import { PedidoProvider } from './estado/PedidoProvider.jsx';
 import { CanastaProvider } from './pedido/CanastaProvider.jsx';
 import App from './App.jsx';
 import { cederDesplazamiento } from './comun/apertura.js';
+import { precargarEnReposo } from './comun/cargaPorPartes.js';
 
 // Atras y Adelante entre vistas llevan arriba del todo, no adonde se estaba
 // (comun/apertura.js).
 cederDesplazamiento();
+
+// La cuenta y el pago van en su propio archivo; ya cargada la pagina, se
+// traen sin prisa para que esten cuando se abran (comun/cargaPorPartes.js).
+precargarEnReposo();
 
 // HashRouter y no BrowserRouter: con la ruta despues del '#', GitHub Pages
 // siempre sirve el mismo index.html y no hace falta el truco del 404.

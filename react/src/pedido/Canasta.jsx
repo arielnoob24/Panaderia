@@ -16,6 +16,7 @@ import { usePedido } from '../estado/PedidoProvider.jsx';
 import { unidades, productos, enTope, avisoTope } from '../estado/pedido.js';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { useAtraparFoco, apagarDetras } from '../comun/useAtraparFoco.js';
+import { precargar } from '../comun/cargaPorPartes.js';
 import { fotoDeLinea } from '../servicios/catalogo.js';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { useCanasta } from './CanastaProvider.jsx';
@@ -178,6 +179,10 @@ function Canasta() {
     flushSync(() => setPide({ tiene: sesion.hayCuenta }));
     principalRef.current?.focus();
   };
+  // #/confirmar y la cuenta van en su propio archivo (comun/cargaPorPartes.js):
+  // con el puntero o el foco en "Ir a pagar" se piden los dos, porque sin
+  // sesion se pasa por la cuenta antes de pagar.
+  const pedirPago = () => precargar('pago', 'cuenta');
   const volverDePide = () => {
     flushSync(() => setPide(null));
     enviarRef.current?.focus();
@@ -263,6 +268,8 @@ function Canasta() {
                 disabled={!hayAlgo}
                 aria-disabled={!hayAlgo}
                 onClick={irAPagar}
+                onPointerEnter={pedirPago}
+                onFocus={pedirPago}
               >
                 Ir a pagar <span aria-hidden="true">→</span>
               </button>

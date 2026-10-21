@@ -8,7 +8,7 @@
 // barra (#tienda-panes), siguen entrando: React Router le pone la barra al
 // leer la direccion. Las de cuando todo era una pagina (#historia,
 // #visitanos...) llevan a su vista con replace; lo demas, a #/.
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, m, useIsPresent, useReducedMotion } from 'motion/react';
 import Cabecera from './comun/Cabecera.jsx';
@@ -23,16 +23,12 @@ import Nosotros from './vistas/Nosotros.jsx';
 import Contacto from './vistas/Contacto.jsx';
 import Catalogo from './catalogo/Catalogo.jsx';
 import { categoriaDeRuta } from './catalogo/categorias.js';
-import Confirmar from './pedido/Confirmar.jsx';
-import Comprobante from './pedido/Comprobante.jsx';
 import Canasta from './pedido/Canasta.jsx';
 import BarraDeshacer from './pedido/BarraDeshacer.jsx';
-import Entrar from './cuenta/Entrar.jsx';
-import CrearCuenta from './cuenta/CrearCuenta.jsx';
-import Verificar from './cuenta/Verificar.jsx';
-import Recuperar from './cuenta/Recuperar.jsx';
-import MisDatos from './cuenta/MisDatos.jsx';
-import MisPedidos from './cuenta/MisPedidos.jsx';
+// La cuenta (#/cuenta/*), #/confirmar y #/comprobante llegan en su propio
+// archivo: comun/cargaPorPartes.js.
+import { APARTE } from './comun/cargaPorPartes.js';
+import FalloDeCarga from './comun/FalloDeCarga.jsx';
 
 // La vista que toca. Las de la tienda son una sola: entre categorias el
 // catalogo se queda montado y solo cambia "Filtrar por".
@@ -40,16 +36,17 @@ function Vista({ cual, pathname }) {
   if (cual === 'inicio') return <Inicio />;
   if (cual === 'nosotros') return <Nosotros />;
   if (cual === 'contacto') return <Contacto />;
-  if (cual === 'confirmar') return <Confirmar />;
-  if (cual === 'comprobante') return <Comprobante />;
-  if (cual === 'cuenta-entrar') return <Entrar />;
-  if (cual === 'cuenta-crear') return <CrearCuenta />;
-  if (cual === 'cuenta-verificar') return <Verificar />;
-  if (cual === 'cuenta-recuperar') return <Recuperar />;
-  if (cual === 'cuenta') return <MisDatos />;
-  if (cual === 'cuenta-pedidos') return <MisPedidos />;
+  if (APARTE[cual]) {
+    const { Componente } = APARTE[cual];
+    return <Componente />;
+  }
   return <Catalogo categoria={categoriaDeRuta(pathname)} />;
 }
+
+// Lo que ocupa la vista mientras llega su archivo, que solo se ve si se abre
+// la pagina en ella (al navegar se sigue viendo la de antes): un hueco del
+// alto de la ventana, para que el pie no se asome arriba y luego baje.
+const CARGANDO = <div className="vista-cargando"></div>;
 
 // La vista nueva entra con un fundido y sube un poco (seccion 15 del plan):
 // es el unico movimiento de entrada de cada vista. La de antes se va en el
@@ -116,28 +113,38 @@ function App() {
       <SaltoContenido />
       <Cabecera />
       <main id="contenido" tabIndex={-1}>
-        {/* Al abrir la pagina no hay fundido: la portada ya tiene su entrada
-            propia, y con menos movimiento no se anima nada. */}
-        {cual !== 'cuenta-crear' ? (
-          <m.div
-            key={grupoDe(cual)}
-            className="vista-marco"
-            initial={entrada}
-            animate={QUIETA}
-            transition={aVerificar ? AL_LADO : TRANSICION}
-          >
-            {vista}
-          </m.div>
-        ) : null}
-        {/* Detras en el documento: lo que busque por clase encuentra antes
-            la vista nueva que la que se va. */}
-        <AnimatePresence custom={{ siguiente: cual, reducido }}>
-          {cual === 'cuenta-crear' ? (
-            <VistaQueSale key="cuenta-crear" initial={entrada} animate={QUIETA} transition={TRANSICION}>
-              {vista}
-            </VistaQueSale>
-          ) : null}
-        </AnimatePresence>
+        {/* Suspense va por fuera de la vista y no dentro: React Router cambia
+            de direccion en una transicion, y con un Suspense que ya se esta
+            viendo React deja la vista de antes hasta que la nueva puede
+            pintarse, en vez de ensenar el hueco. Asi la nueva llega entera,
+            con su fundido. Uno nuevo por vista (dentro del m.div con su
+            clave) ensenaria el hueco a cada cambio. */}
+        <FalloDeCarga ruta={location.key}>
+          <Suspense fallback={CARGANDO}>
+            {/* Al abrir la pagina no hay fundido: la portada ya tiene su entrada
+                propia, y con menos movimiento no se anima nada. */}
+            {cual !== 'cuenta-crear' ? (
+              <m.div
+                key={grupoDe(cual)}
+                className="vista-marco"
+                initial={entrada}
+                animate={QUIETA}
+                transition={aVerificar ? AL_LADO : TRANSICION}
+              >
+                {vista}
+              </m.div>
+            ) : null}
+            {/* Detras en el documento: lo que busque por clase encuentra antes
+                la vista nueva que la que se va. */}
+            <AnimatePresence custom={{ siguiente: cual, reducido }}>
+              {cual === 'cuenta-crear' ? (
+                <VistaQueSale key="cuenta-crear" initial={entrada} animate={QUIETA} transition={TRANSICION}>
+                  {vista}
+                </VistaQueSale>
+              ) : null}
+            </AnimatePresence>
+          </Suspense>
+        </FalloDeCarga>
       </main>
       <Pie />
       {/* El boton de la canasta va en la cabecera; el panel y la barra de

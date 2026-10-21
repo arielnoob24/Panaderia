@@ -17,7 +17,12 @@ import { useSesion } from '../estado/SesionProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { iniciales } from '../servicios/cuenta.js';
 import { usePedidosGuardados } from './usePedidosGuardados.js';
+import { precargar } from '../comun/cargaPorPartes.js';
 import '../estilos/cuenta.css';
+
+// Las vistas de la cuenta van en su propio archivo: con el puntero o el foco
+// encima del circulo se piden, para que al pulsar ya esten.
+const pedirCuenta = () => precargar('cuenta');
 
 // Los dibujos de la ficha, los mismos de ICONOS en account.js.
 const trazo = { viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', strokeWidth: '1.6', strokeLinecap: 'round', strokeLinejoin: 'round', 'aria-hidden': 'true', focusable: 'false' };
@@ -198,6 +203,8 @@ function FichaCuenta({ alAbrir }) {
         aria-label="Iniciar sesión / Registrarse"
         data-tip="Iniciar sesión / Registrarse"
         aria-current={location.pathname === '/cuenta/entrar' ? 'page' : undefined}
+        onPointerEnter={pedirCuenta}
+        onFocus={pedirCuenta}
       >
         <svg className="nav-cuenta-icono" {...trazo} strokeWidth="1.5">{PERSONA}</svg>
       </Link>
@@ -216,6 +223,8 @@ function FichaCuenta({ alAbrir }) {
         data-tip="Tu cuenta"
         onClick={() => (abierta ? setAbierta(false) : abrir())}
         onKeyDown={alTeclearBoton}
+        onPointerEnter={pedirCuenta}
+        onFocus={pedirCuenta}
       >
         <span className="nav-cuenta-iniciales" aria-hidden="true">{iniciales(nombre)}</span>
       </button>

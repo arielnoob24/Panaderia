@@ -240,3 +240,19 @@
   .franja-pie .sign-trigo { width: 120px; }
 }
 body.is-vista .franja-pie { display: block; }
+
+/* ---- Las vistas que llegan en su propio archivo (comun/cargaPorPartes.js) -
+   Al abrir la pagina en la cuenta o en el pago, mientras llega su archivo,
+   un hueco del alto de la ventana: el pie no se asoma arriba para bajar
+   despues. Al navegar no se ve, porque se queda la vista de antes. */
+.vista-cargando { min-height: 100vh; }
+
+/* Si el archivo no llega: un aviso corto en el sitio de la vista, sobre la
+   masa y debajo de la cabecera fija, con "Reintentar". */
+.vista-fallo { padding: 148px 0 96px; min-height: 70vh; }
+.vista-fallo-hoja { max-width: 600px; }
+.vista-fallo h1 { margin: 0 0 .75rem; font-size: clamp(1.9rem, 4vw, 2.6rem); line-height: 1.1; }
+.vista-fallo p { margin: 0 0 1.75rem; max-width: 46ch; }
+.vista-fallo-acciones { display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; }
+.vista-fallo .button[aria-disabled="true"] { cursor: progress; opacity: .75; }
+@media (max-width: 680px) { .vista-fallo { padding-top: 120px; } }
