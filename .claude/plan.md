@@ -452,9 +452,12 @@ pedido sigue valiendo.
   borde a borde y se pega al bajar. Sobre secciones oscuras **no se
   invierte**: sigue en `--horno` y gana una línea ámbar fina abajo para separarse.
   Cortes en 900, 680 y 420 px.
-- El hover con `(any-hover: hover) and (any-pointer: fine)` en CSS: el
-  portátil del usuario es táctil y `(hover: hover)` le da falso, así que con
-  esa media query **nunca veía el hover**. En JS, `pointerType`.
+- El hover no depende de media queries: el portátil del usuario es táctil y
+  `(hover: hover)` le da falso, así que **nunca veía el hover** (y
+  `any-hover` podría fallar igual). Al primer movimiento con
+  `pointerType` `mouse` o `pen`, `<html>` gana la clase `con-puntero`, que
+  se quita al tocar con el dedo; los estilos de hover van bajo
+  `.con-puntero`. En JS, `pointerType`.
 - Sin cache-buster a mano: Vite pone huella a los nombres de los archivos.
 
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
@@ -527,7 +530,7 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 
 ### Aspecto y movimiento (revisión visual del 21 de octubre de 2026)
 - [ ] Barra siempre `--horno`, sin invertirse; línea ámbar sobre lo oscuro.
-- [ ] Hover con `(any-hover: hover)`: en el portátil del usuario no se veía.
+- [ ] Hover bajo `.con-puntero`: en el portátil del usuario no se veía.
 - [ ] Ritmo del movimiento (sección 10) y `src/comun/movimiento.js`.
 - [ ] Fichas: nombre en Georgia, sin hueco, sellos legibles, `scale(.97)`.
 - [ ] Carrusel: flechas y barra de avance en el pie en todos los anchos, sin
@@ -604,7 +607,7 @@ A las dos de Emil se les quitó al copiarlas la sección "Initial Response"
 `review-animations` el `disable-model-invocation`. Chocan con el plan en dos
 cosas y manda el plan: piden menos de 300 ms en todo (aquí solo en la
 respuesta a un toque; las escenas van más lentas, sección 10) y el hover con
-`(hover: hover)` (aquí `(any-hover: hover)`). `web-design-guidelines` pide
+`(hover: hover)` (aquí la clase `.con-puntero`). `web-design-guidelines` pide
 Title Case, que es del inglés: no aplica.
 
 ## 15. Cómo se llegó aquí (migración a React, 19–21 de octubre de 2026)

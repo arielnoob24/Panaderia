@@ -53,7 +53,8 @@ una decision, para y pregunta.
 Para el movimiento sigue `emil-design-eng` (curvas, que se anima y que no,
 `scale(.97)` al pulsar, solo `transform` y `opacity`), pero dos cosas las
 manda el plan (seccion 10): las **escenas** van mas lentas que los 300 ms que
-pide la skill, y el hover va con `(any-hover: hover)`, no `(hover: hover)`.
+pide la skill, y el hover va bajo la clase `.con-puntero` de `<html>`, no con
+`(hover: hover)`.
 Ningun componente escribe su duracion a mano: salen de
 `src/comun/movimiento.js`, con los mismos valores que `:root`. Para ver lo
 que cambiaste, `node .claude/herramientas/capturas.mjs <carpeta fuera del
@@ -66,8 +67,8 @@ repo>` saca capturas en los cuatro cortes.
 - Cambios pequenos y centrados en la causa; no reformatees lo que no tocas.
 - Solo las dependencias que diga el plan, con version exacta.
 - Para tactil no te fies de `(hover: hover)`: el portatil del usuario la da
-  falsa y nunca veia el hover. En CSS usa `(any-hover: hover) and
-  (any-pointer: fine)`; en JS, `pointerType`.
+  falsa y nunca veia el hover. En CSS, bajo `.con-puntero` (la pone el
+  primer movimiento con `pointerType` mouse o pen); en JS, `pointerType`.
 - Accesibilidad no es opcional: foco visible, teclado completo, objetivos de 24
   px o mas, contraste AA, `aria-*` solo donde haga falta, nada que se mueva sin
   respetar `prefers-reduced-motion`. Si dudas, pide revision al agente

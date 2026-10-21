@@ -45,7 +45,8 @@ la cuenta, `logica-datos`.
     marques como fallo una escena que cumple la duracion del plan.
   - **Hover**: las skills piden `(hover: hover) and (pointer: fine)`. Aqui
     no: el portatil del usuario es tactil y esa media query le da falso, asi
-    que el plan usa `(any-hover: hover)` en CSS y `pointerType` en JS.
+    que el plan pone el hover bajo la clase `.con-puntero` de `<html>` y en
+    JS mira `pointerType`.
   - `web-design-guidelines` pide Title Case en titulos y botones: es una
     regla del ingles; el sitio esta en espanol y usa mayuscula solo al
     principio.
