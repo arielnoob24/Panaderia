@@ -1,4 +1,4 @@
-# La version en React (react/) se instala y se construye en cada maquina y en
-# el CI: ni sus dependencias ni lo construido van al repo.
-react/node_modules/
-react/dist/
+# Las dependencias y lo construido se hacen en cada maquina y en el CI: no
+# van al repo. Lo que se publica es dist/, que arma el CI.
+node_modules/
+dist/

@@ -1,0 +1,191 @@
+/* ---- La cuenta -------------------------------------------------------------
+   Cada paso es una vista propia (seccion 15 del plan, "Fase 5: la cuenta"),
+   no el panel lateral del sitio presentado. Los campos, la lista de requisitos,
+   el recuadro del codigo y el historial usan las clases de styles.css del
+   panel (cuenta-campo, cuenta-reglas, codigo-falso, cuenta-pedido...); aqui
+   va lo que cambia al pasar de un panel estrecho a una vista con ancho.
+
+   Cada vista es lo mismo que el mostrador de la portada: una banda de horno
+   con el titulo y los dibujos de trigo, y el formulario como una hoja de
+   papel que cuelga de ella sobre la masa. Reparto 60-30-10: masa y papel el
+   fondo y la hoja, horno la banda y el texto, ambar el boton y los vistos. */
+
+/* ---- La ficha de la cabecera (FichaCuenta.jsx) ---------------------------- */
+
+/* En el sitio presentado las opciones eran todas botones; aqui "Mis datos" y "Mis
+   pedidos" son enlaces a sus vistas, con el mismo aspecto. */
+.cuenta-menu a.cuenta-menu-opcion { padding: .6rem .75rem; border-radius: var(--r-chip); color: inherit; font: 700 .9rem Arial, sans-serif; text-decoration: none; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+/* Ambar claro y no ambar, como los botones (4,19:1 se quedaba corto). */
+.cuenta-menu a.cuenta-menu-opcion:hover { background: rgba(255, 255, 255, .1); color: var(--ambar-claro); }
+/* El anillo de siempre es horno, y la ficha tambien: sobre ella se ve el
+   halo ambar y un filete claro por dentro. */
+.cuenta-menu .cuenta-menu-opcion:focus-visible { outline: 2px solid var(--papel); outline-offset: -2px; box-shadow: 0 0 0 3px var(--ambar); }
+/* La silueta es un enlace: sin el subrayado de los enlaces. */
+a.nav-cuenta { text-decoration: none; }
+
+/* ---- La vista ------------------------------------------------------------- */
+
+.cuenta-vista { padding: 112px 0 3.5rem; }
+/* Cada paso con el ancho que pide lo que lleva: un formulario corto se lee
+   mejor estrecho, y crear la cuenta reparte sus campos en dos columnas. */
+.cuenta-vista-caja { max-width: 600px; }
+.cuenta-vista-datos .cuenta-vista-caja { max-width: 640px; }
+.cuenta-vista-pedidos .cuenta-vista-caja { max-width: 760px; }
+.cuenta-vista-crear .cuenta-vista-caja { max-width: 1000px; }
+
+/* La banda: el titulo en papel sobre el horno, como el rotulo del mostrador.
+   Abajo deja sitio para que la hoja se le monte encima. */
+.cuenta-vista-banda { padding: 2rem clamp(1.4rem, 4vw, 2.6rem) 4.4rem; border-radius: var(--r-card); }
+.cuenta-vista-titulo { margin: 0; color: var(--papel); font: 500 clamp(2.2rem, 4.4vw, 3.2rem)/1 Georgia, serif; }
+/* Los dibujos de la banda, a la derecha del titulo. */
+.cuenta-vista-banda .fondo-pieza.is-arriba-derecha { top: -18px; right: 4%; width: 230px; }
+.fondo-cuenta-crear .is-arriba-derecha { width: 300px; }
+.fondo-cuenta-datos .is-arriba-derecha, .fondo-cuenta-pedidos .is-arriba-derecha { top: 6px; width: 190px; }
+
+/* La hoja: papel con su filete y una sombra que la separa de la banda. Va
+   por encima de la banda, que es la que la sostiene. */
+.cuenta-vista .cuenta-formulario { position: relative; z-index: 1; margin: -3rem clamp(.75rem, 3vw, 2rem) 0; padding: clamp(1.2rem, 3vw, 2rem); background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-card); box-shadow: 0 18px 34px -22px rgba(58, 40, 34, .45); }
+
+/* En la pagina no hay panel que desplazar ni pie pegado. */
+.cuenta-vista .cuenta-cuerpo { overflow: visible; padding: 0; }
+.cuenta-vista .cuenta-pie { margin-top: 1.1rem; padding: 1.1rem 0 0; }
+.cuenta-vista .cuenta-pie > .button { width: 100%; justify-content: center; }
+.cuenta-vista .cuenta-campo { margin-bottom: .9rem; }
+
+.cuenta-otro-paso { margin: .9rem 0 0; color: var(--horno-suave); font: .85rem/1.4 Arial, sans-serif; text-align: center; }
+.cuenta-otro-enlace { color: var(--corteza-oscura); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.cuenta-otro-enlace:hover { color: var(--horno); }
+/* "¿Olvidaste tu contrasena?", bajo la contrasena de Iniciar sesion (lo
+   minimo para que se vea en su sitio; el ajuste fino es de frontend). */
+.cuenta-olvide { margin: -.2rem 0 .4rem; font: .85rem/1.4 Arial, sans-serif; text-align: right; }
+.cuenta-vista .cuenta-ver-pedidos { display: flex; justify-content: center; margin: .8rem 0; text-decoration: none; }
+.cuenta-vista .cuenta-volver-datos { text-align: center; text-decoration: none; }
+.cuenta-datos-correo { margin-bottom: .2rem; padding-top: 0; border-top: 0; }
+.cuenta-vista .cuenta-nota-izq { margin: .4rem 0 1.1rem; }
+
+/* Los errores y avisos entran con un fundido (TextoSuave.jsx): el movimiento
+   pide un bloque, que en linea no se desplaza. */
+.texto-suave { display: block; }
+
+/* ---- Crear: dos columnas en la computadora ----------------------------------- */
+
+/* Tus datos a la izquierda y la contrasena a la derecha, separadas por un
+   filete: asi el formulario entero cabe en la pantalla sin bajar. */
+.cuenta-crear-columnas { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+.cuenta-crear-datos { padding-right: clamp(1.4rem, 3.5vw, 2.6rem); }
+.cuenta-crear-clave { padding-left: clamp(1.4rem, 3.5vw, 2.6rem); border-left: 1px solid var(--masa-linea); }
+/* El boton no tiene que cruzar las dos columnas: a su ancho, con "¿Ya tienes
+   cuenta?" al lado. */
+.cuenta-vista-crear .cuenta-pie { display: flex; flex-wrap: wrap; align-items: center; gap: .8rem 1.6rem; }
+.cuenta-vista-crear .cuenta-pie .cuenta-aviso { flex-basis: 100%; margin: 0; }
+.cuenta-vista-crear .cuenta-pie > .button { width: auto; min-width: 16rem; }
+.cuenta-vista-crear .cuenta-otro-paso { margin: 0; text-align: left; }
+
+/* Los requisitos de la contrasena: el circulo y su visto los pinta
+   MarcaRegla.jsx, que es el que rebota. El de styles.css no se pinta. */
+.cuenta-vista .cuenta-reglas li::before { display: none; }
+.cuenta-regla-marca { position: relative; display: grid; width: 16px; height: 16px; flex: 0 0 auto; place-items: center; border: 1px solid var(--horno-claro); border-radius: 50%; }
+.cuenta-regla-visto { position: absolute; inset: -1px; display: grid; place-items: center; background: var(--ambar); border-radius: 50%; color: var(--horno); font: 700 .66rem/1 Arial, sans-serif; }
+
+/* ---- Verificar: el codigo en 6 casillas ------------------------------------- */
+
+.codigo-casillas { min-width: 0; margin: .2rem 0 .3rem; padding: 0; border: 0; }
+.codigo-leyenda { margin-bottom: .5rem; padding: 0; color: var(--horno); font: 700 .8rem/1.3 Arial, sans-serif; }
+/* Seis casillas que se reparten el ancho hasta un tope, con un respiro entre
+   la tercera y la cuarta: tres y tres se leen y se copian mejor que seis. */
+.codigo-fila { display: flex; gap: clamp(.3rem, 1.4vw, .55rem); }
+.codigo-casilla { width: auto; height: 3.6rem; min-width: 0; max-width: 3.4rem; flex: 1 1 0; padding: 0; background: var(--papel); border: 1px solid var(--horno-claro); border-bottom: 2px solid var(--horno-claro); border-radius: var(--r-btn); color: var(--horno); font: 700 1.5rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; text-align: center; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.codigo-casilla:nth-child(3) { margin-right: clamp(.25rem, 1.4vw, .6rem); }
+/* Con su cifra puesta, la casilla se llena de un ambar tenue: se ve de un
+   vistazo cuantas faltan. Al llenarse da un saltito corto. */
+.codigo-casilla.is-llena { background: rgba(215, 155, 74, .13); border-color: var(--ambar); animation: codigo-pon var(--dur-base) var(--ease-accent); }
+/* El anillo de los campos: horno con el halo ambar (solo ambar, 2,38:1). */
+.codigo-casilla:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+.codigo-casilla.is-mal { border-color: var(--corteza); border-bottom-color: var(--corteza); background: rgba(168, 95, 69, .07); }
+.codigo-error { margin-bottom: .4rem; }
+@keyframes codigo-pon { 0% { transform: none; } 45% { transform: scale(1.07); } 100% { transform: none; } }
+
+/* ---- Mis pedidos ----------------------------------------------------------- */
+
+/* La caja que crece al abrir (MisPedidos.jsx). flow-root: el margen del
+   detalle cuenta en su altura, si no la animacion acababa 13 px corta. */
+.cuenta-pedido-despliegue { display: flow-root; overflow: hidden; }
+/* La flecha sigue a lo que se ve y no al 'open' del details, que al cerrar
+   se queda puesto mientras la caja se pliega. */
+.cuenta-vista .cuenta-pedido summary::after { transition: transform var(--dur-base) var(--ease-ui); }
+.cuenta-vista .cuenta-pedido[open] summary::after { transform: translateY(-70%) rotate(45deg); }
+.cuenta-vista .cuenta-pedido.is-abierto summary::after { transform: translateY(-30%) rotate(-135deg); }
+.cuenta-vista .cuenta-historial-vacio { margin: .5rem 0 1rem; }
+/* "Pedir otra vez" (logica-datos): lo minimo para que se vea como boton y
+   se pueda tocar (44 px); el aspecto lo pule frontend. */
+.cuenta-pedido-acciones { margin: .9rem 0 .2rem; }
+.cuenta-pedido-otra { min-height: 44px; padding: .5rem 1rem; border: 1px solid var(--corteza-oscura); border-radius: var(--r-chip); background: var(--papel); color: var(--horno); font: 700 .9rem Arial, sans-serif; cursor: pointer; }
+.cuenta-pedido-otra:hover { background: var(--ambar-claro); }
+.cuenta-pedido-nota { margin: .2rem 0 .4rem; font: .88rem/1.45 Arial, sans-serif; color: var(--horno); }
+
+/* ---- Mis datos ------------------------------------------------------------- */
+
+/* El rotulo del boton cambia con un fundido corto ("Guardado ✓"). */
+.cuenta-guardar-rotulo { display: inline-block; }
+
+/* ---- Iniciar sesion y crear: lo que se anadio tras la revision ---------------- */
+
+/* "¿Olvidaste tu contrasena?" justo debajo de la contrasena y a la derecha,
+   donde se mira al no recordarla; mas pequeno que la accion principal. */
+.cuenta-olvide { margin: -.35rem 0 .2rem; text-align: right; font: .82rem/1.4 Arial, sans-serif; }
+.cuenta-olvide-enlace { display: inline-flex; min-height: 24px; align-items: center; }
+/* Ya hay una cuenta en este navegador: no es la nota de la maqueta, es algo
+   que va a pasar si se sigue. Va en ambar, el tono de lo que hay que mirar
+   (como "Pago de prueba"), con el texto en horno. */
+.cuenta-vista .cuenta-ya-hay { background: rgba(215, 155, 74, .16); border-left-color: var(--ambar); color: var(--horno); font-weight: 700; }
+
+/* ---- Recuperar la contrasena -------------------------------------------------- */
+
+/* El titulo es largo: un poco mas de ancho que entrar, para que quepa en una
+   linea en la computadora sin pisar el dibujo. */
+.cuenta-vista-recuperar .cuenta-vista-caja { max-width: 740px; }
+.cuenta-vista-banda .fondo-cuenta-recuperar .is-arriba-derecha { top: 4px; right: 2%; width: 130px; }
+/* Lo que se pide en cada paso, en una frase arriba de la hoja. */
+.recuperar-dicho { margin: 0 0 1rem; color: var(--horno-suave); font: .88rem/1.5 Arial, sans-serif; }
+.recuperar-paso-codigo .recuperar-dicho { margin-bottom: .8rem; }
+/* Los tres pasos en el mismo sitio (PasoQueCambia.jsx). La hoja que se va
+   queda encima sin ocupar sitio, y lo que asoma al moverse de lado no abre
+   desplazamiento horizontal (clip, no hidden: hidden cortaria el margen
+   negativo con que la hoja cuelga de la banda). */
+.pasos-cuenta { position: relative; overflow-x: clip; }
+.paso-marco.is-saliendo { position: absolute; top: 0; right: 0; left: 0; pointer-events: none; }
+/* Fuera del flujo, el margen negativo de la hoja ya no se junta con el de
+   la caja: sin esto, la que sale subiria 3rem. */
+.paso-marco.is-saliendo > .cuenta-formulario { margin-top: 0; }
+
+/* ---- Cortes ---------------------------------------------------------------- */
+
+@media (max-width: 680px) {
+  .cuenta-vista { padding: 84px 0 2.5rem; }
+  .cuenta-vista-banda { padding: 1.5rem 1.2rem 3.8rem; }
+  .cuenta-vista .cuenta-formulario { margin: -2.6rem .5rem 0; }
+  .cuenta-vista-banda .fondo-pieza.is-arriba-derecha { right: -30px; width: 170px; }
+  /* En el telefono, una columna: la contrasena debajo de tus datos. */
+  .cuenta-crear-columnas { grid-template-columns: minmax(0, 1fr); }
+  .cuenta-crear-datos { padding-right: 0; }
+  .cuenta-crear-clave { padding-left: 0; border-left: 0; }
+  .cuenta-vista-crear .cuenta-pie { display: block; }
+  .cuenta-vista-crear .cuenta-pie > .button { width: 100%; min-width: 0; }
+  .cuenta-vista-crear .cuenta-otro-paso { margin-top: .9rem; text-align: center; }
+  .cuenta-vista-crear .cuenta-pie .cuenta-aviso { margin: 0 0 .6rem; }
+}
+@media (max-width: 420px) {
+  .cuenta-vista .cuenta-formulario { margin-right: 0; margin-left: 0; padding: 1.15rem 1rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .codigo-casilla, .codigo-casilla.is-llena { animation: none; transition: none; }
+  .cuenta-vista .cuenta-pedido summary::after { transition: none; }
+}
+
+/* La forma de pago preferida en Mis datos: la leyenda se ve como la etiqueta
+   de un campo (en el panel del sitio presentado iba escondida porque el paso
+   tenia su propio titulo). */
+.cuenta-forma-pago { margin-top: 1.1rem; }
+.cuenta-metodos-leyenda { margin-bottom: .4rem; padding: 0; color: var(--horno); font: 700 .8rem/1.3 Arial, sans-serif; }
+.cuenta-forma-pago .cuenta-pagos-dicho { margin: 0; color: var(--horno-suave); font-size: .8rem; }
