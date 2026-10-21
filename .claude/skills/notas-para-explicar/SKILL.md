@@ -20,7 +20,7 @@ usuario entienda y recuerde, **no** texto para pegar. Por eso:
 
 ## Que llevan las notas
 
-1. **Donde esta**: archivos y lineas, como enlaces (`js/pedido/cart.js:592`).
+1. **Donde esta**: archivos y lineas, como enlaces (`src/pedido/Canasta.jsx:120`).
 2. **Que hace**, en 3 a 6 vinetas, cada una con una idea.
 3. **Como se demuestra**: pasos concretos en el sitio publicado para ensenarlo
    en vivo (que pulsar, que se ve, que mirar en DevTools).

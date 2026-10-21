@@ -1,87 +1,73 @@
 ---
 name: verificar-sitio
-description: Abre la pagina de la panaderia en Edge (por HTTP y con doble clic) y comprueba que el JavaScript arranco de verdad - fichas, canasta, checkout, cuenta y el atras del navegador; y construye la version en React (react/) y le pasa sus pruebas de navegador (npm run probar). Usala despues de tocar js/, index.html, data/productos.json o react/, y siempre antes de commitear, porque node --check no ve los errores que dejan la pagina muerta.
+description: Construye el sitio de la panaderia (npm run build, sin avisos) y le pasa sus pruebas de navegador en Edge (npm run probar) - portada, tienda, canasta, pago, cuenta, Atras y Adelante, en escritorio y en el telefono. Usala despues de tocar src/, index.html, assets/, data/productos.json o vite.config.js, y siempre antes de commitear, porque un build que sale bien no prueba que la pagina arranque.
 ---
 
 # Verificar que el sitio arranca
 
-`node --check` (lo que hace el CI) solo mira la sintaxis. Un `const` usado antes
-de declararse, un modulo que revienta al evaluarse o un import con otra mayuscula
-dejan la pagina sin JavaScript, el CI pasa y Pages publica una pagina inerte.
+Que `npm run build` salga bien no dice que la pagina funcione: un `const`
+usado antes de declararse, un modulo que revienta al evaluarse o un producto
+mal escrito en el catalogo dejan la pagina sin tienda y el build igual de
+verde. Por eso se abre lo construido en un navegador de verdad.
 
 ## Como se corre
 
-Desde la raiz del repo, las dos versiones (mientras dure la migracion se
-comprueban siempre las dos: `react/` usa el catalogo, las fotos y varias
-reglas de `js/`, asi que un cambio en uno puede romper el otro):
+En la raiz del repo:
 
 ```bash
-node herramientas/empaquetar.mjs            # si se toco js/ o el catalogo
-node .claude/skills/verificar-sitio/verificar.mjs
-cd react && npm run build && npm run probar  # la version en React
+npm run build          # sin avisos: el CI falla si hay alguno
+npm run probar         # todas las pruebas, unos 7 minutos
+npm run probar -- humo # solo la rapida (unos 5 s), la que corre el CI
 ```
 
-`npm run build` tiene que salir **sin avisos** (el CI falla si hay alguno).
-
 La primera vez instala `playwright-core` en `%LOCALAPPDATA%\panaderia-herramientas`
-(fuera del repo, para no subir `node_modules` a Pages). Usa Edge, que ya viene
-con Windows, asi que no baja ningun Chromium.
+(fuera del repo y de `package.json`). Usa Edge, que ya viene con Windows, asi
+que no baja ningun Chromium.
 
 ## Que comprueba
 
-En tres pasadas: HTTP en escritorio, HTTP en movil (tactil, 390 px) y `file://`
-(doble clic, que carga `js/sin-servidor.js` en vez de los modulos):
+`npm run probar` sirve una copia de `dist/` en un puerto libre, abre Edge y
+corre los casos de `pruebas/casos/` uno tras otro, con `humo` primero:
 
-- tantas `.product-card` como productos trae `data/productos.json`
-- `.canasta-paso` dentro de `.canasta-panel`
-- `#contenido > #confirmar` existe, esta escondido y tiene 2 `.checkout-paso`
-- se armaron los `.cuenta-paso` y la `.nav-cuenta`
-- pulsar el primer `.card-mas` deja una `.canasta-linea`
-- entrar en `#tienda-<categoria>` y volver con el atras deja la portada entera
-- ningun error de pagina ni de consola
+- `humo`: la portada arranca con su `h1` y la fila de destacados, la tienda
+  tiene una ficha por producto de `data/productos.json`, agregar deja una
+  linea en la canasta, y crear una cuenta con el codigo del recuadro llega a
+  `#/cuenta` con la contrasena sin guardar en claro.
+- Los demas: la cuenta entera, verificar y reenviar el codigo, recuperar la
+  contrasena, Mis pedidos y "Pedir lo mismo otra vez", la ficha de la
+  cabecera, el movimiento, Atras y Adelante entre vistas y categorias, la
+  forma de pago, la cedula y el RUC, pegar el telefono, la barra de deshacer
+  y la hoja de pagar en pantallas bajas.
+- En todos: ningun error de pagina ni de consola, y ningun 404 de un archivo
+  propio. Nada sale a internet (EmailJS y el mapa van cortados).
 
-Sale con codigo 1 y la lista de fallos si algo no cuadra.
+Al final saca un resumen (`N de N en orden`) y sale con codigo 1 si alguno
+falla.
 
-## Las pruebas de React (`react/pruebas/`)
-
-`npm run probar` sirve una copia de `react/dist` (y la raiz, para el sitio
-actual) en puertos libres, abre Edge y corre los casos de
-`react/pruebas/casos/` uno tras otro: la cuenta entera, verificar y reenviar
-el codigo, recuperar la contrasena, Mis pedidos, la ficha de la cabecera, el
-movimiento, Atras y Adelante, la forma de pago, pegar el telefono, y que la
-cuenta se comparte con el sitio actual. Tarda unos 7 minutos y al final saca un
-resumen; sale con codigo 1 si alguno falla.
-
-- Uno solo: `npm run probar -- humo` (o varios: `-- cuenta recuperar`).
+- Varios a la vez: `npm run probar -- cuenta recuperar`.
 - La lista con lo que mira cada uno: `npm run probar -- --lista`.
-- `humo` es el rapido (unos segundos) y el que corre el CI en Chrome.
 - Prueba lo construido: si `src/` es mas nuevo que `dist/`, avisa. Corre
   `npm run build` antes.
 - Otro navegador: `NAVEGADOR=chrome` (o `chromium`, o `NAVEGADOR_RUTA=...`).
 
 ## Al leer los fallos
 
-- Si **todas** las comprobaciones fallan a la vez, no son muchos fallos: es uno
-  solo que tumbo el arranque. Busca el mensaje de error (`Cannot access ... before
-  initialization`, `Failed to fetch dynamically imported module`...) y empieza por ahi.
-- Si solo falla `doble clic`, casi siempre es que `js/sin-servidor.js` no esta al
-  dia: corre `node herramientas/empaquetar.mjs` y vuelve a probar.
-- Si cambias a proposito la estructura (otro numero de pasos, otra clase), ajusta
-  la comprobacion en `verificar.mjs` en el mismo commit; no la borres.
-
-- Si falla un caso de React, el mensaje dice la ventana (`[escritorio]`,
-  `[movil]`...) y que se esperaba. `se corto: ... Timeout` es un selector que ya
-  no existe o una vista que no llego; `404 en http://...` o `error de pagina`,
-  algo que no cargo.
+- Si **todos** los casos fallan a la vez, no son muchos fallos: es uno solo
+  que tumbo el arranque. Busca el mensaje de error (`Cannot access ... before
+  initialization`, `Failed to fetch dynamically imported module`...) y empieza
+  por ahi.
+- El mensaje dice la ventana (`[escritorio]`, `[movil]`...) y que se
+  esperaba. `se corto: ... Timeout` es un selector que ya no existe o una
+  vista que no llego; `404 en http://...` o `error de pagina`, algo que no
+  cargo.
+- Si cambias a proposito la estructura (otro numero de pasos, otra clase),
+  ajusta el caso en el mismo commit; no lo borres.
 
 ## Para probar algo concreto
 
-- **En React**: un caso nuevo en `react/pruebas/casos/<nombre>.mjs`, con el
-  arranque comun (`t.contexto(...)`, `t.ok(...)`, ayudas de `arranque.mjs`
-  como `crearCuenta` o `meterPedidos`; ver la cabecera de `probar.mjs`). Se
+- Un caso nuevo en `pruebas/casos/<nombre>.mjs`, con el arranque comun
+  (`t.contexto(...)`, `t.ok(...)`, ayudas de `arranque.mjs` como
+  `crearCuenta` o `meterPedidos`; ver la cabecera de `probar.mjs`). Se
   commitea con el cambio, para que quede probado despues.
-- **En el sitio actual**, para un cambio que el recorrido general no toca (un
-  boton nuevo, un aviso de la cuenta), un script aparte en el scratchpad con el
-  mismo arranque: `createRequire` hacia `%LOCALAPPDATA%\panaderia-herramientas`,
-  `chromium.launch({ channel: 'msedge' })` y `pagina.on('pageerror', ...)`.
-- No fiarse de `(hover: hover)` para simular tactil: usar `hasTouch: true, isMobile: true`.
+- No fiarse de `(hover: hover)` para simular tactil: usar `hasTouch: true, isMobile: true`
+  (`VENTANAS.movil`).

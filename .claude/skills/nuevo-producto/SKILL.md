@@ -9,8 +9,9 @@ disable-model-invocation: true
 
 Pedido: $ARGUMENTS
 
-El catalogo vive en `data/productos.json`. Lo valida `revisar()` de `js/catalogo/repo.js`,
-la misma funcion que usa el sitio al cargarlo y que corre el CI, asi que las
+El catalogo vive en `data/productos.json`. Lo valida `revisar()` de
+`src/servicios/reglasCatalogo.js`, la misma funcion que usa el sitio al
+cargarlo y que corre el CI, asi que las
 reglas de abajo no son de estilo: si no se cumplen, el sitio no publica.
 
 ## Forma de un producto
@@ -33,8 +34,10 @@ reglas de abajo no son de estilo: si no se cumplen, el sitio no publica.
 ## Reglas
 
 - **categoria**: una de las que ya existen (`panes`, `dulces`, `bebidas-frias`).
-  Una categoria nueva necesita ademas su entrada `data-filtro="..."` en el menu
-  Tienda de `index.html`, o el CI falla porque sus productos quedan inalcanzables.
+  Una categoria nueva necesita ademas su entrada en `CATEGORIAS` de
+  `src/catalogo/categorias.js` (de ahi salen el menu Tienda, su ruta
+  `#/tienda-<id>` y su nombre), o el CI falla porque sus productos quedan
+  inalcanzables.
 - **foto**: la raiz, **sin** `-420`, sin `-840` y sin `.jpg`. En disco tienen que
   existir `<raiz>-420.jpg` (420x315) y `<raiz>-840.jpg` (840x630).
 - **alt**: describe lo que se ve en la foto (forma, color, sobre que esta), no
@@ -65,11 +68,11 @@ Si no hay foto, no inventes una ni reutilices la de otro producto: pregunta.
 ## Para quitar o cambiar un producto
 
 - Quitar: borrar la entrada y sus dos JPG. Si era el ultimo de su categoria,
-  quitar tambien su `data-filtro` del menu Tienda.
+  quitar tambien su entrada de `CATEGORIAS` (`src/catalogo/categorias.js`).
 - Agotado por un tiempo: `"disponible": false` en vez de borrarlo.
 
 ## Al terminar
 
-1. `node herramientas/empaquetar.mjs` (el catalogo va embebido en `js/sin-servidor.js`).
-2. `node .claude/skills/verificar-sitio/verificar.mjs`: el numero de fichas ya sale del JSON.
-3. Publicar con la skill `publicar`.
+1. `npm run build` (sin avisos; las fotos nuevas entran al build con su huella)
+   y `npm run probar -- humo`: el numero de fichas de la tienda sale del JSON.
+2. Publicar con la skill `publicar`.

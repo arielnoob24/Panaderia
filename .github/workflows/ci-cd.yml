@@ -15,9 +15,44 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Descargar codigo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
 
-      - name: Validar archivos y referencias
+      # npm ci instala lo que dice package-lock.json, ni una version mas, y
+      # falla si no cuadra con package.json.
+      - name: Preparar Node
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24.15.0'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Instalar
+        shell: bash
+        run: npm ci
+
+      # Un aviso del build (un import que no se resuelve, un trozo demasiado
+      # grande) no para a Vite, pero casi siempre es algo roto: aqui si para.
+      # El runner distingue mayusculas, asi que un import con otra mayuscula
+      # (que en Windows funciona) rompe aqui y no en lo publicado.
+      # ci-local.sh corre este paso tal cual.
+      - name: Construir
+        shell: bash
+        run: |
+          set -euo pipefail
+          salida=$(mktemp)
+          npm run build 2>&1 | tee "$salida"
+          if grep -Eiq '\(!\)|warn' "$salida"; then
+            echo 'El build dio avisos (arriba): hay que dejarlo sin ninguno.'
+            exit 1
+          fi
+          test -s dist/index.html
+
+      # El catalogo va dentro del build, y si un producto viene mal la portada
+      # lo dice en vez de pintar la vitrina: el build sale bien igual. Aqui se
+      # revisa con las mismas reglas que usa el sitio
+      # (src/servicios/reglasCatalogo.js, sin nada de Vite, para que node las
+      # cargue) y no con una copia de ellas. ci-local.sh corre este paso tal cual.
+      - name: Validar catalogo, fotos y textos
         shell: bash
         run: |
           set -euo pipefail
@@ -25,50 +60,11 @@ jobs:
           test -s assets/css/styles.css
           test -s assets/img/mascota.png
           test -s data/productos.json
-          # Las rutas cambiaron al repartir el sitio en carpetas: si alguna se
-          # queda atras, la pagina sale sin estilos o sin JavaScript y el HTML
-          # por si solo parece correcto.
-          grep -q 'assets/css/styles.css' index.html
-          grep -q 'assets/img/mascota.png' index.html
-          grep -q 'js/app.js' index.html
 
-          # Cada modulo tiene que parsear. Un error de sintaxis en uno solo
-          # deja la pagina entera sin JavaScript, y eso no se ve en el HTML:
-          # el sitio se publica igual y se rompe en el navegador.
-          # Los modulos van en carpetas por zona (comun, catalogo, pedido, cuenta).
-          for f in $(find js -name '*.js'); do
-            cp "$f" "$f.mjs"
-            node --check "$f.mjs"
-            rm "$f.mjs"
-          done
-
-          # js/sin-servidor.js es lo que corre al abrir index.html con doble
-          # clic. Si alguien toca js/ o el catalogo y no lo vuelve a generar,
-          # el sitio publicado va bien y el abierto como archivo va con lo
-          # viejo, y eso no se nota hasta que alguien lo abre asi.
-          node herramientas/empaquetar.mjs
-          git diff --exit-code -- js/sin-servidor.js || {
-            echo 'js/sin-servidor.js no esta al dia: corre node herramientas/empaquetar.mjs y subelo.'
-            exit 1
-          }
-
-          # Lo que un modulo importa tiene que existir con ese nombre exacto.
-          # Una mayuscula de diferencia funciona en Windows y falla en el
-          # servidor, que distingue, y entonces solo se rompe lo publicado.
-          # La ruta se resuelve desde la carpeta del modulo que importa.
-          for f in $(find js -name '*.js' ! -name sin-servidor.js); do
-            # Un modulo que no importa nada deja a grep sin salida y con codigo 1.
-            { grep -o "from '\.\.\{0,1\}/[A-Za-z0-9_/-]*\.js'" "$f" || true; } | sed "s|^from '||; s|'$||" | while read -r m; do
-              test -s "$(dirname "$f")/$m" || { echo "Falta $m, que importa $f."; exit 1; }
-            done
-          done
-
-          # El catalogo ya no esta en el HTML: vive en data/productos.json y lo
-          # revisa el mismo codigo que usa el sitio al cargarlo, asi que aqui se
-          # comprueba con las reglas de verdad y no con una copia de ellas.
           node --input-type=module -e '
             import { readFileSync, existsSync } from "node:fs";
-            const { revisar } = await import("./js/catalogo/repo.js");
+            const { revisar } = await import("./src/servicios/reglasCatalogo.js");
+            const { CATEGORIAS } = await import("./src/catalogo/categorias.js");
             const datos = JSON.parse(readFileSync("data/productos.json", "utf8"));
             const productos = datos.productos;
             if (!Array.isArray(productos) || !productos.length) {
@@ -81,11 +77,12 @@ jobs:
             if (productos.length < 8) {
               throw new Error(`solo hay ${productos.length} productos: el archivo parece truncado`);
             }
-            // La unica puerta al catalogo es el menu Tienda: si una categoria no
-            // esta ahi, sus productos quedan inalcanzables, y al reves, una
-            // entrada del menu sin productos detras lleva a una vista vacia.
-            const html = readFileSync("index.html", "utf8");
-            const entradas = new Set([...html.matchAll(/data-filtro="([^"]*)"/g)].map((m) => m[1]));
+            // La unica puerta a cada categoria es el menu Tienda, que pinta
+            // MenuTienda.jsx con CATEGORIAS (src/catalogo/categorias.js): si
+            // una categoria no esta ahi, sus productos quedan inalcanzables, y
+            // al reves, una entrada del menu sin productos detras lleva a una
+            // vista vacia.
+            const entradas = new Set(CATEGORIAS.map((c) => c.id));
             const categorias = new Set(productos.map((p) => p.categoria));
             for (const c of categorias) {
               if (!entradas.has(c)) throw new Error(`la categoria "${c}" no se puede abrir desde el menu Tienda`);
@@ -93,9 +90,8 @@ jobs:
             for (const e of entradas) {
               if (!categorias.has(e)) throw new Error(`la entrada "${e}" del menu Tienda no tiene ningun producto detras`);
             }
-            // Las fotos ya no las sirve un CDN: estan en el repositorio, y una
-            // ruta mal escrita deja la ficha con el hueco gris en vez de con
-            // la foto. El navegador no se queja y el HTML parece correcto.
+            // Cada foto en sus dos anchos. El sitio tambien lo mira al leer el
+            // catalogo, pero solo en el navegador: aqui se dice cual falta.
             const ANCHOS = [420, 840];
             for (const p of productos) {
               for (const w of ANCHOS) {
@@ -103,7 +99,10 @@ jobs:
                 if (!existsSync(ruta)) throw new Error(`falta ${ruta}, la foto de "${p.nombre}"`);
               }
             }
-            for (const h of ["assets/img/hero-900.jpg", "assets/img/hero-1600.jpg", "assets/img/hero-1200.jpg"]) {
+            // La portada (900 y 1600, en index.html y styles.css) y la que se
+            // ve al compartir el enlace (1200, que vite.config.js deja en
+            // dist/assets/img/ con su nombre de siempre).
+            for (const h of ["assets/img/hero-900.jpg", "assets/img/hero-1600.jpg", "assets/img/hero-1200.jpg", "dist/assets/img/hero-1200.jpg"]) {
               if (!existsSync(h)) throw new Error(`falta ${h}`);
             }
             // La fila de la portada son los marcados como destacados y que se
@@ -114,64 +113,31 @@ jobs:
               throw new Error(`solo ${destacados.length} destacados disponibles: la portada necesita al menos 4`);
             }
             console.log(`${productos.length} productos en ${categorias.size} categorias, todas alcanzables.`);
-            console.log(`${productos.length * ANCHOS.length + 3} fotos en su sitio.`);
+            console.log(`${productos.length * ANCHOS.length + 3} fotos en su sitio; ${destacados.length} destacados.`);
           '
 
-          if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html assets/css/styles.css data/productos.json $(find js -name '*.js'); then
+          # Es una panaderia: tambien en comentarios y ejemplos.
+          if grep -rEiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html src assets/css data/productos.json; then
+            grep -rEin 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html src assets/css data/productos.json
             echo 'Se encontro una referencia no permitida a cafeteria, cafe o cocteles.'
             exit 1
           fi
           git diff --check
 
-      # La version en React (react/, seccion 15 del plan) todavia no se
-      # publica: se comprueba que instala, construye sin avisos y arranca.
-      # npm ci instala lo que dice package-lock.json, ni una version mas, y
-      # falla si no cuadra con package.json.
-      - name: Preparar Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24.15.0'
-          cache: npm
-          cache-dependency-path: react/package-lock.json
-
-      - name: Instalar la version en React
-        shell: bash
-        working-directory: react
-        run: npm ci
-
-      # Un aviso del build (un import que no se resuelve, un trozo demasiado
-      # grande) no para a Vite, pero casi siempre es algo roto: aqui si para.
-      # Las palabras prohibidas se buscan tambien en react/, que el paso de
-      # arriba no mira. ci-local.sh corre este paso tal cual.
-      - name: Construir la version en React
-        shell: bash
-        working-directory: react
-        run: |
-          set -euo pipefail
-          salida=$(mktemp)
-          npm run build 2>&1 | tee "$salida"
-          if grep -Eiq '\(!\)|warn' "$salida"; then
-            echo 'El build de React dio avisos (arriba): hay que dejarlo sin ninguno.'
-            exit 1
-          fi
-          if grep -Eiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html $(find src -name '*.js' -o -name '*.jsx' -o -name '*.css'); then
-            echo 'Se encontro una referencia no permitida a cafeteria, cafe o cocteles en react/.'
-            exit 1
-          fi
-
-      # La prueba de humo (react/pruebas/casos/humo.mjs) en el Chrome que ya
-      # trae el runner: arranca, agrega a la canasta y crea una cuenta. Las
-      # largas se corren en local con npm run probar. playwright-core va a una
-      # carpeta temporal, fuera del repo y de package.json.
+      # La prueba de humo (pruebas/casos/humo.mjs) en el Chrome que ya trae el
+      # runner: arranca, agrega a la canasta y crea una cuenta. Las largas se
+      # corren en local con npm run probar. playwright-core va a una carpeta
+      # temporal, fuera del repo y de package.json.
       - name: Prueba de humo en Chrome
         shell: bash
-        working-directory: react
         env:
           NAVEGADOR: chrome
           PANADERIA_HERRAMIENTAS: ${{ runner.temp }}/panaderia-herramientas
         timeout-minutes: 5
         run: npm run probar -- humo
 
+  # Se publica dist/, lo que arma Vite, y no la raiz: ni src/ ni node_modules
+  # llegan a Pages.
   deploy:
     needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -185,18 +151,32 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Descargar codigo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
+
+      - name: Preparar Node
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24.15.0'
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Construir
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
 
       - name: Preparar GitHub Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6.0.0
         with:
           enablement: true
 
       - name: Empaquetar sitio
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5.0.0
         with:
-          path: .
+          path: dist
 
       - name: Publicar en GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5.0.1
