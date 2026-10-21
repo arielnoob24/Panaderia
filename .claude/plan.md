@@ -206,7 +206,9 @@ misma función. Tras tocar el JSON: `node herramientas/empaquetar.mjs`.
   (efectivo o tarjeta) y factura (a mi nombre o a otra persona). Sin mapa.
 - Derecha, pegada al desplazar: lo que lleva, subtotal/envío/total, a qué
   correo llega el comprobante y "Confirmar".
-- Validación: dirección → factura (cédula de 10 o RUC de 13, provincia 01–24)
+- Validación: dirección → factura (cédula de 10 con su dígito verificador,
+  módulo 10, o RUC de 13 con la misma regla que la base en `bd/`; provincia
+  01–24; error "Esta cédula no es válida: revisa los números.")
   → tarjeta (Luhn, MM/AA no vencida, CVV de 3, titular). El foco va al primer
   error. Los errores salen al dejar el campo o al intentar pagar, con
   `aria-invalid` y `aria-describedby` (la dirección también). Las reglas y
@@ -408,7 +410,7 @@ construye (sección 15).
 - [ ] Avisar que abren otra pestaña: botón flotante y "Pedir" de reserva sin JS.
 - [x] "Ver en el mapa" mide 131×18 px, pero cumple WCAG 2.5.8 por el espacio libre alrededor.
 - [ ] `user-select: none`: la dirección y el horario ya se copian; los precios y el WhatsApp todavía no.
-- [ ] Probar la fila quieta por defecto en vez de que avance sola.
+- [ ] Probar la fila quieta por defecto en vez de que avance sola (en React ya no avanza sola: queda para el sitio actual).
 - [x] El menú del teléfono lleva el foco a "Nosotros" al abrirse (`visibility 0s`
       al abrir, como el submenú de Tienda).
 - [x] Contraste de la fila de hoy del horario y `h1` en la vista de catálogo.
@@ -1108,7 +1110,39 @@ Pendiente de la fase 6:
       que falló) y "Volver al inicio". El JS inicial pasa de 491,5 kB (154,6
       gzip) a 440,3 kB (142,3 gzip): el grueso es react-dom, Motion, el
       router y el catálogo, no la cuenta.
-- [ ] Revisión de `ux-accesibilidad` de todo React, y arreglos.
+- [x] Revisión de `ux-accesibilidad` de todo React (20 de octubre de
+      2026): 15 problemas, ninguno de gravedad 4; axe sin violaciones A/AA.
+- [ ] Arreglos de esa revisión (`frontend`): barra de deshacer que tapa el
+      foco en el teléfono (`scroll-padding-bottom` mientras se ve);
+      principios de Nosotros en una columna bajo 420 px; "+" en el tope que
+      se vea apagado; elegida visible con contraste alto (`forced-colors`)
+      en filtros y tamaños; Esc con el globo a la vista solo quita el globo;
+      el aviso de fallo de carga no culpa a la red ("No se pudo abrir esta
+      parte. Vuelve a intentarlo."); contactos también en el pie de
+      `#/contacto`; la hoja de pagar con desplazamiento propio en pantallas
+      bajas; el buscador anuncia una vez, tras dejar de escribir; "Cambiar
+      el correo" mientras crear sale monta una hoja nueva (sin las
+      contraseñas).
+- [ ] Arreglos de esa revisión (`logica-datos`): nota del comprobante
+      cierta ("Tu canasta ya está vacía. El pedido queda en Mis pedidos.");
+      "y" al juntar los errores de la tarjeta y sin "cuota del mes";
+      `aside.checkout-resumen` y `aside role="dialog"` de la canasta pasan a
+      `div`/`section` (en los dos sitios); dígito verificador de la cédula y
+      el RUC (sección 6, en los dos sitios). La tarjeta sigue con
+      `autocomplete="off"` a propósito: es de prueba y no debe guardarla el
+      navegador.
+- [ ] **Sin JavaScript** (solo React): un `<noscript>` que no deja la
+      página en blanco: "Para comprar en El Tradicional necesitas activar
+      JavaScript en tu navegador", con el nombre, la dirección y el
+      horario. **Sin enlace a WhatsApp**: la página es para comprar en ella
+      (decidido por el usuario). `frontend`.
+- [ ] **"Pedir lo mismo otra vez"** en cada pedido de Mis pedidos (solo
+      React): mete en la canasta los productos de ese pedido que sigan en el
+      catálogo y disponibles, con el tamaño de entonces y **el precio de
+      hoy**; si la canasta ya tenía algo, se suma (con el tope de 100 por
+      línea). Abre la canasta y avisa qué entró y qué no ("Ya no tenemos
+      Pan de yuca"); si no entra nada, solo el aviso. `logica-datos` (la
+      acción) y `frontend` (el botón en el `<details>`).
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 
@@ -1173,10 +1207,11 @@ proceso), en `assets/img/local/`. Sin fotos no se enseña nada; no se usan
 fotos de bancos ni inventadas.
 
 Pendiente de este apartado:
-- [ ] Vistas, pie corto, transición, carrusel y direcciones viejas.
+- [x] Vistas, pie corto, transición, carrusel y direcciones viejas (`4077276`).
 - [x] Motion en vistas y canasta.
-- [ ] Fondos de trigo, maíz y pan, y 60-30-10 medido en cada vista.
-- [ ] Mapa en `#/contacto`.
+- [x] Fondos de trigo, maíz y pan (`df04b9a`).
+- [ ] 60-30-10 medido con capturas en cada vista (se ajustó a ojo, sin medir).
+- [x] Mapa en `#/contacto` (`c274fd4`).
 - [ ] Galería (cuando el usuario pase las fotos).
 - [ ] Revisión de `ux-accesibilidad` de todo lo anterior.
 
