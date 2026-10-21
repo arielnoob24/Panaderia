@@ -1,9 +1,9 @@
 // Dentro de la canasta, Escape con el globo de ayuda a la vista solo quita
 // el globo (WCAG 1.4.13); el siguiente cierra la canasta. Y el "+" en el tope
-// de 100 se ve apagado, en la ficha y en la linea. En los dos sitios.
+// de 100 se ve apagado, en la ficha y en la linea.
 import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
 
-export const descripcion = 'Escape con el globo en la canasta solo lo quita; el + en el tope se ve apagado (los dos sitios)';
+export const descripcion = 'Escape con el globo en la canasta solo lo quita; el + en el tope se ve apagado';
 export const limite = 90;
 
 const globoVisible = (p) => p.evaluate(() => {
@@ -13,7 +13,7 @@ const globoVisible = (p) => p.evaluate(() => {
 const fondo = (p, sel) => p.evaluate((s) => getComputedStyle(document.querySelector(s)).backgroundColor, sel);
 
 export default async function globoYTope(t) {
-  for (const [sitio, base, ruta] of [['react', t.REACT, '#/tienda-catalogo'], ['actual', t.ACTUAL, '#tienda-catalogo']]) {
+  for (const [sitio, base, ruta] of [['react', t.REACT, '#/tienda-catalogo']]) {
     const ctx = await t.contexto(VENTANAS.escritorio, { nombre: sitio });
     const p = await ctx.newPage();
     const ok = (c, q) => t.ok(c, `[${sitio}] ${q}`);

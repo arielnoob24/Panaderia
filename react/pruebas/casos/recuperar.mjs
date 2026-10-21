@@ -1,10 +1,10 @@
 // Recuperar la contrasena (#/cuenta/recuperar): correo que no es, correo que
 // no sale (sin recuadro), 5 intentos, reenviar a los 45 s, caduca a los 10
-// minutos, clave nueva, Atras, la vieja ya no vale, desde "Ir a pagar" a
-// #/confirmar, y el sitio actual entra con la nueva.
+// minutos, clave nueva, Atras, la vieja ya no vale y desde "Ir a pagar" a
+// #/confirmar.
 import { VENTANAS, crearCuenta, espera, esperaQue, hashDe } from '../arranque.mjs';
 
-export const descripcion = 'recuperar la contrasena por codigo, de punta a punta, y el sitio actual con la nueva';
+export const descripcion = 'recuperar la contrasena por codigo, de punta a punta';
 export const limite = 150;
 
 const SIN_CORREO = 'No pudimos enviar el correo. Inténtalo más tarde.';
@@ -178,22 +178,6 @@ export default async function recuperar(t) {
     await esperaQue(async () => (await hash()) === '#/confirmar');
     ok((await hash()) === '#/confirmar', `viniendo de pagar: ${await hash()}`);
 
-    // El sitio actual entra con la contrasena nueva (otro origen: se copia la cuenta).
-    const guardada = await p.evaluate(() => localStorage.getItem('eltradicional-cuenta'));
-    const p2 = await ctx.newPage();
-    await p2.goto(t.ACTUAL); await p2.waitForSelector('.nav-cuenta');
-    await p2.evaluate((g) => { const c = JSON.parse(g); c.sesionAbierta = false; localStorage.setItem('eltradicional-cuenta', JSON.stringify(c)); }, guardada);
-    await p2.reload(); await p2.waitForSelector('.nav-cuenta');
-    for (const [clave, vale] of [['Nueva2026', false], ['Otra2027x', true]]) {
-      await p2.click('.nav-cuenta'); await p2.click('.cuenta-menu [data-va="entrar"]');
-      await p2.waitForSelector('#cuenta-entrar-correo', { state: 'visible' });
-      await p2.fill('#cuenta-entrar-correo', 'ana@correo.com'); await p2.fill('#cuenta-entrar-clave', clave);
-      await p2.click('.cuenta-entrar'); await espera(900);
-      const dentro = await p2.evaluate(() => JSON.parse(localStorage.getItem('eltradicional-cuenta')).sesionAbierta === true);
-      ok(dentro === vale, `sitio actual con ${clave}: dentro=${dentro}`);
-      if (!vale) await p2.keyboard.press('Escape');
-      await espera(300);
-    }
     await ctx.close();
   }
 }

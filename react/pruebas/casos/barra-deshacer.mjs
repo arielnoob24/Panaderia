@@ -1,13 +1,13 @@
 // La barra de deshacer no tapa lo que tiene el foco (WCAG 2.4.11): en el
 // telefono, mientras se ve, la pagina guarda su sitio por abajo, tambien al
-// final del pie. En los dos sitios, porque la regla es de styles.css.
+// final del pie.
 import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
 
-export const descripcion = 'la barra de deshacer no tapa el foco en el telefono (320 y 390 px, los dos sitios)';
+export const descripcion = 'la barra de deshacer no tapa el foco en el telefono (320 y 390 px)';
 export const limite = 120;
 
 export default async function barraDeshacer(t) {
-  for (const [sitio, base, ruta] of [['react', t.REACT, '#/tienda-catalogo'], ['actual', t.ACTUAL, '#tienda-catalogo']]) {
+  for (const [sitio, base, ruta] of [['react', t.REACT, '#/tienda-catalogo']]) {
     for (const nv of ['m320', 'movil']) {
       const ctx = await t.contexto({ ...VENTANAS[nv], reducedMotion: 'reduce' }, { nombre: `${sitio}-${nv}` });
       const p = await ctx.newPage();

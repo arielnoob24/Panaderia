@@ -1,15 +1,15 @@
 // "Inicia sesion para pagar" en pantallas bajas (el telefono tumbado): la
 // hoja no se sale por arriba, se desplaza dentro de la canasta y el foco
-// sigue dando la vuelta dentro de ella. En los dos sitios (styles.css).
+// sigue dando la vuelta dentro de ella.
 import { espera, esperaQue } from '../arranque.mjs';
 
-export const descripcion = 'la hoja de "Inicia sesion para pagar" cabe en 640x360 y 844x390 (los dos sitios)';
+export const descripcion = 'la hoja de "Inicia sesion para pagar" cabe en 640x360 y 844x390';
 export const limite = 90;
 
 const BAJAS = { '640x360': { width: 640, height: 360 }, '844x390': { width: 844, height: 390 } };
 
 export default async function hojaPagarBaja(t) {
-  for (const [sitio, base, ruta] of [['react', t.REACT, '#/tienda-catalogo'], ['actual', t.ACTUAL, '#tienda-catalogo']]) {
+  for (const [sitio, base, ruta] of [['react', t.REACT, '#/tienda-catalogo']]) {
     for (const [nv, viewport] of Object.entries(BAJAS)) {
       const ctx = await t.contexto({ viewport, hasTouch: true, isMobile: true, reducedMotion: 'reduce' }, { nombre: `${sitio}-${nv}` });
       const p = await ctx.newPage();

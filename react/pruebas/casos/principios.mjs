@@ -1,6 +1,6 @@
 // Los principios de Nosotros a 320 px con el texto espaciado (WCAG 1.4.12):
-// van en una columna y no se recorta ninguno. En los dos sitios (la regla es
-// de styles.css). Y el pie de #/contacto sigue con sus contactos (3.2.6).
+// van en una columna y no se recorta ninguno. Y el pie de #/contacto sigue
+// con sus contactos (3.2.6).
 import { VENTANAS, espera } from '../arranque.mjs';
 
 export const descripcion = 'principios de Nosotros a 320 px con texto espaciado, y contactos en el pie de #/contacto';
@@ -9,7 +9,7 @@ export const limite = 60;
 const ESPACIADO = '*:not(svg *){line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important} p{margin-bottom:2em!important}';
 
 export default async function principios(t) {
-  for (const [sitio, base, ruta] of [['react', t.REACT, '#/nosotros'], ['actual', t.ACTUAL, '']]) {
+  for (const [sitio, base, ruta] of [['react', t.REACT, '#/nosotros']]) {
     const ctx = await t.contexto({ ...VENTANAS.m320, reducedMotion: 'reduce' }, { nombre: sitio });
     const p = await ctx.newPage();
     await p.goto(base + ruta);

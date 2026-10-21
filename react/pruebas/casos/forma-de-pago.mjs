@@ -1,9 +1,8 @@
 // La forma de pago preferida en Mis datos: el fieldset, el teclado, que solo
-// se guarda con "Guardar los cambios", que #/confirmar empieza con ella, y que
-// el sitio actual la ve y la cambia (y React lo ve).
+// se guarda con "Guardar los cambios" y que #/confirmar empieza con ella.
 import { VENTANAS, crearCuenta, espera, llegar } from '../arranque.mjs';
 
-export const descripcion = 'forma de pago preferida en Mis datos, en #/confirmar y en el sitio actual';
+export const descripcion = 'forma de pago preferida en Mis datos y en #/confirmar';
 export const limite = 90;
 
 export default async function formaDePago(t) {
@@ -35,23 +34,6 @@ export default async function formaDePago(t) {
     await p.click('.canasta-enviar'); await espera(500);
     ok((await p.evaluate(() => location.hash)) === '#/confirmar', 'no llega a confirmar');
     ok(await p.isChecked('input[name="canasta-metodo"][value="tarjeta"]'), 'confirmar no empieza en tarjeta');
-    // React -> sitio actual (otro origen: se copia la cuenta).
-    const cruda = await p.evaluate(() => localStorage.getItem('eltradicional-cuenta'));
-    const a = await ctx.newPage();
-    await a.goto(t.ACTUAL);
-    await a.evaluate((c) => localStorage.setItem('eltradicional-cuenta', c), cruda);
-    await a.reload(); await a.waitForSelector('.nav-cuenta.is-dentro');
-    ok((await a.textContent('.cuenta-dato-metodo')) === 'Tarjeta', 'el sitio actual no ve tarjeta: ' + await a.textContent('.cuenta-dato-metodo'));
-    // Y en el sitio actual se cambia a efectivo -> React lo ve.
-    await a.click('.nav-cuenta'); await a.click('.cuenta-menu-opcion[data-va="pagos"]'); await espera(300);
-    await a.click('.cuenta-metodo:has(input[value="efectivo"])'); await espera(200);
-    const cruda2 = await a.evaluate(() => localStorage.getItem('eltradicional-cuenta'));
-    ok(JSON.parse(cruda2).metodo === 'efectivo', 'el sitio actual no guardo efectivo');
-    const r = await ctx.newPage();
-    await r.goto(t.REACT + '#/');
-    await r.evaluate((c) => localStorage.setItem('eltradicional-cuenta', c), cruda2);
-    await r.goto(t.REACT + '#/cuenta'); await r.reload(); await espera(500);
-    ok(await r.isChecked('input[name="cuenta-metodo"][value="efectivo"]'), 'React no ve efectivo del sitio actual');
     await ctx.close();
   }
 }

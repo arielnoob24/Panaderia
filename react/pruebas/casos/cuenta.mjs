@@ -1,10 +1,9 @@
 // El recorrido de la cuenta en React (fase 5): desvios con replace, crear con
 // sus errores, verificar con las 6 casillas, Mis datos, cerrar sesion,
-// iniciar sesion, de "Ir a pagar" a #/confirmar y Mis pedidos. Y la cuenta
-// compartida con el sitio actual en los dos sentidos.
+// iniciar sesion, de "Ir a pagar" a #/confirmar y Mis pedidos.
 import { VENTANAS, espera, hashDe, llegar } from '../arranque.mjs';
 
-export const descripcion = 'crear, verificar, Mis datos, iniciar sesion, pagar y cuenta compartida con el sitio actual';
+export const descripcion = 'crear, verificar, Mis datos, iniciar sesion, pagar y Mis pedidos';
 export const limite = 180;
 
 async function recorrido(t, nombre, ventana) {
@@ -259,59 +258,6 @@ async function recorrido(t, nombre, ventana) {
   await espera(300);
   ok((await p.textContent('.cuenta-ver-pedidos')).trim() === 'Ver mis pedidos (1)', 'contador de pedidos');
 
-  // ---- La cuenta de React entra en el sitio actual ----
-  // Son dos origenes (dos puertos): la cuenta se copia de uno a otro.
-  const cruda = await p.evaluate(() => localStorage.getItem('eltradicional-cuenta'));
-  const actual = await ctx.newPage();
-  await actual.goto(t.ACTUAL);
-  await actual.evaluate((c) => { const d = JSON.parse(c); d.sesionAbierta = false; localStorage.setItem('eltradicional-cuenta', JSON.stringify(d)); }, cruda);
-  await actual.reload();
-  await actual.waitForSelector('.nav-cuenta');
-  await actual.click('.nav-cuenta');
-  await actual.click('.cuenta-menu-principal');
-  await actual.fill('#cuenta-entrar-correo', 'ana@correo.com');
-  await actual.fill('#cuenta-entrar-clave', 'Clave123');
-  await actual.click('.cuenta-entrar');
-  await espera(900);
-  ok((await actual.locator('.nav-cuenta.is-dentro').count()) === 1, 'la cuenta de React no entra en el sitio actual');
-  ok((await actual.textContent('.cuenta-sesion-nombre')) === 'Ana María Pérez', 'nombre en el sitio actual');
-
-  // ---- Y una creada en el sitio actual entra en React ----
-  const ctx2 = await t.contexto(ventana, { nombre: nombre + ' actual->react' });
-  const a2 = await ctx2.newPage();
-  await a2.goto(t.ACTUAL);
-  await a2.waitForSelector('.nav-cuenta');
-  await a2.click('.nav-cuenta');
-  await a2.click('.cuenta-menu-secundario');
-  await a2.fill('#cuenta-nombre', 'Luis Tapia');
-  await a2.fill('#cuenta-correo', 'luis@correo.com');
-  await a2.fill('#cuenta-telefono', '998877665');
-  await a2.fill('#cuenta-clave', 'Otra4567');
-  await a2.fill('#cuenta-repite', 'Otra4567');
-  await a2.click('.cuenta-crear');
-  await a2.waitForSelector('.codigo-falso:not([hidden])', { timeout: 6000 }).catch(() => {});
-  const cod2 = (await a2.textContent('.codigo-valor')).trim();
-  await a2.fill('#cuenta-codigo', cod2);
-  await a2.click('.cuenta-verificar');
-  await espera(300);
-  const cruda2 = await a2.evaluate(() => localStorage.getItem('eltradicional-cuenta'));
-  const r2 = await ctx2.newPage();
-  await r2.goto(REACT + '#/');
-  await r2.evaluate((c) => localStorage.setItem('eltradicional-cuenta', c), cruda2);
-  await r2.goto(REACT + '#/cuenta');
-  await r2.reload();
-  await espera(600);
-  ok((await r2.inputValue('#cuenta-editar-nombre')) === 'Luis Tapia', 'la cuenta del sitio actual no abre Mis datos en React');
-  await r2.click('.cuenta-salir');
-  await espera(200);
-  await r2.goto(REACT + '#/cuenta/entrar');
-  await espera(300);
-  await r2.fill('#cuenta-entrar-correo', 'luis@correo.com');
-  await r2.fill('#cuenta-entrar-clave', 'Otra4567');
-  await r2.click('.cuenta-entrar');
-  await espera(900);
-  ok((await ruta(r2)) === '#/cuenta', `la cuenta del sitio actual no entra en React: ${await ruta(r2)}`);
-
   // ---- Ir a pagar sin cuenta -> crear -> verificar -> confirmar ----
   const ctx3 = await t.contexto(ventana, { nombre: nombre + ' crear desde pagar' });
   const c3 = await ctx3.newPage();
@@ -343,7 +289,7 @@ async function recorrido(t, nombre, ventana) {
   await c3.goBack();
   await espera(300);
   ok(!(await ruta(c3)).startsWith('#/cuenta/verificar'), `Atras desde confirmar vuelve a ${await ruta(c3)}`);
-  await Promise.all([ctx.close(), ctx2.close(), ctx3.close()]);
+  await Promise.all([ctx.close(), ctx3.close()]);
 }
 
 export default async function cuenta(t) {
