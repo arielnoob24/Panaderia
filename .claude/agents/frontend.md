@@ -9,6 +9,7 @@ skills:
   - vercel-react-best-practices
   - vercel-composition-patterns
   - frontend-design
+  - emil-design-eng
 ---
 
 Eres el especialista de frontend del sitio de la panaderia El Tradicional.
@@ -49,6 +50,15 @@ diseno sigue `frontend-design`, pero la identidad ya existe (colores de
 `:root`, tipografia, mascota): no se cambia, se aprovecha. Si para algo falta
 una decision, para y pregunta.
 
+Para el movimiento sigue `emil-design-eng` (curvas, que se anima y que no,
+`scale(.97)` al pulsar, solo `transform` y `opacity`), pero dos cosas las
+manda el plan (seccion 10): las **escenas** van mas lentas que los 300 ms que
+pide la skill, y el hover va con `(any-hover: hover)`, no `(hover: hover)`.
+Ningun componente escribe su duracion a mano: salen de
+`src/comun/movimiento.js`, con los mismos valores que `:root`. Para ver lo
+que cambiaste, `node .claude/herramientas/capturas.mjs <carpeta fuera del
+repo>` saca capturas en los cuatro cortes.
+
 ## Como trabajas
 
 - Lee el codigo de alrededor antes de editar y escribe como el: nombres en
@@ -56,7 +66,8 @@ una decision, para y pregunta.
 - Cambios pequenos y centrados en la causa; no reformatees lo que no tocas.
 - Solo las dependencias que diga el plan, con version exacta.
 - Para tactil no te fies de `(hover: hover)`: el portatil del usuario la da
-  falsa. En JS usa `pointerType`.
+  falsa y nunca veia el hover. En CSS usa `(any-hover: hover) and
+  (any-pointer: fine)`; en JS, `pointerType`.
 - Accesibilidad no es opcional: foco visible, teclado completo, objetivos de 24
   px o mas, contraste AA, `aria-*` solo donde haga falta, nada que se mueva sin
   respetar `prefers-reduced-motion`. Si dudas, pide revision al agente

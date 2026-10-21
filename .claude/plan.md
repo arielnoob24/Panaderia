@@ -159,6 +159,13 @@ Carrusel con `scroll-snap` nativo y botones Anterior/Siguiente que se
 desactivan en los extremos; se arrastra con el dedo, **no avanza solo**, y
 cada ficha se alcanza con Tab.
 
+- En **todos los anchos** las flechas van en el pie del carrusel, junto a la
+  barra de avance (como ya estaba en el teléfono): nunca encima de las fotos.
+- Sin barra de desplazamiento del navegador (la barra de avance la sustituye).
+- El borde por donde siguen las fichas se desvanece (máscara), para que se
+  note que hay más y no parezca un corte.
+- Los botones desplazan una ficha con movimiento de escena (`--dur-slow`).
+
 ### Vista de la tienda
 
 - Se entra por "Ver el menú", la palabra Tienda (catálogo entero) o una de sus
@@ -176,6 +183,12 @@ cada ficha se alcanza con Tab.
 - Cada ficha: foto con `srcset`, categoría encima del nombre, sello, tamaños
   (radios), precio y control `− cantidad +` (máximo 100 por producto). Al
   agregar, la foto vuela a la canasta y se anuncia.
+- La ficha (también en el carrusel): nombre en Georgia como en la canasta,
+  sin hueco vacío entre el nombre y el precio, sellos con letra de al menos
+  11 px. Con el puntero encima sube y la foto se acerca despacio (escena);
+  al pulsar baja a `scale(.97)`.
+- Al cambiar de vista el foco va al `h1`, pero sin dibujarle el recuadro
+  ámbar: un título no es un control.
 
 ## 5. La canasta
 
@@ -418,13 +431,30 @@ pedido sigue valiendo.
   los ✓ de la contraseña, crear → verificar, los pasos de recuperar, Mis
   pedidos y "Guardado ✓". Un solo momento de entrada por vista; lo demás
   responde a lo que hace la persona. Todo se apaga con
-  `prefers-reduced-motion` (`MotionConfig reducedMotion="user"`). Skill:
-  `frontend-design`.
-- Contenido hasta 1440 px; la barra de arriba va de borde a borde, se pega al
-  bajar y se invierte sobre secciones oscuras. Cortes en 900, 680 y 420 px.
-- El hover solo con `(hover: hover) and (pointer: fine)`, pero en JS **no
-  fiarse de esa media query**: el portátil del usuario es táctil y la da
-  falsa; usar `pointerType`.
+  `prefers-reduced-motion` (`MotionConfig reducedMotion="user"`). Skills:
+  `frontend-design`, `emil-design-eng`.
+- **Ritmo del movimiento** (el usuario lo quiere más lento y suave). Dos
+  clases, y nada fuera de ellas:
+  - **Respuesta a un toque** (botón pulsado, contador, ✓, color de hover,
+    globos): rápida, 120–200 ms (`--dur-micro`, `--dur-fast`). Si esto se
+    alarga el sitio se siente torpe, no suave.
+  - **Escena** (cambio de vista, entradas, carrusel, desplegar, la ficha al
+    levantarse, la canasta): lenta, 400–1100 ms (`--dur-base` 400,
+    `--dur-slow` 560, `--dur-editorial` 760, `--dur-scene` 1100).
+  - Lo que sale va más rápido que lo que entra (salida ≈ la mitad).
+  - Nada con `ease-in`: entrar y salir con `--ease-out`/`--ease-soft`.
+  - Las duraciones y curvas de Motion salen de un solo archivo,
+    `src/comun/movimiento.js`, con los mismos valores que `:root`; ningún
+    componente escribe la suya a mano.
+  - Al pulsar, botones y fichas bajan a `scale(.97)` (respuesta).
+- Contenido hasta 1440 px. **La barra de arriba siempre es `--horno`**,
+  opaca desde que carga la página, con el logo y el texto en claro; va de
+  borde a borde y se pega al bajar. Sobre secciones oscuras **no se
+  invierte**: sigue en `--horno` y gana una línea ámbar fina abajo para separarse.
+  Cortes en 900, 680 y 420 px.
+- El hover con `(any-hover: hover) and (any-pointer: fine)` en CSS: el
+  portátil del usuario es táctil y `(hover: hover)` le da falso, así que con
+  esa media query **nunca veía el hover**. En JS, `pointerType`.
 - Sin cache-buster a mano: Vite pone huella a los nombres de los archivos.
 
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
@@ -495,6 +525,15 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).
 - [ ] GitHub avisa de que `ubuntu-latest` pasa a Ubuntu 26.
 
+### Aspecto y movimiento (revisión visual del 21 de octubre de 2026)
+- [ ] Barra siempre `--horno`, sin invertirse; línea ámbar sobre lo oscuro.
+- [ ] Hover con `(any-hover: hover)`: en el portátil del usuario no se veía.
+- [ ] Ritmo del movimiento (sección 10) y `src/comun/movimiento.js`.
+- [ ] Fichas: nombre en Georgia, sin hueco, sellos legibles, `scale(.97)`.
+- [ ] Carrusel: flechas y barra de avance en el pie en todos los anchos, sin
+      barra del navegador, borde desvanecido.
+- [ ] Sin recuadro ámbar en el `h1` al cambiar de vista.
+
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).
 - [x] Compras, inventario por lotes, recetas, producción con FEFO/FIFO/LIFO/
@@ -527,10 +566,11 @@ Los agentes viven en `.claude/agents/` y todos leen este plan primero.
 
 | Agente | Se encarga de | Cambia archivos | Skills cargadas |
 |---|---|---|---|
-| `frontend` | `index.html`, `vite.config.js`, `src/main.jsx`, `src/App.jsx`, `src/vistas/`, `src/catalogo/`, `src/comun/`, `src/estilos/`, `assets/css/styles.css`, `FichaCuenta.jsx`, `PasoQueCambia.jsx`; maquetación, responsive y movimiento | Sí | `verificar-sitio`, `wcag-audit-patterns`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns`, `frontend-design` |
+| `frontend` | `index.html`, `vite.config.js`, `src/main.jsx`, `src/App.jsx`, `src/vistas/`, `src/catalogo/`, `src/comun/`, `src/estilos/`, `assets/css/styles.css`, `FichaCuenta.jsx`, `PasoQueCambia.jsx`; maquetación, responsive y movimiento | Sí | `verificar-sitio`, `wcag-audit-patterns`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns`, `frontend-design`, `emil-design-eng` |
 | `logica-datos` | `src/estado/`, `src/servicios/`, `src/pedido/`, `src/cuenta/` (salvo lo de `frontend`), `data/productos.json` | Sí | `verificar-sitio`, `nielsen-usability-heuristics`, `componente-react`, `vercel-react-best-practices`, `vercel-composition-patterns` (+ sigue `nuevo-producto`) |
 | `base-datos` | La base de datos (`bd/`) y su prueba (`.claude/skills/probar-bd/probar.mjs`) | Sí | `probar-bd`, `supabase-postgres-best-practices` |
 | `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | `wcag-audit-patterns`, `nielsen-usability-heuristics` (+ `.claude/herramientas/axe.mjs`) |
+| `revision-visual` | Aspecto y movimiento: capturas en 1440/900/680/390 px, fichas, carrusel, barra, tipografía, 60-30-10, duraciones y curvas | No, solo informa | `frontend-design`, `emil-design-eng`, `review-animations`, `web-design-guidelines` (+ `.claude/herramientas/capturas.mjs`) |
 | `calidad-publicacion` | Revisión de código y seguridad, `pruebas/`, CI, `package.json`, publicar | Sí, lo de publicar y las pruebas | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
 
 Skills en `.claude/skills/`:
@@ -547,7 +587,10 @@ Skills en `.claude/skills/`:
 | `nielsen-usability-heuristics` | skills.sh, `dembrandt/dembrandt-skills` | `ux-accesibilidad`, `logica-datos` |
 | `vercel-react-best-practices` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos`, `calidad-publicacion` |
 | `vercel-composition-patterns` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`) | `frontend`, `logica-datos` |
-| `frontend-design` | skills.sh, `anthropics/skills` (copiada a mano del commit `dbd4588`) | `frontend` |
+| `frontend-design` | skills.sh, `anthropics/skills` (copiada a mano del commit `dbd4588`) | `frontend`, `revision-visual` |
+| `emil-design-eng` | skills.sh, `emilkowalski/skills` (copiada a mano del commit `2d22863`, leída entera el 21 de octubre de 2026) | `frontend`, `revision-visual` |
+| `review-animations` | skills.sh, `emilkowalski/skills` (ídem, con `STANDARDS.md`) | `revision-visual` |
+| `web-design-guidelines` | skills.sh, `vercel-labs/agent-skills` (copiada a mano del commit `063bee9`); baja sus reglas en el momento de `vercel-labs/web-interface-guidelines` | `revision-visual` |
 | `supabase-postgres-best-practices` | skills.sh, `supabase/agent-skills` (con el CLI; leída entera el 20 de octubre de 2026). Choca con las reglas del modelo en PK, `text` y nombres: mandan las del plan | `base-datos` |
 
 Las instaladas con el CLI quedan en `skills-lock.json` y `npx skills update -p`
@@ -555,6 +598,14 @@ las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
 ese repositorio, y `frontend-design` igual: para actualizarlas, volver a
 copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
+
+A las dos de Emil se les quitó al copiarlas la sección "Initial Response"
+(obliga a contestar solo una frase fija y dentro de un agente lo bloquea) y a
+`review-animations` el `disable-model-invocation`. Chocan con el plan en dos
+cosas y manda el plan: piden menos de 300 ms en todo (aquí solo en la
+respuesta a un toque; las escenas van más lentas, sección 10) y el hover con
+`(hover: hover)` (aquí `(any-hover: hover)`). `web-design-guidelines` pide
+Title Case, que es del inglés: no aplica.
 
 ## 15. Cómo se llegó aquí (migración a React, 19–21 de octubre de 2026)
 
