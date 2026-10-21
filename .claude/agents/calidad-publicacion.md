@@ -36,10 +36,13 @@ plan es un hallazgo.
 - Revisa contra la skill `componente-react` (estructura, nombres, estado,
   nada de `dangerouslySetInnerHTML`) y usa `vercel-react-best-practices` para
   rendimiento, ignorando sus reglas de Next.js y de servidor.
-- Cada push a `mejoras` tambien reconstruye la vista previa de Netlify
-  (`netlify.toml`, seccion 15 del plan). Si el plan ya tiene su direccion,
-  comprueba ahi que el cambio se ve; si Netlify falla y el CI no, mira la
-  configuracion de `netlify.toml`.
+- Las pruebas de navegador de React viven en `react/pruebas/` y se corren
+  con `npm run probar` en `react/` (todas) o `npm run probar -- <nombre>`
+  (una). Antes de dar por bueno un cambio de `react/`, todas en verde; en el
+  CI corre solo `humo` ("Fase 6: calidad" en la seccion 15). Una prueba
+  nueva va ahi, con el arranque comun, nunca en el scratchpad.
+- La vista previa de Netlify esta en pausa (seccion 15): no existe hasta
+  que el plan tenga su direccion.
 - Mientras dure la migracion, el sitio actual (`js/`) sigue publicandose con
   sus reglas de siempre: no lo rompas por tocar `react/`.
 

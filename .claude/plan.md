@@ -558,7 +558,8 @@ Mientras dure la migración, las reglas de la sección 2 sobre doble clic y
 5. **Cuenta**: crear, verificar, entrar, editar, historial, como vistas
    propias (ver "Fase 5: la cuenta").
 6. **Calidad**: `verificar-sitio`, `axe.mjs`, el CI y la skill `publicar`
-   adaptados al *build*; revisión completa de `ux-accesibilidad`. Además:
+   adaptados al *build*; revisión completa de `ux-accesibilidad` (ver
+   "Fase 6: calidad"). Además:
    - Cargar con `React.lazy` + `Suspense` las vistas de la cuenta y del pago
      (`App.jsx`): hoy el JS es un solo archivo de unos 490 kB (154 kB gzip).
    - Pasar a `.claude/herramientas/` (o a la skill que toque) los scripts de
@@ -1056,6 +1057,45 @@ Cómo quedó la parte de `frontend` (20 de octubre de 2026):
   avisos con un fundido de 220 ms (`TextoSuave.jsx`, dentro del párrafo de
   siempre, para no romper `aria-describedby` ni el `role="alert"`). Con
   `prefers-reduced-motion` nada de eso se mueve.
+
+### Fase 6: calidad (decidido el 20 de octubre de 2026)
+
+Que un cambio que rompa React no pueda salir en verde, y que las pruebas no
+dependan de una sesión de Claude.
+
+1. **Pruebas de navegador en el repositorio**, en `react/pruebas/`: las de
+   Edge de la fase 5 (hoy en el scratchpad de una sesión) pasan aquí, con
+   un arranque común (servir `dist/`, abrir el navegador, cerrar todo al
+   salir, límite de tiempo en cada espera) y una sola orden,
+   `npm run probar` en `react/`, que las corre todas una tras otra y sale
+   con código 1 si alguna falla. `npm run probar -- <nombre>` corre una.
+   playwright-core sigue fuera del repositorio
+   (`%LOCALAPPDATA%\panaderia-herramientas`), como en `verificar-sitio`.
+2. **CI**: el paso de React además falla si el build da avisos, busca las
+   palabras prohibidas en `react/src` (código y CSS), y pasa **una prueba
+   rápida en Chrome** (`npm run probar -- humo`): la portada arranca, se
+   añade algo a la canasta, se crea una cuenta con el código del recuadro y
+   se llega a `#/cuenta`. Sin `pageerror`. Las largas solo en local.
+3. **`verificar-sitio` y `publicar`**: además del sitio actual, construyen
+   React y corren `npm run probar` (todas) antes de commitear. Se
+   actualizan sus `SKILL.md` y `ci-local.sh`.
+4. **`axe.mjs`** también sobre React: cada vista y los estados de la cuenta
+   y del pago, a 1280 y 390 px.
+5. **Carga por partes**: las vistas de la cuenta, `#/confirmar` y
+   `#/comprobante` con `React.lazy` + `Suspense` (lo demás, en el archivo
+   principal). Mientras carga, nada que salte: la vista llega con su
+   transición de siempre. El foco y el anuncio de vista no cambian.
+6. **Revisión completa de `ux-accesibilidad`** de todo React (no solo la
+   cuenta), y sus arreglos.
+
+Reparto: 1 a 4, `calidad-publicacion`; 5, `frontend`; 6, `ux-accesibilidad`.
+
+Pendiente de la fase 6:
+- [ ] Pruebas en `react/pruebas/` y `npm run probar`.
+- [ ] CI: avisos del build, palabras prohibidas en `react/src`, prueba de humo.
+- [ ] `verificar-sitio`, `publicar` y `axe.mjs` con React.
+- [ ] Carga por partes.
+- [ ] Revisión de `ux-accesibilidad` de todo React, y arreglos.
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 
