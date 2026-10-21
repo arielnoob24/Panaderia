@@ -1231,7 +1231,17 @@ y sus pedidos al llegar la versión React.
 
 Pendiente de la fase 7:
 - [ ] Etiqueta `sitio-presentado`.
-- [ ] React sin imports de `js/`.
+- [x] React sin imports de `js/` (`7751f09`): todo en `src/servicios/`.
+      Nuevos `storage.js`, `mail.js`, `horario.js` y `cobro.js` (tal cual) y
+      `state.js` (solo lo que React usa: `CLAVE`, `MAX_UNIDADES`, `ENVIO`,
+      `telefonoLargo`, `dinero`, `idDe`); `guardado.js` de `js/pedido/` se
+      unió a `servicios/guardado.js`, `guardada.js` a `servicios/cuenta.js`
+      (una sola fuente otra vez) y `revisar()`/`normalizar()` de `repo.js` a
+      `servicios/catalogo.js`. Hasta el paso 4 las reglas están también en
+      `js/`: **congeladas**, no se cambian.
+- [ ] `revisar()` y `normalizar()` a un archivo propio sin nada de Vite
+      (`servicios/reglasCatalogo.js`), para que el CI las use con node;
+      `catalogo.js` las importa de ahí.
 - [ ] `react/` a la raíz y fuera lo viejo.
 - [ ] CI que publica `dist/`.
 - [ ] Herramientas, skills y agentes.
