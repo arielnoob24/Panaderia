@@ -490,7 +490,7 @@ las actualiza. Las dos de Vercel se copiaron a mano porque el CLI se colgaba con
 ese repositorio, y `frontend-design` igual: para actualizarlas, volver a copiarlas. Ojo: `npx skills use` **no instala**, solo genera un prompt de un
 uso; para instalar es `npx skills add <repo> --skill <nombre> -a claude-code --copy`.
 
-## 15. Migración a React (decidida, fase 5 hecha; sigue la 6)
+## 15. Migración a React (decidida, fase 6 hecha; sigue la 7)
 
 El 19 de octubre de 2026 el usuario eligió **React** para la siguiente versión.
 Se hace en la rama `mejoras`; `main` sigue con el sitio presentado hasta que
@@ -1170,6 +1170,15 @@ Pendiente de la fase 6:
       `{ tipo: 'sumar', lineas }` del reductor; el aviso se anuncia y además
       queda escrito bajo el botón (`.cuenta-pedido-nota`), para que quien
       mira la pantalla vea qué pasó aunque no entre nada.
+
+- [x] **Fase 6 cerrada** el 21 de octubre de 2026: `ci-local.sh` en orden
+      sobre `e36c0d7`, con `npm run probar` 23 de 23 (1.162 comprobaciones,
+      unos 9 min) y axe sobre React sin fallos automáticos.
+- [ ] Menor: el caso `reenviar-codigo` todavía espera a que crear acabe de
+      salir y su comentario dice que está "apuntado para frontend"; ya no
+      hace falta (la hoja de crear lleva clave nueva en cada llegada).
+- [ ] GitHub avisa de que las acciones v4 del CI usan Node 20 (obsoleto) y
+      de que `ubuntu-latest` pasa a Ubuntu 26: subir versiones cuando toque.
 
 ### Vistas y aspecto (decidido el 20 de octubre de 2026; solo React)
 
