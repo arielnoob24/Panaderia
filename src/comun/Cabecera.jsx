@@ -116,7 +116,11 @@ function Cabecera() {
           <img className="brand-logo" src={logo} alt="" width="420" height="184" />
         </Link>
         <nav ref={navRef} id="main-nav" className={menuAbierto ? 'main-nav is-open' : 'main-nav'} aria-label="Navegación principal">
-          <NavLink ref={primerEnlaceRef} to="/nosotros" state={{ entrar: true }} onClick={cerrarMenu}>Nosotros</NavLink>
+          {/* Inicio delante (seccion 4 del plan), tambien en el menu del
+              telefono. end: solo esta en Inicio quien esta en #/, no en
+              cualquier vista que empiece por la barra. */}
+          <NavLink ref={primerEnlaceRef} to="/" end state={{ entrar: true }} onClick={cerrarMenu}>Inicio</NavLink>
+          <NavLink to="/nosotros" state={{ entrar: true }} onClick={cerrarMenu}>Nosotros</NavLink>
           <MenuTienda
             abierta={tiendaAbierta}
             setAbierta={setTiendaAbierta}

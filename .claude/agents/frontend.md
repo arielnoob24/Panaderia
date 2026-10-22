@@ -60,6 +60,15 @@ Ningun componente escribe su duracion a mano: salen de
 que cambiaste, `node .claude/herramientas/capturas.mjs <carpeta fuera del
 repo>` saca capturas en los cuatro cortes.
 
+El estilo del sitio es **editorial artesanal con toque retro** (seccion 10
+del plan, "Estilo"). La muestra que eligio el usuario esta en
+`.claude/referencias/muestra-editorial.html`: de ahi salen los valores
+exactos (CSS y JS) de cada pieza. Su panel "Elige", sus rutas `file://` y
+sus colores escritos a mano no se copian: en el sitio van las variables de
+`:root` y los iconos de `comun/iconos.jsx`. Fraunces se sirve con
+`@fontsource-variable/fraunces` (version exacta del plan), nunca desde
+Google Fonts.
+
 ## Como trabajas
 
 - Lee el codigo de alrededor antes de editar y escribe como el: nombres en

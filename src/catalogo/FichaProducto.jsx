@@ -104,6 +104,8 @@ function FichaProducto({ producto, vista, visible, orden, retraso, entrando, ele
         {producto.tamanos.length > 0 && <Tamanos producto={producto} elegido={elegido} onElegir={onElegir} />}
         <div className="product-bottom">
           <strong>{dinero(precio)}</strong>
+          {/* Los puntos de la pizarra, del precio al control (seccion 4). */}
+          <span className="product-puntos" aria-hidden="true"></span>
           <Pedir producto={producto} nombre={nombre} precio={precio} imagenRef={imagenRef} />
         </div>
       </div>

@@ -15,7 +15,7 @@ import { AnimatePresence, m, useReducedMotion } from 'motion/react';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { productos } from '../estado/pedido.js';
 import { useCanasta } from './CanastaProvider.jsx';
-import { IconoCanasta } from './iconosPedido.jsx';
+import { IconoCestaAsa } from '../comun/iconos.jsx';
 import { PULSAR, RESORTE } from '../comun/movimiento.js';
 
 // 'sube' es true si el numero crecio: el nuevo llega desde abajo.
@@ -56,7 +56,7 @@ function BotonCanasta() {
       onClick={abrir}
       onKeyDown={alTeclear}
     >
-      <IconoCanasta />
+      <IconoCestaAsa />
       <span className="canasta-cuenta" hidden={n === 0}>
         <AnimatePresence initial={false} mode="popLayout" custom={sube}>
           <m.span

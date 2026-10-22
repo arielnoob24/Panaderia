@@ -15,6 +15,7 @@ import {
 import { useAvisos } from '../comun/Avisos.jsx';
 import { useCanasta } from './CanastaProvider.jsx';
 import { Basurero } from './iconosPedido.jsx';
+import { soltarGolpe, useNumeroQueEntra } from '../comun/golpes.js';
 
 const cuantosQuedan = (estado) => `${productos(unidades(estado.lineas))} en la canasta.`;
 
@@ -29,6 +30,10 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
 
   const masRef = useRef(null);
   const campoRef = useRef(null);
+  // Donde salen los "+1" y "−1" de cada toque, y el numero que entra al
+  // cambiar (comun/golpes.js): es movimiento, no cambia lo que se pide.
+  const golpesRef = useRef(null);
+  useNumeroQueEntra(campoRef, n);
   // La cuenta es un campo, no un letrero: para llevarse veinte panes nadie
   // quiere pulsar veinte veces. Lo que se esta tecleando vive aparte y no se
   // pisa hasta que se sale del campo; corregirlo al vuelo impediria escribir
@@ -48,6 +53,7 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
     // En el tope el mas no suma: dice por que y no vuela nada a la canasta.
     if (tope) { avisar(avisoTope(nombre)); return; }
     const despues = hacer({ tipo: 'agregar', id, nombre, precio });
+    soltarGolpe(golpesRef.current, '+1');
     volar(imagenRef?.current);
     avisar(`${nombre} añadido. ${cuantosQuedan(despues)}`);
   };
@@ -55,6 +61,7 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
   const alMenos = () => {
     const seVa = n <= 1;
     const despues = hacer({ tipo: 'cambiar', id, nombre, precio, cantidad: n - 1 });
+    soltarGolpe(golpesRef.current, '−1');
     avisar(seVa ? `${nombre} quitado. ${cuantosQuedan(despues)}` : `Una unidad menos de ${nombre}. ${cuantosQuedan(despues)}`);
     // El boton recien usado desaparece; el foco pasa al mas para no perderse.
     if (seVa) masRef.current?.focus();
@@ -155,6 +162,7 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
       >
         +
       </button>
+      <span ref={golpesRef} className="card-golpes" aria-hidden="true"></span>
     </div>
   );
 }

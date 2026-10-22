@@ -14,17 +14,6 @@ function Basurero() {
   );
 }
 
-// Canasta de pan: asa de arco, cuerpo ahusado y dos mimbres.
-function IconoCanasta() {
-  return (
-    <svg className="canasta-icono" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
-      <path d="M7.6 9.4a4.4 4.4 0 0 1 8.8 0" />
-      <path d="M3.6 9.4h16.8l-1.5 8.2a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z" />
-      <path d="M9.7 12.7l.6 3.5" /><path d="M14.3 12.7l-.6 3.5" />
-    </svg>
-  );
-}
-
 // El de la hoja "Inicia sesion para pagar".
 function IconoPersona() {
   return (
@@ -44,4 +33,4 @@ function IconoRuta() {
   );
 }
 
-export { Basurero, IconoCanasta, IconoPersona, IconoRuta };
+export { Basurero, IconoPersona, IconoRuta };

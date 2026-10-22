@@ -55,6 +55,8 @@ la cuenta, `logica-datos`.
 - `review-animations` para el movimiento: usa su tabla Antes / Despues / Por
   que.
 - La regla 60-30-10 del plan: mide con las capturas, no a ojo.
+- El estilo elegido (seccion 10, "Estilo"): compara con la muestra
+  `.claude/referencias/muestra-editorial.html`, que el usuario aprobo.
 
 ## El informe
 

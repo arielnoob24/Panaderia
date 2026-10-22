@@ -1,7 +1,8 @@
-// La franja de las espigas, en corteza. En #/ va debajo de la portada; en las
-// demas vistas, encima del pie (className "franja-pie"), y es la parte de
-// acento del 60-30-10 de esas vistas (seccion 15 del plan). Es adorno: el
-// lector de pantalla se la salta.
+// La franja de las espigas, en corteza, encima del pie de Nosotros, Contacto
+// y la tienda (className "franja-pie"): es la parte de acento del 60-30-10
+// de esas vistas. En #/ la sustituye la cinta de categorias (Cinta.jsx,
+// seccion 10 del plan); las demas vistas cambian en la segunda vuelta del
+// estilo. Es adorno: el lector de pantalla se la salta.
 import { Trigo } from './iconos.jsx';
 
 function Franja({ className = '' }) {

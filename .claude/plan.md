@@ -51,7 +51,8 @@ src/
   main.jsx              monta App dentro de HashRouter, LazyMotion, MotionConfig y los proveedores
   App.jsx               las vistas, la transicion y la carga por partes
   vistas/               Inicio, Nosotros, Contacto
-  catalogo/             Catalogo, VistaCabeza, FichaProducto, MasPedidos, Hero, categorias.js
+  catalogo/             Catalogo, VistaCabeza, FichaProducto, MasPedidos, Hero, CabeceraPeriodico,
+                        Cinta, categorias.js
   comun/                cabecera, menu Tienda, pie, avisos, globo, foco, vistas.js (rutas),
                         apertura.js (abrir la pagina y desplazamiento), cargaPorPartes.js
   pedido/               canasta, lineas, deshacer, confirmar, factura, pago, comprobante,
@@ -107,13 +108,15 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
 
 | Menú | Ruta | Contenido |
 |---|---|---|
-| Logo / Inicio | `#/` | Portada, la franja y "Los más pedidos" en carrusel, con un enlace a toda la tienda |
+| Logo / Inicio | `#/` | Cabecera de periódico, portada, la cinta de categorías y "Los más pedidos" en carrusel, con un enlace a toda la tienda |
 | Nosotros | `#/nosotros` | La historia y los principios (una columna bajo 420 px); la galería cuando haya fotos |
 | Tienda | `#/tienda-catalogo`, `#/tienda-<categoría>` | El catálogo; cambiar de categoría no vuelve a montar la vista |
 | Contáctanos | `#/contacto` | Horario con el día de hoy marcado, abierto/cerrado, dirección, mapa y contacto |
 | — | `#/confirmar`, `#/comprobante` | El pedido (sección 6) |
 | Silueta / iniciales | `#/cuenta/*` | La cuenta (sección 7) |
 
+- **Menú de arriba**: Inicio, Nosotros, Tienda y Contáctanos (Inicio
+  también en el menú del teléfono; el logo sigue llevando a `#/`).
 - **Al cambiar de vista**: arriba del todo, título de pestaña propio, `h1`
   con el foco (WCAG 2.4.3) y se anuncia. Transición: fundido con un pequeño
   desplazamiento hacia arriba (unos 400 ms, `--dur-base`). Al abrir la página no se mueve
@@ -170,7 +173,7 @@ cada ficha se alcanza con Tab.
 
 ### Vista de la tienda
 
-- Se entra por "Ver el menú", la palabra Tienda (catálogo entero) o una de sus
+- Se entra por "Nuestros panes" (portada), la palabra Tienda (catálogo entero) o una de sus
   categorías (con "Filtrar por" ya puesto). Entrar con un enlace limpia orden,
   "Mostrar" y búsqueda; Atrás y Adelante no.
 - Controles: Filtrar por (chips: Todas + 3 categorías), buscador (sin tildes ni
@@ -185,10 +188,23 @@ cada ficha se alcanza con Tab.
 - Cada ficha: foto con `srcset`, categoría encima del nombre, sello, tamaños
   (radios), precio y control `− cantidad +` (máximo 100 por producto). Al
   agregar, la foto vuela a la canasta y se anuncia.
-- La ficha (también en el carrusel): nombre en Georgia como en la canasta,
-  sin hueco vacío entre el nombre y el precio, sellos con letra de al menos
-  11 px. Con el puntero encima sube y la foto se acerca despacio (escena);
-  al pulsar baja a `scale(.97)`.
+- La ficha (también en el carrusel), en el estilo editorial (sección 10):
+  esquinas rectas, borde fino `--horno` y la foto con un margen de papel;
+  categoría en versalitas, nombre en Fraunces, sin hueco vacío entre el
+  nombre y el precio. El precio en Fraunces y, entre el precio y el
+  control, **puntos como en una pizarra**. Sellos como **sello de tinta**
+  (doble aro), letra de al menos 11 px. Con el puntero encima sube con
+  **sombra dura** `6px 6px 0 --horno`, la foto se acerca despacio y el sello
+  gira un poco; al pulsar baja a `scale(.97)`.
+- **Agregar se nota aunque sea rápido** (S1, elegida sobre la muestra): el
+  `+` solo, y tras el primer toque se **estira** a `− n +` (el número entra
+  deslizándose cada vez que cambia). Cada toque suelta un **"+1"** (o
+  "−1") que sube desde el botón y se desvanece, y con prisa salen varios a
+  la vez (`aria-hidden`: el anuncio ya lo hace el control); la canasta
+  de arriba **brinca** y sube su número. En 0 vuelve a ser el `+` solo. El
+  movimiento vive en `comun/golpes.js`; la foto que vuela a la canasta se
+  queda. Con menos movimiento: sin "+1" ni brinco, el número
+  cambia sin más.
 - Al cambiar de vista el foco va al `h1`, pero sin dibujarle el recuadro
   ámbar: un título no es un control.
 
@@ -464,6 +480,59 @@ pedido sigue valiendo.
   un enlace puede quedarse con `:hover` normal. En JS, `pointerType`.
 - Sin cache-buster a mano: Vite pone huella a los nombres de los archivos.
 
+### Estilo: editorial artesanal con toque retro (21 de octubre de 2026)
+
+Elegido por el usuario sobre una muestra (`.claude/referencias/muestra-editorial.html`,
+que trae el CSS y el JS de cada pieza; su panel "Elige" y sus rutas `file://`
+no van al sitio). Primera vuelta: **portada y fichas**; Nosotros, Contacto,
+la canasta y la cuenta, en una segunda vuelta. Los colores, el logo, el
+ritmo del movimiento y la accesibilidad no cambian.
+
+- **Letra de títulos: Fraunces** (variable, con los ejes `opsz`, `SOFT` y
+  `WONK`), servida desde el propio sitio con `@fontsource-variable/fraunces`
+  5.3.0 (`full.css` y `full-italic.css`), nunca desde Google. Sustituye a
+  Georgia en **todos** los títulos del sitio (para que no convivan dos
+  letras de título); el texto corrido sigue en Arial.
+- **Grano de papel** muy tenue en el fondo `--masa` (SVG de ruido en CSS).
+- **Rótulos en versalitas espaciadas** (`.72rem`, `letter-spacing .22em`,
+  mayúsculas, `--corteza-oscura`): categorías, "Horneado cada mañana",
+  "De nuestro mostrador".
+- **Cabecera de periódico** bajo la barra, solo en la portada:
+  `Miércoles, 21 de octubre ═══ PANADERÍA & PASTELERÍA ═══ ● Abierto · hasta las 20:00`.
+  La fecha es la de hoy (`Intl`, `es-EC`); el estado sale de `useHorario`
+  (abierto con su hora de cierre, o cerrado con cuándo abre). Las líneas
+  dobles se dibujan de izquierda a derecha al entrar. En el teléfono solo
+  la fecha y el estado. Sin ciudad ni año de fundación (no hay dato real).
+- **Portada** en dos columnas: a la izquierda el rótulo con una espiga
+  ("Horneado cada mañana"), el `h1` "El sabor / *de siempre*" en Fraunces
+  grande (la segunda línea en cursiva cobriza y desplazada), la frase
+  **"Pan recién horneado, todos los días."** en cursiva, el botón
+  **"Nuestros panes"** con el icono de la **hogaza** y "Cómo llegar" con el
+  pin. A la derecha la foto **cuadrada en arco** (unos 460 px, marco fino a
+  10 px), con el pie "Miga abierta, corteza tostada" y el **sello** "Hecho a
+  mano · Pan de la casa", quieto (solo gira un poco con el puntero encima;
+  **nunca con el scroll**: marea). La nota "Horneando ahora mismo" sale de
+  la portada: su estado lo dice ya la cabecera de periódico.
+  - Al entrar: rótulo, título, frase y botones suben uno tras otro; la foto
+    se descubre de abajo arriba; el sello cae girando. Una vez, escena.
+- **Cinta cobriza** (en lugar de la franja de trigo): Panes, Dulces y
+  pasteles, Bebidas, cada una con su icono de línea (hogaza, rebanada,
+  botella) y separadas por ✦; cada una es un enlace a su categoría.
+- **"Los más pedidos"** sobre fondo claro: rótulo "De nuestro mostrador",
+  `h2` en Fraunces, "Toda la tienda" con flecha y un filete que se dibuja
+  al verse. Sin número de sección ("N.º 1" se descartó).
+- **Botón principal de la portada**: ámbar, esquinas de 2 px, versalitas,
+  **sombra dura** `4px 4px 0 --horno`; con el puntero se levanta y cruza un
+  **brillo**; al pulsar se hunde contra su sombra. El icono se inclina.
+- **Enlaces sueltos** ("Cómo llegar", "Toda la tienda", la cinta):
+  **imprenta + ola** (A1): con el puntero se levantan con borde y sombra
+  dura, las letras saltan una tras otra y se ponen cobrizas, y el icono da
+  un saltito. Las letras sueltas no cambian el nombre accesible del enlace.
+- **Iconos de línea** del mismo trazo que los dibujos de trigo
+  (`comun/iconos.jsx`): hogaza, rebanada, botella, espiga, pin, flecha y
+  **cesta con asa**, que pasa a ser el icono de la canasta (arriba y la
+  flotante del teléfono).
+
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
 
 - Todo con teclado; paneles que atrapan el foco, Esc y devolución del foco;
@@ -478,6 +547,10 @@ pedido sigue valiendo.
 - ARIA solo donde hace falta: `role="dialog"` + `aria-modal`, `alertdialog`,
   `aria-expanded`, `aria-controls`, `aria-current`, `aria-live="polite"`,
   `aria-invalid` + `aria-describedby`.
+- Sobre el grano de papel el contraste se mide con su píxel más oscuro,
+  rgb(238,230,220): rótulos 6,52:1, pie de foto 6,17:1, `h1 em` 3,87:1
+  (vale por ser letra grande). En el botón principal de la portada la
+  sombra dura sustituye al halo ámbar; el anillo de 3 px se queda.
 - Contraste medido (texto 12,4:1; sobre la foto de la portada 8:1 o más;
   sobre los fondos de trazos 5,7:1 o más).
 - Con `forced-colors`, lo elegido se pinta con `Highlight` (filtros,
@@ -516,7 +589,6 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [ ] Teléfono, WhatsApp e Instagram reales, o quitarlos del JSON-LD y de los enlaces.
 - [ ] Ingredientes y alérgenos por producto (confirmados por el negocio).
 - [ ] Unidad del precio (pieza, funda, docena).
-- [ ] "Horneando ahora mismo" se deduce del horario, no de la realidad.
 - [ ] Galería del local en `#/nosotros` (`assets/img/local/`), cuando el
       usuario pase fotos reales; sin fotos no se enseña nada.
 
@@ -538,6 +610,25 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       quieto se queda.
 - [ ] Sin probar en Firefox ni Safari (`mask-image`, `:has(:focus-visible)`
       del carrusel), ni `forced-colors` en la barra nueva, ni con NVDA.
+
+### Estilo editorial artesanal
+- [ ] axe no mide el contraste sobre el grano ni dentro de las fichas
+      ("a revisar a mano" en 32 de 46 estados; medido a mano, todo pasa):
+      que `axe.mjs` haga otra pasada de `color-contrast` sin el grano
+      (`body{background-image:none}`, `.product-card::after{content:none}`).
+- [x] Primera vuelta: portada y fichas (sección 10, "Estilo"), Inicio en el
+      menú y la cesta con asa en la canasta (21 de octubre de 2026).
+- [ ] Georgia sigue en `body`: la heredan los `.button` ("Ir a pagar",
+      "Iniciar sesión"...), "Saltar al contenido" y el párrafo de Nosotros, y
+      el `<noscript>` de `index.html`. La sección 10 dice texto corrido en
+      Arial: decidirlo en la segunda vuelta, con los botones.
+- [ ] A 420 px o menos el "+1" sube sobre la foto, de donde sale también la
+      foto que vuela a la canasta: no se tapan, pero se ven a la vez.
+      Mirarlo con el usuario.
+- [ ] Hover del menú de arriba: el usuario elige entre N1 Ola, N2 Rueda,
+      N3 Pastilla (recomendada) y N4 Icono que asoma (están en la muestra).
+- [ ] Segunda vuelta: Nosotros, Contacto, canasta y cuenta; el botón
+      principal con sombra dura y brillo en todo el sitio.
 
 ### Aspecto y movimiento (revisión visual del 21 de octubre de 2026)
 - [x] Barra siempre `--horno`, sin invertirse; línea ámbar sobre lo oscuro.
@@ -590,7 +681,7 @@ Los agentes viven en `.claude/agents/` y todos leen este plan primero.
 | `base-datos` | La base de datos (`bd/`) y su prueba (`.claude/skills/probar-bd/probar.mjs`) | Sí | `probar-bd`, `supabase-postgres-best-practices` |
 | `ux-accesibilidad` | WCAG 2.2, heurísticas de Nielsen, IHC, recorridos de usuario | No, solo informa | `wcag-audit-patterns`, `nielsen-usability-heuristics` (+ `.claude/herramientas/axe.mjs`) |
 | `revision-visual` | Aspecto y movimiento: capturas en 1440/900/680/390 px, fichas, carrusel, barra, tipografía, 60-30-10, duraciones y curvas | No, solo informa | `frontend-design`, `emil-design-eng`, `review-animations`, `web-design-guidelines` (+ `.claude/herramientas/capturas.mjs`) |
-| `calidad-publicacion` | Revisión de código y seguridad, `pruebas/`, CI, `package.json`, publicar | Sí, lo de publicar y las pruebas | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
+| `calidad-publicacion` | Revisión de código y seguridad, `pruebas/`, `.claude/herramientas/`, CI, `package.json`, publicar | Sí, lo de publicar y las pruebas | `verificar-sitio`, `publicar`, `vercel-react-best-practices` |
 
 Skills en `.claude/skills/`:
 

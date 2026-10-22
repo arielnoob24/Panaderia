@@ -5,6 +5,12 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
 import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
+// Fraunces, la letra de los titulos (seccion 10 del plan), servida desde el
+// propio sitio: Vite copia sus woff2 al build y nada se pide a Google. full
+// trae todos los ejes (opsz, SOFT, WONK y el peso), en recta y en cursiva;
+// cada archivo se baja solo si en la pagina hay letras de su alfabeto.
+import '@fontsource-variable/fraunces/full.css';
+import '@fontsource-variable/fraunces/full-italic.css';
 // La hoja de siempre, la del sitio presentado (assets/css/styles.css):
 // las clases de los componentes son las mismas, asi que tiene que aplicar tal
 // cual. Vite resuelve sus url() (las fotos de portada) y las mete en el build.

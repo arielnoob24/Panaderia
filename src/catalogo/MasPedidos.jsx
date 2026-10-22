@@ -1,15 +1,20 @@
 // ---- "Los mas pedidos" en #/ ----------------------------------------------
 // El mostrador: los destacados que se pueden pedir hoy, en un carrusel de
-// scroll-snap sobre una banda oscura (la madera del mostrador). Las fichas son
-// las mismas de la tienda; el carrusel solo las pone de lado (useFila.js).
-// Cada ficha se alcanza con Tab y el navegador la trae a la vista sola.
+// scroll-snap sobre la masa clara (seccion 10 del plan, "Estilo"). Encima,
+// la cabeza de seccion de periodico: rotulo, titulo, "Toda la tienda" y un
+// filete que se dibuja la primera vez que se ve (useAparecer). Las fichas
+// son las mismas de la tienda; el carrusel solo las pone de lado
+// (useFila.js). Cada ficha se alcanza con Tab y el navegador la trae a la
+// vista sola.
 import { useCallback, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { m, useReducedMotion } from 'motion/react';
 import { dinero } from '../servicios/state.js';
 import { catalogo } from '../servicios/catalogo.js';
 import { useAvisos } from '../comun/Avisos.jsx';
-import { Chevron } from '../comun/iconos.jsx';
+import { Chevron, IconoFlecha } from '../comun/iconos.jsx';
+import TextoOla from '../comun/TextoOla.jsx';
+import { useAparecer } from '../comun/useAparecer.js';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
 import { PULSAR } from '../comun/movimiento.js';
 import FichaProducto from './FichaProducto.jsx';
@@ -29,6 +34,7 @@ function MasPedidos() {
   const gridRef = useRef(null);
   const avanceRef = useRef(null);
   const fila = useFila({ gridRef, avanceRef });
+  const cabeza = useAparecer('seccion-cabeza');
   // El tamano elegido de cada ficha, como en la tienda.
   const [elegidos, setElegidos] = useState({});
   const alElegir = useCallback((producto, i) => {
@@ -59,12 +65,19 @@ function MasPedidos() {
   );
 
   return (
-    <section className="mostrador banda-oscura con-fondo" aria-labelledby="mas-pedidos-titulo">
+    <section className="mostrador con-fondo" aria-labelledby="mas-pedidos-titulo">
       <FondoDibujo vista="inicio" />
       <div className="container">
-        <div className="fila-cabeza">
-          <h2 id="mas-pedidos-titulo" className="fila-rotulo">Los más pedidos</h2>
-          <Link className="fila-ver-todo" to="/tienda-catalogo" state={{ entrar: true }}>Ver toda la tienda</Link>
+        <div ref={cabeza.ref} className={cabeza.className} data-motion={cabeza['data-motion']}>
+          <div>
+            <p className="rotulo">De nuestro mostrador</p>
+            <h2 id="mas-pedidos-titulo" className="fila-rotulo">Los más pedidos</h2>
+          </div>
+          <Link className="h-imprenta h-ola" to="/tienda-catalogo" state={{ entrar: true }}>
+            <TextoOla>Toda la tienda</TextoOla>
+            <IconoFlecha />
+          </Link>
+          <span className="seccion-filete" aria-hidden="true"></span>
         </div>
         <p className="mostrador-dicho">
           Los {DESTACADOS.length} que más se llevan. En la tienda hay {productos.length}.

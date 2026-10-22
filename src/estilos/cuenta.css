@@ -36,7 +36,7 @@ a.nav-cuenta { text-decoration: none; }
 /* La banda: el titulo en papel sobre el horno, como el rotulo del mostrador.
    Abajo deja sitio para que la hoja se le monte encima. */
 .cuenta-vista-banda { padding: 2rem clamp(1.4rem, 4vw, 2.6rem) 4.4rem; border-radius: var(--r-card); }
-.cuenta-vista-titulo { margin: 0; color: var(--papel); font: 500 clamp(2.2rem, 4.4vw, 3.2rem)/1 Georgia, serif; }
+.cuenta-vista-titulo { margin: 0; color: var(--papel); font: 500 clamp(2.2rem, 4.4vw, 3.2rem)/1 var(--letra-titulo); }
 /* Los dibujos de la banda, a la derecha del titulo. */
 .cuenta-vista-banda .fondo-pieza.is-arriba-derecha { top: -18px; right: 4%; width: 230px; }
 .fondo-cuenta-crear .is-arriba-derecha { width: 300px; }
