@@ -546,6 +546,12 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [x] Carrusel: flechas y barra de avance en el pie en todos los anchos, sin
       barra del navegador, borde desvanecido.
 - [x] Sin recuadro ámbar en el `h1` al cambiar de vista.
+- [ ] Carrusel: si a mitad del salto de 560 ms se mueve con el teclado o se
+      tabula a una ficha, el salto no se cancela (`useFila.js`, escuchar
+      también `keydown` y `focusin`).
+- [ ] Decidir si el buscador y "Ordenar por" de la tienda se quedan con el
+      borde corteza al pasar el ratón (salió al pasar el hover a
+      `.con-puntero`).
 
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).
