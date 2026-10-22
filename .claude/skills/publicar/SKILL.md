@@ -1,16 +1,14 @@
 ---
 name: publicar
-description: Sube un cambio del sitio de la panaderia a GitHub Pages - verifica el build y las pruebas, commitea solo lo tocado, pasa el CI en local, pushea a la rama de trabajo (mejoras) y espera al workflow; a main solo cuando el usuario pide llevarlo al sitio. Usala al terminar cualquier cambio del sitio; el usuario quiere que todo se suba sin preguntar.
+description: Sube un cambio del sitio de la panaderia a GitHub Pages - verifica el build y las pruebas, commitea solo lo tocado, pasa el CI en local, pushea a main (que publica en Pages) y espera al workflow. Usala al terminar cualquier cambio del sitio; el usuario quiere que todo se suba sin preguntar.
 ---
 
 # Publicar en GitHub Pages
 
-El proyecto ya se presento. `main` es lo que sirve Pages
-(https://arielnoob24.github.io/Panaderia/); las mejoras van en la rama
-`mejoras`. Cada cambio se commitea y se pushea a esa rama sin preguntar,
-siguiendo estos pasos en orden. Pasarlo a `main` (y por tanto al sitio) solo
-cuando el usuario lo pida: `git switch main && git merge mejoras` y despues los
-pasos 4 a 6 sobre `main`.
+Se trabaja directo en `main`, que es lo que sirve Pages
+(https://arielnoob24.github.io/Panaderia/). Cada cambio se commitea y se
+pushea a `main` sin preguntar, siguiendo estos pasos en orden; como cada push
+publica, el CI local (paso 4) no se salta nunca.
 
 Lo que se publica es `dist/`, lo que arma `npm run build`: el CI lo construye
 y lo sube. No hay nada que regenerar a mano ni `?v=` que subir: Vite pone una
@@ -80,15 +78,14 @@ Si falla, se arregla y se corrige el commit (todavia no se ha pusheado, asi que
 ## 5. Pushear y esperar
 
 ```bash
-git branch --show-current          # mejoras, salvo que el usuario pidiera main
+git branch --show-current          # main
 git push origin HEAD
 gh run list --limit 1
 gh run watch <id> --exit-status
 ```
 
 No digas que esta subido hasta que el workflow `Validar y publicar sitio`
-termine en verde. En `mejoras` solo valida; el job de publicar (`deploy`) solo
-corre en `main`. Si falla, `gh run view <id> --log-failed`, arreglar y volver
+termine en verde (`validate` y despues `deploy`). Si falla, `gh run view <id> --log-failed`, arreglar y volver
 a publicar con un commit nuevo (lo pusheado no se reescribe).
 
 En GitHub, `validate` instala, construye sin avisos, valida el catalogo y los

@@ -36,7 +36,7 @@ JavaScript, React Router con `HashRouter`, Motion).
 | Dependencias **con versión exacta** (sin `^`), solo las que diga este plan | Que un `npm ci` de hoy y uno de dentro de un mes construyan lo mismo |
 | Se abre **por HTTP** (Pages, `npm run dev`, `npm run preview`); con doble clic no | Decidido al elegir React: un sitio publicado se abre por HTTP |
 | El CI rechaza las palabras de cafetería, café y cóctel, **también en comentarios** | Es una panadería; lo revisa `ci-cd.yml` |
-| `main` es lo que sirve GitHub Pages; se trabaja en la rama **`mejoras`**, donde se commitea y pushea sin preguntar; a `main` solo cuando el usuario lo pide | Lo publicado no cambia hasta fusionar |
+| Se trabaja directo en **`main`**, que es lo que sirve GitHub Pages: se commitea y pushea sin preguntar (desde el 21 de octubre de 2026; `mejoras` ya no se usa) | Cada push publica, así que el CI local va siempre antes |
 | Lo guardado en el navegador **no cambia de formato** sin plan (claves de la sección 8) | Quien ya usó el sitio conserva su canasta, su cuenta y sus pedidos |
 | Los informes de clase admiten **máximo 5% de texto de IA** | Pasarse cuesta la mitad de la nota; lo que escribe Claude es referencia |
 | La base de datos (`bd/`) cumple las **reglas del modelo** de la sección 8 | Las pusieron el usuario y el profesor |
@@ -498,9 +498,8 @@ pedido sigue valiendo.
    (`git commit -m ... -- <rutas>`: un `git commit` sin rutas se lleva lo que
    otro agente tenga en el índice), mensaje en español.
 4. `bash .claude/skills/publicar/ci-local.sh`.
-5. Push a `mejoras` y esperar a que `Validar y publicar sitio` salga en verde.
-   Solo un push a `main` publica en Pages; se fusiona cuando el usuario lo
-   pide.
+5. Push a `main` y esperar a que `Validar y publicar sitio` salga en verde
+   (`validate` y `deploy`, que publica en Pages).
 
 El CI (`validate`, en cualquier rama): `npm ci`, build sin avisos, `revisar()`
 de cada producto, categorías ↔ `CATEGORIAS`, fotos en los dos anchos y de la

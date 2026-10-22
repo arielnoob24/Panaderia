@@ -31,9 +31,9 @@ el plan se actualiza igual.
 
 ## Reglas fijas
 
-- Se trabaja en la rama **`mejoras`**: se commitea y se pushea ahí sin
-  preguntar. A `main` (lo presentado, lo que sirve GitHub Pages) solo se
-  fusiona cuando el usuario lo pide.
+- Se trabaja directo en **`main`** (desde el 21 de octubre de 2026): se
+  commitea y se pushea ahí sin preguntar, y cada push publica en GitHub
+  Pages. La rama `mejoras` ya no se usa.
 - Solo servicios gratis, sin tarjeta.
 - Los informes de clase admiten como máximo un 5% de texto de IA: lo que
   escribe Claude es material de referencia, nunca texto para entregar.
