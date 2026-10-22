@@ -1,7 +1,7 @@
 // ---- La canasta en pantalla: lo que comparten sus piezas ----------------
 // El boton de la cabecera, el panel, la barra de deshacer y el control de
 // cantidad de cada ficha viven en sitios distintos de la pagina, pero se
-// pasan el foco y la animacion entre ellos. Aqui esta lo que en cart.js eran
+// pasan el foco y el brinco de la canasta entre ellos. Aqui esta lo que en cart.js eran
 // variables del modulo: si el panel esta abierto, donde esta cada boton y a
 // donde va el foco despues de quitar o de deshacer.
 //
@@ -11,8 +11,6 @@ import { useLocation } from 'react-router-dom';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { unidades, productos } from '../estado/pedido.js';
 import { useAvisos } from '../comun/Avisos.jsx';
-import { movimientoReducido } from '../comun/useMovimientoReducido.js';
-import { CURVA, DURACION, curvaCss, ms } from '../comun/movimiento.js';
 
 const ContextoCanasta = createContext(null);
 
@@ -63,42 +61,18 @@ function CanastaProvider({ children }) {
   const masDeFicha = (id) => [...fichas.current].find((f) => f.coincide(id))?.boton.current;
 
   // ---- "Ya esta en la canasta" ---------------------------------------
-  // La foto vuela de la ficha al boton de la canasta y la canasta da un
-  // saltito al recibirla. Va por el DOM y no por estado: se mueve a cada
-  // cuadro. La clase del boton no la pone React (su className no cambia), asi
-  // que quitarla y ponerla aqui no se pisa al repintar.
-  const latir = () => {
+  // Al agregar desde una ficha la canasta da un brinco al instante (seccion 4
+  // del plan; ninguna foto vuela hasta ella). Va por el DOM y no por estado:
+  // la clase del boton no la pone React (su className no cambia), asi que
+  // quitarla y ponerla aqui no se pisa al repintar. Con menos movimiento no
+  // brinca: styles.css deja la animacion en nada.
+  const latir = useCallback(() => {
     const boton = botonRef.current;
     if (!boton) return;
     // Quitar y volver a poner la clase reinicia la animacion.
     boton.classList.remove('is-latido');
     void boton.offsetWidth;
     boton.classList.add('is-latido');
-  };
-  const volar = useCallback((img) => {
-    const destino = botonRef.current?.getBoundingClientRect();
-    const origen = img?.getBoundingClientRect();
-    if (movimientoReducido() || !origen?.width || !destino?.width) { latir(); return; }
-    const lado = 76;
-    const bolita = document.createElement('span');
-    bolita.className = 'vuela-canasta';
-    bolita.setAttribute('aria-hidden', 'true');
-    bolita.style.backgroundImage = `url("${img.currentSrc || img.src}")`;
-    bolita.style.left = `${origen.left + origen.width / 2 - lado / 2}px`;
-    bolita.style.top = `${origen.top + origen.height / 2 - lado / 2}px`;
-    document.body.append(bolita);
-    const dx = destino.left + destino.width / 2 - (origen.left + origen.width / 2);
-    const dy = destino.top + destino.height / 2 - (origen.top + origen.height / 2);
-    // Sale un poco hacia arriba, como lanzada, y cae en la canasta haciendose
-    // pequena.
-    const vuelo = bolita.animate([
-      { transform: 'translate(0, 0) scale(.6)', opacity: 0 },
-      { transform: 'translate(0, -24px) scale(1.1)', opacity: 1, offset: 0.18 },
-      { transform: `translate(${dx * 0.55}px, ${dy * 0.55 - 70}px) scale(.75)`, opacity: 1, offset: 0.6 },
-      { transform: `translate(${dx}px, ${dy}px) scale(.25)`, opacity: 0.7 },
-    ], { duration: ms(DURACION.editorial), easing: curvaCss(CURVA.ui) });
-    vuelo.onfinish = () => { bolita.remove(); latir(); };
-    vuelo.oncancel = () => bolita.remove();
   }, []);
 
   // ---- Deshacer --------------------------------------------------------
@@ -129,8 +103,8 @@ function CanastaProvider({ children }) {
     abierta, abrir, cerrar, pide, setPide,
     botonRef, barraRef, deshacerRef, tituloRef,
     focoLinea, enfocarLinea, registrarFicha,
-    volar, deshacer, olvidar,
-  }), [abierta, abrir, cerrar, pide, focoLinea, enfocarLinea, registrarFicha, volar, deshacer, olvidar]);
+    latir, deshacer, olvidar,
+  }), [abierta, abrir, cerrar, pide, focoLinea, enfocarLinea, registrarFicha, latir, deshacer, olvidar]);
 
   return <ContextoCanasta.Provider value={valor}>{children}</ContextoCanasta.Provider>;
 }

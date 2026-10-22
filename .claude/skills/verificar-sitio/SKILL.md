@@ -29,7 +29,7 @@ que no baja ningun Chromium.
 `npm run probar` sirve una copia de `dist/` en un puerto libre, abre Edge y
 corre los casos de `pruebas/casos/` uno tras otro, con `humo` primero:
 
-- `humo`: la portada arranca con su `h1` y la fila de destacados, la tienda
+- `humo`: la portada arranca con su `h1` y la cinta de categorias, la tienda
   tiene una ficha por producto de `data/productos.json`, agregar deja una
   linea en la canasta, y crear una cuenta con el codigo del recuadro llega a
   `#/cuenta` con la contrasena sin guardar en claro.

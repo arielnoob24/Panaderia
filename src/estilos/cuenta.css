@@ -5,7 +5,7 @@
    panel (cuenta-campo, cuenta-reglas, codigo-falso, cuenta-pedido...); aqui
    va lo que cambia al pasar de un panel estrecho a una vista con ancho.
 
-   Cada vista es lo mismo que el mostrador de la portada: una banda de horno
+   Cada vista es una banda de horno
    con el titulo y los dibujos de trigo, y el formulario como una hoja de
    papel que cuelga de ella sobre la masa. Reparto 60-30-10: masa y papel el
    fondo y la hoja, horno la banda y el texto, ambar el boton y los vistos. */
@@ -33,7 +33,7 @@ a.nav-cuenta { text-decoration: none; }
 .cuenta-vista-pedidos .cuenta-vista-caja { max-width: 760px; }
 .cuenta-vista-crear .cuenta-vista-caja { max-width: 1000px; }
 
-/* La banda: el titulo en papel sobre el horno, como el rotulo del mostrador.
+/* La banda: el titulo en papel sobre el horno.
    Abajo deja sitio para que la hoja se le monte encima. */
 .cuenta-vista-banda { padding: 2rem clamp(1.4rem, 4vw, 2.6rem) 4.4rem; border-radius: var(--r-card); }
 .cuenta-vista-titulo { margin: 0; color: var(--papel); font: 500 clamp(2.2rem, 4.4vw, 3.2rem)/1 var(--letra-titulo); }

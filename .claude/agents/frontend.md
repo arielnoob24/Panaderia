@@ -25,8 +25,9 @@ cambia en el mismo cambio.
 - `vite.config.js`, `src/main.jsx` y `src/App.jsx`: las vistas, sus rutas y
   redirecciones (tambien las de `#/cuenta/*`), la transicion y la carga por
   partes (`src/comun/cargaPorPartes.js`).
-- `src/vistas/` (Inicio, Nosotros, Contacto) y `src/catalogo/`: portada, "Los
-  mas pedidos", la tienda, filtros, orden, buscador y fichas.
+- `src/vistas/` (Inicio, Nosotros, Contacto) y `src/catalogo/`: portada y
+  cinta, la tienda, filtros, orden, buscador y fichas (con el control de
+  cantidad, su "+1" y su destello al agregar).
 - `src/comun/`: cabecera, menu Tienda, pie, avisos `aria-live`, atrapar el
   foco, el globo, el horario, las rutas (`vistas.js`), abrir la pagina y el
   desplazamiento (`apertura.js`), los fondos de trazos.

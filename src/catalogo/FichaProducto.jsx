@@ -7,18 +7,17 @@
 // (filtro, orden, entrada escalonada) y se lo pasa. Ella pinta y avisa del
 // tamano elegido, que sube al catalogo porque ordenar por precio usa el precio
 // del tamano que se esta viendo, como en el sitio presentado.
-import { Fragment, memo, useRef } from 'react';
+import { Fragment, memo } from 'react';
 import { dinero, idDe } from '../servicios/state.js';
 import { fotoDe, ANCHOS } from '../servicios/catalogo.js';
 import { useCargaImagen, clases } from '../comun/useCargaImagen.js';
 import { nombreCategoria } from './categorias.js';
 import ControlCantidad from '../pedido/ControlCantidad.jsx';
 
-// Cuanto mide la foto en cada vista, igual que SIZES_CUADRICULA y SIZES_FILA
-// de view.js: sin esto el telefono bajaria la de 840 donde basta la de 420.
+// Cuanto mide la foto en la cuadricula, igual que SIZES_CUADRICULA de
+// view.js: sin esto el telefono bajaria la de 840 donde basta la de 420.
 const SIZES = {
   cuadricula: '(max-width: 680px) calc(50vw - 23px), (max-width: 900px) calc(50vw - 40px), 280px',
-  fila: '(max-width: 680px) calc(50vw - 23px), 272px',
 };
 
 // La etiqueta de agotado no viene en los datos: sale de que no haya existencia.
@@ -58,9 +57,9 @@ function Tamanos({ producto, elegido, onElegir }) {
 // Lo agotado no lleva boton de pedir: lleva dicho que vuelve manana.
 // Lo disponible lleva el control de cantidad de la canasta (pedido/), el mismo
 // que pone cart.js: cerrado, solo el +; con algo pedido, quitar, cuenta y sumar.
-function Pedir({ producto, nombre, precio, imagenRef }) {
+function Pedir({ producto, nombre, precio }) {
   if (!producto.disponible) return <span className="card-agotado">Vuelve mañana</span>;
-  return <ControlCantidad nombre={nombre} precio={precio} imagenRef={imagenRef} />;
+  return <ControlCantidad nombre={nombre} precio={precio} />;
 }
 
 function FichaProducto({ producto, vista, visible, orden, retraso, entrando, elegido = 0, onElegir }) {
@@ -71,21 +70,17 @@ function FichaProducto({ producto, vista, visible, orden, retraso, entrando, ele
   const nombre = tamano ? `${producto.nombre} ${tamano.valor}` : producto.nombre;
   const precio = tamano ? tamano.precio : producto.precio;
   const carga = useCargaImagen();
-  // La foto que vuela a la canasta al agregar sale de aqui.
-  const imagenRef = useRef(null);
   return (
     <article
       className={entrando ? 'product-card catalog-enter' : 'product-card'}
       hidden={!visible}
       style={{ order: orden, '--catalog-delay': retraso === undefined ? undefined : `${retraso}ms` }}
       data-available={producto.disponible ? undefined : 'false'}
-      data-destacado={producto.destacado ? 'true' : undefined}
       data-category={producto.categoria}
     >
       <div className={clases('product-image', carga.hueco)}>
         {/* El src es el de reserva para quien no entienda srcset: el grande. */}
         <img
-          ref={imagenRef}
           src={fotoDe(producto, 840)}
           srcSet={srcSet}
           sizes={SIZES[vista]}
@@ -106,7 +101,7 @@ function FichaProducto({ producto, vista, visible, orden, retraso, entrando, ele
           <strong>{dinero(precio)}</strong>
           {/* Los puntos de la pizarra, del precio al control (seccion 4). */}
           <span className="product-puntos" aria-hidden="true"></span>
-          <Pedir producto={producto} nombre={nombre} precio={precio} imagenRef={imagenRef} />
+          <Pedir producto={producto} nombre={nombre} precio={precio} />
         </div>
       </div>
     </article>

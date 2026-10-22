@@ -17,7 +17,7 @@ vite.config.js          la configuracion de Vite
 src/
   main.jsx, App.jsx     el arranque y las vistas
   vistas/               Inicio, Nosotros y Contacto
-  catalogo/             la tienda, sus filtros, las fichas y "Los mas pedidos"
+  catalogo/             la portada, la cinta, la tienda, sus filtros y las fichas
   pedido/               la canasta, confirmar el pedido, el pago y el comprobante
   cuenta/               iniciar sesion, crear cuenta, verificar, recuperar la
                         contrasena, Mis datos y Mis pedidos
@@ -91,8 +91,8 @@ corre la prueba `humo` en Chrome. Solo en `main` publica `dist/` en Pages.
 Meter, quitar o cambiar un producto es editar `data/productos.json`. Cada
 producto necesita `nombre`, `categoria`, `precio`, `foto` y `alt`;
 `disponible: false` lo marca como agotado, `etiqueta` le pone el sello de
-color, `tamanos` le da varias medidas con su precio y `destacado: true` lo
-pone en "Los mas pedidos".
+color, `tamanos` le da varias medidas con su precio y `destacado` se guarda
+pero hoy el sitio no lo usa.
 
 El campo `foto` es la raiz del nombre del archivo, sin ancho ni extension: de
 `assets/img/productos/pan-redondo` salen `pan-redondo-420.jpg` y

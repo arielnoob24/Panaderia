@@ -12,13 +12,13 @@ export default async function humo(t) {
   const ctx = await t.contexto(VENTANAS.escritorio, { nombre: 'humo' });
   const p = await ctx.newPage();
 
-  // La portada: cabecera, h1 y la fila de "Los mas pedidos".
+  // La portada: cabecera, h1 y la cinta con sus tres categorias.
   await p.goto(t.REACT + '#/');
-  await p.waitForSelector('.product-card');
+  await p.waitForSelector('.cinta');
   t.ok(await p.locator('h1').count() === 1, 'la portada no tiene un h1');
   t.ok(await p.locator('.site-header').count() === 1, 'la portada no tiene cabecera');
-  const destacados = productos.filter((x) => x.destacado === true && x.disponible !== false).length;
-  t.ok(await p.locator('.product-card').count() >= Math.min(4, destacados), 'la fila de la portada viene vacia');
+  const cinta = await p.locator('.cinta a[href^="#/tienda-"]').count();
+  t.ok(cinta === 3, `la cinta de la portada tiene ${cinta} enlaces y no 3`);
 
   // La tienda entera: una ficha por producto del catalogo.
   await p.goto(t.REACT + '#/tienda-catalogo');

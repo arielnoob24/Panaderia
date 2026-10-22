@@ -11,12 +11,6 @@ import { barra, enrollado, espiga, gavilla, grano, hogaza, mazorca } from './tra
 
 // Cada vista: sus piezas, con su caja (viewBox) y donde va.
 const PIEZAS = {
-  // El mostrador oscuro de #/: una gavilla y una mazorca tumbada arriba,
-  // entre el titulo y el enlace a la tienda, donde la banda queda libre.
-  inicio: [
-    { donde: 'arriba-derecha', caja: '-150 -190 300 290', trazos: [gavilla({ giro: 14, escala: 1.15 })] },
-    { donde: 'arriba-izquierda', caja: '-90 -110 180 230', trazos: [mazorca({ giro: -28 })] },
-  ],
   // #/nosotros, sobre la masa: la gavilla grande junto al texto y unas
   // espigas sueltas arriba, junto a la foto.
   nosotros: [

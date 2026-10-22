@@ -67,7 +67,7 @@ que mas lo tumba:
   500 kB).
 - Un producto que no pasa `revisar()` (`src/servicios/reglasCatalogo.js`), una
   categoria que no esta en el menu Tienda (`CATEGORIAS` de
-  `src/catalogo/categorias.js`) o al reves, menos de 4 destacados disponibles,
+  `src/catalogo/categorias.js`) o al reves,
   o una foto del catalogo sin su `-420.jpg` o `-840.jpg`.
 - Una prueba de `pruebas/` que falla: el resumen del final dice cual.
 - Espacios al final de linea (`git diff --check`).

@@ -1,17 +1,20 @@
 // ---- "Agregar se nota aunque sea rapido" (S1, seccion 4 del plan) -----------
-// Dos movimientos del control de cantidad de la ficha, que son aspecto y no
+// Tres movimientos del control de cantidad de la ficha, que son aspecto y no
 // logica, y por eso viven aqui y no en pedido/:
 //
 // - soltarGolpe: cada toque del + o del - suelta un "+1" (o "−1") que sube
-//   desde el boton y se desvanece. Va por el DOM y no por estado, como la
-//   foto que vuela a la canasta: con prisa salen varios a la vez y cada uno
-//   se borra solo al acabar. Es aria-hidden: lo que paso ya lo anuncia el
+//   desde el boton y se desvanece. Va por el DOM y no por estado, como el
+//   brinco de la canasta: con prisa salen varios a la vez y cada uno se
+//   borra solo al acabar. Es aria-hidden: lo que paso ya lo anuncia el
 //   control ("Pan redondo añadido...").
+// - destellar: cada + que agrega pinta la pastilla de horno un momento y
+//   vuelve al papel (styles.css, is-destello, que se quita al acabar). Con
+//   prisa, cada toque lo reinicia.
 // - useNumeroQueEntra: el numero de la ficha entra deslizandose cada vez que
 //   cambia, desde abajo si crecio y desde arriba si bajo, como el de la
 //   canasta. No mientras se escribe en el: ahi el numero es de quien teclea.
 //
-// Con menos movimiento no sale ninguno de los dos.
+// Con menos movimiento no sale ninguno de los tres.
 import { useEffect, useRef } from 'react';
 import { CURVA, DURACION, curvaCss, ms } from './movimiento.js';
 import { movimientoReducido } from './useMovimientoReducido.js';
@@ -36,6 +39,28 @@ function soltarGolpe(contenedor, texto) {
   vuelo.oncancel = () => golpe.remove();
 }
 
+// Quitar y volver a poner la clase reinicia la animacion, como el brinco de
+// la canasta (pedido/CanastaProvider.jsx). Al acabar el destello del fondo
+// la clase se quita: si se quedara, el anillo del + repetiria su destello
+// cada vez que el + recibe el foco sin haber agregado nada. Solo cuenta el
+// final (animationend): un toque con prisa cancela el destello anterior
+// (animationcancel) y su clase es ya la del toque nuevo, que no se toca.
+const conOyente = new WeakSet();
+const alAcabar = (e) => {
+  if (e.animationName === 'cantidad-destello') e.currentTarget.classList.remove('is-destello');
+};
+
+function destellar(pastilla) {
+  if (!pastilla || movimientoReducido()) return;
+  if (!conOyente.has(pastilla)) {
+    pastilla.addEventListener('animationend', alAcabar);
+    conOyente.add(pastilla);
+  }
+  pastilla.classList.remove('is-destello');
+  void pastilla.offsetWidth;
+  pastilla.classList.add('is-destello');
+}
+
 // campoRef es el numero (un campo de texto) y n la cantidad que ensena.
 function useNumeroQueEntra(campoRef, n) {
   const antes = useRef(n);
@@ -54,4 +79,4 @@ function useNumeroQueEntra(campoRef, n) {
   }, [campoRef, n]);
 }
 
-export { soltarGolpe, useNumeroQueEntra };
+export { destellar, soltarGolpe, useNumeroQueEntra };

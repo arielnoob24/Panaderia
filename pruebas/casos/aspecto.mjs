@@ -2,17 +2,15 @@
 // plan), en escritorio y en el telefono (390 px, tactil):
 // - la barra de arriba es horno y opaca desde que carga, y sobre lo oscuro
 //   (en #/ ya solo el pie) gana la linea ambar;
-// - el carrusel lleva las flechas y la barra de avance en el pie, debajo de
-//   las fichas, sin la barra del navegador, y sin hueco entre nombre y precio;
+// - la portada no lleva carrusel ni fichas, y la cinta no queda pegada al
+//   pie;
+// - las fichas de la tienda, sin hueco entre nombre y precio;
 // - el nombre de la ficha va en Fraunces y los sellos con 11 px de letra o mas;
 // - el h1 que recibe el foco al cambiar de vista no pinta recuadro;
 // - los efectos de pasar por encima solo con raton (html.con-puntero);
-// - en la computadora, Siguiente desplaza con movimiento de escena, que
-//   se para si se tabula a una ficha o se teclea en la fila (no con Enter
-//   en la propia flecha);
 // - el anillo de la canasta se ve en la barra y flotando sobre lo claro;
-// - una ficha agotada no se levanta, y con menos movimiento las flechas del
-//   carrusel no cambian de tamano, ni agregar suelta "+1";
+// - una ficha agotada no se levanta, y con menos movimiento agregar no
+//   suelta "+1";
 // - el estilo editorial (seccion 10 del plan), en los dos: Fraunces servida
 //   desde el sitio, la cabecera de periodico con la fecha y el estado (solo
 //   esos dos en el telefono), Inicio en el menu con aria-current, la cinta
@@ -21,7 +19,7 @@
 //   un "+1" por toque.
 import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
 
-export const descripcion = 'barra horno opaca, carrusel con flechas en el pie, fichas, h1 sin recuadro, hover solo con raton, anillo de la canasta, agotadas y flechas con menos movimiento, y el estilo editorial (Fraunces, periodico, Inicio, cinta, +1)';
+export const descripcion = 'barra horno opaca, portada sin carrusel, fichas, h1 sin recuadro, hover solo con raton, anillo de la canasta, agotadas y +1 con menos movimiento, y el estilo editorial (Fraunces, periodico, Inicio, cinta, +1)';
 export const limite = 150;
 
 const HORNO = 'rgb(58, 40, 34)';
@@ -33,7 +31,7 @@ export default async function aspecto(t) {
     const ctx = await t.contexto(ventana, { nombre });
     const p = await ctx.newPage();
     await p.goto(t.REACT + '#/');
-    await p.waitForSelector('.mostrador .product-card');
+    await p.waitForSelector('.cinta');
     await espera(400);
 
     // La barra, arriba del todo.
@@ -52,9 +50,22 @@ export default async function aspecto(t) {
     t.ok(arriba.texto === 'rgb(238, 228, 216)', `[${nombre}] el texto de la barra es ${arriba.texto}, no --sobre-horno`);
     t.ok(arriba.logo.includes('invert'), `[${nombre}] el logo no va invertido (${arriba.logo})`);
 
-    // Sobre una banda oscura sigue horno y gana la linea ambar. En #/ ya no
-    // hay ninguna ("Los mas pedidos" va sobre la masa), asi que se mira con
-    // la cabeza oscura de la tienda.
+    // La portada es la cabecera de periodico, la portada y la cinta: sin
+    // carrusel ni fichas. Bajo la cinta queda aire antes del pie.
+    const portada = await p.evaluate(() => {
+      const cinta = document.querySelector('.cinta').getBoundingClientRect();
+      const pie = document.querySelector('footer')?.getBoundingClientRect();
+      return {
+        fichas: document.querySelectorAll('.vista-inicio .product-card').length,
+        carrusel: document.querySelectorAll('.mostrador, .fila-flecha, .fila-barra, #mas-pedidos-titulo').length,
+        aire: pie ? pie.top - cinta.bottom : -1,
+      };
+    });
+    t.ok(portada.fichas === 0 && portada.carrusel === 0, `[${nombre}] la portada todavia lleva fichas o carrusel (${JSON.stringify(portada)})`);
+    t.ok(portada.aire >= 24, `[${nombre}] la cinta queda pegada al pie (${Math.round(portada.aire)} px)`);
+
+    // Sobre una banda oscura sigue horno y gana la linea ambar. En #/ no hay
+    // ninguna, asi que se mira con la cabeza oscura de la tienda.
     await p.goto(t.REACT + '#/tienda-catalogo');
     await p.waitForSelector('.vista-cabeza.banda-oscura');
     await p.evaluate(() => {
@@ -69,112 +80,39 @@ export default async function aspecto(t) {
     t.ok(sobre, `[${nombre}] la barra no se entera de que tiene debajo una banda oscura`);
     t.ok(fondoOscuro === HORNO, `[${nombre}] sobre la banda oscura la barra es ${fondoOscuro}, no horno`);
     t.ok(sombra.includes(AMBAR) && sombra.includes('inset'), `[${nombre}] sobre la banda oscura no hay linea ambar (${sombra})`);
-    await p.goto(t.REACT + '#/');
-    await p.waitForSelector('.mostrador .product-card');
-    await espera(400);
 
-    // El carrusel: flechas y barra de avance debajo de las fichas.
-    const fila = await p.evaluate(() => {
-      const grid = document.querySelector('.mostrador .product-grid.is-fila');
-      const pie = document.querySelector('.mostrador .fila-pie');
-      const g = grid.getBoundingClientRect();
-      const fotos = [...grid.querySelectorAll('.product-image')].map((f) => f.getBoundingClientRect());
-      const flechas = [...pie.querySelectorAll('.fila-flecha')].map((b) => b.getBoundingClientRect());
-      const caja = grid.getBoundingClientRect();
-      const vistas = [...grid.querySelectorAll('.product-card')].filter((c) => {
-        const r = c.getBoundingClientRect();
-        return r.right > caja.left + 1 && r.left < caja.right - 1;
-      });
-      // El hueco entre lo ultimo de encima del pie (nombre o tamanos) y el pie.
+    // Las fichas de la tienda: sin hueco entre el nombre y el precio, el
+    // nombre en Fraunces y los sellos con letra legible.
+    await p.waitForSelector('.product-card:not([hidden])');
+    const fichas = await p.evaluate(() => {
+      const vistas = [...document.querySelectorAll('.product-card:not([hidden])')];
       const huecos = vistas.map((c) => {
         const pieFicha = c.querySelector('.product-bottom');
         return pieFicha.getBoundingClientRect().top - pieFicha.previousElementSibling.getBoundingClientRect().bottom;
       });
-      const h3 = grid.querySelector('.product-info h3');
-      const sellos = [...grid.querySelectorAll('.product-tag')].map((s) => parseFloat(getComputedStyle(s).fontSize));
+      const sellos = [...document.querySelectorAll('.product-card:not([hidden]) .product-tag')].map((s) => parseFloat(getComputedStyle(s).fontSize));
       return {
-        pieVisible: getComputedStyle(pie).display !== 'none' && !pie.hidden,
-        flechas: flechas.length,
-        flechasDebajo: flechas.every((r) => r.top >= Math.max(...fotos.map((f) => f.bottom))),
-        barraAvance: getComputedStyle(pie.querySelector('.fila-barra')).display,
-        barraNavegador: grid.offsetHeight - grid.clientHeight,
-        anchoBarra: getComputedStyle(grid).scrollbarWidth,
-        mascara: getComputedStyle(grid).maskImage || getComputedStyle(grid).webkitMaskImage,
         huecoMax: Math.max(...huecos),
-        letraNombre: getComputedStyle(h3).fontFamily,
+        letraNombre: getComputedStyle(document.querySelector('.product-info h3')).fontFamily,
         selloMin: Math.min(...sellos),
-        anchoGrid: g.width,
       };
     });
-    t.ok(fila.pieVisible && fila.flechas === 2, `[${nombre}] el pie del carrusel no se ve con sus dos flechas`);
-    t.ok(fila.flechasDebajo, `[${nombre}] alguna flecha del carrusel esta encima de las fotos`);
-    t.ok(fila.barraAvance !== 'none', `[${nombre}] no se ve la barra de avance del carrusel`);
-    t.ok(fila.barraNavegador === 0 && fila.anchoBarra === 'none', `[${nombre}] se ve la barra de desplazamiento del navegador (${fila.barraNavegador} px, ${fila.anchoBarra})`);
-    t.ok(/gradient/.test(fila.mascara), `[${nombre}] el borde del carrusel no se desvanece (${fila.mascara})`);
-    t.ok(fila.huecoMax < 40, `[${nombre}] hay un hueco de ${Math.round(fila.huecoMax)} px entre el nombre y el precio`);
-    t.ok(/^"?Fraunces Variable/.test(fila.letraNombre),`[${nombre}] el nombre de la ficha va en ${fila.letraNombre}`);
-    t.ok(fila.selloMin >= 11, `[${nombre}] un sello lleva letra de ${fila.selloMin} px`);
+    t.ok(fichas.huecoMax < 40, `[${nombre}] hay un hueco de ${Math.round(fichas.huecoMax)} px entre el nombre y el precio`);
+    t.ok(/^"?Fraunces Variable/.test(fichas.letraNombre), `[${nombre}] el nombre de la ficha va en ${fichas.letraNombre}`);
+    t.ok(fichas.selloMin >= 11, `[${nombre}] un sello lleva letra de ${fichas.selloMin} px`);
+    await p.goto(t.REACT + '#/');
+    await p.waitForSelector('.cinta');
+    await espera(400);
 
     // Hover solo con raton: en el telefono, tocar no enciende con-puntero.
     if (nombre === 'escritorio') {
       await p.mouse.move(200, 200);
       await p.mouse.move(260, 240);
     } else {
-      await p.tap('.mostrador-dicho');
+      await p.tap('.portada-frase');
     }
     const conPuntero = await p.evaluate(() => document.documentElement.classList.contains('con-puntero'));
     t.ok(conPuntero === (nombre === 'escritorio'), `[${nombre}] html.con-puntero es ${conPuntero}`);
-
-    // Siguiente desplaza con movimiento de escena (unos 560 ms), no de golpe.
-    if (nombre === 'escritorio') {
-      await p.evaluate(() => document.querySelector('.mostrador .fila-flecha[data-ir="1"]').scrollIntoView({ block: 'center' }));
-      await espera(200);
-      await p.click('.mostrador .fila-flecha[data-ir="1"]');
-      await espera(120);
-      const aMedias = await p.evaluate(() => document.querySelector('.mostrador .product-grid.is-fila').scrollLeft);
-      await espera(900);
-      const alFinal = await p.evaluate(() => {
-        const g = document.querySelector('.mostrador .product-grid.is-fila');
-        return { x: g.scrollLeft, avanzada: g.classList.contains('is-avanzada'), encaje: g.style.scrollSnapType };
-      });
-      t.ok(alFinal.x > 100, `[${nombre}] Siguiente no avanzo el carrusel (${alFinal.x})`);
-      t.ok(aMedias > 0 && aMedias < alFinal.x - 10, `[${nombre}] Siguiente no se mueve como escena: a los 120 ms iba en ${Math.round(aMedias)} de ${Math.round(alFinal.x)}`);
-      t.ok(alFinal.avanzada, `[${nombre}] tras avanzar, el borde izquierdo no se desvanece`);
-      t.ok(alFinal.encaje === '', `[${nombre}] el encaje del carrusel no se devolvio al acabar (${alFinal.encaje})`);
-
-      // Enter en la flecha (fuera de la fila) no para su propio salto.
-      const fila = '.mostrador .product-grid.is-fila';
-      const encaje = () => p.evaluate((sel) => document.querySelector(sel).style.scrollSnapType, fila);
-      const posicion = () => p.evaluate((sel) => document.querySelector(sel).scrollLeft, fila);
-      const antesEnter = await posicion();
-      await p.focus('.mostrador .fila-flecha[data-ir="1"]');
-      await p.keyboard.press('Enter');
-      await espera(120);
-      const enterAMedias = await encaje();
-      await espera(800);
-      const trasEnter = await posicion();
-      t.ok(enterAMedias === 'none' && trasEnter > antesEnter + 100, `[${nombre}] Enter en Siguiente no hizo su salto entero (a medias: "${enterAMedias}", ${Math.round(antesEnter)} -> ${Math.round(trasEnter)})`);
-
-      // Tabular a una ficha a medio salto lo para y devuelve el encaje.
-      await p.click('.mostrador .fila-flecha[data-ir="-1"]');
-      await espera(100);
-      const saltando = await encaje();
-      await p.focus(`${fila} .product-card .card-mas`);
-      await espera(50);
-      const trasFoco = await encaje();
-      t.ok(saltando === 'none' && trasFoco === '', `[${nombre}] el foco en una ficha no para el salto (antes "${saltando}", despues "${trasFoco}")`);
-      await espera(700);
-
-      // Una tecla dentro de la fila tambien lo para.
-      await p.click('.mostrador .fila-flecha[data-ir="1"]');
-      await espera(100);
-      const saltando2 = await encaje();
-      await p.evaluate((sel) => document.querySelector(sel).dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })), fila);
-      await espera(50);
-      const trasTecla = await encaje();
-      t.ok(saltando2 === 'none' && trasTecla === '', `[${nombre}] una tecla en la fila no para el salto (antes "${saltando2}", despues "${trasTecla}")`);
-      await espera(700);
-    }
 
     // Al cambiar de vista el h1 recibe el foco, sin recuadro.
     await p.evaluate(() => window.scrollTo(0, 0));
@@ -238,25 +176,11 @@ export default async function aspecto(t) {
     await ctx.close();
   }
 
-  // Con menos movimiento, las flechas del carrusel no cambian de tamano.
+  // Con menos movimiento, agregar no suelta "+1".
   {
     const ctx = await t.contexto({ ...VENTANAS.escritorio, reducedMotion: 'reduce' }, { nombre: 'reducido' });
     const p = await ctx.newPage();
-    await p.goto(t.REACT + '#/');
-    await p.waitForSelector('.mostrador .fila-flecha[data-ir="1"]');
-    await p.evaluate(() => document.querySelector('.mostrador .fila-flecha[data-ir="1"]').scrollIntoView({ block: 'center' }));
-    await espera(300);
-    await p.hover('.mostrador .fila-flecha[data-ir="1"]');
-    await espera(400);
-    const encima = await p.evaluate(() => getComputedStyle(document.querySelector('.mostrador .fila-flecha[data-ir="1"]')).transform);
-    await p.mouse.down();
-    await espera(250);
-    const pulsada = await p.evaluate(() => getComputedStyle(document.querySelector('.mostrador .fila-flecha[data-ir="1"]')).transform);
-    await p.mouse.up();
-    t.ok(encima === 'none', `[reducido] la flecha crece bajo el raton (${encima})`);
-    t.ok(pulsada === 'none', `[reducido] la flecha se hunde al pulsarla (${pulsada})`);
-
-    // Y agregar no suelta ningun "+1": el numero cambia sin mas.
+    // Agregar no suelta ningun "+1": el numero cambia sin mas.
     await p.goto(t.REACT + '#/tienda-catalogo');
     await p.waitForSelector('.product-card:not([hidden]) .card-mas');
     const mas = p.locator('.product-card:not([hidden])').filter({ has: p.locator('.card-mas') }).first().locator('.card-mas');
@@ -292,11 +216,10 @@ async function editorial(t) {
     const letra = await p.evaluate(() => ({
       cargada: [...document.fonts].some((f) => f.family.includes('Fraunces') && f.status === 'loaded'),
       h1: getComputedStyle(document.querySelector('h1')).fontFamily,
-      h2: getComputedStyle(document.querySelector('#mas-pedidos-titulo')).fontFamily,
-      texto: getComputedStyle(document.querySelector('.mostrador-dicho')).fontFamily,
+      texto: getComputedStyle(document.querySelector('.portada-rotulo')).fontFamily,
     }));
     t.ok(letra.cargada, `[${nombre}] Fraunces no esta cargada`);
-    t.ok(ES_FRAUNCES.test(letra.h1) && ES_FRAUNCES.test(letra.h2), `[${nombre}] los titulos de la portada van en ${letra.h1} / ${letra.h2}`);
+    t.ok(ES_FRAUNCES.test(letra.h1), `[${nombre}] el titular de la portada va en ${letra.h1}`);
     t.ok(/^Arial/.test(letra.texto), `[${nombre}] el texto corrido de la portada va en ${letra.texto}`);
     t.ok(!fuera.some((u) => /fonts\.(googleapis|gstatic)\.com/.test(u)), `[${nombre}] la letra se pidio fuera del sitio: ${fuera.join(', ')}`);
 
@@ -328,7 +251,7 @@ async function editorial(t) {
     t.ok(periodico.nota === 0 && !periodico.horneando, `[${nombre}] la portada todavia lleva la nota "Horneando ahora mismo"`);
 
     // Los enlaces de letras sueltas conservan su nombre entero.
-    for (const texto of ['Cómo llegar', 'Toda la tienda', 'Nuestros panes']) {
+    for (const texto of ['Cómo llegar', 'Nuestros panes']) {
       const n = await p.getByRole('link', { name: texto, exact: true }).count();
       t.ok(n === 1, `[${nombre}] hay ${n} enlaces que se llamen "${texto}" para el lector`);
     }
@@ -346,19 +269,18 @@ async function editorial(t) {
     t.ok(await inicio.count() === 1 && (await inicio.textContent()).trim() === 'Inicio' && primero === '#/', `[${nombre}] el menu no empieza por Inicio (empieza por ${primero})`);
     t.ok(await inicio.getAttribute('aria-current') === 'page', `[${nombre}] Inicio no lleva aria-current en #/`);
 
-    // Una ficha: esquinas rectas y borde fino horno.
-    const ficha = await p.evaluate(() => {
-      const c = getComputedStyle(document.querySelector('.mostrador .product-card'));
-      return { radio: c.borderTopLeftRadius, borde: c.borderTopColor, ancho: c.borderTopWidth };
-    });
-    t.ok(ficha.radio === '0px' && ficha.borde === HORNO && ficha.ancho === '1px', `[${nombre}] la ficha no es de esquinas rectas con borde horno (${JSON.stringify(ficha)})`);
-
     // El control: el + solo, que al primer toque se estira en "− n +", y
     // cada toque suelta un "+1" escondido al lector; con prisa, varios.
     await p.goto(t.REACT + '#/tienda-catalogo');
     await p.waitForSelector('.product-card:not([hidden]) .card-mas');
     const tarjeta = p.locator('.product-card:not([hidden])').filter({ has: p.locator('.card-mas') }).first();
     await tarjeta.scrollIntoViewIfNeeded();
+    // Una ficha: esquinas rectas y borde fino horno.
+    const ficha = await tarjeta.evaluate((el) => {
+      const c = getComputedStyle(el);
+      return { radio: c.borderTopLeftRadius, borde: c.borderTopColor, ancho: c.borderTopWidth };
+    });
+    t.ok(ficha.radio === '0px' && ficha.borde === HORNO && ficha.ancho === '1px', `[${nombre}] la ficha no es de esquinas rectas con borde horno (${JSON.stringify(ficha)})`);
     const cerrado = await tarjeta.locator('.card-cantidad').evaluate((c) => ({ lleno: c.classList.contains('is-lleno'), menos: c.querySelector('.card-menos').hidden }));
     t.ok(!cerrado.lleno && cerrado.menos, `[${nombre}] sin nada pedido el control no es el + solo`);
     const pulsar = (sel) => (nombre === 'movil' ? tarjeta.locator(sel).tap() : tarjeta.locator(sel).click());
@@ -373,7 +295,7 @@ async function editorial(t) {
       escondido: c.querySelector('.card-golpes').getAttribute('aria-hidden'),
     }));
     t.ok(abierto.lleno && abierto.menos && abierto.numero === '1', `[${nombre}] tras el primer toque el control no es "− 1 +" (${JSON.stringify(abierto)})`);
-    t.ok(abierto.estira === 'cantidad-estira', `[${nombre}] el control no se estira al abrirse (${abierto.estira})`);
+    t.ok(abierto.estira.split(', ').includes('cantidad-estira'), `[${nombre}] el control no se estira al abrirse (${abierto.estira})`);
     t.ok(abierto.golpes.includes('+1') && abierto.escondido === 'true', `[${nombre}] el toque no solto un "+1" escondido al lector (${JSON.stringify(abierto)})`);
     // Con prisa: dos toques seguidos, sin la espera que mete el navegador de
     // pruebas entre un toque y otro.

@@ -1,6 +1,6 @@
 ---
 name: revision-visual
-description: Revisor del aspecto y el movimiento del sitio de la panaderia. Saca capturas en Edge en los cortes del plan (1440, 900, 680 y 390 px), las mira junto al CSS y el codigo de Motion, y devuelve un informe priorizado de lo que se ve mal o se mueve mal (fichas, carrusel, barra, tipografia, espacios, 60-30-10, duraciones y curvas), con el arreglo propuesto. Solo lee y mide, no cambia nada. Usalo antes de un cambio de diseno, despues de uno para comprobarlo, o cuando algo "no se ve bien" y no se sabe por que.
+description: Revisor del aspecto y el movimiento del sitio de la panaderia. Saca capturas en Edge en los cortes del plan (1440, 900, 680 y 390 px), las mira junto al CSS y el codigo de Motion, y devuelve un informe priorizado de lo que se ve mal o se mueve mal (fichas, control de cantidad, barra, tipografia, espacios, 60-30-10, duraciones y curvas), con el arreglo propuesto. Solo lee y mide, no cambia nada. Usalo antes de un cambio de diseno, despues de uno para comprobarlo, o cuando algo "no se ve bien" y no se sabe por que.
 tools: Read, Grep, Glob, Bash, WebFetch
 skills:
   - frontend-design
@@ -41,7 +41,7 @@ la cuenta, `logica-datos`.
   - **Duraciones**: `emil-design-eng` y `review-animations` piden menos de
     300 ms en todo. Aqui no: el plan (seccion 10) separa lo que **responde a
     un toque** (rapido, como dicen ellas) de lo que es **escena** (cambio de
-    vista, entradas, carrusel, desplegar), que va mas lento a proposito. No
+    vista, entradas, desplegar), que va mas lento a proposito. No
     marques como fallo una escena que cumple la duracion del plan.
   - **Hover**: las skills piden `(hover: hover) and (pointer: fine)`. Aqui
     no: el portatil del usuario es tactil y esa media query le da falso, asi

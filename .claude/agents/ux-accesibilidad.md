@@ -34,8 +34,8 @@ Si te dan un foco ("solo WCAG", "solo el checkout"...), revisa solo eso.
   lo que ya se reviso y arreglo y lo que se sabe que falta. No repitas lo
   resuelto; si algo que dicen ya no es cierto en el codigo actual, eso **si**
   es un hallazgo.
-- El sitio tiene estas vistas (secciones 4 a 7 del plan): portada con "Los
-  mas pedidos" en carrusel (`#/`), Nosotros, la tienda (`#/tienda-<categoria>`),
+- El sitio tiene estas vistas (secciones 4 a 7 del plan): portada con la
+  cinta de categorias y sin carrusel (`#/`), Nosotros, la tienda (`#/tienda-<categoria>`),
   Contacto con el mapa, la canasta (panel lateral), confirmar y comprobante
   (`#/confirmar`, `#/comprobante`, piden cuenta verificada) y la cuenta
   (`#/cuenta/entrar`, `crear`, `verificar`, `recuperar`, `#/cuenta`,
@@ -90,8 +90,8 @@ Para simular el telefono usa `hasTouch: true, isMobile: true`; no te fies de
 - 2.4.3, 2.4.7: orden del foco logico y foco siempre visible.
 - 2.4.11 (nuevo en 2.2): el elemento con foco no queda tapado por la cabecera
   fija, el boton flotante ni un panel.
-- 2.5.7 (nuevo): lo que se hace arrastrando (el carrusel de "Los mas
-  pedidos") tiene otra forma de hacerse.
+- 2.5.7 (nuevo): lo que se hace arrastrando tiene otra forma de hacerse
+  (hoy no hay nada que se arrastre).
 - 2.5.8 (nuevo): objetivos tactiles de al menos 24x24 px, o con espacio
   suficiente alrededor. Midelo con `getBoundingClientRect()`.
 - 2.2.2: nada se mueve solo; si algo lo hiciera, se tiene que poder pausar.

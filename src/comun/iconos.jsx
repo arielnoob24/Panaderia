@@ -56,13 +56,6 @@ const IconoTrigo = ({ clase }) => (
   </Linea>
 );
 
-// La flecha de "Toda la tienda".
-const IconoFlecha = ({ clase }) => (
-  <Linea clase={clase}>
-    <path d="M4 12h15M14 6l6 6-6 6" />
-  </Linea>
-);
-
 // La cesta con asa: el boton de la canasta, arriba y el flotante del telefono.
 const IconoCestaAsa = ({ clase = 'canasta-icono' }) => (
   <Linea clase={clase}>
@@ -72,7 +65,7 @@ const IconoCestaAsa = ({ clase = 'canasta-icono' }) => (
   </Linea>
 );
 
-// El chevron de las flechas de la fila y de "Volver al inicio".
+// El chevron de "Volver al inicio" y "Volver a la tienda".
 function Chevron({ izquierda, grosor = '1.9' }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={grosor} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
@@ -100,5 +93,5 @@ function Trigo({ derecha }) {
 
 export {
   IconoPin, Chevron, Trigo,
-  IconoHogaza, IconoPastel, IconoBotella, IconoTrigo, IconoFlecha, IconoCestaAsa,
+  IconoHogaza, IconoPastel, IconoBotella, IconoTrigo, IconoCestaAsa,
 };

@@ -15,25 +15,35 @@ import {
 import { useAvisos } from '../comun/Avisos.jsx';
 import { useCanasta } from './CanastaProvider.jsx';
 import { Basurero } from './iconosPedido.jsx';
-import { soltarGolpe, useNumeroQueEntra } from '../comun/golpes.js';
+import { destellar, soltarGolpe, useNumeroQueEntra } from '../comun/golpes.js';
 
 const cuantosQuedan = (estado) => `${productos(unidades(estado.lineas))} en la canasta.`;
 
-// nombre y precio son los del tamano elegido; imagenRef, la foto de la ficha,
-// de donde sale la que vuela a la canasta.
-function ControlCantidad({ nombre, precio, imagenRef }) {
+// nombre y precio son los del tamano elegido.
+function ControlCantidad({ nombre, precio }) {
   const { lineas, hacer } = usePedido();
-  const { volar, registrarFicha } = useCanasta();
+  const { latir, registrarFicha } = useCanasta();
   const avisar = useAvisos();
   const id = idDe(nombre);
   const n = cantidadDe(lineas, id);
 
   const masRef = useRef(null);
   const campoRef = useRef(null);
-  // Donde salen los "+1" y "−1" de cada toque, y el numero que entra al
-  // cambiar (comun/golpes.js): es movimiento, no cambia lo que se pide.
+  // Donde salen los "+1" y "−1" de cada toque, el numero que entra al
+  // cambiar y el destello de la pastilla al agregar (comun/golpes.js): es
+  // movimiento, no cambia lo que se pide.
   const golpesRef = useRef(null);
+  const pastillaRef = useRef(null);
   useNumeroQueEntra(campoRef, n);
+  // El destello se enciende despues de pintar y no en el clic: del 0 al 1
+  // React reescribe el className de la pastilla (is-lleno) y se llevaria la
+  // clase puesta a mano. Solo lo pide el + que de verdad agrega.
+  const pideDestello = useRef(false);
+  useLayoutEffect(() => {
+    if (!pideDestello.current) return;
+    pideDestello.current = false;
+    destellar(pastillaRef.current);
+  }, [n]);
   // La cuenta es un campo, no un letrero: para llevarse veinte panes nadie
   // quiere pulsar veinte veces. Lo que se esta tecleando vive aparte y no se
   // pisa hasta que se sale del campo; corregirlo al vuelo impediria escribir
@@ -50,11 +60,12 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
   const tope = enTope(n);
 
   const alMas = () => {
-    // En el tope el mas no suma: dice por que y no vuela nada a la canasta.
+    // En el tope el mas no suma: dice por que, sin brinco ni destello.
     if (tope) { avisar(avisoTope(nombre)); return; }
     const despues = hacer({ tipo: 'agregar', id, nombre, precio });
     soltarGolpe(golpesRef.current, '+1');
-    volar(imagenRef?.current);
+    pideDestello.current = true;
+    latir();
     avisar(`${nombre} añadido. ${cuantosQuedan(despues)}`);
   };
 
@@ -124,7 +135,7 @@ function ControlCantidad({ nombre, precio, imagenRef }) {
 
   const lleno = n > 0;
   return (
-    <div className={lleno ? 'card-cantidad is-lleno' : 'card-cantidad'}>
+    <div ref={pastillaRef} className={lleno ? 'card-cantidad is-lleno' : 'card-cantidad'}>
       <button
         className="card-menos"
         type="button"

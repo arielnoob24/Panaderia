@@ -11,7 +11,7 @@
 //   - Ordenar cambia la propiedad CSS order, no el orden de las fichas.
 //   - Al cambiar el filtro o el orden, las fichas entran escalonadas.
 // Las categorias son la misma vista: entre ellas el catalogo no se vuelve a
-// montar (App.jsx). "Los mas pedidos" de #/ es otra pieza (MasPedidos.jsx).
+// montar (App.jsx).
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { dinero } from '../servicios/state.js';

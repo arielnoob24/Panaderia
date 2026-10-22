@@ -37,8 +37,7 @@
 .main-nav > a[aria-current="page"], .nav-grupo-enlace[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--ambar); text-decoration-thickness: 3px; text-underline-offset: 8px; }
 
 /* Una banda oscura por vista: los principios en #/nosotros, el horario en
-   #/contacto. En #/ ya no hay (el mostrador va sobre la masa, seccion 10);
-   el horno lo ponen ahi la barra y el pie. Con el mismo radio que la historia y
+   #/contacto. En #/ no hay: el horno lo ponen ahi la barra y el pie. Con el mismo radio que la historia y
    el pie, para que se lean como piezas de la misma madera. */
 .banda-oscura { background: var(--horno); color: var(--sobre-horno); }
 
@@ -108,30 +107,15 @@
 /* Sobre la corteza el anillo horno no llega a 3:1: aqui es papel. */
 .cinta a:focus-visible { outline-color: var(--papel); }
 .cinta-estrella { color: var(--ambar); }
-
-/* ---- #/ : "Los mas pedidos" (MasPedidos.jsx) ---------------------------- */
-
-/* Sobre la masa clara, con la cabeza de seccion de periodico: rotulo,
-   titulo y "Toda la tienda", y un filete que se dibuja al verse. */
-.mostrador { margin: 3.5rem 0 3rem; }
-.mostrador .fondo-dibujo { bottom: 50%; }
-.seccion-cabeza { position: relative; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 1.5rem; margin-bottom: 1.1rem; padding-bottom: 1.2rem; }
-.mostrador .fila-rotulo { margin: .4rem 0 0; color: var(--horno); font: 400 clamp(2.2rem, 4vw, 3.4rem)/1 var(--letra-titulo); font-variation-settings: "opsz" 144, "SOFT" 50, "WONK" 1; }
-.seccion-filete { position: absolute; right: 0; bottom: 0; left: 0; height: 1px; background: var(--horno); transform: scaleX(0); transform-origin: left; transition: transform var(--dur-scene) var(--ease-soft) 200ms; }
-.seccion-cabeza.is-visible .seccion-filete { transform: none; }
-.mostrador-dicho { margin: 0 0 1.6rem; color: var(--horno-suave); font: .9rem/1.5 var(--letra-texto); }
-/* Cada ficha se queda bien puesta al soltar: con proximity se podia quedar a
-   medias entre dos. */
-.mostrador .product-grid.is-fila { scroll-snap-type: x mandatory; }
-/* En las puntas la flecha se apaga pero se queda donde estaba: si tenia el
-   foco, lo conserva (aria-disabled, MasPedidos.jsx). La escala al pasar el
-   raton y al pulsar la pone Motion. */
+/* La cinta es lo ultimo de #/ (sin carrusel debajo): un respiro de masa
+   antes del pie, para que la cobriza y el horno no se peguen. */
+.vista-inicio { padding-bottom: clamp(2rem, 5vw, 3.5rem); }
 
 /* Con menos movimiento la portada esta quieta desde el principio: sin
    entrada, sin filetes que se dibujan y sin sello que gire. */
 @media (prefers-reduced-motion: reduce) {
   .portada-texto > *, .periodico-doble, .portada-arco img.is-loaded, .portada-sello { animation: none; }
-  .con-puntero .portada-sello:hover svg, .seccion-filete { transform: none; transition: none; }
+  .con-puntero .portada-sello:hover svg { transform: none; transition: none; }
 }
 
 /* ---- #/nosotros --------------------------------------------------------- */
@@ -235,10 +219,6 @@
   .cinta-dentro { gap: .2rem .6rem; }
   .cinta .h-imprenta { font-size: 1.08rem; }
   .cinta-estrella { display: none; }
-  .mostrador { margin: 2.5rem 0 2rem; }
-  .seccion-cabeza { grid-template-columns: 1fr; gap: .8rem; }
-  .seccion-cabeza .h-imprenta { justify-self: start; }
-  .mostrador-dicho { margin-bottom: 1.2rem; }
   .nosotros-principios { margin-bottom: 2.5rem; }
   .nosotros-principios h2 { font-size: 1.6rem; }
   .nosotros-principios-banda { margin: 0 8px; padding: 1rem 0; }
@@ -289,10 +269,6 @@
 .fondo-pieza.is-abajo-derecha { right: 0; bottom: 0; }
 .fondo-pieza.is-abajo-izquierda { bottom: 0; left: 0; }
 
-/* En #/ la gavilla va junto a "Toda la tienda", por encima del filete de la
-   cabeza: la mazorca tumbada lo cruzaba y ensuciaba la linea. */
-.fondo-inicio .is-arriba-derecha { top: -14px; right: 19%; width: 150px; }
-.fondo-inicio .is-arriba-izquierda { display: none; }
 .fondo-nosotros .is-abajo-derecha { right: 1%; bottom: -50px; width: 300px; }
 .fondo-nosotros .is-arriba-izquierda { top: 20px; left: 38%; width: 300px; }
 .fondo-principios .is-abajo-derecha { right: 2%; bottom: 0; width: 380px; }
@@ -303,8 +279,6 @@
 
 @media (max-width: 680px) {
   .fondo-dibujo { opacity: .18; }
-  .fondo-inicio .is-arriba-derecha { top: -10px; right: -40px; width: 220px; }
-  .fondo-inicio .is-arriba-izquierda { display: none; }
   .fondo-nosotros .is-abajo-derecha { right: -60px; width: 280px; }
   .fondo-nosotros .is-arriba-izquierda { display: none; }
   .fondo-principios .is-abajo-derecha { right: -80px; width: 280px; }

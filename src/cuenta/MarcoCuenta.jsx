@@ -6,7 +6,7 @@
 //
 // La maquetacion (cuenta.css): el titulo va en una banda de horno con los
 // dibujos de trigo detras, y el formulario es una hoja de papel que cuelga
-// de ella, como las fichas del mostrador de la portada. La banda lleva
+// de ella. La banda lleva
 // banda-oscura para que la cabecera pegada se de la vuelta al pasar encima.
 import { useRef } from 'react';
 import { useVista } from '../comun/useVista.js';

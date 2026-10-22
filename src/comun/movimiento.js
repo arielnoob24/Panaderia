@@ -5,7 +5,7 @@
 //
 // Dos clases y nada fuera de ellas:
 //   respuesta a un toque (boton pulsado, contador, visto, errores): micro y rapida
-//   escena (cambio de vista, pasos, desplegar, la canasta, el carrusel): base en adelante
+//   escena (cambio de vista, pasos, desplegar, la canasta): base en adelante
 // Lo que sale dura mas o menos la mitad de lo que entra, y nada usa ease-in:
 // arrancar despacio hace que el sitio parezca tardar en contestar.
 
@@ -41,24 +41,4 @@ const PULSAR = { scale: 0.97, transition: { duration: DURACION.micro, ease: CURV
 const ms = (segundos) => Math.round(segundos * 1000);
 const curvaCss = ([x1, y1, x2, y2]) => `cubic-bezier(${x1}, ${y1}, ${x2}, ${y2})`;
 
-// La curva como funcion de 0 a 1, para lo que se mueve a mano cuadro a
-// cuadro (el carrusel, useFila.js). Se busca el t de la x por biseccion:
-// veinte vueltas sobran para una precision por debajo del pixel.
-function curvaFuncion([x1, y1, x2, y2]) {
-  const punto = (t, a, b) => 3 * a * t * (1 - t) ** 2 + 3 * b * t * t * (1 - t) + t ** 3;
-  return (x) => {
-    if (x <= 0) return 0;
-    if (x >= 1) return 1;
-    let bajo = 0;
-    let alto = 1;
-    let t = x;
-    for (let i = 0; i < 20; i += 1) {
-      t = (bajo + alto) / 2;
-      if (punto(t, x1, x2) < x) bajo = t;
-      else alto = t;
-    }
-    return punto(t, y1, y2);
-  };
-}
-
-export { DURACION, CURVA, RESORTE, PULSAR, ms, curvaCss, curvaFuncion };
+export { DURACION, CURVA, RESORTE, PULSAR, ms, curvaCss };

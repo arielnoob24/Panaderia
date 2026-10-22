@@ -32,7 +32,7 @@
   --r-dough: 62% 38% 55% 45% / 45% 55% 38% 62%;
   --r-mass: 46% 54% 44% 56% / 7% 8% 7% 8%;
   /* Dos ritmos (seccion 10 del plan). Respuesta a un toque, rapida: micro y
-     fast. Escena (cambio de vista, entradas, carrusel, desplegar, la ficha al
+     fast. Escena (cambio de vista, entradas, desplegar, la ficha al
      levantarse, la canasta), lenta: de base a scene. Lo que sale va en la
      mitad de lo que entra. Los mismos valores, en segundos, estan en
      src/comun/movimiento.js para Motion. Sin ease-in: lo que arranca despacio
@@ -281,62 +281,6 @@ h2 em { color: var(--ambar); font-weight: 500; }
 /* El puntero muestra el tono claro; lo seleccionado, el oscuro. */
 .catalog-status { min-height: 1.4em; margin: 0 0 1.25rem; color: var(--horno-suave); font: .78rem Arial, sans-serif; }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.3rem; }
-/* Sin categoria elegida el catalogo es una fila que se recorre de lado: un
-   paseo por el mostrador, no el inventario entero de golpe. Al elegir una
-   categoria pasa a cuadricula, que es cuando se viene a mirarlo todo. */
-/* El rotulo de la fila. En la vista de una categoria no pinta nada: ahi el
-   titulo es el nombre de la categoria y esto seria un segundo titulo peleando. */
-.fila-cabeza { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem .9rem; margin: 0 0 .9rem; }
-body.is-vista .fila-cabeza { display: none; }
-.fila-rotulo { margin: 0; margin-right: auto; color: var(--horno); font: 500 1.45rem/1.2 var(--letra-titulo); }
-/* El boton de pausa del mostrador. Cuadrado de 44 px: es un objetivo tactil y
-   tiene que cumplir el minimo sin depender del icono, que es pequeno. */
-.fila-pausa { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: 50%; color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .fila-pausa:hover { background: var(--masa-honda); border-color: var(--corteza); }
-.fila-pausa svg { width: 17px; height: 17px; }
-body.is-vista .fila-pausa { display: none; }
-
-.fila-zona { position: relative; }
-/* "Ver todo el catalogo", junto al titulo de la fila y antes de la pausa. */
-.fila-ver-todo { color: var(--corteza-oscura); font: 700 .88rem Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; white-space: nowrap; }
-.fila-ver-todo:hover { color: var(--horno); }
-.fila-ver-todo > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
-.con-puntero .fila-ver-todo:hover > span[aria-hidden] { transform: translateX(3px); }
-/* En el telefono no caben titulo, enlace y pausa en una linea: el enlace se
-   queda en "Ver todo". */
-@media (max-width: 680px) { .fila-ver-todo-largo { display: none; } }
-/* La fila se recorre de lado sin la barra del navegador: la barra de avance
-   del pie hace su papel. Se sigue desplazando con el dedo, la rueda, las
-   flechas y Tab. Arriba lleva 8 px de aire para que la ficha que se levanta
-   y el anillo del foco no se corten contra el borde de la fila, y abajo el
-   sitio de la sombra de las fichas, que si no acababa en un corte recto. */
-.product-grid.is-fila { --fundido: 48px; display: flex; align-items: flex-start; gap: 1.3rem; margin: -8px 0 -24px; padding: 8px 0 40px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scroll-padding: 0 calc(var(--fundido) + 4px); scrollbar-width: none; transition: height var(--dur-base) var(--ease-out); }
-.product-grid.is-fila::-webkit-scrollbar { display: none; }
-.product-grid.is-fila .product-card { width: min(272px, 74vw); flex: 0 0 auto; scroll-snap-align: start; }
-/* El borde por donde siguen las fichas se desvanece: se nota que hay mas y no
-   parece un corte. El izquierdo solo cuando ya se avanzo. Con el foco del
-   teclado dentro se quita, para que no tape la ficha que lo tiene. */
-.product-grid.is-fila { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fundido-izq, 0px), #000 calc(100% - var(--fundido-der, var(--fundido))), transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 var(--fundido-izq, 0px), #000 calc(100% - var(--fundido-der, var(--fundido))), transparent 100%); }
-.product-grid.is-fila.is-avanzada { --fundido-izq: var(--fundido); }
-.product-grid.is-fila.is-al-final { --fundido-der: 0px; }
-.product-grid.is-fila:has(:focus-visible) { -webkit-mask-image: none; mask-image: none; }
-
-/* Debajo de la fila, en todos los anchos: flecha, barra de por donde se va,
-   flecha. Nunca encima de las fotos, donde tapaban la primera y la ultima
-   ficha. Con el teclado se tabula por las fichas, que el navegador trae solas
-   a la vista; las flechas son para el raton y para quien no adivina que se
-   arrastra con el dedo. */
-.fila-pie { display: flex; align-items: center; gap: .8rem; margin-top: .9rem; }
-.fila-pie[hidden] { display: none; }
-.fila-flecha { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: 50%; color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-ui); }
-.con-puntero .fila-flecha:hover { background: var(--ambar); }
-.fila-flecha svg { width: 19px; height: 19px; }
-/* En las puntas se queda en su sitio, apagada: si desapareciera, la barra
-   cambiaria de largo de golpe. */
-.fila-flecha[aria-disabled="true"] { opacity: .35; cursor: default; }
-.con-puntero .fila-flecha[aria-disabled="true"]:hover { background: var(--papel); }
-.fila-barra { display: block; flex: 1; height: 4px; overflow: hidden; background: var(--masa-linea); border-radius: var(--r-pill); }
-.fila-avance { display: block; height: 100%; background: var(--corteza); border-radius: inherit; }
 
 .product-card[hidden] { display: none; }
 /* La ficha es una columna y el pie se va al fondo: en una fila de fichas
@@ -451,6 +395,33 @@ body.is-vista .fila-pausa { display: none; }
 .card-cantidad button[hidden], .card-cantidad .card-numero[hidden] { display: none; }
 .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno .card-numero { animation: cantidad-abre var(--dur-base) var(--ease-soft) both; }
 @keyframes cantidad-abre { from { opacity: 0; transform: translateX(16px) scale(.85); } to { opacity: 1; transform: none; } }
+/* El destello al agregar (seccion 4 del plan; comun/golpes.js pone
+   is-destello en cada + que suma y lo quita al acabar): la pastilla se pinta
+   de horno al instante y vuelve al papel en una escena corta. Solo colores.
+   Va en lista con las animaciones de abrirse, para que el primer toque se
+   estire y destelle a la vez; al reiniciar el destello, las de abrirse
+   siguen donde estaban (se reconocen por el nombre). El + sigue ambar con
+   su aro.
+   Fondo y texto no se funden a la vez: a medio camino los dos quedarian
+   del mismo gris. Hasta el 35 % el fondo baja solo hasta un horno con un
+   20 % de papel (el texto claro sigue en 5,9:1) y el −, el numero y el
+   anillo del + se quedan en claro; ahi todo salta a la vez, el fondo a un
+   papel con un 20 % de horno (corteza 5,4:1, horno 9,3:1) y el texto a su
+   color, y el fondo acaba de fundirse al papel. El anillo del + es papel
+   mientras el fondo es oscuro, con un filo horno por fuera que lo separa
+   del papel de la ficha (seccion 11). */
+.card-cantidad.is-lleno.is-destello::before { animation: cantidad-estira var(--dur-base) var(--ease-soft) both, cantidad-destello var(--dur-slow) var(--ease-out); }
+.card-cantidad.is-lleno.is-destello .card-menos, .card-cantidad.is-lleno.is-destello .card-numero { animation: cantidad-abre var(--dur-base) var(--ease-soft) both, cantidad-destello-texto var(--dur-slow) linear; }
+.card-cantidad.is-lleno.is-destello .card-mas:focus-visible { animation: cantidad-destello-foco var(--dur-slow) linear; }
+@keyframes cantidad-destello {
+  from { background-color: var(--horno); }
+  35% { background-color: color-mix(in srgb, var(--horno) 80%, var(--papel)); animation-timing-function: steps(1, start); }
+  36% { background-color: color-mix(in srgb, var(--horno) 20%, var(--papel)); }
+}
+@keyframes cantidad-destello-texto { from, 35% { color: var(--sobre-horno); animation-timing-function: steps(1, start); } }
+@keyframes cantidad-destello-foco {
+  from, 35% { outline-color: var(--papel); box-shadow: inset 0 0 0 1px var(--horno), 0 0 0 7px var(--horno); animation-timing-function: steps(1, start); }
+}
 
 /* ---- Lo que se acabo --------------------------------------------------
    Lo agotado no se esconde: hoy no hay, pero manana si, y la ficha sigue
@@ -646,8 +617,7 @@ h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 .button-yellow, .text-link, .footer-mapa { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
 .con-puntero .floating-whatsapp:hover { background: var(--ambar-claro); }
-/* La foto que vuela de la ficha a la canasta, y el saltito al llegar. */
-.vuela-canasta { position: fixed; z-index: 30; width: 76px; height: 76px; background: var(--masa-honda) center / cover no-repeat; border: 3px solid var(--papel); border-radius: 50%; box-shadow: var(--shadow-float); pointer-events: none; }
+/* El brinco de la canasta al agregar desde una ficha (CanastaProvider.jsx). */
 body .floating-whatsapp.is-canasta.is-latido { animation: canasta-salta 520ms var(--ease-accent); }
 .floating-whatsapp.is-latido .canasta-cuenta { animation: cuenta-infla 520ms var(--ease-accent); }
 @keyframes canasta-salta { 0% { transform: none; } 30% { transform: scale(1.22) rotate(-8deg); } 60% { transform: scale(.94) rotate(4deg); } 100% { transform: none; } }
@@ -754,10 +724,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   /* Dos columnas en pantalla de telefono: la ficha es la mitad de ancha, asi que
      la foto, el nombre y el precio bajan de tamano a la vez para no apretarse. */
   .product-grid { gap: .9rem; }
-  /* En la fila tambien caben dos: con una sola ficha por pantalla el mostrador
-     se veia de producto en producto. Sigue avanzando de uno en uno. */
-  .product-grid.is-fila { --fundido: 28px; gap: .9rem; }
-  .product-grid.is-fila .product-card { width: calc(50% - .45rem); }
   .product-card { --margen-papel: .45rem; }
   .product-tag { top: 6px; left: 6px; width: 66px; height: 66px; padding: 7px; letter-spacing: .02em; }
   .product-info { padding: .8rem .3rem .2rem; }
@@ -1076,8 +1042,9 @@ body.is-checkout .floating-whatsapp { display: none; }
   .product-card:active, .con-puntero .product-card:hover:active,
   .button:active, .con-puntero .button-yellow:hover:active, .order-button:active, .con-puntero .order-button:hover:active,
   .card-cantidad .card-mas:active, .con-puntero .card-cantidad .card-mas:hover:active, .canasta-cantidad [data-mas]:active { transform: none; }
-  .product-grid.is-fila { transition: none; }
   .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno output, .card-cantidad.is-lleno .card-numero, .card-cantidad.is-lleno::before { animation: none; }
+  /* Ni destello al agregar (golpes.js tampoco lo pide). */
+  .card-cantidad.is-lleno.is-destello::before, .card-cantidad.is-lleno.is-destello .card-menos, .card-cantidad.is-lleno.is-destello .card-numero, .card-cantidad.is-lleno.is-destello .card-mas:focus-visible { animation: none; }
   .con-puntero .product-card:hover .product-tag { transform: rotate(-10deg); }
   /* Las piezas del estilo editorial, quietas: ni se levantan, ni salta nada,
      ni cruza el brillo. */
