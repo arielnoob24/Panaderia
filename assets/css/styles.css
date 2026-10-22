@@ -31,14 +31,20 @@
   --r-pill: 999px;
   --r-dough: 62% 38% 55% 45% / 45% 55% 38% 62%;
   --r-mass: 46% 54% 44% 56% / 7% 8% 7% 8%;
+  /* Dos ritmos (seccion 10 del plan). Respuesta a un toque, rapida: micro y
+     fast. Escena (cambio de vista, entradas, carrusel, desplegar, la ficha al
+     levantarse, la canasta), lenta: de base a scene. Lo que sale va en la
+     mitad de lo que entra. Los mismos valores, en segundos, estan en
+     src/comun/movimiento.js para Motion. Sin ease-in: lo que arranca despacio
+     parece que tarda en contestar, asi que tambien las salidas van con
+     --ease-out. */
   --dur-micro: 160ms;
   --dur-fast: 200ms;
-  --dur-base: 280ms;
-  --dur-slow: 420ms;
-  --dur-editorial: 600ms;
-  --dur-scene: 900ms;
+  --dur-base: 400ms;
+  --dur-slow: 560ms;
+  --dur-editorial: 760ms;
+  --dur-scene: 1100ms;
   --ease-out: cubic-bezier(.16, 1, .3, 1);
-  --ease-in: cubic-bezier(.4, 0, 1, 1);
   --ease-ui: cubic-bezier(.2, 0, 0, 1);
   --ease-soft: cubic-bezier(.22, 1, .36, 1);
   --ease-accent: cubic-bezier(.34, 1.24, .64, 1);
@@ -83,44 +89,35 @@ section[id] { scroll-margin-top: -12px; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .skip-link { position: absolute; top: -5rem; left: 1rem; z-index: 20; padding: .7rem 1rem; background: var(--ambar); color: var(--horno); border-radius: 0 0 var(--r-btn) var(--r-btn); }
 .skip-link:focus { top: 1rem; }
+/* Sale sobre la barra horno: el anillo horno no se veria (1:1). */
+.skip-link:focus-visible { outline-color: var(--papel); }
 
-/* Arriba del todo la cabecera flota sin fondo sobre el velo del hero, que ahi
-   es crema de lado a lado; por eso el texto es oscuro -en blanco daba 1,1:1-.
-   Al bajar se queda fija, y entonces si necesita fondo propio: debajo pasan
-   la historia y el pie, que son marron oscuro, y el texto oscuro se perderia
-   sobre ellos. El fondo es claro y no oscuro para no tener que cambiar el
-   logo a media pagina. */
-.site-header { position: fixed; top: 0; width: 100%; z-index: 10; color: var(--horno); transition: color var(--dur-base) var(--ease-ui); }
-.site-header::after { opacity: 0; transition: opacity var(--dur-base) var(--ease-ui), background-color var(--dur-base) var(--ease-ui); }
-.site-header.is-pegada::after { opacity: 1; }
-/* Al bajar, la barra se vuelve oscura y todo lo de dentro se invierte. El logo
-   es un dibujo de un solo color, asi que no hace falta un segundo archivo: se
-   apaga a negro y se invierte a blanco, que conserva la transparencia. */
-.site-header.is-pegada { color: var(--sobre-horno); }
-/* El fondo lo pinta este pseudo, no la barra, para poder darle su propia
-   sombra sin que afecte a lo de dentro. */
-.site-header.is-pegada::after { position: absolute; top: 0; right: 0; left: 0; z-index: -1; height: 100%; content: ""; background: rgba(58, 40, 34, .94); pointer-events: none; box-shadow: 0 6px 22px rgba(58, 40, 34, .26); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
-.site-header.is-pegada .brand-logo { filter: brightness(0) invert(1); }
-
-/* Sobre la historia y el pie, que son del mismo marron que la barra, esta se da
-   la vuelta: clara con todo lo de dentro oscuro. Sin esto se funde con el fondo
-   y parece que la barra desaparece. */
-.site-header.is-pegada.is-sobre-oscuro { color: var(--horno); }
-.site-header.is-pegada.is-sobre-oscuro::after { background: rgba(255, 253, 248, .96); box-shadow: 0 6px 22px rgba(0, 0, 0, .3); }
-.site-header.is-pegada.is-sobre-oscuro .brand-logo { filter: none; }
-.site-header.is-pegada.is-sobre-oscuro .mascot-brand { background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
-.site-header.is-pegada.is-sobre-oscuro .main-nav > a:hover,
-.site-header.is-pegada.is-sobre-oscuro .nav-grupo-enlace:hover,
-.site-header.is-pegada.is-sobre-oscuro .nav-grupo-boton:hover { color: var(--corteza-oscura); }
-.site-header.is-pegada.is-sobre-oscuro .nav-cuenta { border-color: rgba(58, 40, 34, .32); color: var(--horno); }
-/* El panadero no se invierte: es ilustracion a color y se arruinaria. Solo su
-   halo cambia de tinte, para que se vea sobre el marron en vez de sobre crema. */
-.site-header.is-pegada .mascot-brand { background: radial-gradient(circle, rgba(215, 155, 74, .22) 62%, transparent 63%); }
-/* Sobre el marron el ambar si se lee: 5,8:1. Vuelve a ser el color del puntero. */
-.site-header.is-pegada .main-nav > a:hover, .site-header.is-pegada .nav-grupo-enlace:hover, .site-header.is-pegada .nav-grupo-boton:hover { color: var(--ambar); }
-.site-header.is-pegada .nav-cuenta { border-color: rgba(255, 255, 255, .45); color: var(--sobre-horno); }
-.site-header.is-pegada .nav-cuenta:hover { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
-.site-header.is-pegada .nav-cuenta.is-dentro { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
+/* La barra de arriba es horno de borde a borde desde que carga la pagina
+   (seccion 10 del plan): transparente sobre la portada, el contenido le pasaba
+   por debajo y la barra cambiaba de color a medio bajar. Todo lo de dentro va
+   en claro. El logo es un dibujo de un solo color, asi que no hace falta un
+   segundo archivo: se apaga a negro y se invierte a blanco, que conserva la
+   transparencia. */
+.site-header { position: fixed; top: 0; width: 100%; z-index: 10; background: var(--horno); color: var(--sobre-horno); box-shadow: inset 0 -1px 0 transparent; transition: box-shadow var(--dur-fast) var(--ease-ui); }
+.site-header .brand-logo { filter: brightness(0) invert(1); }
+/* Al bajar gana una sombra que la despega de lo que pasa por debajo. */
+.site-header.is-pegada { box-shadow: inset 0 -1px 0 transparent, 0 6px 22px rgba(58, 40, 34, .26); }
+/* Sobre las bandas oscuras y el pie, que son del mismo horno, no se invierte:
+   una linea ambar fina abajo marca donde acaba la barra. */
+.site-header.is-sobre-oscuro { box-shadow: inset 0 -1px 0 var(--ambar), 0 6px 22px rgba(0, 0, 0, .3); }
+/* El panadero no se invierte: es ilustracion a color y se arruinaria. Su halo
+   es ambar para que se vea sobre el horno. */
+.site-header .mascot-brand { background: radial-gradient(circle, rgba(215, 155, 74, .22) 62%, transparent 63%); }
+/* Sobre el horno el ambar se lee: 5,8:1. Es el color del puntero. */
+.site-header .main-nav > a:hover, .site-header .nav-grupo-enlace:hover, .site-header .nav-grupo-boton:hover { color: var(--ambar); }
+/* El anillo de siempre es horno, y sobre la barra no se veria: aqui el
+   anillo es papel, con el halo ambar por dentro. */
+.site-header a:focus-visible, .site-header button:focus-visible { outline-color: var(--papel); }
+/* Menos en el telefono (y con mucho zoom) la canasta, que flota abajo sobre
+   la pagina clara y no sobre la barra: ahi vuelve al anillo horno. */
+@media (max-width: 680px) {
+  .site-header .floating-whatsapp:focus-visible { outline-color: var(--horno); }
+}
 /* Tres columnas con los lados iguales: asi los enlaces quedan centrados en la
    pagina y no en el hueco que sobra entre el logo y la cuenta, que miden
    cosas distintas. */
@@ -132,7 +129,7 @@ section[id] { scroll-margin-top: -12px; }
 /* El logo trae el nombre y la bajada dibujados, asi que en la cabecera sustituye
    a la mascota con el texto al lado. Manda el alto: en una barra de 86px el logo
    tiene que caber con aire, y el ancho sale solo de su proporcion. */
-.brand-logo { display: block; width: auto; height: 64px; transition: filter var(--dur-base) var(--ease-ui); }
+.brand-logo { display: block; width: auto; height: 64px; }
 .brand small { display: block; margin-top: .15rem; font: 400 .58rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
 .main-nav { display: flex; align-items: center; gap: 2.5rem; font: 700 1rem Arial, sans-serif; }
 /* Al pasar el cursor solo cambia el color. Antes crecia ademas un subrayado
@@ -154,7 +151,7 @@ section[id] { scroll-margin-top: -12px; }
 
 /* El desplegable toma prestado el aspecto del menu del telefono: fondo horno,
    filete claro y sombra. Es el mismo objeto, colgado de otro sitio. */
-.nav-submenu { position: absolute; top: calc(100% + .1rem); left: 50%; z-index: 11; display: flex; visibility: hidden; color: var(--sobre-horno); min-width: 210px; flex-direction: column; gap: .1rem; padding: .5rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translate(-50%, -8px) scale(.98); transform-origin: top center; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }
+.nav-submenu { position: absolute; top: calc(100% + .1rem); left: 50%; z-index: 11; display: flex; visibility: hidden; color: var(--sobre-horno); min-width: 210px; flex-direction: column; gap: .1rem; padding: .5rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translate(-50%, -8px) scale(.98); transform-origin: top center; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility var(--dur-micro) var(--ease-out); }
 /* Entre el boton y el panel hay un hueco, y cruzarlo con el raton cerraria el
    desplegable a mitad de camino. Este puente invisible lo tapa. */
 .nav-submenu::before { position: absolute; top: -.3rem; right: 0; left: 0; height: .3rem; content: ""; }
@@ -164,25 +161,26 @@ section[id] { scroll-margin-top: -12px; }
 /* Las tres entran de una en una, no el panel entero de golpe: cada una sale
    un poco despues que la de arriba. Al cerrar no se escalonan, que esperar a
    que se vayan de una en una se siente lento. */
-.nav-submenu a { padding: .55rem .7rem; border-radius: var(--r-chip); white-space: nowrap; opacity: 0; transform: translateY(-7px); transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in); }
+.nav-submenu a { padding: .55rem .7rem; border-radius: var(--r-chip); white-space: nowrap; opacity: 0; transform: translateY(-7px); transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
 .nav-grupo.is-open .nav-submenu a { opacity: 1; transform: none; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-accent); }
 .nav-grupo.is-open .nav-submenu a:nth-child(1) { transition-delay: 0ms, 0ms, 50ms, 50ms; }
 .nav-grupo.is-open .nav-submenu a:nth-child(2) { transition-delay: 0ms, 0ms, 115ms, 115ms; }
 .nav-grupo.is-open .nav-submenu a:nth-child(3) { transition-delay: 0ms, 0ms, 180ms, 180ms; }
 /* Sin velo claro detras: el ambar sobre el velo se quedaba en 4,2:1. La marca
    de la izquierda dice cual es sin depender solo del color. */
-.nav-submenu a:hover, .nav-submenu a:focus-visible { box-shadow: inset 2px 0 0 var(--ambar); color: var(--ambar); }
+.con-puntero .nav-submenu a:hover, .nav-submenu a:focus-visible { box-shadow: inset 2px 0 0 var(--ambar); color: var(--ambar); }
 /* Al pasar el cursor lo abre el JavaScript, que mira si lo que entra es un
-   raton. Esto es el respaldo para cuando el JavaScript no ha cargado. Va con
+   raton. Esto es el respaldo para cuando el JavaScript de MenuTienda no ha
+   cargado; con-puntero la pone comun/puntero.js (seccion 10 del plan). Va con
    min-width porque en el telefono el desplegable es una sangria y no un panel
    flotante. */
-@media (hover: hover) and (pointer: fine) and (min-width: 681px) {
-  .nav-grupo:hover .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
-  .nav-grupo:hover .nav-grupo-flecha { transform: rotate(180deg); }
-  .nav-grupo:hover .nav-submenu a { opacity: 1; transform: none; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-accent); }
-  .nav-grupo:hover .nav-submenu a:nth-child(1) { transition-delay: 0ms, 0ms, 50ms, 50ms; }
-  .nav-grupo:hover .nav-submenu a:nth-child(2) { transition-delay: 0ms, 0ms, 115ms, 115ms; }
-  .nav-grupo:hover .nav-submenu a:nth-child(3) { transition-delay: 0ms, 0ms, 180ms, 180ms; }
+@media (min-width: 681px) {
+  .con-puntero .nav-grupo:hover .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
+  .con-puntero .nav-grupo:hover .nav-grupo-flecha { transform: rotate(180deg); }
+  .con-puntero .nav-grupo:hover .nav-submenu a { opacity: 1; transform: none; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-accent); }
+  .con-puntero .nav-grupo:hover .nav-submenu a:nth-child(1) { transition-delay: 0ms, 0ms, 50ms, 50ms; }
+  .con-puntero .nav-grupo:hover .nav-submenu a:nth-child(2) { transition-delay: 0ms, 0ms, 115ms, 115ms; }
+  .con-puntero .nav-grupo:hover .nav-submenu a:nth-child(3) { transition-delay: 0ms, 0ms, 180ms, 180ms; }
 }
 
 .menu-toggle { display: none; padding: 8px; background: none; border: 0; color: inherit; cursor: pointer; }
@@ -218,7 +216,7 @@ section[id] { scroll-margin-top: -12px; }
 .hero h1 em { color: var(--corteza); }
 .hero-copy { max-width: 420px; margin: 2rem 0; font-size: 1.1rem; }
 .hero-actions { display: flex; align-items: center; gap: 1.6rem; }
-.button { display: inline-flex; gap: .8rem; align-items: center; cursor: pointer; padding: 1rem 1.25rem; border: 1px solid transparent; border-radius: var(--r-btn); font-weight: 700; }
+.button { display: inline-flex; gap: .8rem; align-items: center; cursor: pointer; padding: 1rem 1.25rem; border: 1px solid transparent; border-radius: var(--r-btn); font-weight: 700; transition: transform var(--dur-fast) var(--ease-ui); }
 .button-yellow { background: var(--ambar); color: var(--horno); }
 .text-link { display: inline-flex; gap: .65rem; align-items: center; padding-bottom: .3rem; border-bottom: 1px solid currentColor; border-radius: 4px 4px 0 0; color: var(--horno); font: 700 .9rem Arial, sans-serif; }
 .text-link:hover { color: var(--corteza-oscura); }
@@ -226,8 +224,8 @@ section[id] { scroll-margin-top: -12px; }
    entero al pasar el cursor, y el pin da un saltito. Con solo cambiar el
    color de la letra no se notaba que era un boton. */
 .hero-actions .text-link { padding: .55rem .75rem .45rem; border-bottom: 0; border-radius: var(--r-btn); background: linear-gradient(var(--horno), var(--horno)) bottom / 100% 1px no-repeat; transition: color var(--dur-fast) var(--ease-ui), background-size var(--dur-fast) var(--ease-ui); }
-.hero-actions .text-link:hover, .hero-actions .text-link:focus-visible { background-size: 100% 100%; color: var(--papel); }
-.hero-actions .text-link:hover .link-icon { animation: pin-salta .5s var(--ease-ui); }
+.con-puntero .hero-actions .text-link:hover, .hero-actions .text-link:focus-visible { background-size: 100% 100%; color: var(--papel); }
+.con-puntero .hero-actions .text-link:hover .link-icon { animation: pin-salta .5s var(--ease-ui); }
 @keyframes pin-salta { 0%, 100% { transform: none; } 45% { transform: translateY(-4px); } }
 .hero-note { position: absolute; right: max(var(--borde), calc((100% - 1440px) / 2)); bottom: 3.2rem; z-index: 1; display: flex; gap: .7rem; align-items: flex-start; padding: 1rem 1.2rem; color: var(--horno); background: rgba(255, 253, 248, .92); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-card) var(--r-card) 0; box-shadow: var(--shadow-lift); font: .8rem Arial, sans-serif; }
 .status-dot { display: inline-block; width: 8px; height: 8px; margin-top: .38rem; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 0 4px rgba(215, 155, 74, .2); }
@@ -271,7 +269,7 @@ body.is-vista .fila-cabeza { display: none; }
 /* El boton de pausa del mostrador. Cuadrado de 44 px: es un objetivo tactil y
    tiene que cumplir el minimo sin depender del icono, que es pequeno. */
 .fila-pausa { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: 50%; color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.fila-pausa:hover { background: var(--masa-honda); border-color: var(--corteza); }
+.con-puntero .fila-pausa:hover { background: var(--masa-honda); border-color: var(--corteza); }
 .fila-pausa svg { width: 17px; height: 17px; }
 body.is-vista .fila-pausa { display: none; }
 
@@ -280,42 +278,53 @@ body.is-vista .fila-pausa { display: none; }
 .fila-ver-todo { color: var(--corteza-oscura); font: 700 .88rem Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; white-space: nowrap; }
 .fila-ver-todo:hover { color: var(--horno); }
 .fila-ver-todo > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
-.fila-ver-todo:hover > span[aria-hidden] { transform: translateX(3px); }
+.con-puntero .fila-ver-todo:hover > span[aria-hidden] { transform: translateX(3px); }
 /* En el telefono no caben titulo, enlace y pausa en una linea: el enlace se
    queda en "Ver todo". */
 @media (max-width: 680px) { .fila-ver-todo-largo { display: none; } }
-.product-grid.is-fila { display: flex; gap: 1.3rem; overflow-x: auto; padding-bottom: .4rem; scroll-snap-type: x proximity; scroll-padding: 0 4px; scrollbar-width: thin; scrollbar-color: var(--masa-linea) transparent; }
+/* La fila se recorre de lado sin la barra del navegador: la barra de avance
+   del pie hace su papel. Se sigue desplazando con el dedo, la rueda, las
+   flechas y Tab. Arriba lleva 8 px de aire para que la ficha que se levanta
+   y el anillo del foco no se corten contra el borde de la fila, y abajo el
+   sitio de la sombra de las fichas, que si no acababa en un corte recto. */
+.product-grid.is-fila { --fundido: 48px; display: flex; align-items: flex-start; gap: 1.3rem; margin: -8px 0 -24px; padding: 8px 0 40px; overflow-x: auto; overflow-y: hidden; scroll-snap-type: x proximity; scroll-padding: 0 calc(var(--fundido) + 4px); scrollbar-width: none; transition: height var(--dur-base) var(--ease-out); }
+.product-grid.is-fila::-webkit-scrollbar { display: none; }
 .product-grid.is-fila .product-card { width: min(272px, 74vw); flex: 0 0 auto; scroll-snap-align: start; }
-.product-grid.is-fila::-webkit-scrollbar { height: 8px; }
-.product-grid.is-fila::-webkit-scrollbar-thumb { background: var(--masa-linea); border-radius: var(--r-pill); }
-.product-grid.is-fila::-webkit-scrollbar-track { background: transparent; }
+/* El borde por donde siguen las fichas se desvanece: se nota que hay mas y no
+   parece un corte. El izquierdo solo cuando ya se avanzo. Con el foco del
+   teclado dentro se quita, para que no tape la ficha que lo tiene. */
+.product-grid.is-fila { -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--fundido-izq, 0px), #000 calc(100% - var(--fundido-der, var(--fundido))), transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 var(--fundido-izq, 0px), #000 calc(100% - var(--fundido-der, var(--fundido))), transparent 100%); }
+.product-grid.is-fila.is-avanzada { --fundido-izq: var(--fundido); }
+.product-grid.is-fila.is-al-final { --fundido-der: 0px; }
+.product-grid.is-fila:has(:focus-visible) { -webkit-mask-image: none; mask-image: none; }
 
-/* Las flechas son sobre todo para el raton: con el teclado se tabula por las
-   fichas, que el navegador trae solas a la vista. En el telefono bajan al pie,
-   debajo de la fila, porque arrastrar con el dedo no todo el mundo lo adivina. */
-.fila-flecha { position: absolute; top: 118px; z-index: 3; display: grid; width: 44px; height: 44px; place-items: center; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: 50%; box-shadow: var(--shadow-lift); color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
-.fila-flecha:hover { background: var(--ambar); transform: scale(1.06); }
-.fila-flecha[data-ir="-1"] { left: 4px; }
-.fila-flecha[data-ir="1"] { right: 4px; }
+/* Debajo de la fila, en todos los anchos: flecha, barra de por donde se va,
+   flecha. Nunca encima de las fotos, donde tapaban la primera y la ultima
+   ficha. Con el teclado se tabula por las fichas, que el navegador trae solas
+   a la vista; las flechas son para el raton y para quien no adivina que se
+   arrastra con el dedo. */
+.fila-pie { display: flex; align-items: center; gap: .8rem; margin-top: .9rem; }
+.fila-pie[hidden] { display: none; }
+.fila-flecha { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: 50%; color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-ui); }
+.con-puntero .fila-flecha:hover { background: var(--ambar); }
 .fila-flecha svg { width: 19px; height: 19px; }
-/* Al principio la flecha de atras sobra: se apaga y deja de tocarse. La de
-   adelante no se apaga nunca: al final vuelve al primer producto. */
-.fila-flecha[disabled] { opacity: 0; pointer-events: none; }
-.fila-flecha[hidden] { display: none; }
-/* El pie que lleva las flechas. En la computadora no pinta caja, asi que las
-   flechas se colocan contra la zona como siempre; la barra solo sale en el
-   telefono. */
-.fila-pie { display: contents; }
-.fila-pie[hidden], .fila-barra { display: none; }
+/* En las puntas se queda en su sitio, apagada: si desapareciera, la barra
+   cambiaria de largo de golpe. */
+.fila-flecha[aria-disabled="true"] { opacity: .35; cursor: default; }
+.con-puntero .fila-flecha[aria-disabled="true"]:hover { background: var(--papel); }
+.fila-barra { display: block; flex: 1; height: 4px; overflow: hidden; background: var(--masa-linea); border-radius: var(--r-pill); }
+.fila-avance { display: block; height: 100%; background: var(--corteza); border-radius: inherit; }
 
 .product-card[hidden] { display: none; }
 /* La ficha es una columna y el pie se va al fondo: en una fila de fichas
    estiradas a la altura de la mas alta, el precio y el filete quedan a la
    misma altura aunque una tenga tamanios o un nombre de dos lineas. */
-.product-card { position: relative; display: flex; flex-direction: column; background: var(--papel); border-radius: var(--r-card); box-shadow: var(--shadow-contact); transition: transform var(--dur-fast) var(--ease-ui); }
-.product-card::after { position: absolute; inset: 0; content: ""; border-radius: inherit; box-shadow: var(--shadow-lift); opacity: 0; pointer-events: none; transition: opacity var(--dur-fast) var(--ease-ui); }
+.product-card { position: relative; display: flex; flex-direction: column; background: var(--papel); border-radius: var(--r-card); box-shadow: var(--shadow-contact); transition: transform var(--dur-slow) var(--ease-soft); }
+/* La sombra de levantarse es su propia capa y aparece por opacidad: animar
+   box-shadow repinta la ficha entera en cada cuadro. */
+.product-card::after { position: absolute; inset: 0; content: ""; border-radius: inherit; box-shadow: var(--shadow-lift); opacity: 0; pointer-events: none; transition: opacity var(--dur-slow) var(--ease-soft); }
 .product-card.catalog-enter { animation: rise var(--dur-slow) var(--ease-out) both; animation-delay: var(--catalog-delay, 0ms); }
-.product-grid.is-filtering .product-card { opacity: .35; transform: scale(.985); transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in); }
+.product-grid.is-filtering .product-card { opacity: .35; transform: scale(.985); transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
 .product-image { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--masa-honda); border-radius: var(--r-card) var(--r-card) 0 0; transition: background-color var(--dur-base) var(--ease-ui); }
 /* Mientras la foto llega, su hueco late. Antes era un color plano y quieto,
    que no distingue "esta cargando" de "esto se colgo". Late solo el hueco:
@@ -328,14 +337,18 @@ body.is-vista .fila-pausa { display: none; }
 .story-photo.is-loading img, .mascot-slot.is-loading img { opacity: 0; }
 .story-photo img, .mascot-slot img { transition: opacity var(--dur-base) var(--ease-out); }
 .story-photo img.is-loaded, .mascot-slot img.is-loaded { opacity: 1; }
-.product-tag { position: absolute; top: 12px; left: 12px; display: grid; width: 62px; height: 62px; padding: .3rem; place-items: center; background: var(--corteza-oscura); color: white; border-radius: 50%; font: 700 .56rem/1.15 Arial, sans-serif; text-align: center; transform: rotate(-8deg); }
+/* El sello: 11 px de letra como poco (antes 9, no se leia), y el circulo lo
+   justo para que quepan dos renglones cortos. */
+.product-tag { position: absolute; top: 12px; left: 12px; display: grid; width: 68px; height: 68px; padding: .3rem; place-items: center; background: var(--corteza-oscura); color: white; border-radius: 50%; font: 700 .6875rem/1.15 Arial, sans-serif; text-align: center; transform: rotate(-8deg); }
 .product-tag.yellow { background: var(--ambar); color: var(--horno); }
 .product-tag.green { background: var(--horno); }
 .product-info { display: flex; flex: 1; flex-direction: column; padding: 1.25rem; }
 /* La categoria encima del nombre: mas pequena y en el tono de texto secundario,
    para que se lea pero no le quite el sitio al nombre. */
 .product-categoria { margin-bottom: .25rem; color: var(--horno-suave); font: .8rem/1.3 Arial, sans-serif; }
-.product-info h3 { margin: 0 0 .5rem; font: 700 1.1rem/1.3 Arial, sans-serif; }
+/* El nombre en Georgia, como en la canasta: es el mismo producto y se
+   reconoce por la letra. */
+.product-info h3 { margin: 0 0 .5rem; font: 600 1.18rem/1.25 Georgia, serif; }
 /* Sin tamanios, el aire minimo hasta el pie lo pone el nombre. */
 .product-info h3:has(+ .product-bottom) { margin-bottom: .9rem; }
 .product-info > p { min-height: 50px; margin: 0; color: var(--horno-suave); font: .85rem/1.5 Arial, sans-serif; }
@@ -350,18 +363,18 @@ body.is-vista .fila-pausa { display: none; }
    crece arriba y abajo hasta el minimo tactil, y casi nada a los lados para
    no pisar al vecino. */
 .tamano::before { position: absolute; inset: min(0px, calc((100% - 44px) / 2)) -2px; content: ""; }
-.tamano:hover { border-color: var(--ambar); color: var(--horno); }
+.con-puntero .tamano:hover { border-color: var(--ambar); color: var(--horno); }
 .tamano-input:checked + .tamano { background: var(--horno); border-color: var(--horno); color: var(--papel); }
 .tamano-input:focus-visible + .tamano { outline: 2px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 4px var(--ambar); }
 /* Agotado: se enseñan los tamanios para saber en que viene, pero no se tocan. */
 .tamano-input:disabled + .tamano { cursor: default; opacity: .45; }
-.tamano-input:disabled + .tamano:hover { border-color: var(--horno-claro); color: var(--horno-suave); }
+.con-puntero .tamano-input:disabled + .tamano:hover { border-color: var(--horno-claro); color: var(--horno-suave); }
 
 .product-bottom { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: auto; padding-top: .75rem; border-top: 1px solid var(--masa-linea); }
 /* El precio es lo segundo que se busca despues del nombre: va mas grande que el. */
 .product-bottom strong { font: 700 1.25rem Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .order-button { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .65rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-chip); font: 700 .78rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
-.order-button:hover, .order-button:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
+.con-puntero .order-button:hover, .order-button:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
 
 /* Pedir desde la ficha se resume en un signo mas. Al usarlo el boton se abre en
    el control de cantidad: quitar a la izquierda, la cuenta en medio, sumar a la
@@ -376,22 +389,22 @@ body.is-vista .fila-pausa { display: none; }
 .card-cantidad button::before { position: absolute; inset: calc((100% - 44px) / 2) 0; content: ""; }
 /* El ambar solo no se separa del papel de la ficha: un aro de corteza lo marca. */
 .card-cantidad .card-mas { background: var(--ambar); box-shadow: inset 0 0 0 1px var(--corteza); }
-.card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
+.con-puntero .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
 /* Ya dentro del grupo el mas no se levanta: sentado en la pastilla solo cambia de tono. */
-.card-cantidad.is-lleno .card-mas:hover, .card-cantidad.is-lleno .card-mas:focus-visible { transform: none; }
+.con-puntero .card-cantidad.is-lleno .card-mas:hover, .card-cantidad.is-lleno .card-mas:focus-visible { transform: none; }
 /* En el tope de 100 el mas sigue enfocable (al pulsarlo dice por que), pero
    tiene que verse apagado: sin el ambar, que es lo que invita a tocarlo, y sin
    levantarse. */
-.card-cantidad .card-mas[aria-disabled="true"], .card-cantidad .card-mas[aria-disabled="true"]:hover, .card-cantidad .card-mas[aria-disabled="true"]:focus-visible,
-.canasta-cantidad [data-mas][aria-disabled="true"], .canasta-cantidad [data-mas][aria-disabled="true"]:hover, .canasta-cantidad [data-mas][aria-disabled="true"]:focus-visible { background: var(--masa); box-shadow: inset 0 0 0 1px var(--masa-linea); color: var(--horno-claro); cursor: not-allowed; transform: none; }
+.card-cantidad .card-mas[aria-disabled="true"], .con-puntero .card-cantidad .card-mas[aria-disabled="true"]:hover, .card-cantidad .card-mas[aria-disabled="true"]:focus-visible,
+.canasta-cantidad [data-mas][aria-disabled="true"], .con-puntero .canasta-cantidad [data-mas][aria-disabled="true"]:hover, .canasta-cantidad [data-mas][aria-disabled="true"]:focus-visible { background: var(--masa); box-shadow: inset 0 0 0 1px var(--masa-linea); color: var(--horno-claro); cursor: not-allowed; transform: none; }
 .card-cantidad .card-menos { color: var(--corteza-oscura); }
-.card-cantidad .card-menos:hover, .card-cantidad .card-menos:focus-visible { background: var(--masa); }
+.con-puntero .card-cantidad .card-menos:hover, .card-cantidad .card-menos:focus-visible { background: var(--masa); }
 .card-cantidad .card-icono { width: 17px; height: 17px; }
 /* El numero es un campo, pero no tiene que parecerlo mientras no se use: sin
    marco ni fondo hasta que se toca, para que el control siga siendo un control
    de cantidad y no un formulario metido en la ficha. */
 .card-cantidad .card-numero { width: 2.6ch; min-width: 24px; padding: .15rem 0; background: none; border: 1px solid transparent; border-radius: var(--r-chip); color: var(--horno); font: 700 .95rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.card-cantidad .card-numero:hover { border-color: var(--masa-linea); }
+.con-puntero .card-cantidad .card-numero:hover { border-color: var(--masa-linea); }
 .card-cantidad .card-numero:focus { background: var(--papel); border-color: var(--ambar); outline: none; }
 .card-cantidad .card-numero:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .card-cantidad button[hidden], .card-cantidad .card-numero[hidden] { display: none; }
@@ -413,9 +426,10 @@ body.is-vista .fila-pausa { display: none; }
 /* Sin sombra la ficha se hunde un poco en el fondo, y no se levanta al pasar
    por encima: no hay nada que tocar. */
 .product-card[data-available="false"] { box-shadow: none; }
-.product-card[data-available="false"]:hover { transform: none; }
-.product-card[data-available="false"]:hover::after { opacity: 0; }
-.product-card[data-available="false"]:hover .product-image img { transform: none; }
+.con-puntero .product-card[data-available="false"]:hover { transform: none; }
+.con-puntero .product-card[data-available="false"]:hover::after { opacity: 0; }
+.con-puntero .product-card[data-available="false"]:hover .product-image img { transform: none; }
+.product-card[data-available="false"]:active, .con-puntero .product-card[data-available="false"]:hover:active { transform: none; }
 .product-card[data-available="false"] h3, .product-card[data-available="false"] .product-bottom strong { color: var(--horno-suave); }
 /* Mide lo que el mas con su marco, para que el filete del pie no quede mas abajo que en las fichas de al lado. */
 .card-agotado { display: inline-flex; min-height: 36px; align-items: center; margin-left: auto; color: var(--corteza-oscura); font: 700 .78rem Arial, sans-serif; }
@@ -436,7 +450,7 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 .vista-cabeza { display: flex; flex-direction: column; align-items: flex-start; gap: .9rem; margin-bottom: 2rem; }
 .vista-cabeza[hidden] { display: none; }
 .vista-volver { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem .5rem .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.vista-volver:hover { background: var(--masa); border-color: var(--corteza); }
+.con-puntero .vista-volver:hover { background: var(--masa); border-color: var(--corteza); }
 .vista-volver svg { width: 16px; height: 16px; }
 /* El nombre de la categoria va centrado, que es lo unico que manda en esta
    pantalla. El boton de volver se queda a la izquierda, a plomo con la
@@ -448,7 +462,7 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 .vista-mandos { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1.1rem; }
 .vista-mando { display: inline-flex; align-items: center; gap: .45rem; color: var(--horno-suave); font: .78rem Arial, sans-serif; }
 .vista-mando select { padding: .42rem 1.9rem .42rem .65rem; appearance: none; background: var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233a2822' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9.5l6 5.5 6-5.5'/%3E%3C/svg%3E") no-repeat right .55rem center/13px; border: 1px solid var(--horno-claro); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .8rem Arial, sans-serif; transition: border-color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui); }
-.vista-mando select:hover { border-color: var(--corteza); }
+.con-puntero .vista-mando select:hover { border-color: var(--corteza); }
 /* Borde en horno aclarado (4,97:1 sobre el papel; el filete de masa daba
    1,46:1) y el anillo de los campos: horno con el halo ambar (WCAG 1.4.11). */
 .vista-mando select:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
@@ -459,7 +473,7 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 .chip { position: relative; padding: .42rem .85rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .8rem/1.2 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
 /* Se toca en 44 px de alto aunque se vea mas bajo, como los tamanios. */
 .chip::before { position: absolute; inset: min(0px, calc((100% - 44px) / 2)) -2px; content: ""; }
-.chip:hover { border-color: var(--corteza); }
+.con-puntero .chip:hover { border-color: var(--corteza); }
 .chip-input:checked + .chip { background: var(--horno); border-color: var(--horno); color: var(--papel); }
 .chip-input:focus-visible + .chip { outline: 2px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 4px var(--ambar); }
 .vista-cuenta { margin: 0; color: var(--horno-suave); font: .82rem Arial, sans-serif; font-variant-numeric: tabular-nums; }
@@ -468,7 +482,7 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 .vista-buscar { position: relative; }
 .vista-buscar svg { position: absolute; left: .7rem; width: 15px; height: 15px; color: var(--horno-suave); pointer-events: none; }
 .vista-buscar input { width: 15rem; max-width: 100%; padding: .45rem .8rem .45rem 2rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: var(--r-pill); color: var(--horno); font: .85rem Arial, sans-serif; transition: border-color var(--dur-fast) var(--ease-ui); }
-.vista-buscar input:hover { border-color: var(--corteza); }
+.con-puntero .vista-buscar input:hover { border-color: var(--corteza); }
 /* Como "Ordenar por": borde en horno aclarado y el anillo de los campos. */
 .vista-buscar input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .vista-vacio { width: 100%; margin: 1.5rem 0 0; color: var(--horno-suave); font: 1rem Georgia, serif; text-align: center; }
@@ -487,8 +501,10 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
   .vista-buscar input { width: 100%; }
 }
 
-.vista-titulo:focus { outline: none; }
-.vista-titulo:focus-visible { outline: 2px solid var(--ambar); outline-offset: 6px; border-radius: 3px; }
+/* Al cambiar de vista el foco va al h1 (tabindex="-1", WCAG 2.4.3), pero un
+   titulo no es un control: no se le dibuja el recuadro ambar, ni con el
+   foco puesto desde el teclado (seccion 4 del plan). */
+h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 
 .story { margin-bottom: 5rem; background: var(--horno); color: white; border-radius: var(--r-band); overflow-x: clip; }
 .story-grid { display: grid; grid-template-columns: minmax(300px, .8fr) 1.2fr; gap: clamp(3rem, 8vw, 8rem); align-items: center; }
@@ -505,8 +521,8 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
    no se veia donde acababa uno y empezaba el siguiente. Cada uno en su
    cuadro, con el filete de arriba hecho borde. */
 .principles { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2.6rem 0; }
-.principles > div { padding: 1.1rem 1.15rem 1.25rem; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .16); border-radius: var(--r-card); transition: background-color var(--dur-base) var(--ease-ui), border-color var(--dur-base) var(--ease-ui); }
-.principles > div:hover { background: rgba(255, 255, 255, .08); border-color: rgba(215, 155, 74, .45); }
+.principles > div { padding: 1.1rem 1.15rem 1.25rem; background: rgba(255, 255, 255, .05); border: 1px solid rgba(255, 255, 255, .16); border-radius: var(--r-card); transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.con-puntero .principles > div:hover { background: rgba(255, 255, 255, .08); border-color: rgba(215, 155, 74, .45); }
 .principles h3 { margin: .5rem 0; font: 500 1.2rem/1.25 Georgia, serif; }
 .principles p { margin: 0; color: var(--sobre-horno-tenue); font: .85rem/1.45 Arial, sans-serif; }
 /* El icono y el numero forman una sola marca. Los iconos son SVG en linea:
@@ -588,7 +604,7 @@ body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min
 .text-link:focus-visible > span[aria-hidden], .footer-mapa:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
 .button-yellow, .text-link, .footer-mapa { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .button-yellow:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
-.floating-whatsapp:hover { background: var(--ambar-claro); }
+.con-puntero .floating-whatsapp:hover { background: var(--ambar-claro); }
 /* La foto que vuela de la ficha a la canasta, y el saltito al llegar. */
 .vuela-canasta { position: fixed; z-index: 30; width: 76px; height: 76px; background: var(--masa-honda) center / cover no-repeat; border: 3px solid var(--papel); border-radius: 50%; box-shadow: var(--shadow-float); pointer-events: none; }
 body .floating-whatsapp.is-canasta.is-latido { animation: canasta-salta 520ms var(--ease-accent); }
@@ -633,15 +649,24 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .principles.reveal-line .principle-mark { transform: scale(.85); transform-origin: left center; transition: transform var(--dur-slow) var(--ease-soft); transition-delay: inherit; }
 .principles.reveal-line.is-visible .principle-mark { transform: none; }
 
-@media (hover: hover) and (pointer: fine) {
-  .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
-  .button-yellow:hover > span[aria-hidden] { transform: rotate(-8deg) scale(1.12); }
-  .text-link:hover > span[aria-hidden],
-  .footer-mapa:hover > span[aria-hidden] { transform: translate(4px, -4px); }
-  .product-card:hover { transform: translateY(-5px); }
-  .product-card:hover::after { opacity: 1; }
-  .product-card:hover .product-image img { transform: scale(1.04); }
-}
+/* Lo que solo tiene sentido con raton o lapiz: con el dedo se quedaria
+   pegado en lo ultimo tocado. La clase con-puntero la pone comun/puntero.js
+   segun el pointerType de cada evento; la media query (hover: hover) daba
+   falso en el portatil tactil del usuario y nunca se veia (seccion 10). */
+.con-puntero .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
+.con-puntero .button-yellow:hover > span[aria-hidden] { transform: rotate(-8deg) scale(1.12); }
+.con-puntero .text-link:hover > span[aria-hidden],
+.con-puntero .footer-mapa:hover > span[aria-hidden] { transform: translate(4px, -4px); }
+/* La ficha se levanta despacio, como algo que se coge del mostrador: es
+   escena, no respuesta. La foto se acerca mas despacio todavia. */
+.con-puntero .product-card:hover { transform: translateY(-5px); }
+.con-puntero .product-card:hover::after { opacity: 1; }
+.con-puntero .product-card:hover .product-image img { transform: scale(1.04); }
+/* Al pulsar, botones y fichas se hunden un poco (respuesta, seccion 10), con
+   raton o con el dedo. Van despues del hover para ganarle con el mismo peso. */
+.product-card:active, .con-puntero .product-card:hover:active,
+.button:active, .con-puntero .button-yellow:hover:active, .order-button:active, .con-puntero .order-button:hover:active,
+.card-cantidad .card-mas:active, .con-puntero .card-cantidad .card-mas:hover:active, .canasta-cantidad [data-mas]:active { transform: scale(.97); transition-duration: var(--dur-micro); }
 @media (max-width: 900px) {
   /* Cinco entradas y el boton de la cuenta no caben con el aire de escritorio:
      entre la tableta y el movil la barra se aprieta en vez de desbordarse. */
@@ -659,7 +684,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   html { scroll-padding-top: 94px; }
   .brand-logo { height: 44px; }
   .menu-toggle { display: block; }
-  .main-nav { position: absolute; top: calc(100% + .5rem); right: 16px; left: auto; display: flex; visibility: hidden; width: min(250px, calc(100vw - 32px)); flex-direction: column; align-items: stretch; gap: .15rem; padding: .55rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }
+  .main-nav { position: absolute; top: calc(100% + .5rem); right: 16px; left: auto; display: flex; visibility: hidden; width: min(250px, calc(100vw - 32px)); flex-direction: column; align-items: stretch; gap: .15rem; padding: .55rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility var(--dur-micro) var(--ease-out); }
   /* Visible al instante, como el submenu de Tienda: en su primer cuadro seguia
      en hidden y el foco no podia entrar en Nosotros al abrirlo. */
   .main-nav.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
@@ -699,26 +724,12 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .product-grid { gap: .9rem; }
   /* En la fila tambien caben dos: con una sola ficha por pantalla el mostrador
      se veia de producto en producto. Sigue avanzando de uno en uno. */
-  .product-grid.is-fila { gap: .9rem; }
+  .product-grid.is-fila { --fundido: 28px; gap: .9rem; }
   .product-grid.is-fila .product-card { width: calc(50% - .45rem); }
-  /* La altura la pone useFila.js con las dos fichas que se ven: las demas no se
-     estiran, y la que es mas alta que la fila se corta mientras no se ve. */
-  .product-grid.is-fila { align-items: flex-start; overflow-y: hidden; transition: height var(--dur-fast) var(--ease-ui); }
-  /* Debajo de la fila: flecha, barra de por donde se va, flecha. La barra hace
-     de barra de desplazamiento, asi que la del navegador sobra. */
-  .product-grid.is-fila { scrollbar-width: none; }
-  .product-grid.is-fila::-webkit-scrollbar { display: none; }
-  .fila-pie { display: flex; align-items: center; gap: .8rem; margin-top: .9rem; }
-  .fila-flecha { position: static; flex: 0 0 auto; box-shadow: none; }
-  /* Al principio la de atras se queda en su sitio, apagada: si desapareciera,
-     la barra cambiaria de largo de golpe. */
-  .fila-flecha[disabled] { opacity: .35; }
-  .fila-barra { display: block; flex: 1; height: 4px; overflow: hidden; background: var(--masa-linea); border-radius: var(--r-pill); }
-  .fila-avance { display: block; height: 100%; background: var(--corteza); border-radius: inherit; }
-  .product-tag { width: 52px; height: 52px; padding: .25rem; font-size: .5rem; }
+  .product-tag { top: 8px; left: 8px; width: 60px; height: 60px; padding: .25rem; }
   .product-info { padding: .9rem; }
   .product-categoria { margin-bottom: .15rem; font-size: .7rem; }
-  .product-info h3 { margin-bottom: .35rem; font-size: .95rem; }
+  .product-info h3 { margin-bottom: .35rem; font-size: 1rem; }
   .product-info h3:has(+ .product-bottom) { margin-bottom: .7rem; }
   .card-tamanos { margin-bottom: .7rem; }
   .tamano { padding: .24rem .5rem; font-size: .68rem; }
@@ -776,7 +787,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .resumen-cabeza .recibo-titulo { margin: 0; }
 .resumen-cuenta { margin: 0; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
 .resumen-editar { margin-top: .6rem; padding: .34rem .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno-suave); cursor: pointer; font: 700 .76rem Arial, sans-serif; transition: border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.resumen-editar:hover { border-color: var(--ambar); color: var(--horno); }
+.con-puntero .resumen-editar:hover { border-color: var(--ambar); color: var(--horno); }
 .resumen-editar:focus-visible { outline: 2px solid var(--horno); outline-offset: 2px; }
 /* Hasta que hora se puede pasar a retirar, sacado del horario de verdad. */
 .canasta-local-hora { margin: .3rem 0 0; color: var(--corteza-oscura); font: 700 .78rem/1.45 Arial, sans-serif; }
@@ -835,13 +846,13 @@ body.is-checkout .floating-whatsapp { display: none; }
 
 /* El menu de la cuenta, colgando de su circulo hacia la izquierda: el circulo
    esta en el borde derecho, asi que el menu se abre hacia la pagina. */
-.cuenta-menu { position: absolute; top: calc(100% + .6rem); right: 0; z-index: 11; display: flex; visibility: hidden; width: min(280px, calc(100vw - 32px)); flex-direction: column; gap: .1rem; padding: .45rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); color: var(--sobre-horno); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in), visibility var(--dur-micro) var(--ease-in); }
+.cuenta-menu { position: absolute; top: calc(100% + .6rem); right: 0; z-index: 11; display: flex; visibility: hidden; width: min(280px, calc(100vw - 32px)); flex-direction: column; gap: .1rem; padding: .45rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); color: var(--sobre-horno); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility var(--dur-micro) var(--ease-out); }
 /* Visible al instante, por lo mismo que el desplegable de Tienda. */
 .cuenta-menu.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
 .cuenta-menu button { padding: .6rem .75rem; background: none; border: 0; border-radius: var(--r-chip); color: inherit; cursor: pointer; font: 700 .9rem Arial, sans-serif; text-align: left; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
 /* En hover, ambar claro: el ambar de siempre sobre el fondo aclarado se
    quedaba en 4,19:1 con letra de 14 px. */
-.cuenta-menu button:hover { background: rgba(255, 255, 255, .1); color: var(--ambar-claro); }
+.con-puntero .cuenta-menu button:hover { background: rgba(255, 255, 255, .1); color: var(--ambar-claro); }
 /* Arriba, quien eres o un saludo; es lo primero que se lee al abrirlo. */
 .cuenta-menu-cabeza { padding: .65rem .75rem .75rem; }
 .cuenta-menu-cabeza.is-dentro { display: flex; align-items: center; gap: .75rem; margin-bottom: .3rem; padding-bottom: .9rem; border-bottom: 1px solid rgba(255, 255, 255, .14); }
@@ -862,16 +873,16 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-menu-raya { margin: .3rem .5rem; border: 0; border-top: 1px solid rgba(255, 255, 255, .14); }
 /* Salir va en el tono de "cerrado" del pie: se distingue sin gritar. */
 .cuenta-menu .is-salir, .cuenta-menu .is-salir .cuenta-icono { color: var(--aviso-cerrado); }
-.cuenta-menu .is-salir:hover, .cuenta-menu .is-salir:hover .cuenta-icono { color: var(--papel); }
+.con-puntero .cuenta-menu .is-salir:hover, .con-puntero .cuenta-menu .is-salir:hover .cuenta-icono { color: var(--papel); }
 /* Fuera de sesion, las dos puertas: entrar es la que mas se usa y va llena. */
 .cuenta-menu .cuenta-menu-principal, .cuenta-menu .cuenta-menu-secundario { margin: 0 .3rem; padding: .75rem; border-radius: var(--r-btn); text-align: center; }
 .cuenta-menu .cuenta-menu-principal { background: var(--ambar); color: var(--horno); }
-.cuenta-menu .cuenta-menu-principal:hover { background: var(--ambar-claro); color: var(--horno); }
+.con-puntero .cuenta-menu .cuenta-menu-principal:hover { background: var(--ambar-claro); color: var(--horno); }
 .cuenta-menu .cuenta-menu-secundario { margin-top: .4rem; margin-bottom: .3rem; border: 1px solid rgba(255, 255, 255, .3); }
 
 /* El cuadrito que sale al dejar el cursor quieto sobre algo. Va en el cuerpo y
    se coloca por JS, para que ninguna tarjeta con overflow lo recorte. */
-.globo { position: absolute; z-index: 60; max-width: 220px; padding: .42rem .6rem; background: var(--horno); border-radius: var(--r-chip); box-shadow: var(--shadow-float); color: var(--sobre-horno); font: 400 .78rem/1.35 Arial, sans-serif; opacity: 0; pointer-events: none; text-align: center; transform: translateY(4px); transition: opacity var(--dur-micro) var(--ease-in), transform var(--dur-micro) var(--ease-in); }
+.globo { position: absolute; z-index: 60; max-width: 220px; padding: .42rem .6rem; background: var(--horno); border-radius: var(--r-chip); box-shadow: var(--shadow-float); color: var(--sobre-horno); font: 400 .78rem/1.35 Arial, sans-serif; opacity: 0; pointer-events: none; text-align: center; transform: translateY(4px); transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
 /* Abierto recibe el puntero: se puede llevar el cursor encima para leerlo sin
    que se vaya (WCAG 1.4.13). El JS no lo cierra si el cursor entra en el. */
 .globo.is-open { opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
@@ -900,7 +911,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    nace centrado, como la tarjeta del pago: entrar no es una gaveta lateral, es
    un alto en el camino. Solo esta aqui lo que de verdad cambia. */
 .cuenta-fondo { background: rgba(58, 40, 34, .42); -webkit-backdrop-filter: blur(7px) saturate(.85); backdrop-filter: blur(7px) saturate(.85); }
-.cuenta-panel { position: fixed; top: 50%; right: 50%; z-index: 21; display: flex; width: min(430px, calc(100vw - 32px)); max-height: min(88vh, 800px); flex-direction: column; background: var(--papel); border-radius: var(--r-btn); box-shadow: var(--shadow-float); opacity: 0; visibility: hidden; transform: translate(50%, -50%) scale(.97); transition: opacity var(--dur-base) var(--ease-in), visibility var(--dur-base); }
+.cuenta-panel { position: fixed; top: 50%; right: 50%; z-index: 21; display: flex; width: min(430px, calc(100vw - 32px)); max-height: min(88vh, 800px); flex-direction: column; background: var(--papel); border-radius: var(--r-btn); box-shadow: var(--shadow-float); opacity: 0; visibility: hidden; transform: translate(50%, -50%) scale(.97); transition: opacity var(--dur-fast) var(--ease-out), visibility var(--dur-fast); }
 .cuenta-panel.is-open { opacity: 1; visibility: visible; transform: translate(50%, -50%); animation: pago-centra var(--dur-base) var(--ease-out) both; }
 .cuenta-paso[hidden] { display: none; }
 .cuenta-paso { display: flex; min-height: 0; flex-direction: column; }
@@ -947,11 +958,11 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-datos dt { color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
 .cuenta-datos dd { margin: 0; color: var(--horno); font: 700 .85rem/1.4 Arial, sans-serif; text-align: right; word-break: break-word; }
 .cuenta-salir { display: block; width: 100%; padding: .8rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--corteza-oscura); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.cuenta-salir:hover { background: var(--masa); border-color: var(--corteza); }
+.con-puntero .cuenta-salir:hover { background: var(--masa); border-color: var(--corteza); }
 /* Editar los datos: debajo de ellos, del ancho de su texto. Es lo segundo que
    se hace en la ficha, despues de mirarla. */
 .cuenta-editar { display: inline-flex; min-height: 44px; align-items: center; margin-top: 1rem; padding: .5rem 1rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.cuenta-editar:hover { background: var(--masa); border-color: var(--corteza); }
+.con-puntero .cuenta-editar:hover { background: var(--masa); border-color: var(--corteza); }
 .cuenta-hecho { margin: 1rem 0 0; padding: .6rem .8rem; background: var(--masa); border-left: 3px solid var(--ambar); border-radius: var(--r-chip); color: var(--horno); font: 700 .82rem/1.4 Arial, sans-serif; }
 .cuenta-hecho[hidden] { display: none; }
 /* Metodos de pago: cada forma es una tarjeta que se elige entera, con el
@@ -970,7 +981,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-metodo-caja .cuenta-icono { width: 28px; height: 28px; flex: 0 0 auto; color: var(--corteza-oscura); }
 .cuenta-metodo-caja strong { display: block; color: var(--horno); font: 700 .95rem/1.3 Arial, sans-serif; }
 .cuenta-metodo-caja small { display: block; margin-top: .15rem; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
-.cuenta-metodo:hover .cuenta-metodo-caja { border-color: var(--corteza); }
+.con-puntero .cuenta-metodo:hover .cuenta-metodo-caja { border-color: var(--corteza); }
 .cuenta-metodo input:checked + .cuenta-metodo-caja { background: rgba(215, 155, 74, .14); border-color: var(--ambar); }
 .cuenta-metodo input:checked + .cuenta-metodo-caja::after { border: 6px solid var(--horno); }
 .cuenta-metodo input:focus-visible + .cuenta-metodo-caja { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
@@ -981,18 +992,18 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-conclave { position: relative; }
 .cuenta-conclave input { padding-right: 5.6rem; }
 .ver-clave { position: absolute; top: 50%; right: .2rem; min-width: 44px; min-height: 36px; padding: 0 .7rem; background: none; border: 0; border-radius: var(--r-btn); color: var(--corteza-oscura); cursor: pointer; font: 700 .8rem Arial, sans-serif; transform: translateY(-50%); }
-.ver-clave:hover { background: var(--masa); color: var(--horno); }
+.con-puntero .ver-clave:hover { background: var(--masa); color: var(--horno); }
 
 /* La entrada a la cuenta vive en la navegacion, sobre el horno. Es solo el
-   dibujo: un circulo perfilado, del tamano de un objetivo tactil, que no compite
-   en ancho con los tres enlaces de al lado. */
-.nav-cuenta { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: none; border: 1px solid rgba(58, 40, 34, .32); border-radius: 50%; color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.nav-cuenta:hover { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
+   dibujo: un circulo perfilado en claro, del tamano de un objetivo tactil, que
+   no compite en ancho con los tres enlaces de al lado. */
+.nav-cuenta { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: none; border: 1px solid rgba(255, 255, 255, .45); border-radius: 50%; color: var(--sobre-horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+.con-puntero .nav-cuenta:hover { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
 .nav-cuenta .nav-cuenta-icono { width: 22px; height: 22px; }
 /* Ya dentro, las iniciales hacen de dibujo y el circulo se llena de ambar: se
    distingue de un vistazo que hay sesion, sin escribir el nombre al lado. */
 .nav-cuenta.is-dentro { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
-.nav-cuenta.is-dentro:hover { background: var(--ambar-claro); border-color: var(--ambar-claro); }
+.con-puntero .nav-cuenta.is-dentro:hover { background: var(--ambar-claro); border-color: var(--ambar-claro); }
 .nav-cuenta-iniciales { font: 700 .88rem/1 Arial, sans-serif; letter-spacing: .01em; }
 
 /* Telefono estrecho: el control abierto mide mas que la mitad de la ficha, asi que
@@ -1025,11 +1036,17 @@ body.is-checkout .floating-whatsapp { display: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
   .hero-note .status-dot::after { display: none; }
   .button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
-  .menu-toggle span, .button-yellow:hover, .button-yellow:focus-visible, .order-button:hover, .order-button:focus-visible, .product-card:hover, .product-card:hover .product-image img { transform: none; }
+  .menu-toggle span, .button-yellow:focus-visible, .con-puntero .order-button:hover, .order-button:focus-visible { transform: none; }
+  .con-puntero .button-yellow:hover, .con-puntero .product-card:hover, .con-puntero .product-card:hover .product-image img { transform: none; }
+  /* Tampoco se hunde nada al pulsar. */
+  .product-card:active, .con-puntero .product-card:hover:active,
+  .button:active, .con-puntero .button-yellow:hover:active, .order-button:active, .con-puntero .order-button:hover:active,
+  .card-cantidad .card-mas:active, .con-puntero .card-cantidad .card-mas:hover:active, .canasta-cantidad [data-mas]:active { transform: none; }
+  .product-grid.is-fila { transition: none; }
   .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno output { animation: none; }
-  .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { transform: none; }
+  .con-puntero .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { transform: none; }
   .nav-submenu, .nav-grupo-flecha { transition: none; }
-  .hero-actions .text-link:hover .link-icon { animation: none; }
+  .con-puntero .hero-actions .text-link:hover .link-icon { animation: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
   .product-image.is-loading { animation: none; }
   .product-image img { opacity: 1; }
@@ -1042,7 +1059,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    siendo enlaces normales y el sitio funciona como antes. */
 .canasta-fondo, .cuenta-fondo { position: fixed; inset: 0; z-index: 20; background: rgba(58, 40, 34, .55); opacity: 0; pointer-events: none; transition: opacity var(--dur-base) var(--ease-out); }
 .canasta-fondo.is-open, .cuenta-fondo.is-open { opacity: 1; pointer-events: auto; }
-.canasta-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 21; display: flex; width: min(420px, 100%); flex-direction: column; background: var(--papel); box-shadow: var(--shadow-float); transform: translateX(100%); visibility: hidden; transition: transform var(--dur-base) var(--ease-in), visibility var(--dur-base); }
+.canasta-panel { position: fixed; top: 0; right: 0; bottom: 0; z-index: 21; display: flex; width: min(420px, 100%); flex-direction: column; background: var(--papel); box-shadow: var(--shadow-float); transform: translateX(100%); visibility: hidden; transition: transform var(--dur-fast) var(--ease-out), visibility var(--dur-fast); }
 /* Al abrir, visible en el acto (visibility 0s): con la transicion de antes el panel
    seguia oculto el primer instante y el foco no podia entrar en la X de cerrar. */
 .canasta-panel.is-open { transform: none; visibility: visible; transition: transform var(--dur-base) var(--ease-out), visibility 0s; }
@@ -1052,7 +1069,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-cabecera h2:focus, .cuenta-cabecera h2:focus { outline: none; }
 .canasta-cabecera h2:focus-visible, .cuenta-cabecera h2:focus-visible { outline: 2px solid var(--ambar); outline-offset: 5px; border-radius: 3px; }
 .canasta-cerrar, .cuenta-cerrar { display: grid; width: 40px; height: 40px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 1.5rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.canasta-cerrar:hover, .cuenta-cerrar:hover { background: var(--masa); }
+.con-puntero .canasta-cerrar:hover, .con-puntero .cuenta-cerrar:hover { background: var(--masa); }
 .canasta-cuerpo, .cuenta-cuerpo { flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; }
 /* La gaveta de la canasta: fondo crema y cada producto en su tarjeta blanca,
    con foto. Antes eran renglones sueltos sobre blanco, con mucho aire y nada
@@ -1075,7 +1092,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* La X va en gris y sin fondo, en la esquina: es una salida a mano, no algo
    que deba llamar la atencion por encima del + y el -. */
 .canasta-quitar { display: grid; width: 32px; height: 32px; flex: 0 0 auto; margin: -.3rem -.35rem 0 0; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno-suave); cursor: pointer; font: 1.35rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.canasta-quitar:hover, .canasta-quitar:focus-visible { background: var(--masa); color: var(--corteza-oscura); }
+.con-puntero .canasta-quitar:hover, .canasta-quitar:focus-visible { background: var(--masa); color: var(--corteza-oscura); }
 /* El mismo control que en la ficha del catalogo, al detalle: el "mas" en ambar
    relleno, el basurero en corteza y la pastilla con su pizca de aire. Es el
    mismo gesto sobre el mismo producto, y cambiarle el aspecto segun desde donde
@@ -1083,9 +1100,9 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-cantidad { display: inline-flex; align-items: center; gap: .1rem; padding: .15rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); }
 .canasta-cantidad button { display: grid; width: 32px; height: 32px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 700 1.2rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
 .canasta-cantidad [data-mas] { background: var(--ambar); }
-.canasta-cantidad [data-mas]:hover, .canasta-cantidad [data-mas]:focus-visible { background: var(--ambar-claro); }
+.con-puntero .canasta-cantidad [data-mas]:hover, .canasta-cantidad [data-mas]:focus-visible { background: var(--ambar-claro); }
 .canasta-cantidad [data-menos] { color: var(--corteza-oscura); }
-.canasta-cantidad [data-menos]:hover, .canasta-cantidad [data-menos]:focus-visible { background: var(--masa); }
+.con-puntero .canasta-cantidad [data-menos]:hover, .canasta-cantidad [data-menos]:focus-visible { background: var(--masa); }
 .canasta-cantidad output { width: 2.6ch; min-width: 24px; font: 700 .95rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; }
 /* El basurero de la ultima unidad, al mismo tamanio que en la ficha. */
 .canasta-cantidad .card-icono { width: 17px; height: 17px; }
@@ -1102,9 +1119,9 @@ body.is-checkout .floating-whatsapp { display: none; }
    es el unico de la canasta que deshace algo, y conviene que no se pulse por
    inercia creyendo que es el de siempre. */
 .canasta-confirma-si { background: var(--corteza-oscura); border: 0; color: var(--sobre-horno); }
-.canasta-confirma-si:hover { background: var(--corteza); }
+.con-puntero .canasta-confirma-si:hover { background: var(--corteza); }
 .canasta-confirma-no { background: none; border: 1px solid var(--masa-linea); color: var(--horno); }
-.canasta-confirma-no:hover { background: var(--masa); }
+.con-puntero .canasta-confirma-no:hover { background: var(--masa); }
 /* Vaciar va debajo de la lista, a la derecha y discreto: es una salida, no lo
    que se viene a hacer a la canasta. */
 .canasta-vaciar-zona { margin-top: .6rem; text-align: right; }
@@ -1119,7 +1136,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-vacio-titulo { margin: 0; color: var(--horno); font: 500 1.35rem/1.2 Georgia, serif; }
 .canasta-vacio-dicho { margin: 0; color: var(--horno-suave); font: .9rem/1.5 Arial, sans-serif; }
 .canasta-vacio-ir { min-height: 44px; margin-top: .9rem; padding: .65rem 1.4rem; background: var(--horno); border: 0; border-radius: var(--r-pill); color: var(--papel); cursor: pointer; font: 700 .88rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.canasta-vacio-ir:hover { background: var(--corteza-oscura); }
+.con-puntero .canasta-vacio-ir:hover { background: var(--corteza-oscura); }
 .canasta-pie, .cuenta-pie { padding: 1.2rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--masa-linea); }
 .canasta-total { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; font: .95rem/1.3 Arial, sans-serif; }
 .canasta-total strong { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
@@ -1172,7 +1189,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-pedido summary::-webkit-details-marker { display: none; }
 .cuenta-pedido summary::after { position: absolute; top: 50%; right: .45rem; width: .5rem; height: .5rem; border-right: 2px solid var(--horno-suave); border-bottom: 2px solid var(--horno-suave); content: ""; transform: translateY(-70%) rotate(45deg); transition: transform var(--dur-fast) var(--ease-ui); }
 .cuenta-pedido[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
-.cuenta-pedido summary:hover { background: var(--masa); }
+.con-puntero .cuenta-pedido summary:hover { background: var(--masa); }
 .cuenta-pedido summary:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .cuenta-pedido-numero { color: var(--horno); font: 700 .82rem/1.4 Arial, sans-serif; }
 .cuenta-pedido summary strong { color: var(--horno); font: 700 .82rem/1.4 Arial, sans-serif; text-align: right; }
@@ -1316,7 +1333,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .pide-cuenta-hoja p strong { color: var(--horno); }
 .pide-cuenta-hoja .button { width: 100%; justify-content: center; }
 .pide-cuenta-otra { width: 100%; min-height: 48px; padding: .7rem; background: none; border: 1px solid var(--horno); border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .92rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.pide-cuenta-otra:hover { background: var(--masa); }
+.con-puntero .pide-cuenta-otra:hover { background: var(--masa); }
 .pide-cuenta-volver { min-height: 44px; padding: .4rem .8rem; background: none; border: 0; color: var(--horno-suave); cursor: pointer; font: 700 .85rem Arial, sans-serif; text-decoration: underline; text-underline-offset: 3px; }
 .pide-cuenta-volver:hover { color: var(--horno); }
 @keyframes pide-fondo { from { opacity: 0; } to { opacity: 1; } }
@@ -1342,7 +1359,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .recibo-envio-estado.is-bien { padding: 0; background: none; border-left: 0; color: var(--horno-suave); font-size: .78rem; }
 .recibo-datos dd { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
 .recibo-copiar { padding: .2rem .55rem; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .72rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.recibo-copiar:hover { background: var(--papel); border-color: var(--corteza); }
+.con-puntero .recibo-copiar:hover { background: var(--papel); border-color: var(--corteza); }
 .recibo-copiado { margin: 0 0 .5rem; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
 .recibo-copiado[hidden] { display: none; }
 
@@ -1353,7 +1370,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .deshacer-barra[hidden] { display: none; }
 .deshacer-texto { margin: 0; margin-right: auto; font: .85rem/1.35 Arial, sans-serif; }
 .deshacer-boton { flex: 0 0 auto; padding: .45rem .9rem; background: var(--ambar); border: 0; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.deshacer-boton:hover { background: var(--ambar-claro); }
+.con-puntero .deshacer-boton:hover { background: var(--ambar-claro); }
 @keyframes deshacer-entra { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
 @keyframes deshacer-entra-panel { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 /* Lo que cambia la barra va aqui, detras de la regla base: antes estaba en el
@@ -1388,7 +1405,7 @@ body:has(.canasta-panel.is-open) .deshacer-barra { right: 16px; left: auto; bott
 .recibo-lista, .resumen-lista { margin: 0; padding: 0; list-style: none; }
 .recibo-lista li, .resumen-lista li { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--masa-linea); font: .85rem/1.4 Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .canasta-listo { display: block; width: 100%; margin-top: .6rem; padding: .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .85rem/1.3 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.canasta-listo:hover { background: var(--masa); }
+.con-puntero .canasta-listo:hover { background: var(--masa); }
 
 @media (max-width: 680px) {
   .canasta-panel { width: 100%; }

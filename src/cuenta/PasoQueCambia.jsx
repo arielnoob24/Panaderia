@@ -16,13 +16,15 @@
 // pone el paso nuevo al montarse (en su primer campo); aqui no se toca.
 import { useLayoutEffect, useRef, useState } from 'react';
 import { m, useReducedMotion } from 'motion/react';
+import { CURVA, DURACION, curvaCss, ms } from '../comun/movimiento.js';
 
 const QUIETA = { opacity: 1, x: 0 };
-const ENTRA = { duration: 0.32, ease: [0.16, 1, 0.3, 1] };
+const ENTRA = { duration: DURACION.base, ease: CURVA.salida };
 const DE = { delante: { opacity: 0, x: 56 }, atras: { opacity: 0, x: -56 } };
 // La salida, con la animacion del navegador: el nodo ya no es de Motion.
+// Dura la mitad que la entrada.
 const SALE = [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateX(-56px)' }];
-const SALE_COMO = { duration: 220, easing: 'cubic-bezier(.4, 0, 1, 1)', fill: 'forwards' };
+const SALE_COMO = { duration: ms(DURACION.rapida), easing: curvaCss(CURVA.salida), fill: 'forwards' };
 
 // paso: el que se ensena; orden: todos, del primero al ultimo.
 function PasoQueCambia({ paso, orden, children }) {

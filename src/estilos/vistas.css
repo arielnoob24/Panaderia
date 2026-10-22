@@ -23,19 +23,17 @@
 #raiz > main { position: relative; overflow-x: clip; }
 .vista-marco.is-saliendo { position: absolute; top: 0; right: 0; left: 0; pointer-events: none; }
 
-/* Debajo de la cabecera fija, que no tiene fondo mientras se esta arriba. */
+/* Debajo de la cabecera fija. */
 .vista-nosotros, .vista-contacto { padding-top: 132px; }
 /* El rotulo de la foto se asoma 14 px por la derecha: a 320 px eso era
    desplazamiento de lado. */
 .vista-nosotros { overflow-x: clip; }
 
-/* Los h1 de las vistas reciben el foco al llegar (useVista): sin anillo
-   cuando lo pone el codigo, con anillo cuando se llega con el teclado. */
-.vista h1:focus { outline: none; }
-.vista h1:focus-visible { outline: 2px solid var(--ambar); outline-offset: 6px; border-radius: 3px; }
+/* Los h1 de las vistas reciben el foco al llegar (useVista), sin anillo: lo
+   dice styles.css para todo h1 con tabindex="-1". */
 
 /* La opcion de la vista en la que se esta: un filete ambar debajo, que no
-   depende del color del texto (la cabecera cambia de color al pegarse). */
+   depende solo del color del texto. */
 .main-nav > a[aria-current="page"], .nav-grupo-enlace[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--ambar); text-decoration-thickness: 3px; text-underline-offset: 8px; }
 
 /* Una banda oscura por vista: el mostrador en #/, los principios en
@@ -57,16 +55,11 @@
 .mostrador-dicho { margin: 0 0 1.8rem; color: var(--sobre-horno-tenue); font: .9rem/1.5 Arial, sans-serif; }
 /* Cada ficha se queda bien puesta al soltar: con proximity se podia quedar a
    medias entre dos. */
-.mostrador .product-grid.is-fila { scroll-snap-type: x mandatory; scrollbar-color: rgba(255, 255, 255, .28) transparent; }
-.mostrador .product-grid.is-fila::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, .28); }
+.mostrador .product-grid.is-fila { scroll-snap-type: x mandatory; }
 .mostrador .product-card { color: var(--horno); box-shadow: 0 10px 24px rgba(0, 0, 0, .22); }
 /* En las puntas la flecha se apaga pero se queda donde estaba: si tenia el
-   foco, lo conserva (aria-disabled, MasPedidos.jsx). */
-/* La escala al pasar el raton la pone Motion (MasPedidos.jsx): la de
-   styles.css se quedaba pisada por el estilo en linea que deja Motion. */
-.mostrador .fila-flecha:hover { transform: none; }
-.mostrador .fila-flecha[aria-disabled="true"] { opacity: .4; cursor: default; }
-.mostrador .fila-flecha[aria-disabled="true"]:hover { background: var(--papel); }
+   foco, lo conserva (aria-disabled, MasPedidos.jsx). La escala al pasar el
+   raton y al pulsar la pone Motion. */
 
 /* ---- #/nosotros --------------------------------------------------------- */
 
@@ -89,12 +82,12 @@
 .vista-tienda .vista-cabeza { padding: 1.6rem clamp(1.1rem, 3vw, 2.4rem) 1.5rem; border-radius: var(--r-card); }
 .vista-tienda .vista-titulo { color: var(--papel); }
 .vista-tienda .vista-volver { border-color: rgba(255, 255, 255, .3); color: var(--sobre-horno); }
-.vista-tienda .vista-volver:hover { background: rgba(255, 255, 255, .08); border-color: var(--ambar); }
+.con-puntero .vista-tienda .vista-volver:hover { background: rgba(255, 255, 255, .08); border-color: var(--ambar); }
 .vista-tienda .vista-barra { border-top-color: rgba(255, 255, 255, .16); }
 .vista-tienda .vista-mando, .vista-tienda .vista-cuenta { color: var(--sobre-horno-tenue); }
 .vista-tienda .vista-vacio { color: var(--sobre-horno); }
 .vista-tienda .chip { background: transparent; border-color: rgba(255, 255, 255, .3); color: var(--sobre-horno); }
-.vista-tienda .chip:hover { border-color: var(--ambar); }
+.con-puntero .vista-tienda .chip:hover { border-color: var(--ambar); }
 /* La categoria puesta, en ambar: es la eleccion que manda en la vista. */
 .vista-tienda .chip-input:checked + .chip { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
 .vista-tienda .chip-input:focus-visible + .chip { outline: 2px solid var(--papel); outline-offset: 2px; box-shadow: none; }
@@ -115,7 +108,7 @@
 .contacto-datos h1 { margin: 0 0 1.6rem; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 Georgia, serif; }
 .contacto-direccion { margin: 0; font: normal 1.45rem/1.35 Georgia, serif; }
 .contacto-mapa-enlace { margin-top: 1rem; font-family: Arial, sans-serif; }
-.contacto-mapa-enlace:hover { background: var(--ambar-claro); }
+.con-puntero .contacto-mapa-enlace:hover { background: var(--ambar-claro); }
 .contacto-subtitulo { margin: 0 0 1rem; font: 500 1.5rem/1.2 Georgia, serif; }
 .contacto-lista { display: flex; flex-wrap: wrap; gap: 1.2rem 2.6rem; }
 /* .contacto viene del pie oscuro de styles.css; sobre la masa, los tonos de

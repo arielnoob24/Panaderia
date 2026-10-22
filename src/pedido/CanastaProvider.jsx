@@ -12,6 +12,7 @@ import { usePedido } from '../estado/PedidoProvider.jsx';
 import { unidades, productos } from '../estado/pedido.js';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { movimientoReducido } from '../comun/useMovimientoReducido.js';
+import { CURVA, DURACION, curvaCss, ms } from '../comun/movimiento.js';
 
 const ContextoCanasta = createContext(null);
 
@@ -95,7 +96,7 @@ function CanastaProvider({ children }) {
       { transform: 'translate(0, -24px) scale(1.1)', opacity: 1, offset: 0.18 },
       { transform: `translate(${dx * 0.55}px, ${dy * 0.55 - 70}px) scale(.75)`, opacity: 1, offset: 0.6 },
       { transform: `translate(${dx}px, ${dy}px) scale(.25)`, opacity: 0.7 },
-    ], { duration: 750, easing: 'cubic-bezier(.45, 0, .55, 1)' });
+    ], { duration: ms(DURACION.editorial), easing: curvaCss(CURVA.ui) });
     vuelo.onfinish = () => { bolita.remove(); latir(); };
     vuelo.oncancel = () => bolita.remove();
   }, []);

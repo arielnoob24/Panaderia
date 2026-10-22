@@ -1,7 +1,8 @@
 // ---- La cabecera ------------------------------------------------------
 // Logo, navegacion, la cuenta, la canasta y el menu del telefono, con el
-// HTML y el comportamiento de ui.js del sitio presentado: se pega al
-// bajar 40 px, se da la vuelta sobre las secciones oscuras, el menu del
+// HTML y el comportamiento de ui.js del sitio presentado: es horno desde
+// que carga, gana sombra al bajar 40 px y una linea ambar sobre las
+// secciones oscuras (seccion 10 del plan), el menu del
 // telefono lleva el foco a su primer enlace al abrirse y Escape cierra lo
 // que haya abierto. Cada opcion lleva a
 // su vista (comun/vistas.js); la de la vista en la que se esta lleva
@@ -14,8 +15,8 @@ import MenuTienda from './MenuTienda.jsx';
 import BotonCanasta from '../pedido/BotonCanasta.jsx';
 import FichaCuenta from '../cuenta/FichaCuenta.jsx';
 
-// Las bandas oscuras y el pie son del mismo marron que la barra pegada: cuando
-// alguno pasa por detras de ella, la barra se da la vuelta para no fundirse.
+// Las bandas oscuras y el pie son del mismo horno que la barra: cuando alguno
+// pasa por detras de ella, la barra gana una linea ambar para no fundirse.
 // Se buscan en cada vuelta y no una vez al montar: cada vista tiene las suyas.
 const OSCURAS = '.banda-oscura, .site-footer';
 
@@ -33,8 +34,7 @@ function Cabecera() {
   const abierto = useRef({ menu: false, tienda: false });
   useEffect(() => { abierto.current = { menu: menuAbierto, tienda: tiendaAbierta }; });
 
-  // La cabecera se queda arriba al bajar. Sin fondo mientras se esta en lo
-  // alto -ahi la sostiene el velo del hero- y con fondo en cuanto se baja.
+  // La cabecera se queda arriba al bajar, y con sombra en cuanto se baja.
   // React no repinta si el valor no cambia, asi que no se toca el DOM a cada pixel.
   useEffect(() => {
     const mirarScroll = () => {

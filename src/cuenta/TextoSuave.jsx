@@ -8,10 +8,11 @@
 // role="alert", el lector lo canta porque cambia lo de dentro. La clave es el
 // texto: un error distinto vuelve a fundirse; el mismo no parpadea.
 import { m, useReducedMotion } from 'motion/react';
+import { CURVA, DURACION } from '../comun/movimiento.js';
 
 const APARECE = { opacity: 0, y: -3 };
 const QUIETO = { opacity: 1, y: 0 };
-const SUAVE = { duration: 0.22, ease: [0.2, 0, 0, 1] };
+const SUAVE = { duration: DURACION.rapida, ease: CURVA.ui };
 
 function TextoSuave({ texto }) {
   const reducido = useReducedMotion();

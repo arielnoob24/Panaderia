@@ -24,6 +24,7 @@ import { useSesion } from '../estado/SesionProvider.jsx';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { useCanasta } from '../pedido/CanastaProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
+import { CURVA, DURACION } from '../comun/movimiento.js';
 import { catalogo } from '../servicios/catalogo.js';
 import { pedirOtraVez } from '../pedido/pedirOtraVez.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
@@ -44,7 +45,7 @@ function MisPedidos() {
 // es que el clic no lo abre ni lo cierra en el acto: abrir pone 'open' y la
 // altura crece; cerrar encoge la altura y quita 'open' al acabar, para que
 // lo de dentro no desaparezca antes de verse plegar.
-const DESPLIEGA = { duration: 0.28, ease: [0.2, 0, 0, 1] };
+const DESPLIEGA = { duration: DURACION.base, ease: CURVA.ui };
 const ABIERTO = { height: 'auto', opacity: 1 };
 const CERRADO = { height: 0, opacity: 0 };
 

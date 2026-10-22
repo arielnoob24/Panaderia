@@ -18,6 +18,7 @@ import { RegionAvisos } from './comun/Avisos.jsx';
 import SaltoContenido from './comun/SaltoContenido.jsx';
 import { VIEJAS, vistaDeRuta } from './comun/vistas.js';
 import { todaviaAbriendo } from './comun/apertura.js';
+import { CURVA, DURACION } from './comun/movimiento.js';
 import Inicio from './vistas/Inicio.jsx';
 import Nosotros from './vistas/Nosotros.jsx';
 import Contacto from './vistas/Contacto.jsx';
@@ -48,13 +49,13 @@ function Vista({ cual, pathname }) {
 // alto de la ventana, para que el pie no se asome arriba y luego baje.
 const CARGANDO = <div className="vista-cargando"></div>;
 
-// La vista nueva entra con un fundido y sube un poco (seccion 15 del plan):
-// es el unico movimiento de entrada de cada vista. La de antes se va en el
+// La vista nueva entra con un fundido y sube un poco (seccion 4 del plan):
+// es el unico movimiento de entrada de cada vista, y es escena (seccion 10). La de antes se va en el
 // acto, sin salida animada: mientras saliera seguiria viva leyendo la
 // direccion nueva (el comprobante, sin recibo, mandaria a #/ a medio camino).
 const ENTRADA = { opacity: 0, y: 14 };
 const QUIETA = { opacity: 1, x: 0, y: 0 };
-const TRANSICION = { duration: 0.28, ease: [0.16, 1, 0.3, 1] };
+const TRANSICION = { duration: DURACION.base, ease: CURVA.salida };
 
 // El grupo de la vista: entre categorias de la tienda no hay fundido, porque
 // no se cambia de vista (el catalogo anima sus fichas).
@@ -67,12 +68,13 @@ const grupoDe = (cual) => cual || 'cambiando';
 // nada que cambie con la direccion nueva mientras se va (su desvio se miro al
 // llegar), cosa que no se puede decir de todas.
 const DESDE_LA_DERECHA = { opacity: 0, x: 56 };
-const AL_LADO = { duration: 0.32, ease: [0.16, 1, 0.3, 1] };
+const AL_LADO = { duration: DURACION.base, ease: CURVA.salida };
 const SALIDA = {
   // custom: a que vista se va, y si se pidio menos movimiento. A cualquier
   // otra que no sea verificar, crear se va en el acto, como las demas.
   sale: ({ siguiente, reducido }) => (siguiente === 'cuenta-verificar' && !reducido
-    ? { opacity: 0, x: -56, transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } }
+    // Sale en la mitad de lo que tarda verificar en entrar.
+    ? { opacity: 0, x: -56, transition: { duration: DURACION.rapida, ease: CURVA.salida } }
     : { opacity: 0, transition: { duration: 0 } }),
 };
 

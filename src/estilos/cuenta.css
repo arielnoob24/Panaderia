@@ -16,7 +16,7 @@
    pedidos" son enlaces a sus vistas, con el mismo aspecto. */
 .cuenta-menu a.cuenta-menu-opcion { padding: .6rem .75rem; border-radius: var(--r-chip); color: inherit; font: 700 .9rem Arial, sans-serif; text-decoration: none; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
 /* Ambar claro y no ambar, como los botones (4,19:1 se quedaba corto). */
-.cuenta-menu a.cuenta-menu-opcion:hover { background: rgba(255, 255, 255, .1); color: var(--ambar-claro); }
+.con-puntero .cuenta-menu a.cuenta-menu-opcion:hover { background: rgba(255, 255, 255, .1); color: var(--ambar-claro); }
 /* El anillo de siempre es horno, y la ficha tambien: sobre ella se ve el
    halo ambar y un filete claro por dentro. */
 .cuenta-menu .cuenta-menu-opcion:focus-visible { outline: 2px solid var(--papel); outline-offset: -2px; box-shadow: 0 0 0 3px var(--ambar); }
@@ -120,7 +120,7 @@ a.nav-cuenta { text-decoration: none; }
    se pueda tocar (44 px); el aspecto lo pule frontend. */
 .cuenta-pedido-acciones { margin: .9rem 0 .2rem; }
 .cuenta-pedido-otra { min-height: 44px; padding: .5rem 1rem; border: 1px solid var(--corteza-oscura); border-radius: var(--r-chip); background: var(--papel); color: var(--horno); font: 700 .9rem Arial, sans-serif; cursor: pointer; }
-.cuenta-pedido-otra:hover { background: var(--ambar-claro); }
+.con-puntero .cuenta-pedido-otra:hover { background: var(--ambar-claro); }
 .cuenta-pedido-nota { margin: .2rem 0 .4rem; font: .88rem/1.45 Arial, sans-serif; color: var(--horno); }
 
 /* ---- Mis datos ------------------------------------------------------------- */

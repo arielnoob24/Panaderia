@@ -16,6 +16,7 @@ import { usePedido } from '../estado/PedidoProvider.jsx';
 import { productos } from '../estado/pedido.js';
 import { useCanasta } from './CanastaProvider.jsx';
 import { IconoCanasta } from './iconosPedido.jsx';
+import { PULSAR, RESORTE } from '../comun/movimiento.js';
 
 // 'sube' es true si el numero crecio: el nuevo llega desde abajo.
 const NUMERO = {
@@ -23,7 +24,7 @@ const NUMERO = {
   quieto: { y: 0, opacity: 1 },
   sale: (sube) => ({ y: sube ? -12 : 12, opacity: 0 }),
 };
-const SALTO = { type: 'spring', stiffness: 520, damping: 26, mass: 0.6 };
+const SALTO = RESORTE.salto;
 
 function BotonCanasta() {
   const { unidades: n } = usePedido();
@@ -46,7 +47,7 @@ function BotonCanasta() {
     // Al pulsar se hunde un poco: responde al dedo antes de que se abra el panel.
     <m.a
       ref={botonRef}
-      whileTap={reducido ? undefined : { scale: 0.92 }}
+      whileTap={reducido ? undefined : PULSAR}
       className="floating-whatsapp is-canasta"
       role="button"
       tabIndex={0}

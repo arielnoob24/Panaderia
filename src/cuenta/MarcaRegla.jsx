@@ -4,9 +4,10 @@
 // se ve cual acaba de cambiar sin releer la lista. Es solo dibujo: lo que el
 // lector oye (", cumplido" o ", falta") va en el texto del requisito.
 import { AnimatePresence, m, useReducedMotion } from 'motion/react';
+import { CURVA, DURACION, RESORTE } from '../comun/movimiento.js';
 
-const REBOTE = { type: 'spring', stiffness: 640, damping: 17, mass: 0.7 };
-const SALE = { scale: 0.4, opacity: 0, transition: { duration: 0.14, ease: [0.4, 0, 1, 1] } };
+const REBOTE = RESORTE.rebote;
+const SALE = { scale: 0.4, opacity: 0, transition: { duration: DURACION.micro, ease: CURVA.salida } };
 
 function MarcaRegla({ hecha }) {
   const reducido = useReducedMotion();

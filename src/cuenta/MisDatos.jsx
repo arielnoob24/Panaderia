@@ -15,6 +15,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { usePedido } from '../estado/PedidoProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
+import { CURVA, DURACION } from '../comun/movimiento.js';
 import { soloNueve, fallosEditar, avisoFaltan } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
@@ -29,7 +30,10 @@ const limpios = (d) => Object.fromEntries(ORDEN.map((c) => [c, d[c].trim()]));
 // Lo que dura "Guardado ✓" en el boton (seccion 15 del plan, "Movimiento de
 // la cuenta", punto 5): lo bastante para verlo sin quedarse esperando.
 const GUARDADO_MS = 2000;
-const CAMBIA = { duration: 0.18, ease: [0.2, 0, 0, 1] };
+const CAMBIA = { duration: DURACION.rapida, ease: CURVA.ui };
+// El rotulo viejo se va en la mitad: con mode="wait" el nuevo espera a que
+// salga, y "Guardado ✓" tiene que verse en cuanto se pulsa.
+const SE_VA = { opacity: 0, y: -4, transition: { duration: DURACION.rapida / 2, ease: CURVA.salida } };
 
 function MisDatos() {
   // Se mira al llegar y no despues: al cerrar la sesion, la vista se queda
@@ -169,7 +173,7 @@ function FormularioDatos() {
                 className="cuenta-guardar-rotulo"
                 initial={{ opacity: 0, y: 4 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -4 }}
+                exit={reducido ? { opacity: 0, transition: { duration: 0 } } : SE_VA}
                 transition={reducido ? { duration: 0 } : CAMBIA}
               >
                 {guardado ? 'Guardado ✓' : 'Guardar los cambios'}

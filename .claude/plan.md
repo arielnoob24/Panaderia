@@ -116,7 +116,7 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
 
 - **Al cambiar de vista**: arriba del todo, título de pestaña propio, `h1`
   con el foco (WCAG 2.4.3) y se anuncia. Transición: fundido con un pequeño
-  desplazamiento hacia arriba (unos 280 ms). Al abrir la página no se mueve
+  desplazamiento hacia arriba (unos 400 ms, `--dur-base`). Al abrir la página no se mueve
   el foco ni se anima (lo marca `comun/apertura.js`).
 - **Atrás y Adelante**: el desplazamiento lo decide la página
   (`history.scrollRestoration = 'manual'` tras `load`, `auto` en
@@ -456,8 +456,10 @@ pedido sigue valiendo.
   `(hover: hover)` le da falso, así que **nunca veía el hover** (y
   `any-hover` podría fallar igual). Al primer movimiento con
   `pointerType` `mouse` o `pen`, `<html>` gana la clase `con-puntero`, que
-  se quita al tocar con el dedo; los estilos de hover van bajo
-  `.con-puntero`. En JS, `pointerType`.
+  se quita al tocar con el dedo. Van bajo `.con-puntero` los hover que
+  mueven algo (`transform`) y los que pintan un fondo o un estado que en el
+  teléfono se quedaría pegado tras tocar; un cambio de color o subrayado de
+  un enlace puede quedarse con `:hover` normal. En JS, `pointerType`.
 - Sin cache-buster a mano: Vite pone huella a los nombres de los archivos.
 
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
@@ -465,7 +467,10 @@ pedido sigue valiendo.
 - Todo con teclado; paneles que atrapan el foco, Esc y devolución del foco;
   `inert` detrás de los paneles; menú Tienda y ficha de la cuenta con
   flechas; enlace de salto al contenido.
-- Foco visible: anillo de 3 px en `--horno` con halo ámbar de 5 px. Campos con
+- Foco visible: anillo de 3 px en `--horno` con halo ámbar de 5 px; dentro
+  de la barra (que es `--horno`) y en "Saltar al contenido", el anillo es
+  `--papel`. La canasta flotante del teléfono, que va sobre la página
+  clara, vuelve al anillo `--horno`. Campos con
   borde `--horno-claro` (4,97:1). `html { scroll-padding-top/bottom }` para
   que el foco no quede bajo la cabecera.
 - ARIA solo donde hace falta: `role="dialog"` + `aria-modal`, `alertdialog`,
@@ -527,15 +532,20 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       su comentario dice que está "apuntado para frontend"; ya no hace falta.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).
 - [ ] GitHub avisa de que `ubuntu-latest` pasa a Ubuntu 26.
+- [ ] El punto que late en "Abierto/Cerrado" (`latido`, 2,4 s, infinito)
+      sigue más de 5 s sin pausa (2.2.2, nivel A, a juicio: es un punto de
+      10 px). Con menos movimiento se apaga.
+- [ ] Sin probar en Firefox ni Safari (`mask-image`, `:has(:focus-visible)`
+      del carrusel), ni `forced-colors` en la barra nueva, ni con NVDA.
 
 ### Aspecto y movimiento (revisión visual del 21 de octubre de 2026)
-- [ ] Barra siempre `--horno`, sin invertirse; línea ámbar sobre lo oscuro.
-- [ ] Hover bajo `.con-puntero`: en el portátil del usuario no se veía.
-- [ ] Ritmo del movimiento (sección 10) y `src/comun/movimiento.js`.
-- [ ] Fichas: nombre en Georgia, sin hueco, sellos legibles, `scale(.97)`.
-- [ ] Carrusel: flechas y barra de avance en el pie en todos los anchos, sin
+- [x] Barra siempre `--horno`, sin invertirse; línea ámbar sobre lo oscuro.
+- [x] Hover bajo `.con-puntero`: en el portátil del usuario no se veía.
+- [x] Ritmo del movimiento (sección 10) y `src/comun/movimiento.js`.
+- [x] Fichas: nombre en Georgia, sin hueco, sellos legibles, `scale(.97)`.
+- [x] Carrusel: flechas y barra de avance en el pie en todos los anchos, sin
       barra del navegador, borde desvanecido.
-- [ ] Sin recuadro ámbar en el `h1` al cambiar de vista.
+- [x] Sin recuadro ámbar en el `h1` al cambiar de vista.
 
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).

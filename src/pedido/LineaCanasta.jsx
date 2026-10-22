@@ -17,6 +17,7 @@
 import { useLayoutEffect, useRef } from 'react';
 import { m, useReducedMotion } from 'motion/react';
 import { dinero } from '../servicios/state.js';
+import { CURVA, DURACION } from '../comun/movimiento.js';
 import { useCanasta } from './CanastaProvider.jsx';
 import { Basurero } from './iconosPedido.jsx';
 import { enTope, consejoTope } from '../estado/pedido.js';
@@ -32,8 +33,9 @@ function Foto({ src }) {
 
 const ENTRA = { opacity: 0, x: 28 };
 const ESTA = { opacity: 1, x: 0 };
-const SALE = { opacity: 0, x: -28, transition: { duration: 0.18, ease: [0.4, 0, 1, 1] } };
-const MUEVE = { duration: 0.26, ease: [0.16, 1, 0.3, 1] };
+// La que sale tarda la mitad que la que entra.
+const SALE = { opacity: 0, x: -28, transition: { duration: DURACION.rapida, ease: CURVA.salida } };
+const MUEVE = { duration: DURACION.base, ease: CURVA.salida };
 
 function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, onSi, onNo }) {
   const { focoLinea, enfocarLinea } = useCanasta();

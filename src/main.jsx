@@ -18,6 +18,10 @@ import { CanastaProvider } from './pedido/CanastaProvider.jsx';
 import App from './App.jsx';
 import { cederDesplazamiento } from './comun/apertura.js';
 import { precargarEnReposo } from './comun/cargaPorPartes.js';
+import { vigilarPuntero } from './comun/puntero.js';
+
+// Los efectos de pasar por encima, solo con raton o lapiz (comun/puntero.js).
+vigilarPuntero();
 
 // Atras y Adelante entre vistas llevan arriba del todo, no adonde se estaba
 // (comun/apertura.js).
