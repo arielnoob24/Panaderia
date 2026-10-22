@@ -612,6 +612,11 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       del carrusel), ni `forced-colors` en la barra nueva, ni con NVDA.
 
 ### Estilo editorial artesanal
+- [ ] Fraunces sin precarga: en la primera visita el `h1` sale en Georgia y
+      salta a Fraunces (unos 150 kB por estilo). Añadir
+      `<link rel="preload" as="font">` del woff2 latin normal.
+- [ ] `notaDelHorno` (`servicios/horario.js`) ya no la usa nadie: borrarla
+      (`logica-datos`).
 - [ ] axe no mide el contraste sobre el grano ni dentro de las fichas
       ("a revisar a mano" en 32 de 46 estados; medido a mano, todo pasa):
       que `axe.mjs` haga otra pasada de `color-contrast` sin el grano
