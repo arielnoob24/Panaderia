@@ -7,7 +7,9 @@
 // - el nombre de la ficha va en Georgia y los sellos con 11 px de letra o mas;
 // - el h1 que recibe el foco al cambiar de vista no pinta recuadro;
 // - los efectos de pasar por encima solo con raton (html.con-puntero);
-// - en la computadora, Siguiente desplaza con movimiento de escena;
+// - en la computadora, Siguiente desplaza con movimiento de escena, que
+//   se para si se tabula a una ficha o se teclea en la fila (no con Enter
+//   en la propia flecha);
 // - el anillo de la canasta se ve en la barra y flotando sobre lo claro;
 // - una ficha agotada no se levanta, y con menos movimiento las flechas del
 //   carrusel no cambian de tamano.
@@ -126,6 +128,39 @@ export default async function aspecto(t) {
       t.ok(aMedias > 0 && aMedias < alFinal.x - 10, `[${nombre}] Siguiente no se mueve como escena: a los 120 ms iba en ${Math.round(aMedias)} de ${Math.round(alFinal.x)}`);
       t.ok(alFinal.avanzada, `[${nombre}] tras avanzar, el borde izquierdo no se desvanece`);
       t.ok(alFinal.encaje === '', `[${nombre}] el encaje del carrusel no se devolvio al acabar (${alFinal.encaje})`);
+
+      // Enter en la flecha (fuera de la fila) no para su propio salto.
+      const fila = '.mostrador .product-grid.is-fila';
+      const encaje = () => p.evaluate((sel) => document.querySelector(sel).style.scrollSnapType, fila);
+      const posicion = () => p.evaluate((sel) => document.querySelector(sel).scrollLeft, fila);
+      const antesEnter = await posicion();
+      await p.focus('.mostrador .fila-flecha[data-ir="1"]');
+      await p.keyboard.press('Enter');
+      await espera(120);
+      const enterAMedias = await encaje();
+      await espera(800);
+      const trasEnter = await posicion();
+      t.ok(enterAMedias === 'none' && trasEnter > antesEnter + 100, `[${nombre}] Enter en Siguiente no hizo su salto entero (a medias: "${enterAMedias}", ${Math.round(antesEnter)} -> ${Math.round(trasEnter)})`);
+
+      // Tabular a una ficha a medio salto lo para y devuelve el encaje.
+      await p.click('.mostrador .fila-flecha[data-ir="-1"]');
+      await espera(100);
+      const saltando = await encaje();
+      await p.focus(`${fila} .product-card .card-mas`);
+      await espera(50);
+      const trasFoco = await encaje();
+      t.ok(saltando === 'none' && trasFoco === '', `[${nombre}] el foco en una ficha no para el salto (antes "${saltando}", despues "${trasFoco}")`);
+      await espera(700);
+
+      // Una tecla dentro de la fila tambien lo para.
+      await p.click('.mostrador .fila-flecha[data-ir="1"]');
+      await espera(100);
+      const saltando2 = await encaje();
+      await p.evaluate((sel) => document.querySelector(sel).dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })), fila);
+      await espera(50);
+      const trasTecla = await encaje();
+      t.ok(saltando2 === 'none' && trasTecla === '', `[${nombre}] una tecla en la fila no para el salto (antes "${saltando2}", despues "${trasTecla}")`);
+      await espera(700);
     }
 
     // Al cambiar de vista el h1 recibe el foco, sin recuadro.

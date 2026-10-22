@@ -128,7 +128,10 @@ function useFila({ gridRef, avanceRef }) {
   // mueve a mano, cuadro a cuadro, con --dur-slow y --ease-soft. Mientras
   // dura se quita el encaje: con el encaje puesto el navegador corrige cada
   // cuadro hacia la ficha mas cercana y la fila tiembla. Si la persona toca,
-  // arrastra o mueve la rueda a medio camino, se para ahi y manda ella.
+  // arrastra, mueve la rueda, teclea dentro de la fila o tabula a una ficha a
+  // medio camino, se para ahi y manda ella: si no, el salto le ganaba al
+  // desplazamiento del navegador. Las flechas estan fuera de la fila (en
+  // .fila-pie), asi que su Enter o su Espacio no paran su propio salto.
   const salto = useRef(null);
   const pararSalto = useCallback(() => {
     if (!salto.current) return;
@@ -141,14 +144,11 @@ function useFila({ gridRef, avanceRef }) {
     const grid = gridRef.current;
     if (!grid) return undefined;
     const opciones = { passive: true };
-    grid.addEventListener('pointerdown', pararSalto, opciones);
-    grid.addEventListener('wheel', pararSalto, opciones);
-    grid.addEventListener('touchstart', pararSalto, opciones);
+    const MANDA_ELLA = ['pointerdown', 'wheel', 'touchstart', 'keydown', 'focusin'];
+    MANDA_ELLA.forEach((tipo) => grid.addEventListener(tipo, pararSalto, opciones));
     return () => {
       pararSalto();
-      grid.removeEventListener('pointerdown', pararSalto, opciones);
-      grid.removeEventListener('wheel', pararSalto, opciones);
-      grid.removeEventListener('touchstart', pararSalto, opciones);
+      MANDA_ELLA.forEach((tipo) => grid.removeEventListener(tipo, pararSalto, opciones));
     };
   }, [gridRef, pararSalto]);
 

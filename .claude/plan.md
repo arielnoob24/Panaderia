@@ -164,7 +164,9 @@ cada ficha se alcanza con Tab.
 - Sin barra de desplazamiento del navegador (la barra de avance la sustituye).
 - El borde por donde siguen las fichas se desvanece (máscara), para que se
   note que hay más y no parezca un corte.
-- Los botones desplazan una ficha con movimiento de escena (`--dur-slow`).
+- Los botones desplazan una ficha con movimiento de escena (`--dur-slow`);
+  el salto se para si la persona toca la fila, la desplaza, teclea dentro
+  de ella o tabula a una ficha.
 
 ### Vista de la tienda
 
@@ -531,9 +533,9 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       su comentario dice que está "apuntado para frontend"; ya no hace falta.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).
 - [ ] GitHub avisa de que `ubuntu-latest` pasa a Ubuntu 26.
-- [ ] El punto que late en "Abierto/Cerrado" (`latido`, 2,4 s, infinito)
-      sigue más de 5 s sin pausa (2.2.2, nivel A, a juicio: es un punto de
-      10 px). Con menos movimiento se apaga.
+- [x] Quitar el halo que late junto a "Horneando ahora mismo" (`latido`,
+      infinito, incumplía 2.2.2): el usuario prefiere quitarlo; el punto
+      quieto se queda.
 - [ ] Sin probar en Firefox ni Safari (`mask-image`, `:has(:focus-visible)`
       del carrusel), ni `forced-colors` en la barra nueva, ni con NVDA.
 
@@ -545,12 +547,11 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [x] Carrusel: flechas y barra de avance en el pie en todos los anchos, sin
       barra del navegador, borde desvanecido.
 - [x] Sin recuadro ámbar en el `h1` al cambiar de vista.
-- [ ] Carrusel: si a mitad del salto de 560 ms se mueve con el teclado o se
+- [x] Carrusel: si a mitad del salto de 560 ms se mueve con el teclado o se
       tabula a una ficha, el salto no se cancela (`useFila.js`, escuchar
       también `keydown` y `focusin`).
-- [ ] Decidir si el buscador y "Ordenar por" de la tienda se quedan con el
-      borde corteza al pasar el ratón (salió al pasar el hover a
-      `.con-puntero`).
+- [x] El buscador y "Ordenar por" de la tienda se quedan con el borde
+      corteza al pasar el ratón (el usuario lo aprobó).
 
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).

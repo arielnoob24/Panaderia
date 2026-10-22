@@ -230,12 +230,6 @@ section[id] { scroll-margin-top: -12px; }
 .hero-note { position: absolute; right: max(var(--borde), calc((100% - 1440px) / 2)); bottom: 3.2rem; z-index: 1; display: flex; gap: .7rem; align-items: flex-start; padding: 1rem 1.2rem; color: var(--horno); background: rgba(255, 253, 248, .92); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-card) var(--r-card) 0; box-shadow: var(--shadow-lift); font: .8rem Arial, sans-serif; }
 .status-dot { display: inline-block; width: 8px; height: 8px; margin-top: .38rem; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 0 4px rgba(215, 155, 74, .2); }
 .status-dot.is-closed { background: var(--corteza-oscura); box-shadow: 0 0 0 4px rgba(168, 95, 69, .22); }
-/* Unico bucle infinito del sitio. Solo en el aviso del hero, no en la etiqueta de locales:
-   es la unica afirmacion en tiempo real de la pagina y el latido la hace creible. */
-.hero-note .status-dot { position: relative; }
-.hero-note .status-dot::after { position: absolute; inset: 0; content: ""; border-radius: 50%; background: var(--ambar); animation: latido 2400ms var(--ease-out) infinite; pointer-events: none; }
-.hero-note .status-dot.is-closed::after { background: var(--corteza); }
-@keyframes latido { from { transform: scale(1); opacity: .5; } to { transform: scale(2.8); opacity: 0; } }
 
 .sign-band { position: relative; background: var(--corteza); color: white; }
 .sign-band::after { position: absolute; right: 0; bottom: -26px; left: 0; height: 26px; content: ""; background: var(--corteza); border-radius: 0 0 50% 50% / 0 0 26px 26px; pointer-events: none; }
@@ -1034,7 +1028,6 @@ body.is-checkout .floating-whatsapp { display: none; }
   .reveal-band .sign-trigo, .principles.reveal-line > div, .principles.reveal-line .principle-mark { opacity: 1; transform: none; transition: none; }
   .hero-image { transform: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
-  .hero-note .status-dot::after { display: none; }
   .button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
   .menu-toggle span, .button-yellow:focus-visible, .con-puntero .order-button:hover, .order-button:focus-visible { transform: none; }
   .con-puntero .button-yellow:hover, .con-puntero .product-card:hover, .con-puntero .product-card:hover .product-image img { transform: none; }
