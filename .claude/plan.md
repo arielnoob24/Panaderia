@@ -522,13 +522,42 @@ ritmo del movimiento y la accesibilidad no cambian.
 - **Cinta cobriza** (en lugar de la franja de trigo): Panes, Dulces y
   pasteles, Bebidas, cada una con su icono de línea (hogaza, rebanada,
   botella) y separadas por ✦; cada una es un enlace a su categoría.
-- **Botón principal de la portada**: ámbar, esquinas de 2 px, versalitas,
-  **sombra dura** `4px 4px 0 --horno`; con el puntero se levanta y cruza un
-  **brillo**; al pulsar se hunde contra su sombra. El icono se inclina.
-- **Enlaces sueltos** ("Cómo llegar", la cinta):
-  **imprenta + ola** (A1): con el puntero se levantan con borde y sombra
-  dura, las letras saltan una tras otra y se ponen cobrizas, y el icono da
-  un saltito. Las letras sueltas no cambian el nombre accesible del enlace.
+- **Botones: pastilla con sombra** (B1, elegida el 22 de octubre de 2026 en
+  `.claude/referencias/muestra-botones.html`). **Todos** los botones de
+  acción del sitio son iguales: "Nuestros panes", "Ir a pagar", "Iniciar
+  sesión", "Crear cuenta", "Verificar", "Listo, cerrar", "Reintentar", "Ver
+  en el mapa" de Contacto y los demás `.button-yellow`, con un solo bloque
+  de CSS (`.button`, `.button-yellow`, `.button-otro`). Forma de pastilla
+  (`--r-pill`), borde de 1,5 px `--horno`, ámbar, Arial en versalitas
+  (`.78rem`, `letter-spacing .16em`), **sombra dura** `4px 4px 0 --horno`;
+  con el puntero se levanta (`6px 6px 0`), cruza un **brillo** y el icono se
+  inclina; al pulsar se hunde contra su sombra con `scale(.97)`. Sobre fondo
+  oscuro (`.banda-oscura`, la historia, el pie) el borde sería ámbar y la
+  sombra `--corteza` (`--sombra-boton`); hoy ningún botón cae ahí. El
+  secundario (`.button-otro`: "Ya tengo cuenta…", "No tengo cuenta…",
+  "Cerrar sesión") es la misma pastilla sin relleno ni sombra, que se
+  rellena de `--masa` con el puntero (van sobre papel). Ninguno hereda
+  Georgia.
+  **Recto lo que se lee, redondo lo que se pulsa**: las fichas siguen con
+  esquinas rectas.
+- **Enlaces sueltos** ("Cómo llegar" de la portada, la cinta):
+  **imprenta + ola** (A1), ahora **en pastilla**: con el puntero se levantan
+  con borde redondo y sombra dura, las letras saltan una tras otra y se
+  ponen cobrizas, y el icono da un saltito. Las letras sueltas no cambian
+  el nombre accesible del enlace.
+- **Menú de arriba: pastilla que se desliza** (N3, de la muestra
+  editorial): con el puntero, una pastilla `--ambar` viaja (escena,
+  `--dur-slow`, `--ease-soft`) hasta el enlace que hay debajo, que pasa a
+  `--horno`; al salir del menú se desvanece. Solo con ratón o lápiz
+  (`.con-puntero`); el foco de teclado sigue con su anillo. El enlace de la
+  vista actual conserva su raya. "Tienda" con su flecha cuenta como un
+  enlace, también con el submenú abierto. Con menos movimiento la pastilla
+  aparece sin viajar. Anima `width` además de `transform`, como en la
+  muestra: cada enlace mide distinto y con `scaleX` los extremos redondos se
+  deformarían; va fuera del flujo y no empuja nada
+  (`comun/usePastillaMenu.js`). Entre 681 y 900 px el menú va centrado en
+  el hueco entre el logo y los botones (rejilla `auto 1fr auto`, logo de
+  52 px), para que nada se pise.
 - **Iconos de línea** del mismo trazo que los dibujos de trigo
   (`comun/iconos.jsx`): hogaza, rebanada, botella, espiga, pin, flecha y
   **cesta con asa**, que pasa a ser el icono de la canasta (arriba y la
@@ -550,8 +579,10 @@ ritmo del movimiento y la accesibilidad no cambian.
   `aria-invalid` + `aria-describedby`.
 - Sobre el grano de papel el contraste se mide con su píxel más oscuro,
   rgb(238,230,220): rótulos 6,52:1, pie de foto 6,17:1, `h1 em` 3,87:1
-  (vale por ser letra grande). En el botón principal de la portada la
-  sombra dura sustituye al halo ámbar; el anillo de 3 px se queda.
+  (vale por ser letra grande). En todos los botones principales
+  (B1) la sombra dura sustituye al halo ámbar; el anillo de 3 px se queda. Un
+  `.button` con `aria-disabled` se ve apagado (opacidad .45, `GrayText` con
+  `forced-colors`) y no reacciona al puntero.
 - Contraste medido (texto 12,4:1; sobre la foto de la portada 8:1 o más;
   sobre los fondos de trazos 5,7:1 o más).
 - Con `forced-colors`, lo elegido se pinta con `Highlight` (filtros,
@@ -596,7 +627,9 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 ### Accesibilidad y UX
 - [ ] `user-select: none`: los precios, el WhatsApp y los datos del
       comprobante (salvo el número) todavía no se pueden copiar.
-- [ ] Decir antes de llenar la canasta que pagar pide cuenta, o permitir invitado.
+- [x] Canasta sin cuenta: el usuario quiere que cualquiera la llene y que
+      solo al ir a pagar se le avise, que es como ya funciona (sección 5).
+      Sin invitado y sin aviso previo (22 de octubre de 2026).
 - [ ] axe (menor): la barra de deshacer fuera de un punto de referencia (`region`).
 - [ ] 60-30-10 medido con capturas en cada vista (se ajustó a ojo).
 - [ ] Tras recargar, la tienda no recuerda el desplazamiento de las entradas
@@ -626,14 +659,17 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [x] Portada sin "Los más pedidos" ni carrusel, sin la foto que vuela a la
       canasta, y destello `--horno` en la pastilla al agregar (22 de
       octubre de 2026).
-- [ ] Georgia sigue en `body`: la heredan los `.button` ("Ir a pagar",
-      "Iniciar sesión"...), "Saltar al contenido" y el párrafo de Nosotros, y
-      el `<noscript>` de `index.html`. La sección 10 dice texto corrido en
-      Arial: decidirlo en la segunda vuelta, con los botones.
-- [ ] Hover del menú de arriba: el usuario elige entre N1 Ola, N2 Rueda,
-      N3 Pastilla (recomendada) y N4 Icono que asoma (están en la muestra).
-- [ ] Segunda vuelta: Nosotros, Contacto, canasta y cuenta; el botón
-      principal con sombra dura y brillo en todo el sitio.
+- [x] Botones en pastilla con sombra (B1) en todo el sitio, enlaces sueltos
+      en pastilla y la pastilla que se desliza en el menú (N3), sección 10
+      (22 de octubre de 2026). Los botones dejan de heredar Georgia.
+- [ ] Acciones que no son `.button` y siguen con su estilo: "Ver la
+      vitrina" (canasta vacía), "Pedir otra vez", "Editar" de la cuenta y
+      `.order-button`. Decidir con el usuario si pasan a B1.
+- [ ] Georgia sigue en `body`: la heredan "Saltar al contenido", el párrafo
+      de Nosotros y el `<noscript>` de `index.html` (los botones ya no, con
+      el punto de arriba). La sección 10 dice texto corrido en Arial.
+- [ ] Segunda vuelta: el aspecto de Nosotros, Contacto, canasta y cuenta
+      más allá de los botones, con otra muestra antes.
 
 ### Aspecto y movimiento (revisión visual del 21 de octubre de 2026)
 - [x] Barra siempre `--horno`, sin invertirse; línea ámbar sobre lo oscuro.

@@ -48,7 +48,7 @@ function PideCuenta({ pide, principalRef, onVolver }) {
         <button ref={principalRef} className="button button-yellow pide-cuenta-principal" type="button" data-va={tiene ? 'entrar' : 'crear'} onClick={() => ir(tiene ? 'entrar' : 'crear')}>
           {tiene ? 'Iniciar sesión' : 'Crear una cuenta'}
         </button>
-        <button className="pide-cuenta-otra" type="button" data-va={tiene ? 'crear' : 'entrar'} onClick={() => ir(tiene ? 'crear' : 'entrar')}>
+        <button className="button button-otro pide-cuenta-otra" type="button" data-va={tiene ? 'crear' : 'entrar'} onClick={() => ir(tiene ? 'crear' : 'entrar')}>
           {tiene ? 'No tengo cuenta, crear una' : 'Ya tengo cuenta, iniciar sesión'}
         </button>
         <button className="pide-cuenta-volver" type="button" onClick={onVolver}>Seguir viendo la canasta</button>

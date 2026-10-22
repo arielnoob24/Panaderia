@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muestra de botones</title>
+<!-- Solo para elegir: en el sitio Fraunces se sirve desde el propio sitio. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&display=swap" rel="stylesheet">
+<style>
+:root {
+  --masa: #f7f1e7; --horno: #3a2822; --ambar: #d79b4a; --ambar-claro: #f2ca68;
+  --corteza: #a85f45; --corteza-oscura: #7a4030; --papel: #fffdf8; --masa-linea: #ded2c2;
+  --sobre-horno: #eee4d8;
+  --titulo: "Fraunces", Georgia, serif; --texto: Arial, sans-serif;
+  --ease-soft: cubic-bezier(.22, 1, .36, 1);
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 2rem 16px 4rem; background: var(--masa); color: var(--horno); font: 16px/1.5 var(--texto); }
+h1 { max-width: 1100px; margin: 0 auto .4rem; font: 500 2.4rem/1.1 var(--titulo); }
+.intro { max-width: 1100px; margin: 0 auto 2rem; color: #5e514a; }
+.opciones { display: grid; max-width: 1100px; margin: 0 auto; gap: 1.2rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr)); }
+.opcion { padding: 1.4rem 1.4rem 1.6rem; background: var(--papel); border: 1px solid var(--masa-linea); }
+.opcion h2 { margin: 0 0 .2rem; font: 500 1.5rem/1.2 var(--titulo); }
+.opcion h2 small { color: var(--corteza-oscura); font: 700 .7rem var(--texto); letter-spacing: .18em; text-transform: uppercase; vertical-align: middle; margin-left: .4rem; }
+.opcion p { margin: 0 0 1.3rem; color: #5e514a; font-size: .92rem; }
+.fila { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.2rem; padding: 1.4rem 1rem; background: var(--masa); }
+.fila.oscura { margin-top: .8rem; background: var(--horno); }
+button { cursor: pointer; }
+svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex: none; transition: transform .4s var(--ease-soft); }
+
+/* B1: pastilla con sombra dura */
+.b1 { display: inline-flex; align-items: center; gap: .6rem; padding: .95rem 1.6rem; border: 1.5px solid var(--horno); border-radius: 999px; font: 700 .78rem/1.2 var(--texto); letter-spacing: .16em; text-transform: uppercase; transition: transform .4s var(--ease-soft), box-shadow .4s var(--ease-soft), background-color .2s; }
+.b1.principal { background: var(--ambar); color: var(--horno); box-shadow: 4px 4px 0 var(--horno); }
+.b1.principal:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--horno); }
+.b1.principal:hover svg { transform: rotate(-14deg) scale(1.15); }
+.b1.principal:active { transform: translate(2px, 2px) scale(.97); box-shadow: 2px 2px 0 var(--horno); transition-duration: .12s; }
+.b1.otro { background: transparent; color: var(--horno); }
+.b1.otro:hover { background: var(--papel); }
+.oscura .b1.principal { border-color: var(--ambar); box-shadow: 4px 4px 0 var(--corteza); }
+.oscura .b1.principal:hover { box-shadow: 6px 6px 0 var(--corteza); }
+
+/* B2: esquinas suaves con sombra dura y letra de titulo */
+.b2 { display: inline-flex; align-items: center; gap: .6rem; padding: .85rem 1.4rem; border: 1.5px solid var(--horno); border-radius: 14px; font: 600 1.05rem/1.2 var(--titulo); font-variation-settings: "SOFT" 100; transition: transform .4s var(--ease-soft), box-shadow .4s var(--ease-soft), background-color .2s; }
+.b2.principal { background: var(--ambar); color: var(--horno); box-shadow: 0 4px 0 var(--horno); }
+.b2.principal:hover { transform: translateY(-2px); box-shadow: 0 6px 0 var(--horno); }
+.b2.principal:hover svg { transform: rotate(-14deg) scale(1.15); }
+.b2.principal:active { transform: translateY(3px) scale(.98); box-shadow: 0 1px 0 var(--horno); transition-duration: .12s; }
+.b2.otro { background: transparent; color: var(--horno); }
+.b2.otro:hover { background: var(--papel); }
+.oscura .b2.principal { border-color: var(--ambar); box-shadow: 0 4px 0 var(--corteza); }
+
+/* B3: pastilla suave, sin sombra dura */
+.b3 { display: inline-flex; align-items: center; gap: .6rem; padding: .9rem 1.5rem; border: 0; border-radius: 999px; font: 700 .95rem/1.2 var(--texto); transition: transform .4s var(--ease-soft), box-shadow .4s var(--ease-soft), background-color .2s; }
+.b3.principal { background: var(--ambar); color: var(--horno); box-shadow: 0 2px 6px rgba(58, 40, 34, .12); }
+.b3.principal:hover { background: var(--ambar-claro); transform: translateY(-2px); box-shadow: 0 10px 22px rgba(58, 40, 34, .18); }
+.b3.principal:hover svg { transform: translateX(3px); }
+.b3.principal:active { transform: scale(.97); box-shadow: 0 2px 6px rgba(58, 40, 34, .12); transition-duration: .12s; }
+.b3.otro { background: transparent; color: var(--horno); box-shadow: inset 0 0 0 1.5px var(--horno); }
+.b3.otro:hover { background: var(--papel); }
+
+/* B4: etiqueta de panaderia, con puntada por dentro */
+.b4 { position: relative; display: inline-flex; align-items: center; gap: .6rem; padding: .9rem 1.7rem; border: 0; border-radius: 999px; font: italic 600 1.08rem/1.2 var(--titulo); font-variation-settings: "SOFT" 100; transition: transform .4s var(--ease-soft), box-shadow .4s var(--ease-soft), background-color .2s; }
+.b4::after { position: absolute; inset: 4px; content: ""; border: 1.5px dashed currentColor; border-radius: inherit; opacity: .55; pointer-events: none; transition: inset .4s var(--ease-soft); }
+.b4.principal { background: var(--ambar); color: var(--horno); box-shadow: 3px 3px 0 var(--horno); }
+.b4.principal:hover { transform: translate(-1px, -2px) rotate(-1.5deg); box-shadow: 5px 5px 0 var(--horno); }
+.b4.principal:hover::after { inset: 6px; }
+.b4.principal:active { transform: scale(.97); box-shadow: 1px 1px 0 var(--horno); transition-duration: .12s; }
+.b4.otro { background: var(--papel); color: var(--horno); box-shadow: inset 0 0 0 1.5px var(--horno); }
+.b4.otro:hover { background: #fff; }
+
+/* Como esta hoy, para comparar */
+.hoy { display: inline-flex; align-items: center; gap: .6rem; padding: 1.05rem 1.7rem; background: var(--ambar); color: var(--horno); border: 0; border-radius: 2px; box-shadow: 4px 4px 0 var(--horno); font: 700 .78rem/1.2 var(--texto); letter-spacing: .18em; text-transform: uppercase; }
+.hoy.otro { padding: .55rem .8rem; background: none; border: 1px solid var(--horno); box-shadow: none; }
+
+
+/* Hover de los enlaces sueltos: hoy (caja recta) y en pastilla */
+.enlace { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .9rem; border: 1.5px solid transparent; color: var(--horno); background: none; font: 600 .78rem/1.2 var(--texto); letter-spacing: .16em; text-transform: uppercase; transition: transform .4s var(--ease-soft), box-shadow .4s var(--ease-soft), background-color .2s, border-color .2s, color .2s; }
+.enlace.recto { border-color: var(--horno); border-radius: 0; }
+.enlace.redondo { border-color: var(--horno); border-radius: 999px; }
+.enlace:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--horno); background: var(--papel); }
+.enlace:hover svg { transform: translateY(-3px); }
+.cinta-demo { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem 1.6rem; padding: .8rem 1rem; margin-top: .8rem; background: var(--corteza); border-block: 6px double var(--masa); }
+.cinta-demo .enlace { border-color: transparent; color: var(--papel); font: italic 400 1.3rem/1.2 var(--titulo); letter-spacing: 0; text-transform: none; }
+.cinta-demo .enlace:hover { border-color: var(--horno); color: var(--horno); }
+
+button:focus-visible { outline: 3px solid var(--horno); outline-offset: 3px; }
+.oscura button:focus-visible { outline-color: var(--papel); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="hogaza" viewBox="0 0 24 24"><path d="M3 15c0-5 4-8 9-8s9 3 9 8v2H3z"/><path d="M8 10l1.5 3M12 9.5v3.5M16 10l-1.5 3"/></symbol>
+  <symbol id="pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="flecha" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</svg>
+
+<h1>¿Cómo quieres los botones?</h1>
+<p class="intro">Pasa el ratón por encima y púlsalos para ver cómo responden. Los colores son los del sitio. Abajo de todo está cómo se ven hoy, para comparar.</p>
+
+<div class="opciones">
+  <section class="opcion">
+    <h2>B1 · Pastilla con sombra <small>recomendada</small></h2>
+    <p>Redonda como la pastilla del menú y el control de cantidad. Conserva la sombra dura y las versalitas, así sigue siendo retro, pero ya no se ve recta.</p>
+    <div class="fila">
+      <button class="b1 principal"><svg><use href="#hogaza"/></svg>Nuestros panes</button>
+      <button class="b1 otro"><svg><use href="#pin"/></svg>Cómo llegar</button>
+    </div>
+    <div class="fila oscura">
+      <button class="b1 principal">Ir a pagar<svg><use href="#flecha"/></svg></button>
+    </div>
+  </section>
+
+  <section class="opcion">
+    <h2>B2 · Esquinas suaves</h2>
+    <p>Esquinas redondeadas sin llegar a pastilla, el texto en la letra de los títulos y la sombra debajo, como una tecla que se hunde al pulsar.</p>
+    <div class="fila">
+      <button class="b2 principal"><svg><use href="#hogaza"/></svg>Nuestros panes</button>
+      <button class="b2 otro"><svg><use href="#pin"/></svg>Cómo llegar</button>
+    </div>
+    <div class="fila oscura">
+      <button class="b2 principal">Ir a pagar<svg><use href="#flecha"/></svg></button>
+    </div>
+  </section>
+
+  <section class="opcion">
+    <h2>B3 · Pastilla suave</h2>
+    <p>Redonda y sin sombra dura: una sombra difusa que crece al pasar el ratón. Es la más moderna y la menos retro.</p>
+    <div class="fila">
+      <button class="b3 principal"><svg><use href="#hogaza"/></svg>Nuestros panes</button>
+      <button class="b3 otro"><svg><use href="#pin"/></svg>Cómo llegar</button>
+    </div>
+    <div class="fila oscura">
+      <button class="b3 principal">Ir a pagar<svg><use href="#flecha"/></svg></button>
+    </div>
+  </section>
+
+  <section class="opcion">
+    <h2>B4 · Etiqueta de panadería</h2>
+    <p>Pastilla con una puntada por dentro, como la etiqueta de una bolsa de pan, y el texto en cursiva. Al pasar el ratón se inclina un poco.</p>
+    <div class="fila">
+      <button class="b4 principal"><svg><use href="#hogaza"/></svg>Nuestros panes</button>
+      <button class="b4 otro"><svg><use href="#pin"/></svg>Cómo llegar</button>
+    </div>
+    <div class="fila oscura">
+      <button class="b4 principal">Ir a pagar<svg><use href="#flecha"/></svg></button>
+    </div>
+  </section>
+
+  <section class="opcion">
+    <h2>Hoy</h2>
+    <p>Como están ahora en la portada: esquinas de 2 px y versalitas.</p>
+    <div class="fila">
+      <button class="hoy"><svg><use href="#hogaza"/></svg>Nuestros panes</button>
+      <button class="hoy otro"><svg><use href="#pin"/></svg>Cómo llegar</button>
+    </div>
+  </section>
+
+  <section class="opcion">
+    <h2>Hover de los enlaces · hoy</h2>
+    <p>"Cómo llegar" y la cinta: al pasar el ratón se dibuja una caja recta con sombra dura.</p>
+    <div class="fila"><button class="enlace recto"><svg><use href="#pin"/></svg>Cómo llegar</button></div>
+    <div class="cinta-demo"><button class="enlace recto"><svg><use href="#hogaza"/></svg>Panes</button><button class="enlace recto">Dulces y pasteles</button><button class="enlace recto">Bebidas</button></div>
+  </section>
+
+  <section class="opcion">
+    <h2>Hover de los enlaces · en pastilla <small>propuesta</small></h2>
+    <p>El mismo gesto (se levanta con su sombra dura), pero la caja sale redonda, como los botones B1 y la pastilla del menú.</p>
+    <div class="fila"><button class="enlace redondo"><svg><use href="#pin"/></svg>Cómo llegar</button></div>
+    <div class="cinta-demo"><button class="enlace redondo"><svg><use href="#hogaza"/></svg>Panes</button><button class="enlace redondo">Dulces y pasteles</button><button class="enlace redondo">Bebidas</button></div>
+  </section>
+</div>
+</body>
+</html>

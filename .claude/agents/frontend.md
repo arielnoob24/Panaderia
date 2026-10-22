@@ -64,7 +64,10 @@ repo>` saca capturas en los cuatro cortes.
 El estilo del sitio es **editorial artesanal con toque retro** (seccion 10
 del plan, "Estilo"). La muestra que eligio el usuario esta en
 `.claude/referencias/muestra-editorial.html`: de ahi salen los valores
-exactos (CSS y JS) de cada pieza. Su panel "Elige", sus rutas `file://` y
+exactos (CSS y JS) de cada pieza, incluida la pastilla del menu (N3). Los
+botones (B1, pastilla con sombra) y el hover en pastilla de los enlaces
+salen de `.claude/referencias/muestra-botones.html`. Regla del plan: recto
+lo que se lee (fichas), redondo lo que se pulsa (botones, enlaces). Su panel "Elige", sus rutas `file://` y
 sus colores escritos a mano no se copian: en el sitio van las variables de
 `:root` y los iconos de `comun/iconos.jsx`. Fraunces se sirve con
 `@fontsource-variable/fraunces` (version exacta del plan), nunca desde

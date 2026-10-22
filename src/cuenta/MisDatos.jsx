@@ -183,7 +183,7 @@ function FormularioDatos() {
           <Link className="cuenta-editar cuenta-ver-pedidos" to="/cuenta/pedidos">
             {n ? `Ver mis pedidos (${n})` : 'Ver mis pedidos'}
           </Link>
-          <button className="cuenta-salir" type="button" onClick={alSalir}>Cerrar sesión</button>
+          <button className="button button-otro cuenta-salir" type="button" onClick={alSalir}>Cerrar sesión</button>
           <p className="cuenta-nota">
             La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo y tu
             contraseña. No hay ningún otro lugar donde estuviera guardada.

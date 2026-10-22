@@ -46,8 +46,8 @@ function Hero({ tituloRef }) {
             <p className="portada-frase">Pan recién horneado, todos los días.</p>
             <div className="portada-acciones">
               {/* Lleva al catalogo entero: quien pulsa aqui quiere verlo todo. */}
-              <Link className="boton-duro b-brillo" to="/tienda-catalogo" state={{ entrar: true }}>
-                <IconoHogaza clase="ico boton-duro-icono" />
+              <Link className="button button-yellow" to="/tienda-catalogo" state={{ entrar: true }}>
+                <IconoHogaza clase="ico" />
                 Nuestros panes
               </Link>
               <Link className="h-imprenta h-ola" to="/contacto" state={{ entrar: true }}>

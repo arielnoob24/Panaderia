@@ -190,6 +190,39 @@ section[id] { scroll-margin-top: -12px; }
   .con-puntero .nav-grupo:hover .nav-submenu a:nth-child(3) { transition-delay: 0ms, 0ms, 180ms, 180ms; }
 }
 
+/* La pastilla que se desliza (N3, seccion 10 del plan; la mueve
+   comun/usePastillaMenu.js). Solo con raton o lapiz y con la barra de
+   escritorio: en el telefono el menu es otro. Para que la pastilla abrace
+   cada opcion, las opciones llevan aire a los lados y el hueco entre ellas
+   baja lo mismo: los textos quedan donde estaban. Viajar es escena
+   (--dur-slow); desvanecerse, la mitad. El ancho se anima con la posicion
+   porque cada opcion mide distinto; la pastilla va fuera del flujo y no
+   empuja nada. Horno sobre ambar: 5,8:1. */
+.nav-pastilla { display: none; }
+@media (min-width: 681px) {
+  .site-header .main-nav { position: relative; gap: .7rem; }
+  .site-header .main-nav > a { position: relative; padding: .55rem .9rem; }
+  .site-header .nav-grupo { padding-inline: .9rem; }
+  .con-puntero .nav-pastilla { position: absolute; top: 50%; left: 0; display: block; width: 0; height: 2.3rem; background: var(--ambar); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: translateY(-50%); transition: transform var(--dur-slow) var(--ease-soft), width var(--dur-slow) var(--ease-soft), opacity var(--dur-fast) var(--ease-out); }
+  .con-puntero .nav-pastilla.is-vista { opacity: 1; }
+  /* La primera vez aparece en su sitio, sin viajar. */
+  .con-puntero .nav-pastilla.is-quieta { transition: opacity var(--dur-fast) var(--ease-out); }
+  .con-puntero .site-header .main-nav > a[data-bajo], .con-puntero .site-header .nav-grupo[data-bajo] .nav-grupo-enlace, .con-puntero .site-header .nav-grupo[data-bajo] .nav-grupo-boton { color: var(--horno); }
+  /* La raya de la vista actual, horno sobre la pastilla: ambar no se veria. */
+  .con-puntero .site-header .main-nav > a[data-bajo][aria-current="page"], .con-puntero .site-header .nav-grupo[data-bajo] .nav-grupo-enlace[aria-current="page"] { text-decoration-color: var(--horno); }
+}
+/* Entre la tableta y el corte del telefono no caben logo, menu y botones
+   con el menu centrado en la pagina (rejilla 1fr auto 1fr): a 681 px
+   "Inicio" pisaba el logo. Aqui el menu se centra en el hueco que dejan los
+   otros dos, con un respiro fijo a cada lado, y logo y opciones se aprietan
+   un poco para que quepa todo desde 681 px. */
+@media (min-width: 681px) and (max-width: 900px) {
+  .site-header .nav-wrap { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 1rem; }
+  .site-header .main-nav { gap: 0; justify-self: center; }
+  .site-header .main-nav > a, .site-header .nav-grupo { padding-inline: .55rem; }
+  .site-header .brand-logo { height: 52px; }
+}
+
 .menu-toggle { display: none; padding: 8px; background: none; border: 0; color: inherit; cursor: pointer; }
 .menu-toggle span { display: block; width: 23px; height: 2px; margin: 4px 0; background: currentColor; transition: transform var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-ui); }
 .menu-toggle[aria-expanded="true"] span:first-child { transform: translateY(6px) rotate(45deg); }
@@ -211,8 +244,48 @@ section[id] { scroll-margin-top: -12px; }
 /* El coral sobre el marrón oscuro da 1.73:1. Cualquier eyebrow en sección oscura usa ámbar. */
 .story .eyebrow, .site-footer .eyebrow { color: var(--ambar); }
 h2 em { color: var(--ambar); font-weight: 500; }
-.button { display: inline-flex; gap: .8rem; align-items: center; cursor: pointer; padding: 1rem 1.25rem; border: 1px solid transparent; border-radius: var(--r-btn); font-weight: 700; transition: transform var(--dur-fast) var(--ease-ui); }
-.button-yellow { background: var(--ambar); color: var(--horno); }
+/* ---- Los botones: pastilla con sombra (B1, seccion 10 del plan) ---------
+   Todos los botones de accion son el mismo, de "Nuestros panes" a "Ir a
+   pagar": pastilla con filete horno y versalitas en Arial. El principal
+   (button-yellow) es ambar con sombra dura de imprenta; con el puntero se
+   levanta despegandose de ella, cruza un brillo y el icono se inclina, y al
+   pulsar se hunde contra ella. Levantarse es escena (--dur-base); hundirse,
+   respuesta (--dur-micro). El secundario (button-otro) es la misma pastilla
+   sin relleno ni sombra. La letra va escrita aqui y no heredada: la de body
+   todavia es Georgia. Los textos largos ("Crear cuenta y pagar") envuelven
+   centrados en vez de salirse. */
+.button { --sombra-boton: var(--horno); position: relative; display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 44px; overflow: hidden; padding: .95rem 1.6rem; background: transparent; border: 1.5px solid var(--horno); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .78rem/1.2 var(--letra-texto); letter-spacing: .16em; text-align: center; text-transform: uppercase; transition: transform var(--dur-base) var(--ease-soft), box-shadow var(--dur-base) var(--ease-soft), background-color var(--dur-fast) var(--ease-ui); }
+.button > svg, .button > span[aria-hidden] { display: inline-block; flex: 0 0 auto; transition: transform var(--dur-base) var(--ease-soft); }
+.button .ico { width: 24px; height: 24px; stroke-width: 1.5; }
+.button:active { transform: scale(.97); transition-duration: var(--dur-micro); }
+.button-yellow { background: var(--ambar); box-shadow: 4px 4px 0 var(--sombra-boton); }
+.con-puntero .button-yellow:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--sombra-boton); }
+.con-puntero .button-yellow:hover > svg, .con-puntero .button-yellow:hover > span[aria-hidden] { transform: rotate(-14deg) scale(1.15); }
+.button-yellow:active, .con-puntero .button-yellow:hover:active { transform: translate(2px, 2px) scale(.97); box-shadow: 2px 2px 0 var(--sombra-boton); transition-duration: var(--dur-micro); }
+/* Con el foco del teclado la sombra dura sustituye al halo ambar, que sobre
+   el ambar del boton no se veria; el anillo de 3 px es el de siempre. */
+.button-yellow:focus-visible { box-shadow: 4px 4px 0 var(--sombra-boton); }
+/* El brillo que cruza: una franja de papel que pasa por encima una vez al
+   entrar el puntero. Va con transform, no moviendo left. */
+.button-yellow::after { position: absolute; top: -20%; bottom: -20%; left: 0; width: 40%; content: ""; background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--papel) 70%, transparent), transparent); transform: translateX(-150%) skewX(-20deg); pointer-events: none; }
+.con-puntero .button-yellow:hover::after { transform: translateX(325%) skewX(-20deg); transition: transform var(--dur-editorial) var(--ease-soft); }
+/* Apagado (aria-disabled): "Ir a pagar" con la canasta vacia, o "Iniciar
+   sesion" y "Crear la cuenta" mientras trabajan. Sigue enfocable y el lector
+   lo oye apagado; a la vista, desvaido, sin levantarse ni brillo con el
+   raton y sin hundirse al pulsar. El cursor dice si es que no se puede
+   (not-allowed) o que esta ocupado (progress: en la cuenta, al reintentar
+   una parte que no cargo o mientras se paga). */
+.button[aria-disabled="true"], .con-puntero .button[aria-disabled="true"]:hover, .button[aria-disabled="true"]:active, .con-puntero .button[aria-disabled="true"]:hover:active { cursor: not-allowed; opacity: .45; transform: none; box-shadow: none; }
+.con-puntero .button[aria-disabled="true"]:hover::after { transform: translateX(-150%) skewX(-20deg); transition: none; }
+.con-puntero .button[aria-disabled="true"]:hover > svg, .con-puntero .button[aria-disabled="true"]:hover > span[aria-hidden] { transform: none; }
+.checkout.is-procesando .button[aria-disabled="true"], .vista-fallo .button[aria-disabled="true"], .cuenta-vista .button[aria-disabled="true"] { cursor: progress; }
+/* Los secundarios van sobre la hoja de papel (la hoja de pagar, Mis datos):
+   con el puntero se rellenan de masa, que sobre el papel si se ve. */
+.con-puntero .button-otro:hover { background: var(--masa); }
+/* Sobre lo oscuro el filete es ambar y la sombra corteza: la horno no se
+   veria sobre la horno. */
+.banda-oscura .button, .story .button, .site-footer .button { --sombra-boton: var(--corteza); border-color: var(--ambar); }
+.banda-oscura .button-otro, .story .button-otro, .site-footer .button-otro { color: var(--sobre-horno); }
 .text-link { display: inline-flex; gap: .65rem; align-items: center; padding-bottom: .3rem; border-bottom: 1px solid currentColor; border-radius: 4px 4px 0 0; color: var(--horno); font: 700 .9rem Arial, sans-serif; }
 .text-link:hover { color: var(--corteza-oscura); }
 .status-dot { display: inline-block; width: 8px; height: 8px; margin-top: .38rem; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 0 4px rgba(215, 155, 74, .2); }
@@ -229,27 +302,12 @@ h2 em { color: var(--ambar); font-weight: 500; }
 /* Los iconos de linea (comun/iconos.jsx): miden lo que la letra de al lado. */
 .ico { width: 1.15em; height: 1.15em; flex: 0 0 auto; }
 
-/* El boton principal: ambar, esquinas casi rectas y sombra dura de imprenta.
-   Con el puntero se levanta despegandose de su sombra y cruza un brillo; al
-   pulsar se hunde contra ella. Levantarse es escena (--dur-base); hundirse,
-   respuesta (--dur-micro). */
-.boton-duro { position: relative; display: inline-flex; align-items: center; gap: .6rem; overflow: hidden; padding: 1.05rem 1.7rem; background: var(--ambar); color: var(--horno); border-radius: 2px; box-shadow: 4px 4px 0 var(--horno); font: 700 .78rem/1.2 var(--letra-texto); letter-spacing: .18em; text-transform: uppercase; transition: transform var(--dur-base) var(--ease-soft), box-shadow var(--dur-base) var(--ease-soft); }
-.boton-duro-icono { width: 24px; height: 24px; stroke-width: 1.5; transition: transform var(--dur-slow) var(--ease-soft); }
-.con-puntero .boton-duro:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--horno); }
-.con-puntero .boton-duro:hover .boton-duro-icono { transform: rotate(-14deg) scale(1.15); }
-.boton-duro:active, .con-puntero .boton-duro:hover:active { transform: translate(2px, 2px) scale(.97); box-shadow: 2px 2px 0 var(--horno); transition-duration: var(--dur-micro); }
-/* Con el foco del teclado conserva su sombra; el anillo es el de siempre. */
-.boton-duro:focus-visible { box-shadow: 4px 4px 0 var(--horno); }
-/* El brillo que cruza (b-brillo): una franja de papel que pasa por encima
-   una vez al entrar el puntero. Va con transform, no moviendo left. */
-.b-brillo::after { position: absolute; top: -20%; bottom: -20%; left: 0; width: 40%; content: ""; background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--papel) 70%, transparent), transparent); transform: translateX(-150%) skewX(-20deg); pointer-events: none; }
-.con-puntero .b-brillo:hover::after { transform: translateX(325%) skewX(-20deg); transition: transform var(--dur-editorial) var(--ease-soft); }
-
-/* Los enlaces sueltos: imprenta + ola (A1 de la muestra). Con el puntero se
-   levantan con borde y sombra dura, las letras saltan una tras otra y se
-   quedan cobrizas, y el icono da un saltito. Las letras sueltas las pone
-   TextoOla.jsx, que deja el nombre del enlace entero para el lector. */
-.h-imprenta { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .8rem; border: 1px solid var(--horno); color: var(--horno); font: 600 .78rem/1.2 var(--letra-texto); letter-spacing: .16em; text-transform: uppercase; transition: transform var(--dur-base) var(--ease-soft), box-shadow var(--dur-base) var(--ease-soft), background-color var(--dur-fast) var(--ease-ui); }
+/* Los enlaces sueltos: imprenta + ola (A1 de la muestra), en pastilla como
+   los botones. Con el puntero se levantan con borde y sombra dura, las
+   letras saltan una tras otra y se quedan cobrizas, y el icono da un
+   saltito. Las letras sueltas las pone TextoOla.jsx, que deja el nombre del
+   enlace entero para el lector. */
+.h-imprenta { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .8rem; border: 1px solid var(--horno); border-radius: var(--r-pill); color: var(--horno); font: 600 .78rem/1.2 var(--letra-texto); letter-spacing: .16em; text-transform: uppercase; transition: transform var(--dur-base) var(--ease-soft), box-shadow var(--dur-base) var(--ease-soft), background-color var(--dur-fast) var(--ease-ui); }
 .h-imprenta .ico { width: 16px; height: 16px; }
 .con-puntero .h-imprenta:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--horno); background: var(--papel); }
 .con-puntero .h-imprenta:hover .ico { animation: cae var(--dur-editorial) var(--ease-soft); }
@@ -611,11 +669,10 @@ h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 .floating-whatsapp { cursor: pointer; position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 /* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
-.button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
-.button-yellow:focus-visible > span[aria-hidden] { transform: rotate(-8deg) scale(1.12); }
+.text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
 .text-link:focus-visible > span[aria-hidden], .footer-mapa:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
-.button-yellow, .text-link, .footer-mapa { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
-.button-yellow:focus-visible, .order-button:focus-visible { transform: translateY(-2px); }
+.text-link, .footer-mapa { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
+.order-button:focus-visible { transform: translateY(-2px); }
 .con-puntero .floating-whatsapp:hover { background: var(--ambar-claro); }
 /* El brinco de la canasta al agregar desde una ficha (CanastaProvider.jsx). */
 body .floating-whatsapp.is-canasta.is-latido { animation: canasta-salta 520ms var(--ease-accent); }
@@ -664,8 +721,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
    pegado en lo ultimo tocado. La clase con-puntero la pone comun/puntero.js
    segun el pointerType de cada evento; la media query (hover: hover) daba
    falso en el portatil tactil del usuario y nunca se veia (seccion 10). */
-.con-puntero .button-yellow:hover { background: var(--ambar-claro); transform: translateY(-3px); box-shadow: var(--shadow-lift); }
-.con-puntero .button-yellow:hover > span[aria-hidden] { transform: rotate(-8deg) scale(1.12); }
 .con-puntero .text-link:hover > span[aria-hidden],
 .con-puntero .footer-mapa:hover > span[aria-hidden] { transform: translate(4px, -4px); }
 /* La ficha se levanta despacio, como algo que se coge del mostrador: es
@@ -679,7 +734,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 /* Al pulsar, botones y fichas se hunden un poco (respuesta, seccion 10), con
    raton o con el dedo. Van despues del hover para ganarle con el mismo peso. */
 .product-card:active, .con-puntero .product-card:hover:active,
-.button:active, .con-puntero .button-yellow:hover:active, .order-button:active, .con-puntero .order-button:hover:active,
+.order-button:active, .con-puntero .order-button:hover:active,
 .card-cantidad .card-mas:active, .con-puntero .card-cantidad .card-mas:hover:active, .canasta-cantidad [data-mas]:active { transform: scale(.97); transition-duration: var(--dur-micro); }
 @media (max-width: 900px) {
   /* Cinco entradas y el boton de la cuenta no caben con el aire de escritorio:
@@ -956,8 +1011,8 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-datos div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .55rem 0; border-bottom: 1px solid var(--masa-linea); }
 .cuenta-datos dt { color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
 .cuenta-datos dd { margin: 0; color: var(--horno); font: 700 .85rem/1.4 Arial, sans-serif; text-align: right; word-break: break-word; }
-.cuenta-salir { display: block; width: 100%; padding: .8rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--corteza-oscura); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .cuenta-salir:hover { background: var(--masa); border-color: var(--corteza); }
+/* Cerrar sesion es el boton secundario (button-otro), a todo el ancho. */
+.cuenta-salir { width: 100%; }
 /* Editar los datos: debajo de ellos, del ancho de su texto. Es lo segundo que
    se hace en la ficha, despues de mirarla. */
 .cuenta-editar { display: inline-flex; min-height: 44px; align-items: center; margin-top: 1rem; padding: .5rem 1rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
@@ -1035,12 +1090,12 @@ body.is-checkout .floating-whatsapp { display: none; }
   .reveal-mask img, .reveal-mask.is-visible img { clip-path: none; transform: none; }
   .reveal-band .sign-trigo, .principles.reveal-line > div, .principles.reveal-line .principle-mark { opacity: 1; transform: none; transition: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
-  .button > span[aria-hidden], .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
-  .menu-toggle span, .button-yellow:focus-visible, .con-puntero .order-button:hover, .order-button:focus-visible { transform: none; }
-  .con-puntero .button-yellow:hover, .con-puntero .product-card:hover, .con-puntero .product-card:hover .product-image img { transform: none; }
+  .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
+  .menu-toggle span, .con-puntero .order-button:hover, .order-button:focus-visible { transform: none; }
+  .con-puntero .product-card:hover, .con-puntero .product-card:hover .product-image img { transform: none; }
   /* Tampoco se hunde nada al pulsar. */
   .product-card:active, .con-puntero .product-card:hover:active,
-  .button:active, .con-puntero .button-yellow:hover:active, .order-button:active, .con-puntero .order-button:hover:active,
+  .order-button:active, .con-puntero .order-button:hover:active,
   .card-cantidad .card-mas:active, .con-puntero .card-cantidad .card-mas:hover:active, .canasta-cantidad [data-mas]:active { transform: none; }
   .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno output, .card-cantidad.is-lleno .card-numero, .card-cantidad.is-lleno::before { animation: none; }
   /* Ni destello al agregar (golpes.js tampoco lo pide). */
@@ -1048,13 +1103,13 @@ body.is-checkout .floating-whatsapp { display: none; }
   .con-puntero .product-card:hover .product-tag { transform: rotate(-10deg); }
   /* Las piezas del estilo editorial, quietas: ni se levantan, ni salta nada,
      ni cruza el brillo. */
-  .con-puntero .boton-duro:hover, .boton-duro:active, .con-puntero .boton-duro:hover:active,
+  .con-puntero .button-yellow:hover, .button:active, .button-yellow:active, .con-puntero .button-yellow:hover:active,
   .con-puntero .h-imprenta:hover, .h-imprenta:active, .con-puntero .h-imprenta:hover:active { transform: none; }
-  .con-puntero .boton-duro:hover .boton-duro-icono { transform: none; }
+  .con-puntero .button-yellow:hover > svg, .con-puntero .button-yellow:hover > span[aria-hidden] { transform: none; }
   .con-puntero .h-imprenta:hover .ico, .con-puntero .h-ola:hover .letras span { animation: none; }
   /* El color si cambia: no es movimiento y dice que el enlace responde. */
   .con-puntero .h-ola:hover .letras span { color: var(--corteza); }
-  .b-brillo::after { display: none; }
+  .button-yellow::after { display: none; }
   .con-puntero .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { transform: none; }
   .nav-submenu, .nav-grupo-flecha { transition: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
@@ -1215,7 +1270,6 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-pedido-cuentas dd { margin: 0; color: var(--horno); font: 700 .78rem/1.4 Arial, sans-serif; text-align: right; word-break: break-word; }
 .canasta-nota, .cuenta-nota { margin: .7rem 0 0; color: var(--horno-suave); font: .75rem/1.45 Arial, sans-serif; text-align: center; }
 .canasta-enviar, .canasta-pagar { width: 100%; justify-content: center; }
-.canasta-enviar[aria-disabled="true"], .canasta-pagar[aria-disabled="true"] { opacity: .45; pointer-events: none; }
 .canasta-cuenta { display: grid; min-width: 22px; height: 22px; padding: 0 6px; place-items: center; background: var(--horno); border-radius: var(--r-pill); color: var(--papel); font: 700 .72rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .canasta-cuenta[hidden] { display: none; }
 
@@ -1228,9 +1282,6 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-paso { display: flex; flex: 1; min-height: 0; flex-direction: column; animation: paso-entra var(--dur-base) var(--ease-out) both; }
 .canasta-paso[hidden] { display: none; }
 @keyframes paso-entra { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
-.canasta-panel button.button { font: 700 1rem/1.55 Georgia, "Times New Roman", serif; cursor: pointer; }
-.canasta-panel button.button:disabled { cursor: not-allowed; }
-.checkout.is-procesando button.button:disabled { cursor: progress; }
 .pago-demo, .recibo-simulado { margin: 0 0 1.1rem; padding: .7rem .85rem; background: rgba(215, 155, 74, .16); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; color: var(--horno); font: .82rem/1.5 Arial, sans-serif; }
 .pago-demo strong { display: block; }
 .pago-metodos { margin-bottom: 1rem; }
@@ -1342,8 +1393,6 @@ body.is-checkout .floating-whatsapp { display: none; }
 .pide-cuenta-hoja p { max-width: 32ch; margin: 0 0 .5rem; color: var(--horno-suave); font: .92rem/1.5 Arial, sans-serif; }
 .pide-cuenta-hoja p strong { color: var(--horno); }
 .pide-cuenta-hoja .button { width: 100%; justify-content: center; }
-.pide-cuenta-otra { width: 100%; min-height: 48px; padding: .7rem; background: none; border: 1px solid var(--horno); border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .92rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .pide-cuenta-otra:hover { background: var(--masa); }
 .pide-cuenta-volver { min-height: 44px; padding: .4rem .8rem; background: none; border: 0; color: var(--horno-suave); cursor: pointer; font: 700 .85rem Arial, sans-serif; text-decoration: underline; text-underline-offset: 3px; }
 .pide-cuenta-volver:hover { color: var(--horno); }
 @keyframes pide-fondo { from { opacity: 0; } to { opacity: 1; } }
@@ -1414,8 +1463,7 @@ body:has(.canasta-panel.is-open) .deshacer-barra { right: 16px; left: auto; bott
 .recibo-titulo { margin: 0 0 .5rem; color: var(--horno-suave); font: 700 .78rem/1.3 Arial, sans-serif; }
 .recibo-lista, .resumen-lista { margin: 0; padding: 0; list-style: none; }
 .recibo-lista li, .resumen-lista li { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--masa-linea); font: .85rem/1.4 Arial, sans-serif; font-variant-numeric: tabular-nums; }
-.canasta-listo { display: block; width: 100%; margin-top: .6rem; padding: .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .85rem/1.3 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .canasta-listo:hover { background: var(--masa); }
+.canasta-listo { width: 100%; margin-top: .6rem; }
 
 @media (max-width: 680px) {
   .canasta-panel { width: 100%; }
@@ -1441,4 +1489,9 @@ body:has(.canasta-panel.is-open) .deshacer-barra { right: 16px; left: auto; bott
   .cuenta-metodo input:checked + .cuenta-metodo-caja::after { border-color: Highlight; }
   /* El mas en el tope pierde el ambar, que en este modo ya no se ve: lo dice el color de lo desactivado. */
   .card-cantidad .card-mas[aria-disabled="true"], .canasta-cantidad [data-mas][aria-disabled="true"] { color: GrayText; }
+  /* Sin sombras en este modo, el boton se reconoce por su filete, que el
+     sistema pinta; el brillo seria una mancha encima del texto. */
+  .button-yellow::after { display: none; }
+  .button { border-color: ButtonText; }
+  .button[aria-disabled="true"] { border-color: GrayText; color: GrayText; }
 }

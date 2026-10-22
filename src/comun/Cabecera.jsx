@@ -14,6 +14,7 @@ import { Link, NavLink } from 'react-router-dom';
 import MenuTienda from './MenuTienda.jsx';
 import BotonCanasta from '../pedido/BotonCanasta.jsx';
 import FichaCuenta from '../cuenta/FichaCuenta.jsx';
+import usePastillaMenu from './usePastillaMenu.js';
 
 // Las bandas oscuras y el pie son del mismo horno que la barra: cuando alguno
 // pasa por detras de ella, la barra gana una linea ambar para no fundirse.
@@ -30,6 +31,7 @@ function Cabecera() {
   const botonMenuRef = useRef(null);
   const primerEnlaceRef = useRef(null);
   const botonTiendaRef = useRef(null);
+  const pastillaRef = usePastillaMenu(navRef);
   // Lo abierto, a mano de los escuchadores del documento, que se ponen una vez.
   const abierto = useRef({ menu: false, tienda: false });
   useEffect(() => { abierto.current = { menu: menuAbierto, tienda: tiendaAbierta }; });
@@ -116,6 +118,10 @@ function Cabecera() {
           <img className="brand-logo" src={logo} alt="" width="420" height="184" />
         </Link>
         <nav ref={navRef} id="main-nav" className={menuAbierto ? 'main-nav is-open' : 'main-nav'} aria-label="Navegación principal">
+          {/* La pastilla que sigue al raton (usePastillaMenu.js). Va primero
+              para quedar debajo de las opciones; es adorno y el lector no
+              la oye. */}
+          <span ref={pastillaRef} className="nav-pastilla" aria-hidden="true"></span>
           {/* Inicio delante (seccion 4 del plan), tambien en el menu del
               telefono. end: solo esta en Inicio quien esta en #/, no en
               cualquier vista que empiece por la barra. */}
