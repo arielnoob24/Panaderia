@@ -9,7 +9,7 @@
 > `.claude/CLAUDE.md`. Las secciones 1 a 14 describen el sitio **como está
 > hoy** (React); la 15 es la historia corta de cómo se llegó aquí.
 
-Última actualización: 21 de octubre de 2026.
+Última actualización: 22 de octubre de 2026.
 
 ---
 
