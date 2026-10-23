@@ -299,13 +299,14 @@ await debeFallar(`INSERT INTO lotes_material (mat_codigo, rcp_codigo, oco_codigo
 titulo('Produccion por lotes (FEFO y promedio)');
 // Inventario inicial: harina que entro antes pero caduca despues, harina
 // caducada, y dos lotes de sal (PROM) a distinto costo.
-const inicial = (material, recibida, costo, ingreso, caducidad) => unValor(
+// La caducidad va en dias desde hoy y la calcula la base: con la fecha de
+// Node (UTC) el lote "de ayer" caducaba hoy en Ecuador despues de las 19:00.
+const inicial = (material, recibida, costo, ingreso, caducaEnDias) => unValor(
   `INSERT INTO lotes_material (mat_codigo, lma_cantidadrecibida, lma_costounitario, lma_fechaingreso, lma_fechacaducidad)
-   VALUES ($1, $2, $3, $4, $5) RETURNING lma_codigo`, [material, recibida, costo, ingreso, caducidad]);
+   VALUES ($1, $2, $3, $4, CURRENT_DATE + $5::int) RETURNING lma_codigo`, [material, recibida, costo, ingreso, caducaEnDias]);
 const hace = (dias) => new Date(Date.now() - dias * 864e5).toISOString();
-const dia = (dias) => new Date(Date.now() + dias * 864e5).toISOString().slice(0, 10);
-const harinaVieja = await inicial(harina, 1, 0.0007, hace(10), dia(100));
-const harinaCaducada = await inicial(harina, 1, 0.0005, hace(200), dia(-1));
+const harinaVieja = await inicial(harina, 1, 0.0007, hace(10), 100);
+const harinaCaducada = await inicial(harina, 1, 0.0005, hace(200), -1);
 await inicial(sal, 1, 0.001, hace(5), null);
 await inicial(sal, 1, 0.002, hace(4), null);
 for (const [nombre, costo] of [['Azúcar', 0.0012], ['Levadura fresca', 0.004], ['Mantequilla', 0.006]]) {
@@ -384,6 +385,51 @@ await debeFallar(`UPDATE detalles_asiento SET das_debe = 1 WHERE asi_codigo = '$
 await debeFallar(`INSERT INTO cuentas_contables (cue_numero, cue_nombre, cue_tipo) VALUES ('1.1.09.01', 'Sin madre', 'DET')`, 'Cuenta sin cuenta madre');
 const bancos = (await q(`SELECT cue_saldo::text s FROM vw_saldos_cuentas WHERE cue_numero = '1.1.01.02'`))[0].s;
 ok(bancos === '1000.00', `El mayor de bancos solo cuenta asientos aprobados: ${bancos}`);
+
+titulo('Accesos y auditoria');
+const acceso = (usu, exitoso, motivo) => unValor(
+  `INSERT INTO accesos (usu_codigo, acc_exitoso, acc_motivo) VALUES ($1, $2, $3) RETURNING acc_motivo`, [usu, exitoso, motivo]);
+await acceso(luis, true, null);
+await debeFallar(`INSERT INTO accesos (usu_codigo, acc_exitoso, acc_motivo) VALUES ('${luis}', true, 'CLA')`, 'Acceso bueno con motivo de fallo');
+await debeFallar(`INSERT INTO accesos (usu_codigo, acc_exitoso) VALUES ('${luis}', false)`, 'Acceso fallido sin motivo');
+for (let i = 0; i < 4; i++) await acceso(luis, false, 'CLA');
+ok(await acceso(luis, true, null) === null, 'Con 4 fallos todavia entra');
+for (let i = 0; i < 5; i++) await acceso(luis, false, 'CLA');
+ok(await acceso(luis, true, null) === 'BLO', 'Con 5 fallos seguidos, la clave buena queda bloqueada');
+ok(await unValor(`SELECT usu_bloqueado FROM vw_usuarios WHERE usu_codigo = $1`, [luis]) === true, 'La vista dice que la cuenta esta bloqueada');
+await debeFallar(`DELETE FROM accesos WHERE usu_codigo = '${luis}'`, 'Borrar el log de accesos');
+
+const audCarga = await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'PRODUCTOS' AND usu_codigo IS NULL AND aud_operacion = 'I'`);
+ok(audCarga === 17, `La carga inicial queda auditada sin usuario (${audCarga} productos)`);
+await q(`SELECT set_config('app.usuario', $1, false)`, [ana]);
+const pt = (await q(`SELECT pro_codigo, tam_codigo, pta_precio::text p FROM productos_tamanos ORDER BY pro_codigo, tam_codigo LIMIT 1`))[0];
+await q(`UPDATE productos_tamanos SET pta_precio = pta_precio + 0.05 WHERE pro_codigo = $1 AND tam_codigo = $2`, [pt.pro_codigo, pt.tam_codigo]);
+const cambio = (await q(`SELECT usu_codigo, aud_operacion, aud_clave, aud_antes ->> 'pta_precio' antes, aud_despues ->> 'pta_precio' despues
+  FROM auditorias WHERE aud_tabla = 'PRODUCTOS_TAMANOS' ORDER BY aud_codigo DESC LIMIT 1`))[0];
+ok(cambio.usu_codigo === ana && cambio.aud_operacion === 'U' && cambio.aud_clave === pt.pro_codigo + '|' + pt.tam_codigo
+  && Number(cambio.antes) === Number(pt.p) && Math.abs(Number(cambio.despues) - Number(pt.p) - 0.05) < 1e-9,
+  `Cambio de precio auditado con quien, la llave compuesta, antes y despues (${cambio.antes} -> ${cambio.despues})`);
+const antes = await unValor(`SELECT count(*)::int FROM auditorias`);
+await q(`UPDATE productos_tamanos SET pta_precio = pta_precio WHERE pro_codigo = $1 AND tam_codigo = $2`, [pt.pro_codigo, pt.tam_codigo]);
+ok(await unValor(`SELECT count(*)::int FROM auditorias`) === antes, 'Un UPDATE que no cambia nada no se anota');
+await q(`UPDATE usuarios SET usu_celular = '0990000000' WHERE usu_codigo = $1`, [luis]);
+const filaUsu = (await q(`SELECT aud_antes, aud_despues FROM auditorias WHERE aud_tabla = 'USUARIOS' ORDER BY aud_codigo DESC LIMIT 1`))[0];
+ok(!('usu_huellaclave' in filaUsu.aud_antes) && !('usu_sal' in filaUsu.aud_despues) && filaUsu.aud_despues.usu_celular === '0990000000',
+  'La auditoria de usuarios no copia la huella ni la sal');
+await debeFallar(`UPDATE auditorias SET usu_codigo = NULL`, 'Cambiar la auditoria');
+await q(`SELECT set_config('app.usuario', '', false)`);
+
+const cuentaTrabajo = await nuevoUsuario('carlos@eltradicional.ec', '0981112233');
+const cuentaPersonal = await nuevoUsuario('carlos.grefa@correo.ec', '0981112233');
+await q(`UPDATE usuarios SET emp_codigo = $1 WHERE usu_codigo IN ($2, $3)`, [panadero, cuentaTrabajo, cuentaPersonal]);
+ok(await unValor(`SELECT count(*)::int FROM usuarios WHERE emp_codigo = $1`, [panadero]) === 2, 'Un empleado puede tener dos cuentas (1:N)');
+await debeFallar(`UPDATE usuarios SET emp_codigo = 'EMP9999999' WHERE usu_codigo = '${cuentaTrabajo}'`, 'Cuenta de un empleado que no existe');
+await q(`SELECT set_config('app.usuario', $1, false)`, [cuentaTrabajo]);
+await q(`UPDATE empleados SET emp_sueldo = 610 WHERE emp_codigo = $1`, [contador]);
+const quien = await unValor(`SELECT e.emp_primernombre FROM auditorias a JOIN usuarios u ON u.usu_codigo = a.usu_codigo
+  JOIN empleados e ON e.emp_codigo = u.emp_codigo WHERE a.aud_tabla = 'EMPLEADOS' ORDER BY a.aud_codigo DESC LIMIT 1`);
+ok(quien === 'Carlos', `La auditoria llega al empleado que hizo el cambio por su cuenta (${quien})`);
+await q(`SELECT set_config('app.usuario', '', false)`);
 
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

@@ -361,15 +361,15 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
 | **Sin 1:1** | Si dos tablas quedarían 1:1, se juntan o se rehace la relación |
 | **Sin herencia** | Nada de supertipo y subtipos |
 | **Todo conectado** | Cada tabla tiene al menos una relación. No puede haber un par o grupo de tablas aislado del resto. Solo autenticación y autorización podrían quedar aparte, pero hoy también están conectadas (USUARIOS → PEDIDOS, DIRECCIONES) |
-| **Autenticación y autorización con al menos 3 tablas** | Lo dijo el profesor. Hoy son 5: ROLES, PERMISOS, ROLES_PERMISOS, USUARIOS, VERIFICACIONES |
+| **Autenticación y autorización con al menos 3 tablas** | Lo dijo el profesor. Hoy son 7: ROLES, PERMISOS, ROLES_PERMISOS, USUARIOS, VERIFICACIONES y los logs ACCESOS y AUDITORIAS |
 | **Normalizada (hasta 3FN)** | Valores atómicos (nombres y apellidos separados). Lo que se calcula no se guarda: va en una vista. El precio y el IVA del día en cada línea sí se guardan, porque cambian |
 | **Tipos según el contexto ecuatoriano** | Dinero en dólares `NUMERIC(…,2)`. Fechas `TIMESTAMPTZ` con zona `America/Guayaquil`. Cédula `CHAR(10)` con módulo 10, RUC de 13 dígitos, celular `CHAR(10)` `09XXXXXXXX`. Provincias y cantones con su código del INEC; tipo de identificación, forma de pago y tarifa de IVA con su código del SRI. Número de factura `001-001-000000001`. Cada tipo con su `CHECK` |
 | **Varias tablas, no 3 o 4** | El modelo cubre lo que hace el sitio (cuenta, catálogo, canasta, entrega, factura y pago) y lo que pide el "Contexto comercial" del profesor (JW Cóndor, dic. 2025): compras, inventario, producción, talento humano y contabilidad |
 | **Documentos con estados** | Orden de compra, ajuste, orden de producción y rol de pagos: ABI → APR o ANU. Recepción: PEN → REC o CAN. Asiento: ABI (manual) o PEN (generado) → APR, ANU o ERR. El estado va en la cabecera y las líneas lo siguen (guardarlo en cada línea repetiría el dato). Aprobado o anulado, el documento y sus líneas ya no cambian |
 | **Aprobar genera lo siguiente** | Orden de compra aprobada → recepción pendiente + asiento. Ajuste, producción y rol aprobados → asiento. Factura → asiento de venta; anularla → asiento contrario. Un asiento que no cuadra al aprobarlo queda en ERR |
 
-- **48 tablas en 11 grupos**: autenticación y autorización (ROLES, PERMISOS,
-  ROLES_PERMISOS, USUARIOS, VERIFICACIONES), ubicación (PROVINCIAS, CANTONES,
+- **50 tablas en 11 grupos**: autenticación y autorización (ROLES, PERMISOS,
+  ROLES_PERMISOS, USUARIOS, VERIFICACIONES, ACCESOS, AUDITORIAS), ubicación (PROVINCIAS, CANTONES,
   DIRECCIONES), catálogo (CATEGORIAS, ETIQUETAS, TARIFAS_IVA, PRODUCTOS,
   TAMANOS, PRODUCTOS_TAMANOS, ALERGENOS, PRODUCTOS_ALERGENOS), pedidos
   (TIPOS_ENTREGA, ESTADOS_PEDIDO, PEDIDOS, DETALLES_PEDIDO), facturación y
@@ -408,8 +408,20 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
     su sueldo de hoy (sin historia de cargos ni cargas familiares); lo pagado
     cada mes queda en el rol de pagos. Se quedan la nómina y la contabilidad
     (el profesor pidió asientos), la recepción y los ajustes, y los alérgenos.
-  - *Empleados y usuarios* no se enlazan: sería 1:1. El empleado se conecta
-    por lo que hace (compra, recibe, produce, aprueba).
+  - *Empleados y usuarios* (22 de octubre de 2026): la cuenta dice de qué
+    empleado es (`USUARIOS.EMP_Codigo`, vacío si es de un cliente), y un
+    empleado puede tener varias (la de trabajo, una personal, una nueva si
+    la vieja se desactiva). Es 1:N: el modelo no tiene ninguna 1:1. Así se
+    sabe qué empleado aprueba algo o sale en la auditoría.
+  - *Logs* (22 de octubre de 2026): `ACCESOS` anota cada intento de entrar
+    (bueno o con su motivo: clave, correo sin verificar, inactiva,
+    bloqueada); con 5 fallos seguidos en 15 minutos la cuenta se bloquea y
+    `VW_USUARIOS` lo dice. `AUDITORIAS` la llena un trigger en cuentas,
+    permisos, productos y precios, recetas, materiales, empleados,
+    proveedores, facturas, pagos, compras, ajustes, producción, cuentas,
+    asientos y nómina: quién (variable `app.usuario` de la conexión), cuándo
+    y la fila antes y después en JSON, sin la huella ni la sal. Los dos logs
+    no se cambian ni se borran.
 - **Lo que se calcula no se guarda**: totales, IVA y lo pagado salen de
   `VW_PEDIDOS_TOTALES`; si el correo está verificado, de `VW_USUARIOS`. El
   precio y el IVA de cada línea sí se guardan (son los del día). También son
@@ -688,18 +700,19 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).
 - [x] Compras, inventario por lotes, recetas, producción con FEFO/FIFO/LIFO/
-      promedio, talento humano, nómina y contabilidad (48 tablas).
+      promedio, talento humano, nómina, contabilidad y logs (50 tablas).
 - [ ] Revisar el modelo con el profesor, sobre todo: el kardex como vista,
       el saldo del lote calculado y las débiles sobre otra débil.
 - [ ] Confirmar las recetas con el panadero y la vida útil de cada material.
 - [x] Base subida a Supabase (proyecto `ugscqizansixnsuzljtu`, 21 de octubre
-      de 2026), con el conector MCP. Las 48 tablas tienen RLS sin políticas
+      de 2026; logs el 22), con el conector MCP. Las 50 tablas tienen RLS sin políticas
       (por la API no entra nadie), las vistas usan `security_invoker` y las
       funciones fijan su `search_path`; está al final del script y
       `probar-bd` lo comprueba.
 - [ ] Antes de conectar el sitio: escribir las políticas de RLS de lo que
       el sitio necesite (por ejemplo, leer el catálogo) y decidir cómo entra
-      el usuario (Supabase Auth o la cuenta actual).
+      el usuario (Supabase Auth o la cuenta actual). Con eso se decide
+      también cómo se llena `app.usuario` para que la auditoría sepa quién.
 - [ ] El IVA de cada producto es una suposición (pan 0%, dulces y bebidas
       15%): confirmarlo con el contador.
 - [ ] Cuáles alérgenos lleva cada producto (`PRODUCTOS_ALERGENOS`).

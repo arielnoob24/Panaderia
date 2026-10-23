@@ -39,9 +39,9 @@
      estado va en la cabecera y las líneas lo siguen: aprobado o anulado, ni
      el documento ni sus líneas se pueden cambiar.
 
-   Grupos (48 tablas)
+   Grupos (50 tablas)
    1. Autenticación y autorización: ROLES, PERMISOS, ROLES_PERMISOS (débil),
-      USUARIOS, VERIFICACIONES
+      USUARIOS, VERIFICACIONES, ACCESOS (log), AUDITORIAS (log)
    2. Ubicación: PROVINCIAS, CANTONES, DIRECCIONES
    3. Catálogo: CATEGORIAS, ETIQUETAS, TARIFAS_IVA, PRODUCTOS, TAMANOS,
       PRODUCTOS_TAMANOS (débil), ALERGENOS, PRODUCTOS_ALERGENOS (débil)
@@ -62,6 +62,7 @@
    ROLES 1:N USUARIOS                      ROLES 1:N ROLES_PERMISOS
    PERMISOS 1:N ROLES_PERMISOS             USUARIOS 1:N VERIFICACIONES
    USUARIOS 1:N DIRECCIONES                USUARIOS 1:N PEDIDOS
+   USUARIOS 1:N ACCESOS                    USUARIOS 1:N AUDITORIAS
    PROVINCIAS 1:N CANTONES                 CANTONES 1:N DIRECCIONES
    DIRECCIONES 1:N PEDIDOS                 CATEGORIAS 1:N PRODUCTOS
    ETIQUETAS 1:N PRODUCTOS                 TARIFAS_IVA 1:N PRODUCTOS
@@ -73,6 +74,7 @@
    TIPOS_IDENTIFICACION 1:N CLIENTES       PEDIDOS 1:N PAGOS
    METODOS_PAGO 1:N PAGOS
    CARGOS 1:N EMPLEADOS                    CANTONES 1:N EMPLEADOS
+   EMPLEADOS 1:N USUARIOS (opcional)
    UNIDADES_MEDIDA 1:N MATERIALES (x2)     METODOS_COSTEO 1:N MATERIALES
    TIPOS_MATERIAL 1:N MATERIALES           TARIFAS_IVA 1:N MATERIALES
    PRODUCTOS_TAMANOS 1:N RECETAS           MATERIALES 1:N RECETAS
@@ -244,10 +246,14 @@ CREATE INDEX IX_ROLES_PERMISOS_Permiso ON ROLES_PERMISOS (PER_Codigo);
 
 -- La contraseña nunca se guarda: solo su huella PBKDF2-SHA256 (32 bytes), la
 -- sal (16 bytes) y las iteraciones con que se calculó, como hace el sitio.
+-- EMP_Codigo dice de qué empleado es la cuenta (vacío si es de un cliente).
+-- Un empleado puede tener varias: la de trabajo, una personal, o una nueva si
+-- la vieja se desactiva. Su llave foránea se crea después de EMPLEADOS.
 CREATE SEQUENCE SEQ_USUARIOS MAXVALUE 9999999;
 CREATE TABLE USUARIOS (
     USU_Codigo         CHAR(10)     NOT NULL DEFAULT 'USU' || LPAD(nextval('SEQ_USUARIOS')::TEXT, 7, '0'),
     ROL_Codigo         CHAR(6)      NOT NULL,
+    EMP_Codigo         CHAR(10),
     USU_Nombres        VARCHAR(60)  NOT NULL,
     USU_Apellidos      VARCHAR(60)  NOT NULL,
     USU_Correo         VARCHAR(254) NOT NULL,
@@ -299,6 +305,59 @@ CREATE TABLE VERIFICACIONES (
 );
 ALTER SEQUENCE SEQ_VERIFICACIONES OWNED BY VERIFICACIONES.VER_Codigo;
 CREATE INDEX IX_VERIFICACIONES_Usuario ON VERIFICACIONES (USU_Codigo);
+
+-- Log de inicios de sesión: cada intento, salga bien o mal. Solo se anotan
+-- los de cuentas que existen. Con 5 fallos seguidos en 15 minutos la cuenta
+-- se bloquea: el siguiente intento, aunque la clave esté bien, queda como BLO
+-- (TG_ACCESOS_BLOQUEO). Es un registro: no se cambia ni se borra.
+CREATE SEQUENCE SEQ_ACCESOS MAXVALUE 999999999;
+CREATE TABLE ACCESOS (
+    ACC_Codigo  CHAR(12)    NOT NULL DEFAULT 'ACC' || LPAD(nextval('SEQ_ACCESOS')::TEXT, 9, '0'),
+    USU_Codigo  CHAR(10)    NOT NULL,
+    ACC_Fecha   TIMESTAMPTZ NOT NULL DEFAULT now(),
+    ACC_Exitoso BOOLEAN     NOT NULL,
+    -- Por qué falló: CLA clave incorrecta, NVE correo sin verificar,
+    -- INA cuenta inactiva, BLO cuenta bloqueada por intentos
+    ACC_Motivo  CHAR(3),
+    CONSTRAINT PK_ACCESOS PRIMARY KEY (ACC_Codigo),
+    CONSTRAINT FK_ACCESOS_USUARIOS FOREIGN KEY (USU_Codigo)
+        REFERENCES USUARIOS (USU_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_ACCESOS_Codigo CHECK (ACC_Codigo ~ '^ACC[0-9]{9}$'),
+    CONSTRAINT CK_ACCESOS_Motivo CHECK (ACC_Motivo IN ('CLA', 'NVE', 'INA', 'BLO')),
+    CONSTRAINT CK_ACCESOS_Resultado CHECK (ACC_Exitoso = (ACC_Motivo IS NULL))
+);
+ALTER SEQUENCE SEQ_ACCESOS OWNED BY ACCESOS.ACC_Codigo;
+CREATE INDEX IX_ACCESOS_Usuario ON ACCESOS (USU_Codigo, ACC_Fecha);
+
+-- Log de cambios: quién creó, cambió o borró algo importante y cómo estaba
+-- la fila antes y después. Lo llena solo TG_<TABLA>_AUDITORIA. La foto de
+-- la fila en JSON es historia (como el precio del día en el pedido), no un
+-- dato repetido. Quién lo hizo sale de la variable app.usuario de la
+-- conexión; si no se dio (carga inicial, editor SQL), queda vacío. Es un
+-- registro: no se cambia ni se borra.
+CREATE SEQUENCE SEQ_AUDITORIAS MAXVALUE 999999999;
+CREATE TABLE AUDITORIAS (
+    AUD_Codigo    CHAR(12)    NOT NULL DEFAULT 'AUD' || LPAD(nextval('SEQ_AUDITORIAS')::TEXT, 9, '0'),
+    USU_Codigo    CHAR(10),
+    AUD_Fecha     TIMESTAMPTZ NOT NULL DEFAULT now(),
+    AUD_Tabla     VARCHAR(40) NOT NULL,
+    AUD_Operacion CHAR(1)     NOT NULL,   -- I creó, U cambió, D borró
+    AUD_Clave     VARCHAR(60) NOT NULL,   -- la llave de la fila; si es compuesta, unida con |
+    AUD_Antes     JSONB,
+    AUD_Despues   JSONB,
+    CONSTRAINT PK_AUDITORIAS PRIMARY KEY (AUD_Codigo),
+    CONSTRAINT FK_AUDITORIAS_USUARIOS FOREIGN KEY (USU_Codigo)
+        REFERENCES USUARIOS (USU_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
+    CONSTRAINT CK_AUDITORIAS_Codigo CHECK (AUD_Codigo ~ '^AUD[0-9]{9}$'),
+    CONSTRAINT CK_AUDITORIAS_Operacion CHECK (AUD_Operacion IN ('I', 'U', 'D')),
+    CONSTRAINT CK_AUDITORIAS_Filas CHECK (
+        (AUD_Operacion = 'I' AND AUD_Antes IS NULL AND AUD_Despues IS NOT NULL)
+        OR (AUD_Operacion = 'U' AND AUD_Antes IS NOT NULL AND AUD_Despues IS NOT NULL)
+        OR (AUD_Operacion = 'D' AND AUD_Antes IS NOT NULL AND AUD_Despues IS NULL))
+);
+ALTER SEQUENCE SEQ_AUDITORIAS OWNED BY AUDITORIAS.AUD_Codigo;
+CREATE INDEX IX_AUDITORIAS_Usuario ON AUDITORIAS (USU_Codigo);
+CREATE INDEX IX_AUDITORIAS_Fila ON AUDITORIAS (AUD_Tabla, AUD_Clave);
 
 
 /* =============================================================================
@@ -697,7 +756,7 @@ CREATE TABLE EMPLEADOS (
     EMP_Codigo          CHAR(10)     NOT NULL DEFAULT 'EMP' || LPAD(nextval('SEQ_EMPLEADOS')::TEXT, 7, '0'),
     CAN_Codigo          CHAR(4)      NOT NULL,   -- donde vive
     CAR_Codigo          CHAR(6)      NOT NULL,
-    EMP_Cedula         CHAR(10)     NOT NULL,
+    EMP_Cedula        CHAR(10)     NOT NULL,
     EMP_PrimerApellido  VARCHAR(30)  NOT NULL,
     EMP_SegundoApellido VARCHAR(30),
     EMP_PrimerNombre    VARCHAR(30)  NOT NULL,
@@ -743,6 +802,10 @@ CREATE TABLE EMPLEADOS (
 ALTER SEQUENCE SEQ_EMPLEADOS OWNED BY EMPLEADOS.EMP_Codigo;
 CREATE INDEX IX_EMPLEADOS_Canton ON EMPLEADOS (CAN_Codigo);
 CREATE INDEX IX_EMPLEADOS_Cargo ON EMPLEADOS (CAR_Codigo);
+
+ALTER TABLE USUARIOS ADD CONSTRAINT FK_USUARIOS_EMPLEADOS FOREIGN KEY (EMP_Codigo)
+    REFERENCES EMPLEADOS (EMP_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT;
+CREATE INDEX IX_USUARIOS_Empleado ON USUARIOS (EMP_Codigo);
 
 
 /* =============================================================================
@@ -1930,11 +1993,128 @@ AFTER UPDATE OF NOM_Estado ON NOMINAS
 FOR EACH ROW EXECUTE FUNCTION FN_NOMINAS_APROBAR();
 
 
+/* -----------------------------------------------------------------------------
+   Logs: accesos y auditoría
+   -------------------------------------------------------------------------- */
+
+-- Una cuenta está bloqueada si desde su último acceso bueno lleva 5 fallos y
+-- todos en los últimos 15 minutos. La usan TG_ACCESOS_BLOQUEO y VW_USUARIOS.
+-- "Desde" se mide por el código (sale de la secuencia, en orden), porque dos
+-- intentos pueden caer en la misma hora exacta.
+CREATE FUNCTION FN_USUARIO_BLOQUEADO(p_usuario CHAR(10))
+RETURNS BOOLEAN
+LANGUAGE sql STABLE AS $$
+    SELECT count(*) >= 5
+      FROM ACCESOS a
+     WHERE a.USU_Codigo = p_usuario
+       AND NOT a.ACC_Exitoso
+       AND a.ACC_Fecha > now() - INTERVAL '15 minutes'
+       AND a.ACC_Codigo > COALESCE((SELECT max(b.ACC_Codigo) FROM ACCESOS b
+                                     WHERE b.USU_Codigo = p_usuario AND b.ACC_Exitoso),
+                                   '');
+$$;
+
+CREATE FUNCTION FN_ACCESOS_BLOQUEO()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF NEW.ACC_Exitoso AND FN_USUARIO_BLOQUEADO(NEW.USU_Codigo) THEN
+        NEW.ACC_Exitoso := FALSE;
+        NEW.ACC_Motivo := 'BLO';
+    END IF;
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER TG_ACCESOS_BLOQUEO
+BEFORE INSERT ON ACCESOS
+FOR EACH ROW EXECUTE FUNCTION FN_ACCESOS_BLOQUEO();
+
+-- Los logs solo crecen: lo anotado no se cambia ni se borra.
+CREATE FUNCTION FN_REGISTRO_FIJO()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+BEGIN
+    RAISE EXCEPTION '% es un registro: lo anotado no se cambia ni se borra', TG_TABLE_NAME;
+END;
+$$;
+
+CREATE TRIGGER TG_ACCESOS_FIJO BEFORE UPDATE OR DELETE ON ACCESOS
+FOR EACH ROW EXECUTE FUNCTION FN_REGISTRO_FIJO();
+CREATE TRIGGER TG_AUDITORIAS_FIJO BEFORE UPDATE OR DELETE ON AUDITORIAS
+FOR EACH ROW EXECUTE FUNCTION FN_REGISTRO_FIJO();
+
+-- Anota en AUDITORIAS un cambio de la tabla que lo llama. TG_ARGV son las
+-- columnas de su llave. La huella y la sal de la clave no se copian.
+CREATE FUNCTION FN_AUDITORIAS_REGISTRAR()
+RETURNS TRIGGER
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_antes   JSONB;
+    v_despues JSONB;
+    v_clave   TEXT;
+BEGIN
+    IF TG_OP <> 'INSERT' THEN
+        v_antes := to_jsonb(OLD) - 'usu_huellaclave' - 'usu_sal';
+    END IF;
+    IF TG_OP <> 'DELETE' THEN
+        v_despues := to_jsonb(NEW) - 'usu_huellaclave' - 'usu_sal';
+    END IF;
+    IF TG_OP = 'UPDATE' AND to_jsonb(OLD) = to_jsonb(NEW) THEN
+        RETURN NULL;
+    END IF;
+    SELECT string_agg(COALESCE(v_despues, v_antes) ->> c.columna, '|' ORDER BY c.n)
+      INTO v_clave
+      FROM unnest(TG_ARGV) WITH ORDINALITY AS c (columna, n);
+    INSERT INTO AUDITORIAS (USU_Codigo, AUD_Tabla, AUD_Operacion, AUD_Clave, AUD_Antes, AUD_Despues)
+    VALUES (NULLIF(current_setting('app.usuario', TRUE), ''), upper(TG_TABLE_NAME),
+            left(TG_OP, 1), v_clave, v_antes, v_despues);
+    RETURN NULL;
+END;
+$$;
+
+-- Lo que se audita: cuentas y permisos, precios y catálogo, personal,
+-- proveedores, y los documentos que mueven dinero o inventario.
+CREATE TRIGGER TG_USUARIOS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON USUARIOS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('usu_codigo');
+CREATE TRIGGER TG_ROLES_PERMISOS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON ROLES_PERMISOS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('rol_codigo', 'per_codigo');
+CREATE TRIGGER TG_PRODUCTOS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON PRODUCTOS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('pro_codigo');
+CREATE TRIGGER TG_PRODUCTOS_TAMANOS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON PRODUCTOS_TAMANOS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('pro_codigo', 'tam_codigo');
+CREATE TRIGGER TG_RECETAS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON RECETAS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('pro_codigo', 'tam_codigo', 'mat_codigo');
+CREATE TRIGGER TG_MATERIALES_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON MATERIALES
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('mat_codigo');
+CREATE TRIGGER TG_EMPLEADOS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON EMPLEADOS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('emp_codigo');
+CREATE TRIGGER TG_PROVEEDORES_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON PROVEEDORES
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('pvd_codigo');
+CREATE TRIGGER TG_FACTURAS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON FACTURAS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('fac_codigo');
+CREATE TRIGGER TG_PAGOS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON PAGOS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('pag_codigo');
+CREATE TRIGGER TG_ORDENES_COMPRA_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON ORDENES_COMPRA
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('oco_codigo');
+CREATE TRIGGER TG_AJUSTES_INVENTARIO_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON AJUSTES_INVENTARIO
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('aju_codigo');
+CREATE TRIGGER TG_ORDENES_PRODUCCION_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON ORDENES_PRODUCCION
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('orp_codigo');
+CREATE TRIGGER TG_CUENTAS_CONTABLES_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON CUENTAS_CONTABLES
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('cue_codigo');
+CREATE TRIGGER TG_ASIENTOS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON ASIENTOS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('asi_codigo');
+CREATE TRIGGER TG_NOMINAS_AUDITORIA AFTER INSERT OR UPDATE OR DELETE ON NOMINAS
+FOR EACH ROW EXECUTE FUNCTION FN_AUDITORIAS_REGISTRAR('nom_codigo');
+
+
 /* =============================================================================
    Vistas: lo que se calcula no se guarda
    ========================================================================== */
 
--- Usuarios con su rol y si ya verificaron el correo.
+-- Usuarios con su rol, si ya verificaron el correo, si están bloqueados y su
+-- último acceso.
 CREATE VIEW VW_USUARIOS AS
 SELECT u.USU_Codigo,
        u.USU_Nombres,
@@ -1946,7 +2126,10 @@ SELECT u.USU_Codigo,
        EXISTS (SELECT 1
                  FROM VERIFICACIONES v
                 WHERE v.USU_Codigo = u.USU_Codigo
-                  AND v.VER_FechaUso IS NOT NULL) AS USU_CorreoVerificado
+                  AND v.VER_FechaUso IS NOT NULL) AS USU_CorreoVerificado,
+       FN_USUARIO_BLOQUEADO(u.USU_Codigo) AS USU_Bloqueado,
+       (SELECT max(a.ACC_Fecha) FROM ACCESOS a
+         WHERE a.USU_Codigo = u.USU_Codigo AND a.ACC_Exitoso) AS USU_UltimoAcceso
   FROM USUARIOS u
   JOIN ROLES r ON r.ROL_Codigo = u.ROL_Codigo;
 
