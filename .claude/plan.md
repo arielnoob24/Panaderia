@@ -25,7 +25,7 @@ JavaScript, React Router con `HashRouter`, Motion).
   `sitio-presentado`.
 - Dirección: esquina de Eloy Alfaro y Gabriel Espinosa, Tena.
 - Horario: lunes a viernes 08:00–20:00; sábado y domingo 09:00–21:00.
-- Teléfono, WhatsApp e Instagram son **de ejemplo** (el pie lo avisa).
+- Teléfono, WhatsApp e Instagram son **de ejemplo** (Contáctanos lo avisa).
 
 ## 2. Reglas que no se rompen
 
@@ -53,7 +53,7 @@ src/
   vistas/               Inicio, Nosotros, Contacto
   catalogo/             Catalogo, VistaCabeza, FichaProducto, Hero, CabeceraPeriodico,
                         Cinta, categorias.js
-  comun/                cabecera, menu Tienda, pie, avisos, globo, foco, vistas.js (rutas),
+  comun/                cabecera, menu Tienda, avisos, globo, foco, vistas.js (rutas),
                         apertura.js (abrir la pagina y desplazamiento), cargaPorPartes.js
   pedido/               canasta, lineas, deshacer, confirmar, factura, pago, comprobante,
                         pedirOtraVez.js
@@ -128,9 +128,18 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
 - **Direcciones viejas** (de cuando era una sola página): `#historia` →
   `#/nosotros`, `#visitanos` → `#/contacto`, `#catalogo` →
   `#/tienda-catalogo`, `#inicio` y `#contenido` → `#/`, con `replace`.
-- **Pie corto** en todas las vistas: marca, abierto/cerrado, WhatsApp,
-  Instagram, la nota de que son de ejemplo, "Tu pedido se guardó…" y el ©. En
-  `#/contacto`, "Horario y cómo llegar" lleva `aria-current="page"`.
+- **Sin pie de página** (el usuario lo quitó el 22 de octubre de 2026). Lo
+  que llevaba se reparte: la nota de que el teléfono y las redes son de
+  ejemplo va en `#/contacto`, junto a los contactos; "Tu pedido se guardó…"
+  va en el pie del panel de la canasta, bajo "Ir a pagar"
+  (`pedido/GuardadoCanasta.jsx`); abierto/cerrado ya lo dice la
+  cabecera de periódico de la portada y Contacto. La ayuda constante (WCAG
+  3.2.6) es "Contáctanos" en el menú, en el mismo sitio en todas las vistas.
+  Nosotros, Contacto y la tienda terminan en la franja de espigas, pegada
+  al borde de abajo; la portada deja aire bajo la cinta (más en el
+  teléfono, para que la canasta flotante no tape el último enlace). En el
+  teléfono cada vista deja 92 px abajo por la canasta flotante, salvo las
+  que acaban en la franja.
 - **Mapa** en `#/contacto`: `iframe` de Google Maps sin clave
   (`https://maps.google.com/maps?q=-1.004033,-77.812690&z=17&output=embed`),
   con `title` y `loading="lazy"`, y "Ver en el mapa" debajo.
@@ -233,7 +242,8 @@ panes", con la cinta o con el menú.
 - **Deshacer** durante 12 s al quitar o al vaciar ("¿Quitamos todo lo que hay
   en la canasta?"). El reloj se para con el foco o el puntero encima. Mientras
   la barra se ve en el teléfono, `scroll-padding-bottom` sube a 168 px para que
-  no tape el foco.
+  no tape el foco. Con la canasta abierta, mientras se ve la barra, la
+  lista guarda abajo 136 px para que el foco no quede debajo de ella.
 - "Ir a pagar" exige una **cuenta con el correo verificado**; si no la hay,
   sube la hoja "Inicia sesión para pagar" (`alertdialog` modal, con
   desplazamiento propio en pantallas bajas; la barra de deshacer queda
@@ -335,7 +345,7 @@ Una cuenta por navegador. Cada paso es una vista propia:
 | `localStorage` | Pedido a medias, entrega, factura y la cuenta (`metodo`, `clave: {sal, hash}`, `verificado`, `sesionAbierta`…). Se escribe solo cuando cambia algo, no al cargar; al aprobar un pedido se borra la canasta | Tiene que seguir mañana |
 | `sessionStorage` | Orden y "Mostrar" del catálogo | Dura lo que la pestaña |
 | IndexedDB `eltradicional/pedidos` | Pedidos pagados, clave = número, con el `correo` de la cuenta | Registros que se acumulan |
-| Cookie `eltradicional-guardado` | Fecha del último guardado (1 mes, `SameSite=Lax`); el pie la enseña como "Tu pedido se guardó…", solo si hay algo en la canasta | Corta y caduca sola |
+| Cookie `eltradicional-guardado` | Fecha del último guardado (1 mes, `SameSite=Lax`); la canasta la enseña como "Tu pedido se guardó…", solo si hay algo en ella | Corta y caduca sola |
 
 Son las mismas claves y formatos que el sitio presentado. Todo va en
 `try/catch`: en ventana privada no puede tumbar la página.
@@ -534,42 +544,49 @@ ritmo del movimiento y la accesibilidad no cambian.
 - **Cinta cobriza** (en lugar de la franja de trigo): Panes, Dulces y
   pasteles, Bebidas, cada una con su icono de línea (hogaza, rebanada,
   botella) y separadas por ✦; cada una es un enlace a su categoría.
-- **Botones: pastilla con sombra** (B1, elegida el 22 de octubre de 2026 en
-  `.claude/referencias/muestra-botones.html`). **Todos** los botones de
-  acción del sitio son iguales: "Nuestros panes", "Ir a pagar", "Iniciar
-  sesión", "Crear cuenta", "Verificar", "Listo, cerrar", "Reintentar", "Ver
-  en el mapa" de Contacto y los demás `.button-yellow`, con un solo bloque
-  de CSS (`.button`, `.button-yellow`, `.button-otro`). Forma de pastilla
-  (`--r-pill`), borde de 1,5 px `--horno`, ámbar, Arial en versalitas
-  (`.78rem`, `letter-spacing .16em`), **sombra dura** `4px 4px 0 --horno`;
-  con el puntero se levanta (`6px 6px 0`), cruza un **brillo** y el icono se
-  inclina; al pulsar se hunde contra su sombra con `scale(.97)`. Sobre fondo
-  oscuro (`.banda-oscura`, la historia, el pie) el borde sería ámbar y la
-  sombra `--corteza` (`--sombra-boton`); hoy ningún botón cae ahí. El
-  secundario (`.button-otro`: "Ya tengo cuenta…", "No tengo cuenta…",
-  "Cerrar sesión") es la misma pastilla sin relleno ni sombra, que se
-  rellena de `--masa` con el puntero (van sobre papel). Ninguno hereda
-  Georgia.
-  **Recto lo que se lee, redondo lo que se pulsa**: las fichas siguen con
-  esquinas rectas.
-- **Enlaces sueltos** ("Cómo llegar" de la portada, la cinta):
-  **imprenta + ola** (A1), ahora **en pastilla**: con el puntero se levantan
-  con borde redondo y sombra dura, las letras saltan una tras otra y se
-  ponen cobrizas, y el icono da un saltito. Las letras sueltas no cambian
-  el nombre accesible del enlace.
-- **Menú de arriba: pastilla que se desliza** (N3, de la muestra
-  editorial): con el puntero, una pastilla `--ambar` viaja (escena,
-  `--dur-slow`, `--ease-soft`) hasta el enlace que hay debajo, que pasa a
-  `--horno`; al salir del menú se desvanece. Solo con ratón o lápiz
-  (`.con-puntero`); el foco de teclado sigue con su anillo. El enlace de la
-  vista actual conserva su raya. "Tienda" con su flecha cuenta como un
-  enlace, también con el submenú abierto. Con menos movimiento la pastilla
-  aparece sin viajar. Anima `width` además de `transform`, como en la
-  muestra: cada enlace mide distinto y con `scaleX` los extremos redondos se
-  deformarían; va fuera del flujo y no empuja nada
-  (`comun/usePastillaMenu.js`). Entre 681 y 900 px el menú va centrado en
-  el hueco entre el logo y los botones (rejilla `auto 1fr auto`, logo de
-  52 px), para que nada se pise.
+- **Botones: ticket de panadería** (P2 y G3, elegidos el 22 de octubre de
+  2026 en `.claude/referencias/muestra-menu.html`; sustituyen a la pastilla
+  B1, que no gustó). Las cuatro esquinas van **mordidas hacia dentro**
+  (círculos de 9 px, con `mask`), como un vale. Arial en versalitas
+  (`.78rem`, `letter-spacing .16em`) y **sombra dura** `4px 4px 0`; como la
+  máscara se come la `box-shadow`, la máscara no va en el botón sino en
+  dos capas detrás del texto: `::before` (el relleno) y `::after` (la
+  sombra corrida). Así el anillo de foco (el `outline` del botón) queda
+  fuera de la máscara. Con el puntero se levanta (`6px 6px 0`, un grado de
+  giro) y el icono se inclina; al pulsar se hunde con `scale(.97)`. Sin
+  brillo: encima del ticket pediría una tercera capa recortada. Un solo bloque de CSS (`.button`, `.button-yellow`,
+  `.button-otro`, `.button-pagar`). Ninguno hereda Georgia.
+  - **Ámbar con sombra `--horno`**: "Nuestros panes" y todos los botones de
+    acción ("Iniciar sesión", "Crear cuenta", "Verificar", "Listo, cerrar",
+    "Reintentar", "Ver en el mapa"…).
+  - **"Ir a pagar" y el botón final de pagar**, los protagonistas: el mismo
+    ticket en **`--horno` con texto `--papel` y sombra `--ambar`**, a todo
+    lo ancho de la canasta. Así no se confunde con el `+` ámbar de agregar.
+  - **Secundario** (`.button-otro`: "Ya tengo cuenta…", "No tengo
+    cuenta…", "Cerrar sesión"): ticket hueco, solo el borde de 1,5 px
+    `--horno` siguiendo las mordidas (dibujado, porque un `border` no las
+    sigue), que sube 2 px y se rellena de `--masa` con el puntero.
+  - Con `forced-colors` se quitan las capas y el botón lleva un filete
+    `ButtonText` de 1,5 px (`GrayText` si está apagado).
+  - Apagado (`aria-disabled`): opacidad .45 y sin reaccionar al puntero.
+  **Recto lo que se lee**: las fichas siguen con esquinas rectas.
+- **"Cómo llegar" de la portada**: enlace, no botón. Fraunces en cursiva
+  (unos 1.1rem) con el icono del pin, **sin caja ni raya**: con el puntero
+  el texto pasa a `--corteza-oscura` y el pin da un saltito.
+- **Menú de arriba: se enciende en su sitio** (M2, de
+  `muestra-menu.html`; sustituye a la pastilla que viajaba, N3). Con el
+  puntero, sobre el mismo enlace aparece una pastilla `--ambar` que crece
+  un poco (opacidad y `scale(.85)` → 1, respuesta rápida) y el texto pasa
+  a `--horno`; no viaja de un enlace a otro. **La página actual** no lleva
+  raya: lleva un **aro `--ambar`** de 1,5 px en forma de pastilla y el
+  texto en `--ambar-claro`; con el puntero encima se rellena como los
+  demás; el aro va también en el menú del teléfono. "Tienda" con su
+  flecha es un enlace y sigue encendida mientras se baja a su desplegable. Solo con ratón o lápiz
+  (`.con-puntero`); el foco de teclado sigue con su anillo `--papel`.
+  Entre 681 y 900 px el menú va centrado en el hueco entre el logo y los
+  botones (rejilla `auto 1fr auto`, logo de 52 px), para que nada se pise.
+- **La cinta de categorías** se enciende igual que el menú (las dos son
+  navegación): pastilla `--ambar` que aparece en su sitio, texto `--horno`.
 - **Iconos de línea** del mismo trazo que los dibujos de trigo
   (`comun/iconos.jsx`): hogaza, rebanada, botella, espiga, pin, flecha y
   **cesta con asa**, que pasa a ser el icono de la canasta (arriba y la
@@ -592,7 +609,7 @@ ritmo del movimiento y la accesibilidad no cambian.
 - Sobre el grano de papel el contraste se mide con su píxel más oscuro,
   rgb(238,230,220): rótulos 6,52:1, pie de foto 6,17:1, `h1 em` 3,87:1
   (vale por ser letra grande). En todos los botones principales
-  (B1) la sombra dura sustituye al halo ámbar; el anillo de 3 px se queda. Un
+  (ticket) la sombra dura sustituye al halo ámbar; el anillo de 3 px se queda. Un
   `.button` con `aria-disabled` se ve apagado (opacidad .45, `GrayText` con
   `forced-colors`) y no reacciona al puntero.
 - Contraste medido (texto 12,4:1; sobre la foto de la portada 8:1 o más;
@@ -674,9 +691,13 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [x] Botones en pastilla con sombra (B1) en todo el sitio, enlaces sueltos
       en pastilla y la pastilla que se desliza en el menú (N3), sección 10
       (22 de octubre de 2026). Los botones dejan de heredar Georgia.
+- [x] Botones en ticket (ámbar; "Ir a pagar" y pagar en `--horno`),
+      "Cómo llegar" como enlace sin raya, menú y cinta que se encienden en
+      su sitio con aro en la página actual, y fuera el pie de página
+      (22 de octubre de 2026, sección 10 y sección 2).
 - [ ] Acciones que no son `.button` y siguen con su estilo: "Ver la
       vitrina" (canasta vacía), "Pedir otra vez", "Editar" de la cuenta y
-      `.order-button`. Decidir con el usuario si pasan a B1.
+      `.order-button`. Decidir con el usuario si pasan al ticket.
 - [ ] Georgia sigue en `body`: la heredan "Saltar al contenido", el párrafo
       de Nosotros y el `<noscript>` de `index.html` (los botones ya no, con
       el punto de arriba). La sección 10 dice texto corrido en Arial.

@@ -1,9 +1,10 @@
 // Los principios de Nosotros a 320 px con el texto espaciado (WCAG 1.4.12):
-// van en una columna y no se recorta ninguno. Y el pie de #/contacto sigue
-// con sus contactos (3.2.6).
+// van en una columna y no se recorta ninguno. Y #/contacto, que se lleva lo
+// del pie quitado: los contactos con la nota de que son de ejemplo y si esta
+// abierto.
 import { VENTANAS, espera } from '../arranque.mjs';
 
-export const descripcion = 'principios de Nosotros a 320 px con texto espaciado, y contactos en el pie de #/contacto';
+export const descripcion = 'principios de Nosotros a 320 px con texto espaciado, y contactos con la nota de ejemplo en #/contacto';
 export const limite = 60;
 
 const ESPACIADO = '*:not(svg *){line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important} p{margin-bottom:2em!important}';
@@ -35,23 +36,27 @@ export default async function principios(t) {
     await ctx.close();
   }
 
-  // El pie de #/contacto: lo mismo que en las demas vistas.
-  const ctx = await t.contexto(VENTANAS.escritorio, { nombre: 'pie' });
+  // #/contacto: WhatsApp e Instagram con la nota de que son de ejemplo al
+  // lado, y si esta abierto. La ayuda que esta en el mismo sitio en todas
+  // las vistas (3.2.6) es Contactanos en el menu.
+  const ctx = await t.contexto(VENTANAS.escritorio, { nombre: 'contacto' });
   const p = await ctx.newPage();
   await p.goto(t.REACT + '#/contacto');
-  await p.waitForSelector('.pie-corto');
-  const pie = await p.evaluate(() => ({
-    contactos: document.querySelectorAll('.pie-corto .pie-corto-contacto a').length,
-    estado: Boolean(document.querySelector('.pie-corto .pie-corto-estado')),
-    actual: document.querySelector('.pie-corto-horario')?.getAttribute('aria-current'),
-  }));
-  t.ok(pie.contactos >= 2 && pie.estado, `el pie de #/contacto no trae contactos (${pie.contactos}) o el estado`);
-  t.ok(pie.actual === 'page', 'el enlace al horario del pie no dice que es la vista en la que se esta');
-  // Pulsarlo lleva arriba, al titulo.
-  await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await p.click('.pie-corto-horario');
-  await espera(900);
-  const fin = await p.evaluate(() => ({ y: Math.round(window.scrollY), foco: document.activeElement.tagName, hash: location.hash }));
-  t.ok(fin.y === 0 && fin.foco === 'H1' && fin.hash === '#/contacto', `"Horario y como llegar" en #/contacto deja ${JSON.stringify(fin)}`);
+  await p.waitForSelector('.contacto-escribir');
+  const c = await p.evaluate(() => {
+    const escribir = document.querySelector('.contacto-escribir');
+    const nota = escribir.querySelector('.contacto-nota');
+    return {
+      contactos: escribir.querySelectorAll('.contacto-lista a').length,
+      nota: nota?.textContent.trim() || '',
+      notaVisible: Boolean(nota && nota.getClientRects().length),
+      estado: Boolean(document.querySelector('.contacto-horario .open-label')),
+      menu: Boolean(document.querySelector('#main-nav a[href="#/contacto"]')),
+      pie: document.querySelectorAll('footer, .site-footer').length,
+    };
+  });
+  t.ok(c.contactos >= 2 && c.estado, `#/contacto no trae los contactos (${c.contactos}) o el estado`);
+  t.ok(c.notaVisible && c.nota.startsWith('Teléfono y redes de ejemplo'), `en #/contacto falta la nota de que el telefono y las redes son de ejemplo ("${c.nota}")`);
+  t.ok(c.menu && c.pie === 0, `Contactanos no esta en el menu o queda un pie (${JSON.stringify(c)})`);
   await ctx.close();
 }

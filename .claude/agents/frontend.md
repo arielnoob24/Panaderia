@@ -28,7 +28,7 @@ cambia en el mismo cambio.
 - `src/vistas/` (Inicio, Nosotros, Contacto) y `src/catalogo/`: portada y
   cinta, la tienda, filtros, orden, buscador y fichas (con el control de
   cantidad, su "+1" y su destello al agregar).
-- `src/comun/`: cabecera, menu Tienda, pie, avisos `aria-live`, atrapar el
+- `src/comun/`: cabecera, menu Tienda, avisos `aria-live`, atrapar el
   foco, el globo, el horario, las rutas (`vistas.js`), abrir la pagina y el
   desplazamiento (`apertura.js`), los fondos de trazos.
 - `assets/css/styles.css` (la base: variables de `:root`, cortes en 900, 680 y
@@ -64,10 +64,11 @@ repo>` saca capturas en los cuatro cortes.
 El estilo del sitio es **editorial artesanal con toque retro** (seccion 10
 del plan, "Estilo"). La muestra que eligio el usuario esta en
 `.claude/referencias/muestra-editorial.html`: de ahi salen los valores
-exactos (CSS y JS) de cada pieza, incluida la pastilla del menu (N3). Los
-botones (B1, pastilla con sombra) y el hover en pastilla de los enlaces
-salen de `.claude/referencias/muestra-botones.html`. Regla del plan: recto
-lo que se lee (fichas), redondo lo que se pulsa (botones, enlaces). Su panel "Elige", sus rutas `file://` y
+exactos (CSS y JS) de cada pieza. Los botones en ticket (P2 ambar, G3
+oscuro para pagar), "Como llegar" como enlace y el menu que se enciende en
+su sitio (M2) salen de `.claude/referencias/muestra-menu.html`; la pastilla
+B1 y la N3 que viajaba se descartaron (`muestra-botones.html` queda solo
+como historia). El sitio no tiene pie de pagina. Su panel "Elige", sus rutas `file://` y
 sus colores escritos a mano no se copian: en el sitio van las variables de
 `:root` y los iconos de `comun/iconos.jsx`. Fraunces se sirve con
 `@fontsource-variable/fraunces` (version exacta del plan), nunca desde

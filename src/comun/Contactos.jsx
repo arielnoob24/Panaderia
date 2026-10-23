@@ -1,5 +1,5 @@
-// Instagram y WhatsApp, con la nota de que son de ejemplo (seccion 1 del
-// plan). Los mismos en el pie de todas las vistas y en #/contacto.
+// Instagram y WhatsApp, en #/contacto, que lleva al lado la nota de que son
+// de ejemplo (secciones 1 y 4 del plan).
 const WHATSAPP = 'https://wa.me/593990000000?text=Hola%2C%20quiero%20hacer%20una%20consulta%20sobre%20El%20Tradicional.';
 
 function Contactos() {

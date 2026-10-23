@@ -43,7 +43,7 @@ function ResumenPedido({
         <p className="canasta-aviso pago-error" role="alert" hidden={!errorPago}>{errorPago}</p>
         <button
           ref={pagarRef}
-          className="button button-yellow canasta-pagar"
+          className="button button-pagar canasta-pagar"
           type="button"
           disabled={apagado}
           aria-disabled={apagado}

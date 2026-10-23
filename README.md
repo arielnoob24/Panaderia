@@ -21,7 +21,7 @@ src/
   pedido/               la canasta, confirmar el pedido, el pago y el comprobante
   cuenta/               iniciar sesion, crear cuenta, verificar, recuperar la
                         contrasena, Mis datos y Mis pedidos
-  comun/                cabecera, pie, avisos, foco, rutas y horario
+  comun/                cabecera, avisos, foco, rutas y horario
   estado/               el estado del pedido y de la sesion (Context + useReducer)
   servicios/            las reglas, sin interfaz: catalogo, cobro, cuenta,
                         guardado y correo
@@ -113,7 +113,7 @@ funciones estan en `src/servicios/storage.js`.
 | `localStorage` | El pedido a medias (lineas, entrega, direccion y factura) y la cuenta. | Tiene que seguir ahi manana. |
 | `sessionStorage` | El orden del catalogo y "solo los disponibles". | Dura lo que dura la pestana: volver otro dia empieza limpio. |
 | `IndexedDB` | Los pedidos pagados, con su recibo y el correo de la cuenta. Base `eltradicional`, almacen `pedidos`, clave el numero. | Son registros que se acumulan y se buscan por numero. |
-| Cookie | Cuando se guardo por ultima vez (`eltradicional-guardado`, un mes, `SameSite=Lax`). | Es un dato corto que caduca solo; el pie la ensena. |
+| Cookie | Cuando se guardo por ultima vez (`eltradicional-guardado`, un mes, `SameSite=Lax`). | Es un dato corto que caduca solo; la canasta la ensena. |
 
 Cada lectura y escritura va en su `try`/`catch`: en una ventana privada
 escribir puede fallar, y eso no puede tumbar la pagina.

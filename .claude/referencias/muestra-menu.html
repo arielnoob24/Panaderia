@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muestra del menú</title>
+<!-- Solo para elegir: en el sitio Fraunces se sirve desde el propio sitio. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&display=swap" rel="stylesheet">
+<style>
+:root {
+  --masa: #f7f1e7; --horno: #3a2822; --ambar: #d79b4a; --ambar-claro: #f2ca68;
+  --corteza: #a85f45; --corteza-oscura: #7a4030; --papel: #fffdf8; --masa-linea: #ded2c2;
+  --sobre-horno: #eee4d8;
+  --titulo: "Fraunces", Georgia, serif; --texto: Arial, sans-serif;
+  --ease-soft: cubic-bezier(.22, 1, .36, 1); --ease-out: cubic-bezier(.23, 1, .32, 1);
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 2rem 16px 4rem; background: var(--masa); color: var(--horno); font: 16px/1.5 var(--texto); }
+h1 { max-width: 1100px; margin: 0 auto .4rem; font: 500 2.4rem/1.1 var(--titulo); }
+h2.parte { max-width: 1100px; margin: 3rem auto 1rem; font: 500 1.8rem/1.1 var(--titulo); }
+.intro { max-width: 1100px; margin: 0 auto 1.5rem; color: #5e514a; }
+.opciones { display: grid; max-width: 1100px; margin: 0 auto; gap: 1.2rem; }
+.opcion { padding: 1.3rem 1.3rem 1.5rem; background: var(--papel); border: 1px solid var(--masa-linea); }
+.opcion h3 { margin: 0 0 .2rem; font: 500 1.4rem/1.2 var(--titulo); }
+.opcion h3 small { margin-left: .4rem; color: var(--corteza-oscura); font: 700 .7rem var(--texto); letter-spacing: .18em; text-transform: uppercase; vertical-align: middle; }
+.opcion p { margin: 0 0 1rem; color: #5e514a; font-size: .92rem; }
+.opciones.dos { grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr)); }
+
+/* La barra, como en el sitio */
+.barra { display: flex; flex-wrap: wrap; justify-content: center; gap: .3rem; padding: 1.1rem .8rem; background: var(--horno); }
+.barra a { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .3rem; padding: .55rem .95rem; color: var(--sobre-horno); font: 700 1rem/1.2 var(--texto); text-decoration: none; transition: color .2s var(--ease-out); }
+.barra a::before { position: absolute; z-index: -1; content: ""; pointer-events: none; }
+.barra a:focus-visible { outline: 3px solid var(--papel); outline-offset: 2px; }
+.barra svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; }
+
+/* M1: el color sube desde abajo, esquinas suaves.
+   Elegido: fondo ambar tenue y texto ambar. */
+.m1 a::before { inset: 0; background: var(--ambar); border-radius: 10px; transform: scaleY(0); transform-origin: bottom; transition: transform .32s var(--ease-soft); }
+.m1 a:hover { color: var(--horno); }
+.m1 a:hover::before { transform: none; }
+.m1 a[aria-current] { color: var(--ambar-claro); background: rgba(215, 155, 74, .16); border-radius: 10px; }
+.m1 a[aria-current]:hover { color: var(--horno); }
+
+/* M2: se enciende en su sitio, sin viajar: aparece y crece un poco.
+   Elegido: pastilla con borde ambar. */
+.m2 a::before { inset: 0; background: var(--ambar); border-radius: 999px; opacity: 0; transform: scale(.85); transition: opacity .2s var(--ease-out), transform .3s var(--ease-soft); }
+.m2 a:hover { color: var(--horno); }
+.m2 a:hover::before { opacity: 1; transform: none; }
+.m2 a[aria-current] { box-shadow: inset 0 0 0 1.5px var(--ambar); border-radius: 999px; color: var(--ambar-claro); }
+.m2 a[aria-current]:hover { color: var(--horno); }
+
+/* M3: tinta que se abre desde el centro.
+   Elegido: ficha clara (masa) con texto oscuro, al reves que la barra. */
+.m3 a::before { inset: 0; background: var(--ambar); border-radius: 6px; transform: scaleX(0); transition: transform .34s var(--ease-soft); }
+.m3 a:hover { color: var(--horno); }
+.m3 a:hover::before { transform: none; }
+.m3 a[aria-current] { background: var(--sobre-horno); border-radius: 6px; color: var(--horno); }
+
+/* M4: etiqueta que cuelga de la barra, como la de una bolsa de pan.
+   Elegido: la etiqueta se queda puesta en corteza. */
+.barra.m4 { padding-top: 0; align-items: flex-start; }
+.m4 a { padding-top: 1.55rem; }
+.m4 a::before { inset: 0; background: var(--ambar); border-radius: 0 0 10px 10px; transform: translateY(-101%); transition: transform .34s var(--ease-soft); }
+.m4 a:hover { color: var(--horno); }
+.m4 a:hover::before { transform: none; }
+.m4 a[aria-current] { color: var(--papel); }
+.m4 a[aria-current]::before { background: var(--corteza); transform: none; }
+.m4 a[aria-current]:hover::before { background: var(--ambar); }
+.m4 a[aria-current]:hover { color: var(--horno); }
+
+/* M5: subrayado grueso que se convierte en relleno.
+   Elegido: el bloque de abajo se queda grueso y ambar. */
+.m5 a::before { left: .5rem; right: .5rem; bottom: .25rem; height: 3px; background: var(--ambar); border-radius: 3px; transition: height .3s var(--ease-soft), bottom .3s var(--ease-soft), left .3s var(--ease-soft), right .3s var(--ease-soft), border-radius .3s; }
+.m5 a:hover { color: var(--horno); }
+.m5 a:hover::before { left: 0; right: 0; bottom: 0; height: 100%; border-radius: 8px; }
+.m5 a[aria-current] { color: var(--ambar-claro); }
+.m5 a[aria-current]::before { height: 7px; border-radius: 4px; }
+.m5 a[aria-current]:hover { color: var(--horno); }
+.m5 a:not([aria-current]):not(:hover)::before { transform: scaleX(0); }
+.m5 a::before { transition-property: height, bottom, left, right, border-radius, transform; }
+
+/* Botones de la portada */
+.fila { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.4rem; padding: 1.5rem 1rem; background: var(--masa); }
+.fila svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform .4s var(--ease-soft); }
+.fila a { text-decoration: none; cursor: pointer; }
+.fila a:focus-visible { outline: 3px solid var(--horno); outline-offset: 3px; }
+
+/* P1: esquinas suaves con sombra dura */
+.p1 { display: inline-flex; align-items: center; gap: .6rem; padding: 1rem 1.6rem; border: 1.5px solid var(--horno); border-radius: 10px; font: 700 .78rem/1.2 var(--texto); letter-spacing: .16em; text-transform: uppercase; transition: transform .4s var(--ease-soft), box-shadow .4s var(--ease-soft), background-color .2s; }
+.p1.principal { background: var(--ambar); color: var(--horno); box-shadow: 4px 4px 0 var(--horno); }
+.p1.principal:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--horno); }
+.p1.principal:hover svg { transform: rotate(-14deg) scale(1.15); }
+.p1.otro { color: var(--horno); }
+.p1.otro:hover { background: var(--papel); }
+
+/* P2: ticket de panaderia, con las esquinas mordidas */
+.p2 { --mordida: 9px; position: relative; display: inline-flex; align-items: center; gap: .6rem; padding: 1rem 1.7rem; font: 700 .78rem/1.2 var(--texto); letter-spacing: .16em; text-transform: uppercase; -webkit-mask: radial-gradient(circle var(--mordida) at 0 0, #0000 98%, #000) top left, radial-gradient(circle var(--mordida) at 100% 0, #0000 98%, #000) top right, radial-gradient(circle var(--mordida) at 0 100%, #0000 98%, #000) bottom left, radial-gradient(circle var(--mordida) at 100% 100%, #0000 98%, #000) bottom right; -webkit-mask-size: 51% 51%; -webkit-mask-repeat: no-repeat; mask: radial-gradient(circle var(--mordida) at 0 0, #0000 98%, #000) top left, radial-gradient(circle var(--mordida) at 100% 0, #0000 98%, #000) top right, radial-gradient(circle var(--mordida) at 0 100%, #0000 98%, #000) bottom left, radial-gradient(circle var(--mordida) at 100% 100%, #0000 98%, #000) bottom right; mask-size: 51% 51%; mask-repeat: no-repeat; }
+.p2.principal { background: var(--ambar); color: var(--horno); }
+/* La mascara se comeria la sombra: la sombra va en una envoltura. */
+.p2-envoltura { display: inline-flex; filter: drop-shadow(4px 4px 0 var(--horno)); transition: transform .4s var(--ease-soft), filter .4s var(--ease-soft); }
+.p2-envoltura:hover { transform: translate(-2px, -2px) rotate(-1deg); filter: drop-shadow(6px 6px 0 var(--horno)); }
+.p2-envoltura:hover svg { transform: rotate(-14deg) scale(1.15); }
+
+/* P3: el principal con esquinas suaves; el segundo es un enlace con raya que se dibuja */
+.p3 { display: inline-flex; align-items: center; gap: .6rem; padding: 1rem 1.6rem; background: var(--ambar); color: var(--horno); border: 1.5px solid var(--horno); border-radius: 10px; box-shadow: 4px 4px 0 var(--horno); font: italic 600 1.1rem/1.2 var(--titulo); transition: transform .4s var(--ease-soft), box-shadow .4s var(--ease-soft); }
+.p3:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--horno); }
+.p3:hover svg { transform: rotate(-14deg) scale(1.15); }
+.raya { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding: .3rem 0; color: var(--horno); font: italic 500 1.1rem/1.2 var(--titulo); }
+.raya::after { position: absolute; left: 0; right: 0; bottom: 0; height: 1.5px; content: ""; background: currentColor; transform: scaleX(.35); transform-origin: left; transition: transform .45s var(--ease-soft); }
+.raya:hover { color: var(--corteza-oscura); }
+.raya:hover::after { transform: none; }
+.raya:hover svg { transform: translateY(-3px); }
+
+
+/* ---- Segunda ronda: "Como llegar" al lado del ticket (P2) ---- */
+/* C1: ticket hueco: el mismo vale mordido, solo con borde (dibujado en SVG) */
+.c1 { position: relative; display: inline-flex; align-items: center; gap: .55rem; padding: 1rem 1.6rem; color: var(--horno); font: 700 .78rem/1.2 var(--texto); letter-spacing: .16em; text-transform: uppercase; transition: transform .4s var(--ease-soft); }
+.c1 > .borde { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.c1 > .borde path { fill: transparent; stroke: var(--horno); stroke-width: 1.5; vector-effect: non-scaling-stroke; transition: fill .25s var(--ease-out); }
+.c1:hover { transform: translate(-1px, -2px); }
+.c1:hover > .borde path { fill: var(--papel); }
+.c1 svg.ico { position: relative; }
+.c1:hover svg.ico { transform: translateY(-3px); }
+/* C2: sello redondo con el pin y el texto al lado */
+.c2 { display: inline-flex; align-items: center; gap: .75rem; color: var(--horno); font: 700 .78rem/1.2 var(--texto); letter-spacing: .16em; text-transform: uppercase; }
+.c2 .sello { display: grid; width: 48px; height: 48px; place-items: center; border: 1.5px solid var(--horno); border-radius: 50%; box-shadow: 3px 3px 0 var(--horno); background: var(--papel); transition: transform .4s var(--ease-soft), box-shadow .4s var(--ease-soft), background-color .2s; }
+.c2:hover .sello { transform: translate(-2px, -2px) rotate(-10deg); box-shadow: 5px 5px 0 var(--horno); background: var(--ambar-claro); }
+.c2:hover { color: var(--corteza-oscura); }
+/* C3: texto en versalitas con una flecha que avanza */
+.c3 { display: inline-flex; align-items: center; gap: .55rem; padding: .9rem .2rem; color: var(--horno); font: 700 .78rem/1.2 var(--texto); letter-spacing: .16em; text-transform: uppercase; }
+.c3 .flecha { display: inline-grid; width: 30px; height: 30px; place-items: center; border-radius: 50%; background: var(--horno); color: var(--papel); transition: transform .4s var(--ease-soft), background-color .2s; }
+.c3 .flecha svg { width: 16px; height: 16px; }
+.c3:hover .flecha { transform: translateX(6px); background: var(--corteza); }
+.c3:hover { color: var(--corteza-oscura); }
+
+/* ---- "Ir a pagar" con mas protagonismo ---- */
+.canasta { max-width: 420px; padding: 1rem; background: var(--papel); border: 1px solid var(--masa-linea); }
+.linea { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .7rem; border: 1px solid var(--masa-linea); border-radius: 12px; font: 600 1rem var(--titulo); }
+.mas { display: grid; width: 34px; height: 34px; place-items: center; background: var(--ambar); border-radius: 50%; box-shadow: inset 0 0 0 1px var(--horno); font: 700 1.2rem/1 var(--texto); color: var(--horno); }
+.total { display: flex; justify-content: space-between; margin: 1.2rem 0 .8rem; font: 700 1rem var(--texto); }
+.total b { font: 600 1.35rem var(--titulo); }
+.pagar { display: flex; width: 100%; justify-content: center; align-items: center; gap: .6rem; padding: 1.05rem 1.4rem; border: 0; cursor: pointer; font: 700 .85rem/1.2 var(--texto); letter-spacing: .16em; text-transform: uppercase; transition: transform .4s var(--ease-soft), box-shadow .4s var(--ease-soft), background-color .2s; }
+.pagar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; transition: transform .4s var(--ease-soft); }
+.pagar:hover svg { transform: translateX(4px); }
+/* G1: horno con sombra ambar */
+.g1 { background: var(--horno); color: var(--papel); border-radius: 10px; box-shadow: 4px 4px 0 var(--ambar); }
+.g1:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ambar); }
+/* G2: cobrizo con sombra horno */
+.g2 { background: var(--corteza-oscura); color: var(--papel); border-radius: 10px; box-shadow: 4px 4px 0 var(--horno); }
+.g2:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--horno); }
+/* G3: ticket horno, como "Nuestros panes" pero oscuro */
+.g3-env { display: block; filter: drop-shadow(4px 4px 0 var(--ambar)); transition: transform .4s var(--ease-soft), filter .4s var(--ease-soft); }
+.g3-env:hover { transform: translate(-2px, -2px); filter: drop-shadow(6px 6px 0 var(--ambar)); }
+.g3-env:hover svg { transform: translateX(4px); }
+.g3 { --mordida: 10px; background: var(--horno); color: var(--papel); -webkit-mask: radial-gradient(circle var(--mordida) at 0 0, #0000 98%, #000) top left, radial-gradient(circle var(--mordida) at 100% 0, #0000 98%, #000) top right, radial-gradient(circle var(--mordida) at 0 100%, #0000 98%, #000) bottom left, radial-gradient(circle var(--mordida) at 100% 100%, #0000 98%, #000) bottom right; -webkit-mask-size: 51% 51%; -webkit-mask-repeat: no-repeat; mask: radial-gradient(circle var(--mordida) at 0 0, #0000 98%, #000) top left, radial-gradient(circle var(--mordida) at 100% 0, #0000 98%, #000) top right, radial-gradient(circle var(--mordida) at 0 100%, #0000 98%, #000) bottom left, radial-gradient(circle var(--mordida) at 100% 100%, #0000 98%, #000) bottom right; mask-size: 51% 51%; mask-repeat: no-repeat; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="hogaza" viewBox="0 0 24 24"><path d="M3 15c0-5 4-8 9-8s9 3 9 8v2H3z"/><path d="M8 10l1.5 3M12 9.5v3.5M16 10l-1.5 3"/></symbol>
+  <symbol id="pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></symbol>
+  <symbol id="baja" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+</svg>
+
+<h1>El menú de arriba</h1>
+<p class="intro">Pasa el ratón por las opciones. En todas el enlace "se pinta" de ámbar, pero cada una lo hace a su manera y <strong>sin pastilla que viaje</strong>. "Inicio" es la página en la que estás: cada opción la marca con algo más que una raya. Puedes pulsar otro enlace para ver cómo queda marcado.</p>
+
+<div class="opciones">
+  <section class="opcion">
+    <h3>M1 · El color sube <small>recomendada</small></h3>
+    <p>El ámbar sube desde abajo como cuando se llena un vaso, con esquinas suaves. La página actual lleva un fondo ámbar tenue y el texto en ámbar.</p>
+    <nav class="barra m1"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda <svg><use href="#baja"/></svg></a><a href="#">Contáctanos</a></nav>
+  </section>
+  <section class="opcion">
+    <h3>M2 · Se enciende en su sitio</h3>
+    <p>La pastilla aparece y crece un poco sobre el mismo enlace, sin moverse de uno a otro. La página actual lleva un aro ámbar.</p>
+    <nav class="barra m2"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda <svg><use href="#baja"/></svg></a><a href="#">Contáctanos</a></nav>
+  </section>
+  <section class="opcion">
+    <h3>M3 · Tinta desde el centro</h3>
+    <p>El ámbar se abre desde el medio hacia los lados. La página actual es una ficha clara con el texto oscuro, al revés que el resto de la barra.</p>
+    <nav class="barra m3"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda <svg><use href="#baja"/></svg></a><a href="#">Contáctanos</a></nav>
+  </section>
+  <section class="opcion">
+    <h3>M4 · Etiqueta que cuelga</h3>
+    <p>Una etiqueta ámbar baja desde el borde de la barra, como la de una bolsa de pan. La página actual deja su etiqueta colgada, en cobrizo.</p>
+    <nav class="barra m4"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda <svg><use href="#baja"/></svg></a><a href="#">Contáctanos</a></nav>
+  </section>
+  <section class="opcion">
+    <h3>M5 · La raya se vuelve relleno</h3>
+    <p>Aparece una raya ámbar que crece hasta rellenar todo el enlace. La página actual lleva una barra ámbar gruesa debajo y el texto en ámbar.</p>
+    <nav class="barra m5"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda <svg><use href="#baja"/></svg></a><a href="#">Contáctanos</a></nav>
+  </section>
+</div>
+
+<h2 class="parte">"Nuestros panes" y "Cómo llegar"</h2>
+<p class="intro">Sin pastilla. Las tres tienen esquinas o formas que no son ni la pastilla ni el cuadrado de antes.</p>
+<div class="opciones dos">
+  <section class="opcion">
+    <h3>P1 · Esquinas suaves <small>recomendada</small></h3>
+    <p>Como el de antes, pero con las esquinas algo redondeadas. Conserva la sombra dura y las versalitas; "Cómo llegar" es el mismo marco sin relleno.</p>
+    <div class="fila">
+      <a class="p1 principal"><svg><use href="#hogaza"/></svg>Nuestros panes</a>
+      <a class="p1 otro"><svg><use href="#pin"/></svg>Cómo llegar</a>
+    </div>
+  </section>
+  <section class="opcion">
+    <h3>P2 · Ticket de panadería</h3>
+    <p>Las esquinas van mordidas hacia dentro, como un ticket o un vale. "Cómo llegar" va como enlace con raya.</p>
+    <div class="fila">
+      <span class="p2-envoltura"><a class="p2 principal"><svg><use href="#hogaza"/></svg>Nuestros panes</a></span>
+      <a class="raya"><svg><use href="#pin"/></svg>Cómo llegar</a>
+    </div>
+  </section>
+  <section class="opcion">
+    <h3>P3 · Letra de título</h3>
+    <p>Esquinas suaves y el texto en cursiva, con la letra de los títulos. "Cómo llegar" deja de ser caja: es un enlace cuya raya se dibuja entera al pasar el ratón.</p>
+    <div class="fila">
+      <a class="p3"><svg><use href="#hogaza"/></svg>Nuestros panes</a>
+      <a class="raya"><svg><use href="#pin"/></svg>Cómo llegar</a>
+    </div>
+  </section>
+</div>
+
+<h2 class="parte">Segunda ronda: "Cómo llegar" junto al ticket</h2>
+<p class="intro">"Nuestros panes" queda como ticket (P2, el que elegiste). Estas son otras formas para "Cómo llegar", que tiene que verse como la acción secundaria.</p>
+<div class="opciones dos">
+  <section class="opcion">
+    <h3>C1 · Ticket hueco <small>recomendada</small></h3>
+    <p>El mismo vale mordido, pero solo con el borde. Hacen pareja: uno lleno y otro hueco. Al pasar el ratón se rellena de papel.</p>
+    <div class="fila"><span class="p2-envoltura"><a class="p2 principal"><svg><use href="#hogaza"/></svg>Nuestros panes</a></span><a class="c1"><svg class="borde" viewBox="0 0 200 50" preserveAspectRatio="none" aria-hidden="true"><path d="M9 0 H191 A9 9 0 0 0 200 9 V41 A9 9 0 0 0 191 50 H9 A9 9 0 0 0 0 41 V9 A9 9 0 0 0 9 0 Z"/></svg><svg class="ico"><use href="#pin"/></svg>Cómo llegar</a></div>
+  </section>
+  <section class="opcion">
+    <h3>C2 · Sello con el pin</h3>
+    <p>Un sello redondo con el pin, con su sombra dura, y el texto al lado. Al pasar el ratón el sello gira un poco y se pinta.</p>
+    <div class="fila"><span class="p2-envoltura"><a class="p2 principal"><svg><use href="#hogaza"/></svg>Nuestros panes</a></span><a class="c2"><span class="sello"><svg><use href="#pin"/></svg></span>Cómo llegar</a></div>
+  </section>
+  <section class="opcion">
+    <h3>C3 · Flecha que avanza</h3>
+    <p>Solo el texto en versalitas con una flecha en un círculo oscuro, que avanza al pasar el ratón.</p>
+    <div class="fila"><span class="p2-envoltura"><a class="p2 principal"><svg><use href="#hogaza"/></svg>Nuestros panes</a></span><a class="c3">Cómo llegar<span class="flecha"><svg viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a></div>
+  </section>
+</div>
+
+<h2 class="parte">"Ir a pagar" con más protagonismo</h2>
+<p class="intro">En la canasta, al lado del <b>+</b> ámbar. Las tres van en un color distinto y a todo lo ancho.</p>
+<div class="opciones dos">
+  <section class="opcion">
+    <h3>G1 · Café oscuro con sombra ámbar <small>recomendada</small></h3>
+    <p>El color de la barra de arriba, con texto claro y la sombra dura en ámbar. Es el que más contrasta con el papel de la canasta y con el +.</p>
+    <div class="canasta"><div class="linea">Pan redondo <span class="mas">+</span></div><div class="total">Subtotal <b>$0.25</b></div><button class="pagar g1">Ir a pagar <svg viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+  </section>
+  <section class="opcion">
+    <h3>G2 · Cobrizo</h3>
+    <p>El cobrizo de la cinta de categorías, más oscuro para que el texto claro se lea, con sombra café. Más cálido, menos fuerte.</p>
+    <div class="canasta"><div class="linea">Pan redondo <span class="mas">+</span></div><div class="total">Subtotal <b>$0.25</b></div><button class="pagar g2">Ir a pagar <svg viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></div>
+  </section>
+  <section class="opcion">
+    <h3>G3 · Ticket oscuro</h3>
+    <p>La forma de ticket de "Nuestros panes", pero en café oscuro con sombra ámbar: une la canasta con la portada.</p>
+    <div class="canasta"><div class="linea">Pan redondo <span class="mas">+</span></div><div class="total">Subtotal <b>$0.25</b></div><span class="g3-env"><button class="pagar g3">Ir a pagar <svg viewBox="0 0 24 24" style="fill:none;stroke:currentColor;stroke-width:2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></span></div>
+  </section>
+</div>
+
+<script>
+// Pulsar un enlace del menu lo marca como la pagina actual, para comparar.
+document.querySelectorAll('.barra').forEach((barra) => {
+  barra.addEventListener('click', (e) => {
+    const a = e.target.closest('a');
+    if (!a) return;
+    e.preventDefault();
+    barra.querySelectorAll('a').forEach((x) => x.removeAttribute('aria-current'));
+    a.setAttribute('aria-current', 'page');
+  });
+});
+</script>
+</body>
+</html>

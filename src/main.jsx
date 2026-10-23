@@ -15,7 +15,7 @@ import '@fontsource-variable/fraunces/full-italic.css';
 // las clases de los componentes son las mismas, asi que tiene que aplicar tal
 // cual. Vite resuelve sus url() (las fotos de portada) y las mete en el build.
 import '/assets/css/styles.css';
-// Lo propio de las vistas (pie corto, cuenta...), despues para que gane.
+// Lo propio de las vistas (portada, cuenta...), despues para que gane.
 import './estilos/vistas.css';
 import { AvisosProvider } from './comun/Avisos.jsx';
 import { SesionProvider } from './estado/SesionProvider.jsx';

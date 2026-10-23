@@ -1,8 +1,8 @@
 // ---- #/contacto -------------------------------------------------------------
 // Donde estamos y cuando: la direccion, el mapa con "Ver en el mapa" debajo,
-// WhatsApp e Instagram, y en la tarjeta oscura si se esta abierto y el
-// horario con el dia de hoy marcado. Es lo que antes iba en el pie largo de todas las
-// paginas (seccion 15 del plan).
+// WhatsApp e Instagram con la nota de que son de ejemplo, y en la tarjeta
+// oscura si se esta abierto y el horario con el dia de hoy marcado. El sitio
+// no tiene pie (seccion 4 del plan): esto es lo que llevaba.
 import { useRef } from 'react';
 import { useVista } from '../comun/useVista.js';
 import { useHorario } from '../comun/useHorario.js';

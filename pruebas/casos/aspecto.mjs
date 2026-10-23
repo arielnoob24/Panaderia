@@ -1,9 +1,9 @@
 // Lo de la revision visual del 21 de octubre de 2026 (secciones 4 y 10 del
 // plan), en escritorio y en el telefono (390 px, tactil):
 // - la barra de arriba es horno y opaca desde que carga, y sobre lo oscuro
-//   (en #/ ya solo el pie) gana la linea ambar;
-// - la portada no lleva carrusel ni fichas, y la cinta no queda pegada al
-//   pie;
+//   (la cabeza de la tienda) gana la linea ambar;
+// - la portada no lleva carrusel, fichas ni pie, y la cinta no queda pegada
+//   al borde de abajo;
 // - las fichas de la tienda, sin hueco entre nombre y precio;
 // - el nombre de la ficha va en Fraunces y los sellos con 11 px de letra o mas;
 // - el h1 que recibe el foco al cambiar de vista no pinta recuadro;
@@ -14,8 +14,7 @@
 // - el estilo editorial (seccion 10 del plan), en los dos: Fraunces servida
 //   desde el sitio, la cabecera de periodico con la fecha y el estado (solo
 //   esos dos en el telefono), Inicio en el menu con aria-current, la cinta
-//   que enlaza a cada categoria, enlaces de letras sueltas con su nombre
-//   entero, fichas de esquinas rectas, y el control que se estira y suelta
+//   que enlaza a cada categoria, los enlaces con su nombre entero, fichas de esquinas rectas, y el control que se estira y suelta
 //   un "+1" por toque.
 import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
 
@@ -51,18 +50,19 @@ export default async function aspecto(t) {
     t.ok(arriba.logo.includes('invert'), `[${nombre}] el logo no va invertido (${arriba.logo})`);
 
     // La portada es la cabecera de periodico, la portada y la cinta: sin
-    // carrusel ni fichas. Bajo la cinta queda aire antes del pie.
+    // carrusel, fichas ni pie. Bajo la cinta queda aire hasta el final.
     const portada = await p.evaluate(() => {
       const cinta = document.querySelector('.cinta').getBoundingClientRect();
-      const pie = document.querySelector('footer')?.getBoundingClientRect();
+      const final = document.documentElement.scrollHeight - (cinta.bottom + window.scrollY);
       return {
         fichas: document.querySelectorAll('.vista-inicio .product-card').length,
         carrusel: document.querySelectorAll('.mostrador, .fila-flecha, .fila-barra, #mas-pedidos-titulo').length,
-        aire: pie ? pie.top - cinta.bottom : -1,
+        pie: document.querySelectorAll('footer').length,
+        aire: final,
       };
     });
-    t.ok(portada.fichas === 0 && portada.carrusel === 0, `[${nombre}] la portada todavia lleva fichas o carrusel (${JSON.stringify(portada)})`);
-    t.ok(portada.aire >= 24, `[${nombre}] la cinta queda pegada al pie (${Math.round(portada.aire)} px)`);
+    t.ok(portada.fichas === 0 && portada.carrusel === 0 && portada.pie === 0, `[${nombre}] la portada todavia lleva fichas, carrusel o pie (${JSON.stringify(portada)})`);
+    t.ok(portada.aire >= 24, `[${nombre}] la cinta queda pegada al borde de abajo (${Math.round(portada.aire)} px)`);
 
     // Sobre una banda oscura sigue horno y gana la linea ambar. En #/ no hay
     // ninguna, asi que se mira con la cabeza oscura de la tienda.
@@ -250,7 +250,7 @@ async function editorial(t) {
     }
     t.ok(periodico.nota === 0 && !periodico.horneando, `[${nombre}] la portada todavia lleva la nota "Horneando ahora mismo"`);
 
-    // Los enlaces de letras sueltas conservan su nombre entero.
+    // Los dos caminos de la portada, con su nombre entero.
     for (const texto of ['Cómo llegar', 'Nuestros panes']) {
       const n = await p.getByRole('link', { name: texto, exact: true }).count();
       t.ok(n === 1, `[${nombre}] hay ${n} enlaces que se llamen "${texto}" para el lector`);

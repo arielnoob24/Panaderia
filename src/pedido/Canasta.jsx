@@ -1,7 +1,8 @@
 // ---- El panel de la canasta --------------------------------------------
 // El panel role="dialog" de cart.js, con sus mismas clases: cabecera con el
 // titulo y la X, la lista, "Tu canasta esta vacia" cuando no hay nada, vaciar
-// con pregunta, y el pie con el subtotal e "Ir a pagar". Siempre esta montado:
+// con pregunta, y el pie del panel con el subtotal, "Ir a pagar" y cuando se
+// guardo el pedido en este navegador. Siempre esta montado:
 // styles.css lo esconde con visibility y lo desliza con is-open.
 //
 // Abierto: atrapa el foco (con la barra de deshacer como anexo), Escape o
@@ -22,6 +23,7 @@ import { useSesion } from '../estado/SesionProvider.jsx';
 import { useCanasta } from './CanastaProvider.jsx';
 import LineaCanasta from './LineaCanasta.jsx';
 import PideCuenta from './PideCuenta.jsx';
+import GuardadoCanasta from './GuardadoCanasta.jsx';
 
 function Canasta() {
   const { lineas, unidades: n, subtotal, hacer } = usePedido();
@@ -264,7 +266,7 @@ function Canasta() {
               </div>
               <button
                 ref={enviarRef}
-                className="button button-yellow canasta-enviar"
+                className="button button-pagar canasta-enviar"
                 type="button"
                 disabled={!hayAlgo}
                 aria-disabled={!hayAlgo}
@@ -275,6 +277,7 @@ function Canasta() {
                 Ir a pagar <span aria-hidden="true">→</span>
               </button>
               <p className="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p>
+              <GuardadoCanasta />
             </div>
           </section>
         </div>

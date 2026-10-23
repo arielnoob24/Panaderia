@@ -109,8 +109,8 @@ section[id] { scroll-margin-top: -12px; }
 .site-header .brand-logo { filter: brightness(0) invert(1); }
 /* Al bajar gana una sombra que la despega de lo que pasa por debajo. */
 .site-header.is-pegada { box-shadow: inset 0 -1px 0 transparent, 0 6px 22px rgba(58, 40, 34, .26); }
-/* Sobre las bandas oscuras y el pie, que son del mismo horno, no se invierte:
-   una linea ambar fina abajo marca donde acaba la barra. */
+/* Sobre las bandas oscuras, que son del mismo horno, no se invierte: una
+   linea ambar fina abajo marca donde acaba la barra. */
 .site-header.is-sobre-oscuro { box-shadow: inset 0 -1px 0 var(--ambar), 0 6px 22px rgba(0, 0, 0, .3); }
 /* El panadero no se invierte: es ilustracion a color y se arruinaria. Su halo
    es ambar para que se vea sobre el horno. */
@@ -190,26 +190,35 @@ section[id] { scroll-margin-top: -12px; }
   .con-puntero .nav-grupo:hover .nav-submenu a:nth-child(3) { transition-delay: 0ms, 0ms, 180ms, 180ms; }
 }
 
-/* La pastilla que se desliza (N3, seccion 10 del plan; la mueve
-   comun/usePastillaMenu.js). Solo con raton o lapiz y con la barra de
-   escritorio: en el telefono el menu es otro. Para que la pastilla abrace
-   cada opcion, las opciones llevan aire a los lados y el hueco entre ellas
-   baja lo mismo: los textos quedan donde estaban. Viajar es escena
-   (--dur-slow); desvanecerse, la mitad. El ancho se anima con la posicion
-   porque cada opcion mide distinto; la pastilla va fuera del flujo y no
-   empuja nada. Horno sobre ambar: 5,8:1. */
-.nav-pastilla { display: none; }
+/* El menu se enciende en su sitio (M2, seccion 10 del plan). Cada opcion
+   lleva detras dos capas en forma de pastilla: ::before, la pastilla ambar
+   que aparece y crece un poco con el raton encima (opacidad y scale .85 a 1,
+   respuesta), sin viajar de una opcion a otra; y ::after, el aro ambar de
+   1,5 px de la pagina actual, que no lleva raya. "Tienda" con su flecha
+   (.nav-grupo) se enciende entera, y sigue encendida mientras el raton
+   baja a sus categorias, que son parte del grupo. La pastilla solo con
+   raton o lapiz (con-puntero) y con la barra de escritorio; el aro tambien
+   en el menu del telefono. Para que la pastilla abrace cada opcion, las
+   opciones llevan aire a los lados y el hueco entre ellas baja lo mismo:
+   los textos quedan donde estaban. Horno sobre ambar: 5,8:1; ambar claro
+   sobre horno: 8,91:1. */
+.main-nav > a { position: relative; isolation: isolate; border-radius: var(--r-pill); }
+.nav-grupo { isolation: isolate; }
+.main-nav > a[aria-current="page"]::after, .nav-grupo:has(> .nav-grupo-enlace[aria-current="page"])::after { position: absolute; inset: 0; z-index: -1; content: ""; border-radius: var(--r-pill); box-shadow: inset 0 0 0 1.5px var(--ambar); pointer-events: none; }
+.site-header .main-nav > a[aria-current="page"], .site-header .nav-grupo-enlace[aria-current="page"] { color: var(--ambar-claro); }
+/* La flecha de Tienda va con su palabra: si no, la mitad del grupo parecia
+   no ser la pagina actual. */
+.site-header .nav-grupo:has(> .nav-grupo-enlace[aria-current="page"]) .nav-grupo-boton { color: var(--ambar-claro); }
 @media (min-width: 681px) {
-  .site-header .main-nav { position: relative; gap: .7rem; }
-  .site-header .main-nav > a { position: relative; padding: .55rem .9rem; }
+  .site-header .main-nav { gap: .7rem; }
+  .site-header .main-nav > a { padding: .55rem .9rem; }
   .site-header .nav-grupo { padding-inline: .9rem; }
-  .con-puntero .nav-pastilla { position: absolute; top: 50%; left: 0; display: block; width: 0; height: 2.3rem; background: var(--ambar); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: translateY(-50%); transition: transform var(--dur-slow) var(--ease-soft), width var(--dur-slow) var(--ease-soft), opacity var(--dur-fast) var(--ease-out); }
-  .con-puntero .nav-pastilla.is-vista { opacity: 1; }
-  /* La primera vez aparece en su sitio, sin viajar. */
-  .con-puntero .nav-pastilla.is-quieta { transition: opacity var(--dur-fast) var(--ease-out); }
-  .con-puntero .site-header .main-nav > a[data-bajo], .con-puntero .site-header .nav-grupo[data-bajo] .nav-grupo-enlace, .con-puntero .site-header .nav-grupo[data-bajo] .nav-grupo-boton { color: var(--horno); }
-  /* La raya de la vista actual, horno sobre la pastilla: ambar no se veria. */
-  .con-puntero .site-header .main-nav > a[data-bajo][aria-current="page"], .con-puntero .site-header .nav-grupo[data-bajo] .nav-grupo-enlace[aria-current="page"] { text-decoration-color: var(--horno); }
+  /* La pastilla y el aro miden lo mismo en las dos: el grupo es mas alto
+     (su relleno de arriba y abajo es el puente hacia el desplegable). */
+  .site-header .nav-grupo:has(> .nav-grupo-enlace[aria-current="page"])::after { inset: 50% 0 auto; height: 2.3rem; margin-top: -1.15rem; }
+  .con-puntero .site-header .main-nav > a::before, .con-puntero .site-header .nav-grupo::before { position: absolute; top: 50%; right: 0; left: 0; z-index: -1; height: 2.3rem; margin-top: -1.15rem; content: ""; background: var(--ambar); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-soft); }
+  .con-puntero .site-header .main-nav > a:hover::before, .con-puntero .site-header .nav-grupo:hover::before { opacity: 1; transform: none; }
+  .con-puntero .site-header .main-nav > a:hover, .con-puntero .site-header .nav-grupo:hover .nav-grupo-enlace, .con-puntero .site-header .nav-grupo:hover .nav-grupo-boton { color: var(--horno); }
 }
 /* Entre la tableta y el corte del telefono no caben logo, menu y botones
    con el menu centrado en la pagina (rejilla 1fr auto 1fr): a 681 px
@@ -242,50 +251,74 @@ section[id] { scroll-margin-top: -12px; }
 @keyframes rise { from { opacity: 0; transform: translateY(var(--rise, 8px)); } to { opacity: 1; transform: none; } }
 .eyebrow { margin: 0 0 1rem; color: var(--corteza-oscura); font: 700 .7rem/1.4 Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
 /* El coral sobre el marrón oscuro da 1.73:1. Cualquier eyebrow en sección oscura usa ámbar. */
-.story .eyebrow, .site-footer .eyebrow { color: var(--ambar); }
+.story .eyebrow { color: var(--ambar); }
 h2 em { color: var(--ambar); font-weight: 500; }
-/* ---- Los botones: pastilla con sombra (B1, seccion 10 del plan) ---------
-   Todos los botones de accion son el mismo, de "Nuestros panes" a "Ir a
-   pagar": pastilla con filete horno y versalitas en Arial. El principal
-   (button-yellow) es ambar con sombra dura de imprenta; con el puntero se
-   levanta despegandose de ella, cruza un brillo y el icono se inclina, y al
-   pulsar se hunde contra ella. Levantarse es escena (--dur-base); hundirse,
-   respuesta (--dur-micro). El secundario (button-otro) es la misma pastilla
-   sin relleno ni sombra. La letra va escrita aqui y no heredada: la de body
-   todavia es Georgia. Los textos largos ("Crear cuenta y pagar") envuelven
-   centrados en vez de salirse. */
-.button { --sombra-boton: var(--horno); position: relative; display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 44px; overflow: hidden; padding: .95rem 1.6rem; background: transparent; border: 1.5px solid var(--horno); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .78rem/1.2 var(--letra-texto); letter-spacing: .16em; text-align: center; text-transform: uppercase; transition: transform var(--dur-base) var(--ease-soft), box-shadow var(--dur-base) var(--ease-soft), background-color var(--dur-fast) var(--ease-ui); }
+/* ---- Los botones: ticket de panaderia (P2, G3 y C1, seccion 10 del plan) --
+   Todos los botones de accion son el mismo vale, de "Nuestros panes" a "Ir a
+   pagar": las cuatro esquinas mordidas hacia dentro (circulos de 9 px) y
+   versalitas en Arial. La forma no va en el boton sino en dos capas detras
+   del texto, cada una con la mascara de las mordidas: ::before es el papel
+   del vale y ::after su sombra dura, la misma forma corrida 4 px. Asi la
+   mascara no se come ni la sombra ni el anillo del foco, que es el outline
+   del boton, fuera de las capas, y no hace falta envolver cada boton.
+   Las mordidas salen de un solo degradado: un circulo en la esquina de una
+   baldosa del tamano del boton, que se repite, cae en las cuatro.
+   Con el puntero el vale se levanta despegandose de su sombra, con un grado
+   de giro, y el icono se inclina; al pulsar se hunde contra ella.
+   Levantarse es escena (--dur-base); hundirse, respuesta (--dur-micro).
+   - button-yellow: ambar con sombra horno (las acciones).
+   - button-pagar: horno con texto papel y sombra ambar, a todo lo ancho
+     ("Ir a pagar" y el boton final de pagar), para no confundirse con el +.
+   - button-otro: hueco, solo el filete horno siguiendo las mordidas; se
+     rellena de masa con el puntero.
+   La letra va escrita aqui y no heredada: la de body todavia es Georgia. Los
+   textos largos ("Crear cuenta y pagar") envuelven centrados. */
+.button { --mordida: 9px; --fondo-boton: transparent; --sombra-boton: var(--horno); --filete-boton: var(--horno); position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 44px; padding: .95rem 1.7rem; background: none; border: 0; color: var(--horno); cursor: pointer; font: 700 .78rem/1.2 var(--letra-texto); letter-spacing: .16em; text-align: center; text-transform: uppercase; transition: transform var(--dur-base) var(--ease-soft); }
+.button::before, .button::after { position: absolute; inset: 0; content: ""; pointer-events: none; -webkit-mask: radial-gradient(circle var(--mordida) at var(--mordida) var(--mordida), #0000 98%, #000) calc(-1 * var(--mordida)) calc(-1 * var(--mordida)); mask: radial-gradient(circle var(--mordida) at var(--mordida) var(--mordida), #0000 98%, #000) calc(-1 * var(--mordida)) calc(-1 * var(--mordida)); }
+.button::before { z-index: -1; background: var(--fondo-boton); }
+.button::after { z-index: -2; background: var(--sombra-boton); transform: translate(4px, 4px); transition: transform var(--dur-base) var(--ease-soft), opacity var(--dur-fast) var(--ease-ui); }
 .button > svg, .button > span[aria-hidden] { display: inline-block; flex: 0 0 auto; transition: transform var(--dur-base) var(--ease-soft); }
 .button .ico { width: 24px; height: 24px; stroke-width: 1.5; }
-.button:active { transform: scale(.97); transition-duration: var(--dur-micro); }
-.button-yellow { background: var(--ambar); box-shadow: 4px 4px 0 var(--sombra-boton); }
-.con-puntero .button-yellow:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--sombra-boton); }
+.button-yellow { --fondo-boton: var(--ambar); }
+/* Papel sobre horno: 13,9:1. */
+.button-pagar { --fondo-boton: var(--horno); --sombra-boton: var(--ambar); width: 100%; color: var(--papel); }
+.con-puntero :is(.button-yellow, .button-pagar):hover { transform: translate(-2px, -2px) rotate(-1deg); }
+.con-puntero :is(.button-yellow, .button-pagar):hover::after { transform: translate(6px, 6px); }
 .con-puntero .button-yellow:hover > svg, .con-puntero .button-yellow:hover > span[aria-hidden] { transform: rotate(-14deg) scale(1.15); }
-.button-yellow:active, .con-puntero .button-yellow:hover:active { transform: translate(2px, 2px) scale(.97); box-shadow: 2px 2px 0 var(--sombra-boton); transition-duration: var(--dur-micro); }
-/* Con el foco del teclado la sombra dura sustituye al halo ambar, que sobre
-   el ambar del boton no se veria; el anillo de 3 px es el de siempre. */
-.button-yellow:focus-visible { box-shadow: 4px 4px 0 var(--sombra-boton); }
-/* El brillo que cruza: una franja de papel que pasa por encima una vez al
-   entrar el puntero. Va con transform, no moviendo left. */
-.button-yellow::after { position: absolute; top: -20%; bottom: -20%; left: 0; width: 40%; content: ""; background: linear-gradient(100deg, transparent, color-mix(in srgb, var(--papel) 70%, transparent), transparent); transform: translateX(-150%) skewX(-20deg); pointer-events: none; }
-.con-puntero .button-yellow:hover::after { transform: translateX(325%) skewX(-20deg); transition: transform var(--dur-editorial) var(--ease-soft); }
+/* La flecha de pagar avanza en vez de inclinarse: dice adonde se va. */
+.con-puntero .button-pagar:hover > span[aria-hidden] { transform: translateX(4px); }
+.button:active, .con-puntero .button:hover:active { transform: scale(.97); transition-duration: var(--dur-micro); }
+:is(.button-yellow, .button-pagar):active::after, .con-puntero :is(.button-yellow, .button-pagar):hover:active::after { transform: translate(2px, 2px); transition-duration: var(--dur-micro); }
+/* El hueco: el filete es la capa de delante recortada en anillo, la forma
+   mordida menos la misma forma 1,5 px mas adentro (con mordidas 1,5 px mas
+   grandes, para que el filete siga la curva con el mismo grueso). La
+   segunda baldosa mide lo que el boton entero aunque se recorte al
+   contenido, y asi sus circulos caen en las mismas esquinas. Detras, la
+   masa del puntero en lugar de la sombra. Es degradado y no dibujo: no se
+   pixela con el zoom. */
+.button-otro::before { padding: 1.5px; background: var(--filete-boton); -webkit-mask: radial-gradient(circle var(--mordida) at var(--mordida) var(--mordida), #0000 98%, #000) calc(-1 * var(--mordida)) calc(-1 * var(--mordida)) border-box, radial-gradient(circle calc(var(--mordida) + 1.5px) at calc(var(--mordida) + 1.5px) calc(var(--mordida) + 1.5px), #0000 98%, #000) calc(-1 * var(--mordida) - 3px) calc(-1 * var(--mordida) - 3px) / calc(100% + 3px) calc(100% + 3px) content-box; -webkit-mask-composite: xor; mask: radial-gradient(circle var(--mordida) at var(--mordida) var(--mordida), #0000 98%, #000) calc(-1 * var(--mordida)) calc(-1 * var(--mordida)) border-box, radial-gradient(circle calc(var(--mordida) + 1.5px) at calc(var(--mordida) + 1.5px) calc(var(--mordida) + 1.5px), #0000 98%, #000) calc(-1 * var(--mordida) - 3px) calc(-1 * var(--mordida) - 3px) / calc(100% + 3px) calc(100% + 3px) content-box; mask-composite: exclude; }
+.button-otro::after { background: var(--masa); opacity: 0; transform: none; }
+.con-puntero .button-otro:hover { transform: translate(-1px, -2px); }
+.con-puntero .button-otro:hover::after { opacity: 1; }
+/* Con el foco del teclado: el anillo de 3 px de siempre, que es el outline
+   del boton y queda fuera de la mascara. En los principales la sombra dura
+   sustituye al halo ambar (seccion 11), que sobre el ambar no se veria. */
+.button:focus-visible { outline: 3px solid var(--horno); outline-offset: 3px; box-shadow: none; }
 /* Apagado (aria-disabled): "Ir a pagar" con la canasta vacia, o "Iniciar
-   sesion" y "Crear la cuenta" mientras trabajan. Sigue enfocable y el lector
-   lo oye apagado; a la vista, desvaido, sin levantarse ni brillo con el
-   raton y sin hundirse al pulsar. El cursor dice si es que no se puede
-   (not-allowed) o que esta ocupado (progress: en la cuenta, al reintentar
-   una parte que no cargo o mientras se paga). */
-.button[aria-disabled="true"], .con-puntero .button[aria-disabled="true"]:hover, .button[aria-disabled="true"]:active, .con-puntero .button[aria-disabled="true"]:hover:active { cursor: not-allowed; opacity: .45; transform: none; box-shadow: none; }
-.con-puntero .button[aria-disabled="true"]:hover::after { transform: translateX(-150%) skewX(-20deg); transition: none; }
+   sesion" y "Crear la cuenta" mientras trabajan. "Ir a pagar" vacio lleva
+   ademas disabled y no se enfoca; los de la cuenta siguen enfocables y el
+   lector los oye apagados. A la vista, desvaido y sin sombra, sin levantarse ni
+   rellenarse con el raton y sin hundirse al pulsar. El cursor dice si es que
+   no se puede (not-allowed) o que esta ocupado (progress: en la cuenta, al
+   reintentar una parte que no cargo o mientras se paga). */
+.button[aria-disabled="true"], .con-puntero .button[aria-disabled="true"]:hover, .button[aria-disabled="true"]:active, .con-puntero .button[aria-disabled="true"]:hover:active { cursor: not-allowed; opacity: .45; transform: none; }
+.button[aria-disabled="true"]::after, .con-puntero .button[aria-disabled="true"]:hover::after, .button[aria-disabled="true"]:active::after, .con-puntero .button[aria-disabled="true"]:hover:active::after { opacity: 0; }
 .con-puntero .button[aria-disabled="true"]:hover > svg, .con-puntero .button[aria-disabled="true"]:hover > span[aria-hidden] { transform: none; }
 .checkout.is-procesando .button[aria-disabled="true"], .vista-fallo .button[aria-disabled="true"], .cuenta-vista .button[aria-disabled="true"] { cursor: progress; }
-/* Los secundarios van sobre la hoja de papel (la hoja de pagar, Mis datos):
-   con el puntero se rellenan de masa, que sobre el papel si se ve. */
-.con-puntero .button-otro:hover { background: var(--masa); }
-/* Sobre lo oscuro el filete es ambar y la sombra corteza: la horno no se
+/* Sobre lo oscuro la sombra es corteza y el filete ambar: la horno no se
    veria sobre la horno. */
-.banda-oscura .button, .story .button, .site-footer .button { --sombra-boton: var(--corteza); border-color: var(--ambar); }
-.banda-oscura .button-otro, .story .button-otro, .site-footer .button-otro { color: var(--sobre-horno); }
+.banda-oscura .button, .story .button { --sombra-boton: var(--corteza); --filete-boton: var(--ambar); }
+.banda-oscura .button-otro, .story .button-otro { color: var(--sobre-horno); }
 .text-link { display: inline-flex; gap: .65rem; align-items: center; padding-bottom: .3rem; border-bottom: 1px solid currentColor; border-radius: 4px 4px 0 0; color: var(--horno); font: 700 .9rem Arial, sans-serif; }
 .text-link:hover { color: var(--corteza-oscura); }
 .status-dot { display: inline-block; width: 8px; height: 8px; margin-top: .38rem; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 0 4px rgba(215, 155, 74, .2); }
@@ -301,22 +334,6 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .rotulo { margin: 0; color: var(--corteza-oscura); font: 600 .72rem/1.3 var(--letra-texto); letter-spacing: .22em; text-transform: uppercase; }
 /* Los iconos de linea (comun/iconos.jsx): miden lo que la letra de al lado. */
 .ico { width: 1.15em; height: 1.15em; flex: 0 0 auto; }
-
-/* Los enlaces sueltos: imprenta + ola (A1 de la muestra), en pastilla como
-   los botones. Con el puntero se levantan con borde y sombra dura, las
-   letras saltan una tras otra y se quedan cobrizas, y el icono da un
-   saltito. Las letras sueltas las pone TextoOla.jsx, que deja el nombre del
-   enlace entero para el lector. */
-.h-imprenta { display: inline-flex; align-items: center; gap: .45rem; padding: .55rem .8rem; border: 1px solid var(--horno); border-radius: var(--r-pill); color: var(--horno); font: 600 .78rem/1.2 var(--letra-texto); letter-spacing: .16em; text-transform: uppercase; transition: transform var(--dur-base) var(--ease-soft), box-shadow var(--dur-base) var(--ease-soft), background-color var(--dur-fast) var(--ease-ui); }
-.h-imprenta .ico { width: 16px; height: 16px; }
-.con-puntero .h-imprenta:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--horno); background: var(--papel); }
-.con-puntero .h-imprenta:hover .ico { animation: cae var(--dur-editorial) var(--ease-soft); }
-.h-imprenta:active, .con-puntero .h-imprenta:hover:active { transform: scale(.97); box-shadow: 2px 2px 0 var(--horno); transition-duration: var(--dur-micro); }
-.h-ola .letras span { display: inline-block; white-space: pre; }
-/* Corteza sobre papel: 4,7:1. */
-.con-puntero .h-ola:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 30ms); }
-@keyframes salta { 0% { transform: none; } 40% { transform: translateY(-6px); color: var(--corteza); } 100% { transform: none; color: var(--corteza); } }
-@keyframes cae { 0% { transform: none; } 35% { transform: translateY(-7px); } 65% { transform: translateY(1px); } 100% { transform: none; } }
 
 .sign-band { position: relative; background: var(--corteza); color: white; }
 .sign-band::after { position: absolute; right: 0; bottom: -26px; left: 0; height: 26px; content: ""; background: var(--corteza); border-radius: 0 0 50% 50% / 0 0 26px 26px; pointer-events: none; }
@@ -608,30 +625,15 @@ h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 .image-unavailable { display: grid; place-items: center; background: var(--masa-honda); }
 .image-unavailable::before { content: "Imagen no disponible"; padding: 1rem; color: var(--horno-suave); font: .8rem Arial, sans-serif; text-align: center; }
 .image-unavailable img { display: none; }
-/* El pie ya no se monta sobre nada: el margen negativo y su relleno compensado se fueron
-   con la seccion clara, asi que recupera un relleno superior normal. */
-.site-footer { padding: 2.6rem 0 2rem; background: var(--horno); color: white; border-radius: var(--r-band) var(--r-band) 0 0; }
-/* La marca se lleva el hueco que sobra y las dos columnas de la derecha se
-   encogen a su contenido: asi Visitanos y Escribenos quedan pegadas al borde
-   derecho, en ese orden, y la marca al izquierdo. */
-.footer-grid { display: grid; grid-template-columns: 1fr auto auto auto; gap: 1.6rem 2.6rem; align-items: start; }
-/* Encabezados de columna: el mismo gris tenue y el mismo cuerpo pequeno de .contacto-tipo,
-   en mayusculas para que ordenen sin competir con la marca. */
-.footer-col h3 { margin: 0 0 .85rem; color: var(--sobre-horno-tenue); font: 700 .72rem/1.3 Arial, sans-serif; letter-spacing: .12em; text-transform: uppercase; }
-.footer-identity { display: flex; align-items: center; gap: .9rem; }
 .mascot-slot { display: inline-flex; align-items: center; justify-content: center; overflow: hidden; border: 0; border-radius: 50%; color: var(--ambar); }
 .mascot-slot img { width: 100%; height: 100%; object-fit: contain; }
-/* La mascota acompana en el hero, en la franja y en el pie; en la cabecera manda
-   el logo. Por debajo de 40px la ilustracion deja de leerse, asi que el circulo
-   de fondo le da forma reconocible en los tamanos pequenos. */
+/* Por debajo de 40px la ilustracion de la mascota deja de leerse, asi que el
+   circulo de fondo le da forma reconocible en los tamanos pequenos. */
 /* En la cabecera el panadero acompana al logo, asi que va mas pequeno que
    cuando vivia en el hero: manda el logo, el es la compania. */
 .mascot-brand { width: 50px; height: 50px; flex: 0 0 auto; background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
-.mascot-footer { width: 54px; height: 54px; background: radial-gradient(circle, rgba(215, 155, 74, .18) 62%, transparent 63%); }
-.footer-lema { margin: .9rem 0 0; color: var(--sobre-horno-tenue); font: italic 1.05rem/1.4 var(--letra-titulo); }
-.footer-visita address { color: var(--sobre-horno); font: .85rem/1.5 Arial, sans-serif; font-style: normal; }
-/* La insignia de abierto/cerrado viene de la tarjeta de locales: ya estaba
-   pensada para fondo oscuro, asi que en el pie solo necesita su propio aire. */
+/* La insignia de abierto/cerrado, pensada para fondo oscuro (el horario de
+   #/contacto). */
 .open-label { display: inline-flex; gap: .45rem; align-items: center; margin-bottom: .75rem; padding: .34rem .7rem .34rem .55rem; background: rgba(215, 155, 74, .1); border: 1px solid rgba(215, 155, 74, .4); border-radius: var(--r-pill); color: var(--ambar); font: 700 .68rem/1.3 Arial, sans-serif; }
 .open-label.is-closed { background: rgba(168, 95, 69, .2); border-color: rgba(168, 95, 69, .55); color: var(--aviso-cerrado); }
 /* El margen superior del punto es del aviso del hero; dentro de la insignia va centrado. */
@@ -650,28 +652,18 @@ h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
    sobre el fondo tenido de la fila no llegaba a 4,5:1. */
 .footer-horario div.is-today dt, .footer-horario div.is-today dd { color: var(--sobre-horno); }
 .dia-hoy { margin-left: .5rem; padding: .1rem .38rem; background: var(--ambar); border-radius: var(--r-hair); color: var(--horno); font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; vertical-align: .08em; }
-/* El enlace al mapa sobrevive al panel borrado: en el pie es un enlace claro, como .contacto-valor. */
-.footer-mapa { display: inline-flex; align-items: center; gap: .45rem; margin-top: 1rem; color: var(--ambar); font: 700 .8rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-.footer-mapa:hover { color: var(--ambar-claro); }
-.footer-contacto .contacto + .contacto { margin-top: 1rem; }
 /* Etiqueta encima y el dato debajo con icono, subrayado, para que el dato sea lo que pesa. */
 .contacto { display: flex; flex-direction: column; gap: .3rem; }
 .contacto-tipo { color: var(--sobre-horno-tenue); font: .72rem/1.3 Arial, sans-serif; letter-spacing: .04em; }
 .contacto-valor { display: inline-flex; align-items: center; gap: .5rem; color: var(--ambar); font: 700 1rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
 .contacto-valor:hover { color: var(--ambar-claro); }
 .contacto-icono { display: block; width: 26px; height: 26px; flex: 0 0 auto; }
-/* Solo el copyright a la izquierda: la esquina derecha la ocupa el boton de la canasta. */
-.footer-note { grid-column: 1 / -1; margin: .6rem 0 0; padding-top: .8rem; border-top: 1px solid rgba(255, 255, 255, .15); color: var(--sobre-horno-tenue); font: .68rem Arial, sans-serif; }
-/* La marca de lo que este navegador tiene apuntado. Va debajo del aviso de
-   copyright, con su letra, porque es del mismo tipo de nota: algo sobre el
-   sitio y no sobre la panaderia. */
-.footer-guardado { grid-column: 1 / -1; margin: .35rem 0 0; color: var(--sobre-horno-tenue); font: .68rem Arial, sans-serif; }
 .floating-whatsapp { cursor: pointer; position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 /* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
-.text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
-.text-link:focus-visible > span[aria-hidden], .footer-mapa:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
-.text-link, .footer-mapa { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
+.text-link > span[aria-hidden], .order-button > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
+.text-link:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
+.text-link { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .order-button:focus-visible { transform: translateY(-2px); }
 .con-puntero .floating-whatsapp:hover { background: var(--ambar-claro); }
 /* El brinco de la canasta al agregar desde una ficha (CanastaProvider.jsx). */
@@ -721,8 +713,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
    pegado en lo ultimo tocado. La clase con-puntero la pone comun/puntero.js
    segun el pointerType de cada evento; la media query (hover: hover) daba
    falso en el portatil tactil del usuario y nunca se veia (seccion 10). */
-.con-puntero .text-link:hover > span[aria-hidden],
-.con-puntero .footer-mapa:hover > span[aria-hidden] { transform: translate(4px, -4px); }
+.con-puntero .text-link:hover > span[aria-hidden] { transform: translate(4px, -4px); }
 /* La ficha se levanta despacio, como algo que se coge del mostrador: es
    escena, no respuesta. La foto se acerca mas despacio todavia. */
 .con-puntero .product-card:hover { transform: translateY(-5px); }
@@ -742,9 +733,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .main-nav { gap: 1.5rem; font-size: .92rem; }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
   .story-grid { gap: 3rem; }
-  /* Tres columnas en dos huecos dejarian la marca sola y estrecha: pasa a toda la fila. */
-  .footer-grid { grid-template-columns: 1fr 1fr; }
-  .footer-marca { grid-column: 1 / -1; }
 }
 @media (max-width: 680px) {
   .container { width: min(100% - 32px, 540px); }
@@ -770,6 +758,10 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .nav-submenu::before { display: none; }
   .nav-grupo.is-open .nav-submenu { visibility: visible; max-height: 180px; transform: none; }
   .nav-submenu a { padding: .55rem .7rem; }
+  /* El aro de Tienda abraza su renglon (la palabra y la flecha, 44 px) y
+     no el desplegable abierto debajo; el grupo lleva .8rem de relleno
+     arriba (el puente del desplegable de escritorio), que el aro salta. */
+  .nav-grupo:has(> .nav-grupo-enlace[aria-current="page"])::after { top: .8rem; bottom: auto; height: 44px; }
   .section-pad { padding: 4.5rem 0; }
   .catalog { padding-top: 3rem; }
   body.is-vista .catalog { padding-top: 110px; }
@@ -809,7 +801,6 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   /* La entrada escalonada encogia desde la izquierda; centrados, desde el centro. */
   .principles.reveal-line .principle-mark { transform-origin: center; }
   .reveal-x { transform: translateY(18px); }
-  .footer-grid { grid-template-columns: 1fr; gap: 1.3rem; }
   .floating-whatsapp { right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); }
 }
 /* Por debajo de 420 px, tres columnas son de unos 90 px: con el espaciado de
@@ -1090,7 +1081,7 @@ body.is-checkout .floating-whatsapp { display: none; }
   .reveal-mask img, .reveal-mask.is-visible img { clip-path: none; transform: none; }
   .reveal-band .sign-trigo, .principles.reveal-line > div, .principles.reveal-line .principle-mark { opacity: 1; transform: none; transition: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
-  .text-link > span[aria-hidden], .order-button > span[aria-hidden], .footer-mapa > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
+  .text-link > span[aria-hidden], .order-button > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
   .menu-toggle span, .con-puntero .order-button:hover, .order-button:focus-visible { transform: none; }
   .con-puntero .product-card:hover, .con-puntero .product-card:hover .product-image img { transform: none; }
   /* Tampoco se hunde nada al pulsar. */
@@ -1101,15 +1092,12 @@ body.is-checkout .floating-whatsapp { display: none; }
   /* Ni destello al agregar (golpes.js tampoco lo pide). */
   .card-cantidad.is-lleno.is-destello::before, .card-cantidad.is-lleno.is-destello .card-menos, .card-cantidad.is-lleno.is-destello .card-numero, .card-cantidad.is-lleno.is-destello .card-mas:focus-visible { animation: none; }
   .con-puntero .product-card:hover .product-tag { transform: rotate(-10deg); }
-  /* Las piezas del estilo editorial, quietas: ni se levantan, ni salta nada,
-     ni cruza el brillo. */
-  .con-puntero .button-yellow:hover, .button:active, .button-yellow:active, .con-puntero .button-yellow:hover:active,
-  .con-puntero .h-imprenta:hover, .h-imprenta:active, .con-puntero .h-imprenta:hover:active { transform: none; }
-  .con-puntero .button-yellow:hover > svg, .con-puntero .button-yellow:hover > span[aria-hidden] { transform: none; }
-  .con-puntero .h-imprenta:hover .ico, .con-puntero .h-ola:hover .letras span { animation: none; }
-  /* El color si cambia: no es movimiento y dice que el enlace responde. */
-  .con-puntero .h-ola:hover .letras span { color: var(--corteza); }
-  .button-yellow::after { display: none; }
+  /* Los tickets, quietos: ni se levantan ni se hunden, y la sombra se queda
+     en su sitio. El relleno del secundario si cambia: no es movimiento y
+     dice que el boton responde. */
+  .con-puntero .button:hover, .button:active, .con-puntero .button:hover:active { transform: none; }
+  .con-puntero :is(.button-yellow, .button-pagar):hover::after, :is(.button-yellow, .button-pagar):active::after, .con-puntero :is(.button-yellow, .button-pagar):hover:active::after { transform: translate(4px, 4px); }
+  .con-puntero .button:hover > svg, .con-puntero .button:hover > span[aria-hidden] { transform: none; }
   .con-puntero .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { transform: none; }
   .nav-submenu, .nav-grupo-flecha { transition: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
@@ -1212,6 +1200,10 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-total-cuenta { color: var(--horno-suave); font: 400 .82rem Arial, sans-serif; }
 .canasta-panel .canasta-total strong { font: 700 1.5rem/1 Arial, sans-serif; }
 .canasta-panel .canasta-nota { margin-top: .55rem; }
+/* "Tu pedido se guardo hoy a las 14:05 en este navegador." (GuardadoCanasta),
+   bajo la nota de "Ir a pagar" y con su letra: es algo que el sitio tiene
+   apuntado, no parte del pedido. */
+.canasta-guardado { margin: .3rem 0 0; color: var(--horno-suave); font: .72rem/1.45 Arial, sans-serif; text-align: center; }
 .canasta-entrega { margin: 0 0 1.1rem; padding: 0; border: 0; }
 .canasta-entrega[hidden] { display: none; }
 .canasta-entrega legend { padding: 0; margin-bottom: .55rem; color: var(--horno-suave); font: 700 .78rem/1.3 Arial, sans-serif; }
@@ -1339,6 +1331,8 @@ body.is-checkout .floating-whatsapp { display: none; }
 #factura-ident { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
 .pago-error { margin: 0 0 .7rem; text-align: center; }
 .pago-girando { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(58, 40, 34, .25); border-top-color: var(--horno); border-radius: 50%; vertical-align: -2px; animation: girar 700ms linear infinite; }
+/* Sobre el ticket horno de pagar, el giro va en papel. */
+.button-pagar .pago-girando { border-color: color-mix(in srgb, var(--papel) 30%, transparent); border-top-color: var(--papel); }
 @keyframes girar { to { transform: rotate(360deg); } }
 .recibo-sello { display: flex; align-items: center; gap: .55rem; margin: 0 0 .8rem; font: 500 1.3rem/1.2 var(--letra-titulo); }
 .recibo-sello span { display: grid; width: 30px; height: 30px; flex: none; place-items: center; background: var(--ambar); border-radius: 50%; color: var(--horno); font: 700 .95rem/1 Arial, sans-serif; }
@@ -1444,22 +1438,26 @@ body.is-checkout .floating-whatsapp { display: none; }
      texto da dos renglones) y aire para el anillo del foco. Sin :has() se
      queda en los 92 px de siempre. */
   html:has(.deshacer-barra:not([hidden])) { scroll-padding-bottom: calc(168px + env(safe-area-inset-bottom)); }
-  /* Lo ultimo del pie no puede subir mas que el final de la pagina: mientras
-     esta la barra, el pie se alarga lo mismo por abajo, y asi los contactos
-     tambien quedan por encima de ella. */
-  html:has(.deshacer-barra:not([hidden])) .site-footer { padding-bottom: calc(168px + env(safe-area-inset-bottom)); }
+  /* Lo ultimo de la vista no puede subir mas que el final de la pagina:
+     mientras esta la barra, la pagina se alarga lo mismo por abajo, y asi
+     lo ultimo que se tabula tambien queda por encima de ella. */
+  html:has(.deshacer-barra:not([hidden])) #raiz > main { padding-bottom: calc(168px + env(safe-area-inset-bottom)); }
 }
 /* Con la canasta abierta, la barra va dentro de la gaveta y encima de su pie,
-   para no tapar "Ir a pagar". El pie mide unos 157 px (subtotal, boton y
-   nota); 172 deja aire aunque la nota ocupe dos renglones. */
-body:has(.canasta-panel.is-open) .deshacer-barra { right: 16px; left: auto; bottom: calc(172px + env(safe-area-inset-bottom)); width: calc(min(420px, 100vw) - 32px); transform: none; animation-name: deshacer-entra-panel; }
+   para no tapar "Ir a pagar". El pie mide unos 164 px (subtotal, boton,
+   nota y cuando se guardo el pedido); 192 deja aire aunque una de las
+   notas ocupe dos renglones. */
+body:has(.canasta-panel.is-open) .deshacer-barra { right: 16px; left: auto; bottom: calc(192px + env(safe-area-inset-bottom)); width: calc(min(420px, 100vw) - 32px); transform: none; animation-name: deshacer-entra-panel; }
+/* Encima del pie la barra tapa el final de la lista: la ultima linea y
+   "Vaciar la canasta" quedaban debajo al enfocarlos (WCAG 2.4.11). Mientras
+   se ve, la lista guarda abajo el sitio de la barra (unos 28 px la separan
+   del pie, mide 60, u 80 con dos renglones) y algo de aire para el anillo,
+   y el foco se trae por encima de ella. */
+body:has(.deshacer-barra:not([hidden])) .canasta-panel.is-open .canasta-cuerpo { padding-bottom: 136px; scroll-padding-bottom: 136px; }
 @media (prefers-reduced-motion: reduce) {
   .deshacer-barra, body:has(.canasta-panel.is-open) .deshacer-barra { animation: none; }
 }
 
-/* El telefono y las redes son de ejemplo y el pie lo dice, igual que ya se
-   declaran el QR de adorno y los datos bancarios. */
-.contacto-ficticio { margin: .9rem 0 0; color: var(--sobre-horno-tenue); font: .74rem/1.45 Arial, sans-serif; }
 .recibo-titulo { margin: 0 0 .5rem; color: var(--horno-suave); font: 700 .78rem/1.3 Arial, sans-serif; }
 .recibo-lista, .resumen-lista { margin: 0; padding: 0; list-style: none; }
 .recibo-lista li, .resumen-lista li { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--masa-linea); font: .85rem/1.4 Arial, sans-serif; font-variant-numeric: tabular-nums; }
@@ -1489,9 +1487,10 @@ body:has(.canasta-panel.is-open) .deshacer-barra { right: 16px; left: auto; bott
   .cuenta-metodo input:checked + .cuenta-metodo-caja::after { border-color: Highlight; }
   /* El mas en el tope pierde el ambar, que en este modo ya no se ve: lo dice el color de lo desactivado. */
   .card-cantidad .card-mas[aria-disabled="true"], .canasta-cantidad [data-mas][aria-disabled="true"] { color: GrayText; }
-  /* Sin sombras en este modo, el boton se reconoce por su filete, que el
-     sistema pinta; el brillo seria una mancha encima del texto. */
-  .button-yellow::after { display: none; }
-  .button { border-color: ButtonText; }
+  /* En este modo el sistema pinta los fondos y las dos capas del ticket
+     (papel y sombra) se perderian: fuera las capas, y el boton se reconoce
+     por un filete recto del color del sistema. */
+  .button::before, .button::after { display: none; }
+  .button { border: 1.5px solid ButtonText; }
   .button[aria-disabled="true"] { border-color: GrayText; color: GrayText; }
 }

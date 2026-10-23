@@ -1,6 +1,6 @@
 // El horario de hoy, al dia cada minuto, como hacia el setInterval de
-// app.js del sitio presentado. Lo usan la nota del horno y el pie: con un solo reloj para los
-// dos, y no uno por cada sitio que lo pinta.
+// app.js del sitio presentado. Lo usan la cabecera de periodico de la portada y
+// #/contacto: con un solo reloj, y no uno por cada sitio que lo pinta.
 // Las cuentas (feriados, Pascua, que texto toca) son las de servicios/horario.js,
 // las mismas del sitio presentado.
 import { useSyncExternalStore } from 'react';

@@ -2,7 +2,7 @@
 // La cuenta y el pago vienen en su propio archivo (comun/cargaPorPartes.js).
 // Si no llega ni al segundo intento (sin red, o un archivo viejo que ya no
 // esta tras publicar), la pagina no se queda en blanco: en el sitio de la vista sale un aviso corto
-// con "Reintentar". La cabecera, la canasta y el pie siguen funcionando, y
+// con "Reintentar". La cabecera y la canasta siguen funcionando, y
 // navegar a otra vista quita el aviso.
 //
 // "Reintentar" vuelve a cargar la pagina, en la misma direccion. No basta con

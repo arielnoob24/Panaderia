@@ -7,13 +7,13 @@
 
    Reparto 60-30-10 en cada vista:
      60  masa y papel: el fondo y las fichas
-     30  horno: el texto, una banda oscura por vista y el pie
+     30  horno: el texto, la barra y una banda oscura por vista
      10  ambar y corteza: botones, precios, la franja y los dibujos del fondo */
 
 /* ---- Lo comun --------------------------------------------------------- */
 
-/* El pie corto se queda abajo aunque la vista mida menos que la pantalla:
-   en #/contacto, sin esto, quedaba una franja de masa debajo del pie. */
+/* Sin pie de pagina (seccion 4 del plan): la vista llena la pantalla aunque
+   mida menos, y lo ultimo de cada una (la cinta, la franja) queda abajo. */
 #raiz { display: flex; min-height: 100vh; flex-direction: column; }
 #raiz > main { flex: 1 0 auto; }
 /* La vista que se va con movimiento (de crear la cuenta a verificar, App.jsx)
@@ -32,13 +32,11 @@
 /* Los h1 de las vistas reciben el foco al llegar (useVista), sin anillo: lo
    dice styles.css para todo h1 con tabindex="-1". */
 
-/* La opcion de la vista en la que se esta: un filete ambar debajo, que no
-   depende solo del color del texto. */
-.main-nav > a[aria-current="page"], .nav-grupo-enlace[aria-current="page"] { text-decoration: underline; text-decoration-color: var(--ambar); text-decoration-thickness: 3px; text-underline-offset: 8px; }
+/* La opcion de la vista en la que se esta lleva el aro ambar de styles.css
+   (menu M2), que no depende solo del color del texto. */
 
 /* Una banda oscura por vista: los principios en #/nosotros, el horario en
-   #/contacto. En #/ no hay: el horno lo ponen ahi la barra y el pie. Con el mismo radio que la historia y
-   el pie, para que se lean como piezas de la misma madera. */
+   #/contacto. En #/ no hay: el horno lo pone ahi la barra. */
 .banda-oscura { background: var(--horno); color: var(--sobre-horno); }
 
 /* ---- #/ : la portada (Hero.jsx, seccion 10 del plan, "Estilo") --------- */
@@ -64,6 +62,13 @@
 .portada h1 em { display: block; padding-left: .9em; color: var(--corteza); font-weight: 300; font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; }
 .portada-frase { max-width: 30rem; margin: 0; color: var(--horno-suave); font: italic 400 1.6rem/1.4 var(--letra-titulo); font-variation-settings: "opsz" 24; }
 .portada-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 1.6rem; margin-top: 2rem; }
+/* "Como llegar" es un enlace y no un boton: Fraunces en cursiva con el pin,
+   sin caja ni raya. Con el puntero el texto pasa a corteza oscura (7,18:1
+   sobre la masa) y el pin da un saltito. Mide 30 px de alto: pasa los 24. */
+.portada-llegar { display: inline-flex; align-items: center; gap: .5rem; padding: .3rem 0; color: var(--horno); font: italic 500 1.1rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui); }
+.portada-llegar .ico { width: 20px; height: 20px; stroke-width: 1.6; transition: transform var(--dur-base) var(--ease-soft); }
+.portada-llegar:hover { color: var(--corteza-oscura); }
+.con-puntero .portada-llegar:hover .ico { transform: translateY(-3px); }
 
 /* La foto cuadrada en arco, con un marco fino a 10 px. */
 .portada-foto { position: relative; width: min(100%, 460px); margin-left: auto; }
@@ -96,19 +101,23 @@
 
 /* ---- #/ : la cinta cobriza con las categorias (Cinta.jsx) --------------- */
 
-/* Papel sobre corteza: 4,7:1. Los enlaces son imprenta + ola, pero en
-   cursiva de titulo y sin el borde hasta que llega el puntero. */
+/* Papel sobre corteza: 4,7:1. Los enlaces van en cursiva de titulo y se
+   encienden como el menu de arriba (M2, las dos son navegacion): con el
+   raton aparece en su sitio una pastilla ambar que crece un poco, y el
+   texto y el icono pasan a horno (5,8:1 sobre el ambar). */
 .cinta { background: var(--corteza); color: var(--papel); border-block: 6px double var(--masa); }
 .cinta-dentro { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 2rem; padding-block: .7rem; }
-.cinta .h-imprenta { padding: .4rem .75rem; border-color: transparent; color: var(--papel); font: italic 400 1.35rem/1.2 var(--letra-titulo); letter-spacing: 0; text-transform: none; }
-.cinta .h-imprenta .ico { width: 1.35em; height: 1.35em; color: var(--masa); stroke-width: 1.4; }
-.con-puntero .cinta .h-imprenta:hover { border-color: var(--horno); color: var(--horno); }
-.con-puntero .cinta .h-imprenta:hover .ico { color: var(--horno); }
+.cinta-enlace { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--papel); font: italic 400 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.cinta-enlace .ico { width: 1.35em; height: 1.35em; color: var(--masa); stroke-width: 1.4; transition: color var(--dur-fast) var(--ease-ui); }
+.cinta-enlace::before { position: absolute; inset: 0; z-index: -1; content: ""; background: var(--ambar); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-soft); }
+.con-puntero .cinta-enlace:hover::before { opacity: 1; transform: none; }
+.con-puntero .cinta-enlace:hover, .con-puntero .cinta-enlace:hover .ico { color: var(--horno); }
+.cinta-enlace:active { transform: scale(.97); }
 /* Sobre la corteza el anillo horno no llega a 3:1: aqui es papel. */
 .cinta a:focus-visible { outline-color: var(--papel); }
 .cinta-estrella { color: var(--ambar); }
-/* La cinta es lo ultimo de #/ (sin carrusel debajo): un respiro de masa
-   antes del pie, para que la cobriza y el horno no se peguen. */
+/* La cinta es lo ultimo de #/ (sin carrusel ni pie debajo): un respiro de
+   masa hasta el borde de la pantalla. */
 .vista-inicio { padding-bottom: clamp(2rem, 5vw, 3.5rem); }
 
 /* Con menos movimiento la portada esta quieta desde el principio: sin
@@ -116,6 +125,7 @@
 @media (prefers-reduced-motion: reduce) {
   .portada-texto > *, .periodico-doble, .portada-arco img.is-loaded, .portada-sello { animation: none; }
   .con-puntero .portada-sello:hover svg { transform: none; transition: none; }
+  .con-puntero .portada-llegar:hover .ico, .cinta-enlace:active, .con-puntero .cinta-enlace:hover::before { transform: none; }
 }
 
 /* ---- #/nosotros --------------------------------------------------------- */
@@ -167,8 +177,8 @@
 .contacto-mapa-enlace { margin-top: 1rem; }
 .contacto-subtitulo { margin: 0 0 1rem; font: 500 1.5rem/1.2 var(--letra-titulo); }
 .contacto-lista { display: flex; flex-wrap: wrap; gap: 1.2rem 2.6rem; }
-/* .contacto viene del pie oscuro de styles.css; sobre la masa, los tonos de
-   texto claro pasan a los de fondo claro. */
+/* .contacto esta pensado en styles.css para fondo oscuro; sobre la masa, los
+   tonos de texto claro pasan a los de fondo claro. */
 .contacto-lista .contacto-tipo { color: var(--horno-suave); }
 .contacto-lista .contacto-valor { color: var(--corteza-oscura); }
 .contacto-lista .contacto-valor:hover { color: var(--horno); }
@@ -178,21 +188,6 @@
 .contacto-horario .open-label { margin-bottom: 1.2rem; font-size: .78rem; }
 .contacto-horario .footer-horario { font-size: 1rem; }
 .contacto-horario-nota { margin: 1rem 0 0; color: var(--sobre-horno-tenue); font: .8rem/1.5 Arial, sans-serif; }
-
-/* ---- El pie corto -------------------------------------------------------- */
-
-.pie-corto { padding: 2rem 0 1.3rem; }
-.pie-corto-fila { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.4rem 3rem; }
-.pie-corto-estado { display: flex; flex-direction: column; align-items: flex-start; gap: .5rem; }
-.pie-corto-estado .open-label { margin: 0; }
-.pie-corto-horario { color: var(--sobre-horno); font: .8rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-.pie-corto-horario:hover { color: var(--ambar); }
-.pie-corto-contacto { display: flex; flex-wrap: wrap; gap: 1rem 2.2rem; }
-.pie-corto-contacto .contacto + .contacto { margin-top: 0; }
-.pie-corto-final { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .3rem 2rem; margin-top: 1.4rem; padding-top: .9rem; border-top: 1px solid rgba(255, 255, 255, .15); }
-.pie-corto-final p { margin: 0; }
-.pie-corto-final .footer-note { padding: 0; border: 0; }
-.pie-corto-final .contacto-ficticio { flex-basis: 100%; }
 
 /* En la tienda los precios van en corteza, como pide el reparto (el 10 %
    son botones, precios y acentos). Corteza oscura sobre papel: 7,9:1. */
@@ -216,19 +211,18 @@
   .periodico-doble, .periodico-oficio { display: none; }
   .portada-frase { font-size: 1.3rem; }
   .cinta-dentro { gap: .2rem .6rem; }
-  .cinta .h-imprenta { font-size: 1.08rem; }
+  .cinta-enlace { font-size: 1.08rem; }
   .cinta-estrella { display: none; }
   .nosotros-principios { margin-bottom: 2.5rem; }
   .nosotros-principios h2 { font-size: 1.6rem; }
   .nosotros-principios-banda { margin: 0 8px; padding: 1rem 0; }
   .nosotros-historia { padding-bottom: 3rem; }
-  /* En el telefono el pie se aprieta: marca y estado en una fila, los dos
-     contactos en otra. Era la mitad de alto de la pantalla. */
-  .pie-corto { padding: 1.4rem 0 1.1rem; }
-  .pie-corto-fila { gap: 1rem 1.4rem; }
-  .pie-corto-contacto { flex-basis: 100%; justify-content: space-between; }
-  .pie-corto .mascot-footer { width: 44px; height: 44px; }
-  .pie-corto-final { margin-top: 1rem; }
+  /* La canasta flota abajo a la derecha: lo ultimo de cada vista no se
+     queda debajo de ella al llegar al final. Las que acaban en la franja
+     de espigas no lo necesitan: la franja es adorno y llega al borde. */
+  #raiz > main { padding-bottom: 92px; }
+  #raiz > main:has(.franja-pie) { padding-bottom: 0; }
+  .vista-inicio { padding-bottom: 0; }
 }
 /* Por debajo de 360 px el sello sobresalia por la derecha (2 px a 320):
    pegado al borde y algo mas pequeno. */
@@ -287,17 +281,16 @@
   .fondo-contacto .is-arriba-derecha { display: none; }
 }
 
-/* ---- La franja encima del pie (Franja.jsx) ---------------------------------- */
+/* ---- La franja del final (Franja.jsx) ---------------------------------------- */
 
-/* La misma franja de espigas del inicio, dada la vuelta: la curva sube y el
-   pie se le monta encima, asi que por sus esquinas redondas asoma la corteza. */
-.franja-pie { margin-top: 2rem; margin-bottom: calc(-1 * var(--r-band)); padding-bottom: var(--r-band); }
+/* La misma franja de espigas del inicio, dada la vuelta: la curva sube. Sin
+   pie de pagina es lo ultimo de Nosotros, Contacto y la tienda, y llega al
+   borde de abajo como un mostrador. Es adorno: en el telefono la canasta
+   flotante puede quedar encima sin tapar nada que se lea. */
+.franja-pie { margin-top: 2rem; }
 .franja-pie::after { top: -22px; bottom: auto; height: 22px; border-radius: 50% 50% 0 0 / 22px 22px 0 0; }
 .franja-pie .sign-band-inner { min-height: 64px; }
-.franja-pie + * { position: relative; }
-.site-footer { position: relative; z-index: 1; }
 @media (max-width: 680px) {
-  .franja-pie { margin-bottom: calc(-1 * var(--r-card)); padding-bottom: var(--r-card); }
   .franja-pie .sign-band-inner { min-height: 52px; }
   .franja-pie .sign-trigo { width: 120px; }
 }
@@ -305,8 +298,7 @@ body.is-vista .franja-pie { display: block; }
 
 /* ---- Las vistas que llegan en su propio archivo (comun/cargaPorPartes.js) -
    Al abrir la pagina en la cuenta o en el pago, mientras llega su archivo,
-   un hueco del alto de la ventana: el pie no se asoma arriba para bajar
-   despues. Al navegar no se ve, porque se queda la vista de antes. */
+   un hueco del alto de la ventana: la vista no da un salto al llegar. Al navegar no se ve, porque se queda la vista de antes. */
 .vista-cargando { min-height: 100vh; }
 
 /* Si el archivo no llega: un aviso corto en el sitio de la vista, sobre la

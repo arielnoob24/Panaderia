@@ -14,7 +14,6 @@ import heroChica from '/assets/img/hero-900.jpg';
 import heroGrande from '/assets/img/hero-1600.jpg';
 import { useCargaImagen, clases } from '../comun/useCargaImagen.js';
 import { IconoHogaza, IconoPin, IconoTrigo } from '../comun/iconos.jsx';
-import TextoOla from '../comun/TextoOla.jsx';
 import CabeceraPeriodico from './CabeceraPeriodico.jsx';
 
 // El sello es dibujo: lo que dice ya lo dicen el titular y la foto. Va fuera
@@ -50,9 +49,10 @@ function Hero({ tituloRef }) {
                 <IconoHogaza clase="ico" />
                 Nuestros panes
               </Link>
-              <Link className="h-imprenta h-ola" to="/contacto" state={{ entrar: true }}>
+              {/* El camino secundario es un enlace, no un boton (seccion 10). */}
+              <Link className="portada-llegar" to="/contacto" state={{ entrar: true }}>
                 <IconoPin clase="ico" />
-                <TextoOla>Cómo llegar</TextoOla>
+                Cómo llegar
               </Link>
             </div>
           </div>

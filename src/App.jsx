@@ -1,4 +1,5 @@
-// La pagina: cabecera, la vista que pide la direccion y el pie corto. Las
+// La pagina: cabecera y la vista que pide la direccion, sin pie (seccion 4
+// del plan). Las
 // vistas y sus direcciones estan en comun/vistas.js:
 //   #/  #/nosotros  #/tienda-catalogo  #/tienda-<categoria>  #/contacto
 //   #/confirmar  #/comprobante
@@ -12,7 +13,6 @@ import { Suspense, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, m, useIsPresent, useReducedMotion } from 'motion/react';
 import Cabecera from './comun/Cabecera.jsx';
-import Pie from './comun/Pie.jsx';
 import Globo from './comun/Globo.jsx';
 import { RegionAvisos } from './comun/Avisos.jsx';
 import SaltoContenido from './comun/SaltoContenido.jsx';
@@ -46,7 +46,7 @@ function Vista({ cual, pathname }) {
 
 // Lo que ocupa la vista mientras llega su archivo, que solo se ve si se abre
 // la pagina en ella (al navegar se sigue viendo la de antes): un hueco del
-// alto de la ventana, para que el pie no se asome arriba y luego baje.
+// alto de la ventana, para que la pagina no de un salto al llegar.
 const CARGANDO = <div className="vista-cargando"></div>;
 
 // La vista nueva entra con un fundido y sube un poco (seccion 4 del plan):
@@ -153,7 +153,6 @@ function App() {
           </Suspense>
         </FalloDeCarga>
       </main>
-      <Pie />
       {/* El boton de la canasta va en la cabecera; el panel y la barra de
           deshacer, fuera de la pagina, que queda inert detras del panel. */}
       <Canasta />

@@ -1,6 +1,6 @@
 // ---- La cabecera de periodico de la portada (seccion 10 del plan) ---------
 // La fecha de hoy, el nombre del oficio entre dos filetes dobles y si esta
-// abierto. La fecha y el estado salen del mismo reloj que el pie
+// abierto. La fecha y el estado salen del mismo reloj que #/contacto
 // (useHorario, que se pone al dia cada minuto), asi que a medianoche cambian
 // los dos a la vez. En el telefono solo quedan la fecha y el estado (CSS).
 import { useHorario } from '../comun/useHorario.js';
@@ -15,7 +15,7 @@ const hoyEnLetra = (fecha) => {
 };
 const hoyEnCifras = (f) => `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, '0')}-${String(f.getDate()).padStart(2, '0')}`;
 
-// Lo mismo que dice el pie, con las palabras de la cabecera.
+// Lo mismo que dice #/contacto, con las palabras de la cabecera.
 const estadoDeHoy = ({ festivo, abierto, antesDeAbrir, abre, cierra }) => {
   if (festivo) return 'Cerrado · día festivo';
   if (abierto) return `Abierto · hasta las ${cierra}`;

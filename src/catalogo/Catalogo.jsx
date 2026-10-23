@@ -258,7 +258,7 @@ function Catalogo({ categoria }) {
     avisar(`${producto.nombre} ${t.valor}, ${dinero(t.precio)}.`);
   }, [avisar]);
 
-  // Encima del pie, la franja de las espigas (la parte de acento de la vista).
+  // Al final, la franja de las espigas (la parte de acento de la vista).
   return (
     <>
       <section id="catalogo" className="catalog section-pad vista-tienda">

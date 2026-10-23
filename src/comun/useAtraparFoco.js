@@ -53,12 +53,11 @@ function useAtraparFoco(activo, cajas, alEscape) {
 // La pagina de detras se apaga mientras haya algun panel abierto. Se lleva en
 // un conjunto para que el ultimo en cerrarse sea el que la encienda. Se buscan
 // por clase e id porque son las zonas de la pagina, que viven en otros
-// componentes (Cabecera, App, Pie), como hace ui.js.
+// componentes (Cabecera, App), como hace ui.js.
 const panelesAbiertos = new Set();
 const detras = () => [
   document.querySelector('.site-header'),
   document.getElementById('contenido'),
-  document.querySelector('.site-footer'),
 ].filter(Boolean);
 
 const apagarDetras = (panel, apagado) => {
