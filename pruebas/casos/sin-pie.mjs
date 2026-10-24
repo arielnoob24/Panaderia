@@ -15,7 +15,7 @@ const VISTAS = ['#/', '#/nosotros', '#/tienda-catalogo', '#/contacto', '#/cuenta
 // Lo ultimo que se lee o se pulsa en cada vista.
 const ULTIMO = {
   '#/': '.cinta-enlace:last-of-type',
-  '#/nosotros': '.principles > div:last-child',
+  '#/nosotros': '.principios > li:last-child',
   '#/tienda-catalogo': '.product-card:not([hidden]):last-of-type .card-mas, .product-card:not([hidden]):last-of-type .card-agotado',
   '#/contacto': '.contacto-nota',
   '#/cuenta/entrar': '.cuenta-vista .cuenta-pie',

@@ -14,11 +14,11 @@ export default async function principios(t) {
     const ctx = await t.contexto({ ...VENTANAS.m320, reducedMotion: 'reduce' }, { nombre: sitio });
     const p = await ctx.newPage();
     await p.goto(base + ruta);
-    await p.waitForSelector('.principles > div');
+    await p.waitForSelector('.principios > li');
     await p.addStyleTag({ content: ESPACIADO });
     await espera(300);
     const m = await p.evaluate(() => {
-      const caja = document.querySelector('.principles');
+      const caja = document.querySelector('.principios');
       const c = caja.getBoundingClientRect();
       const tarjetas = [...caja.children].map((d) => {
         const r = d.getBoundingClientRect();

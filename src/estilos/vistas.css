@@ -35,8 +35,9 @@
 /* La opcion de la vista en la que se esta lleva el aro ambar de styles.css
    (menu M2), que no depende solo del color del texto. */
 
-/* Una banda oscura por vista: los principios en #/nosotros, el horario en
-   #/contacto. En #/ no hay: el horno lo pone ahi la barra. */
+/* Una banda oscura en #/contacto (el horario) y la cabeza de la tienda. En
+   #/ y en #/nosotros no hay: el horno lo pone ahi la barra, y los
+   principios de Nosotros van sobre la masa (seccion 10 del plan). */
 .banda-oscura { background: var(--horno); color: var(--sobre-horno); }
 
 /* ---- #/ : la portada (Hero.jsx, seccion 10 del plan, "Estilo") --------- */
@@ -47,61 +48,82 @@
 /* La cabecera de periodico: fecha, el oficio entre filetes dobles que se
    dibujan de izquierda a derecha al entrar, y si esta abierto. */
 .periodico { display: flex; align-items: center; gap: 1rem; padding-block: .9rem; border-bottom: 1px solid var(--horno); }
-.periodico-doble { flex: 1; height: 3px; border-block: 1px solid var(--horno); transform-origin: left; animation: traza var(--dur-scene) var(--ease-soft) 150ms both; }
+/* El filete doble: el de la cabecera de periodico y el que enmarca el h2 de
+   los principios de #/nosotros. En la portada se dibuja al entrar; en
+   Nosotros, al llegar a el (data-aparece, mas abajo). */
+.linea-doble { flex: 1; height: 3px; border-block: 1px solid var(--horno); transform-origin: left; }
+.periodico-doble { animation: traza var(--dur-scene) var(--ease-soft) 150ms both; }
 .periodico-estado { display: inline-flex; align-items: center; gap: .5rem; }
 .periodico .status-dot { margin-top: 0; }
 
 .portada-rejilla { display: grid; grid-template-columns: 1.2fr .8fr; gap: 3rem; align-items: center; padding-block: 2rem 2.6rem; }
-.portada-rotulo { display: flex; align-items: center; gap: .4rem; }
-.portada-rotulo .ico { width: 14px; height: 14px; color: var(--corteza); }
+.portada-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 1.6rem; margin-top: 2rem; }
+.portada-foto { width: min(100%, 460px); margin-left: auto; }
+/* La foto de la portada es cuadrada, y el sello cae abajo a la izquierda,
+   asomandose hacia el texto. */
+.portada-arco { aspect-ratio: 1; }
+.portada-arco img { object-position: center 55%; }
+.portada-sello { bottom: 40px; left: -58px; }
+
+/* ---- Las piezas de la portada que usa tambien #/nosotros ----------------
+   (seccion 10 del plan, "Nosotros con el estilo de la portada"). Cada vista
+   pone encima solo su tamano y su sitio. */
+
+/* El rotulo con la espiga: "Horneado cada mañana", "Nuestra historia". */
+.rotulo-espiga { display: flex; align-items: center; gap: .4rem; }
+.rotulo-espiga .ico { width: 14px; height: 14px; color: var(--corteza); }
 /* El titular grande, con los ejes de Fraunces: optico de cartel, curvas
    suaves y las letras "raras" (WONK) que le dan el aire de antes. La
    segunda linea, cursiva cobriza y corrida: corteza sobre masa da 4,26:1
    (3,87:1 con el grano), que vale por ser letra grande (pide 3:1). */
-.portada h1 { margin: .9rem 0 1.1rem; font: 400 clamp(3.6rem, 8.4vw, 8.4rem)/.88 var(--letra-titulo); font-variation-settings: "opsz" 144, "SOFT" 60, "WONK" 1; letter-spacing: -.02em; }
-.portada h1 em { display: block; padding-left: .9em; color: var(--corteza); font-weight: 300; font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; }
-.portada-frase { max-width: 30rem; margin: 0; color: var(--horno-suave); font: italic 400 1.6rem/1.4 var(--letra-titulo); font-variation-settings: "opsz" 24; }
-.portada-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 1.6rem; margin-top: 2rem; }
-/* "Como llegar" es un enlace y no un boton (L1, seccion 10 del plan):
-   Fraunces en cursiva, grande y gruesa para que se vea junto al ticket, con
-   el pin en corteza, sin caja ni raya. Con el puntero las letras saltan una
-   tras otra (la ola: cada una es un span de TextoOla.jsx con su turno en
-   --i), el texto pasa a corteza oscura (7,18:1 sobre la masa) y el pin da
-   un saltito. Mide mas de 30 px de alto: pasa los 24. Relativa por el
-   nombre escondido (sr-only) que lleva dentro. */
-.portada-llegar { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding: .42rem .9rem; border: 1px solid var(--corteza); border-radius: var(--r-btn); color: var(--horno); font: italic 600 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
-.portada-llegar .ico { width: 24px; height: 24px; color: var(--corteza); stroke-width: 1.8; transition: transform var(--dur-base) var(--ease-soft); }
-.portada-llegar .letras span { display: inline-block; white-space: pre; }
-.portada-llegar:hover { border-color: var(--corteza-oscura); color: var(--corteza-oscura); }
-.portada-llegar:active { transform: scale(.97); }
-.con-puntero .portada-llegar:hover .ico { transform: translateY(-3px); }
-.con-puntero .portada-llegar:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
+.titular { margin: .9rem 0 1.1rem; font: 400 clamp(3.6rem, 8.4vw, 8.4rem)/.88 var(--letra-titulo); font-variation-settings: "opsz" 144, "SOFT" 60, "WONK" 1; letter-spacing: -.02em; }
+.titular em { display: block; padding-left: .9em; color: var(--corteza); font-weight: 300; font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; }
+/* La frase en cursiva bajo el titular. */
+.frase { max-width: 30rem; margin: 0; color: var(--horno-suave); font: italic 400 1.6rem/1.4 var(--letra-titulo); font-variation-settings: "opsz" 24; }
+/* "Como llegar" y "Conoce nuestro local" son enlaces y no botones (L1,
+   seccion 10 del plan; EnlaceLlegar.jsx): Fraunces en cursiva, grande y
+   gruesa para que se vea junto al ticket, con el pin en corteza y un
+   filete fino, sin relleno. Con el puntero las letras saltan una tras otra
+   (la ola: cada una es un span de TextoOla.jsx con su turno en --i), el
+   texto pasa a corteza oscura (7,18:1 sobre la masa) y el pin da un
+   saltito. Mide mas de 30 px de alto: pasa los 24. Relativa por el nombre
+   escondido (sr-only) que lleva dentro. */
+.enlace-llegar { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding: .42rem .9rem; border: 1px solid var(--corteza); border-radius: var(--r-btn); color: var(--horno); font: italic 600 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.enlace-llegar .ico { width: 24px; height: 24px; color: var(--corteza); stroke-width: 1.8; transition: transform var(--dur-base) var(--ease-soft); }
+.enlace-llegar .letras span { display: inline-block; white-space: pre; }
+.enlace-llegar:hover { border-color: var(--corteza-oscura); color: var(--corteza-oscura); }
+.enlace-llegar:active { transform: scale(.97); }
+.con-puntero .enlace-llegar:hover .ico { transform: translateY(-3px); }
+.con-puntero .enlace-llegar:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
 @keyframes salta { 40% { transform: translateY(-5px); } }
 
-/* La foto cuadrada en arco, con un marco fino a 10 px. */
-.portada-foto { position: relative; width: min(100%, 460px); margin-left: auto; }
-.portada-foto figure { margin: 0; }
-.portada-arco { aspect-ratio: 1; overflow: hidden; background: var(--masa-honda); border-radius: var(--r-pill) var(--r-pill) 0 0; box-shadow: 0 0 0 10px var(--masa), 0 0 0 11px var(--horno); }
-.portada-arco img { width: 100%; height: 100%; object-fit: cover; object-position: center 55%; opacity: 0; }
-.portada-arco img.is-loaded { opacity: 1; animation: descubre var(--dur-scene) var(--ease-soft) 200ms both; }
-.portada-foto figcaption { margin-top: .8rem; color: var(--horno-suave); font: italic 400 .95rem/1.4 var(--letra-titulo); text-align: right; }
-.portada-foto figcaption::before { content: "— " / ""; }
+/* La foto en arco (FotoEnArco.jsx), con un marco fino a 10 px y el pie en
+   cursiva. La forma del arco (cuadrado, 4:5) la pone cada vista. */
+.foto-arco { position: relative; }
+.foto-arco figure { margin: 0; }
+.arco { overflow: hidden; background: var(--masa-honda); border-radius: var(--r-pill) var(--r-pill) 0 0; box-shadow: 0 0 0 10px var(--masa), 0 0 0 11px var(--horno); }
+.arco img { width: 100%; height: 100%; object-fit: cover; opacity: 0; }
+.arco img.is-loaded { opacity: 1; animation: descubre var(--dur-scene) var(--ease-soft) 200ms both; }
+.foto-arco figcaption { margin-top: .8rem; color: var(--horno-suave); font: italic 400 .95rem/1.4 var(--letra-titulo); text-align: right; }
+.foto-arco figcaption::before { content: "— " / ""; }
 
-/* El sello de la casa: el texto da la vuelta al aro. Cae girando al entrar
-   y solo se mueve con el puntero encima; el desplazamiento no lo gira. */
-.portada-sello { position: absolute; bottom: 40px; left: -58px; width: 124px; height: 124px; color: var(--corteza-oscura); background: var(--masa) var(--grano); border-radius: 50%; transform: rotate(-12deg); animation: sella var(--dur-scene) var(--ease-soft) 800ms both; }
-.portada-sello svg { display: block; width: 100%; height: 100%; transition: transform var(--dur-editorial) var(--ease-soft); }
-.con-puntero .portada-sello:hover svg { transform: rotate(40deg); }
-.portada-sello-aro { font: 700 11.5px var(--letra-texto); letter-spacing: .26em; text-transform: uppercase; fill: currentColor; }
-.portada-sello-centro { font: 400 26px var(--letra-titulo); fill: currentColor; }
+/* El sello (Sello.jsx): el texto da la vuelta al aro. Cae girando al entrar
+   y solo se mueve con el puntero encima; el desplazamiento no lo gira.
+   Donde cae lo dice cada vista (.portada-sello, .nosotros-sello). */
+.sello { position: absolute; width: 124px; height: 124px; color: var(--corteza-oscura); background: var(--masa) var(--grano); border-radius: 50%; transform: rotate(-12deg); animation: sella var(--dur-scene) var(--ease-soft) 800ms both; }
+.sello svg { display: block; width: 100%; height: 100%; transition: transform var(--dur-editorial) var(--ease-soft); }
+.con-puntero .sello:hover svg { transform: rotate(40deg); }
+.sello-aro { font: 700 11.5px var(--letra-texto); letter-spacing: .26em; text-transform: uppercase; fill: currentColor; }
+.sello-centro { font: 400 26px var(--letra-titulo); fill: currentColor; }
 
-/* La entrada, una vez y lenta (escena): rotulo, titular, frase y botones
-   suben uno tras otro. */
-.portada-texto > * { animation: sube var(--dur-editorial) var(--ease-soft) both; }
-.portada-texto > :nth-child(1) { animation-delay: 100ms; }
-.portada-texto > :nth-child(2) { animation-delay: 200ms; }
-.portada-texto > :nth-child(3) { animation-delay: 340ms; }
-.portada-texto > :nth-child(4) { animation-delay: 460ms; }
+/* La entrada, una vez y lenta (escena): rotulo, titular, frase y lo que
+   venga detras suben uno tras otro. */
+.sube-en-orden > * { animation: sube var(--dur-editorial) var(--ease-soft) both; }
+.sube-en-orden > :nth-child(1) { animation-delay: 100ms; }
+.sube-en-orden > :nth-child(2) { animation-delay: 200ms; }
+.sube-en-orden > :nth-child(3) { animation-delay: 340ms; }
+.sube-en-orden > :nth-child(4) { animation-delay: 460ms; }
+.sube-en-orden > :nth-child(5) { animation-delay: 560ms; }
 @keyframes sube { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
 @keyframes traza { from { transform: scaleX(0); } to { transform: none; } }
 @keyframes descubre { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0); } }
@@ -144,30 +166,87 @@
 .vista-inicio .portada-rejilla { min-height: 0; flex: 1; padding-block: clamp(.4rem, 2.5svh, 2rem); }
 .vista-inicio .portada-foto { width: min(100%, clamp(160px, 52svh, 460px)); }
 
-/* Con menos movimiento la portada esta quieta desde el principio: sin
-   entrada, sin filetes que se dibujan y sin sello que gire. */
+/* Con menos movimiento la portada (y la historia de #/nosotros, que usa sus
+   piezas) esta quieta desde el principio: sin entrada, sin filetes que se
+   dibujan y sin sello que gire. */
 @media (prefers-reduced-motion: reduce) {
-  .portada-texto > *, .periodico-doble, .portada-arco img.is-loaded, .portada-sello { animation: none; }
-  .con-puntero .portada-sello:hover svg { transform: none; transition: none; }
-  .con-puntero .portada-llegar:hover .ico, .portada-llegar:active, .cinta-enlace:active, .con-puntero .cinta-enlace:hover::before { transform: none; }
-  /* Sin la ola: "Como llegar" solo cambia de color. */
-  .con-puntero .portada-llegar:hover .letras span { animation: none; }
+  .sube-en-orden > *, .periodico-doble, .arco img.is-loaded, .sello { animation: none; }
+  .con-puntero .sello:hover svg { transform: none; transition: none; }
+  .con-puntero .enlace-llegar:hover .ico, .enlace-llegar:active, .cinta-enlace:active, .con-puntero .cinta-enlace:hover::before { transform: none; }
+  /* Sin la ola: "Como llegar" y "Conoce nuestro local" solo cambian de color. */
+  .con-puntero .enlace-llegar:hover .letras span { animation: none; }
   .con-puntero .cinta-enlace:hover .letras span { animation: none; }
   .con-puntero .cinta-enlace:hover .ico { animation: none; }
 }
 
-/* ---- #/nosotros --------------------------------------------------------- */
+/* ---- #/nosotros (seccion 10 del plan, "Nosotros con el estilo de la
+   portada") ------------------------------------------------------------- */
 
-.nosotros-historia { padding: 1.5rem 0 4.5rem; }
-.nosotros-texto h1 { margin: 0 0 1.8rem; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 var(--letra-titulo); }
-.nosotros-texto h1 em { color: var(--corteza-oscura); }
-.nosotros-texto .lead { max-width: 30ch; margin: 0 0 1.2rem; font: italic 1.5rem/1.35 var(--letra-titulo); }
-.nosotros-texto p:not(.lead) { max-width: 46ch; color: var(--horno-suave); font-size: 1.05rem; line-height: 1.7; }
-.nosotros-texto .text-link { margin-top: 1.4rem; }
-.nosotros-principios { margin: 0 0 3rem; }
-.nosotros-principios h2 { margin: 0 0 1.2rem; font: 500 clamp(1.8rem, 3.4vw, 2.4rem)/1.1 var(--letra-titulo); }
-.nosotros-principios-banda { margin: 0 var(--borde); padding: 1.6rem 0; border-radius: var(--r-card); }
-.nosotros-principios .principles { margin: 0 auto; }
+/* La historia: la portada en espejo, la foto a la izquierda. El texto va
+   antes en el HTML (el lector llega primero al titulo) y la rejilla lo
+   cambia de lado. */
+.nosotros-historia { padding: 1.5rem 0 4rem; }
+.nosotros-rejilla { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); grid-template-areas: "foto texto"; gap: clamp(3.5rem, 7vw, 7rem); align-items: center; }
+.nosotros-texto { grid-area: texto; }
+/* Mas largo que "El sabor de siempre": algo mas pequeno, para que
+   "nuestro ingrediente" no se parta en su columna. */
+.nosotros-texto .titular { font-size: clamp(3rem, 6.4vw, 6.4rem); }
+.nosotros-texto .frase { margin-bottom: 1.1rem; }
+/* El parrafo de la madrugada es texto corrido: Arial, no la Georgia de body. */
+.nosotros-madrugada { max-width: 46ch; margin: 0; color: var(--horno-suave); font: 1.05rem/1.7 var(--letra-texto); }
+.nosotros-llegar { margin-top: 1.8rem; }
+.nosotros-foto { grid-area: foto; width: min(100%, 420px); margin-right: auto; }
+/* El amasado es vertical: el arco, 4:5. */
+.nosotros-arco { aspect-ratio: 4 / 5; }
+.nosotros-arco img { object-position: center 40%; }
+/* En espejo: el sello abajo a la derecha, hacia el texto, y el pie a la
+   izquierda, lejos de el. */
+.nosotros-foto figcaption { text-align: left; }
+.nosotros-sello { right: -58px; bottom: 40px; }
+
+/* Los principios, sobre la masa: el h2 en versalitas entre las lineas
+   dobles de la cabecera de periodico, y tres columnas separadas por una
+   estrella. El numero, en versalitas corteza oscura (.rotulo, 6,52:1 sobre
+   el grano). */
+.nosotros-principios { padding: 1rem 0 2.5rem; }
+.principios-cabeza { display: flex; align-items: center; gap: 1.4rem; }
+.principios-titulo { flex: 0 1 auto; margin: 0; color: var(--horno); font: 700 .95rem/1.4 var(--letra-texto); letter-spacing: .22em; text-align: center; text-transform: uppercase; }
+.principios-cabeza .linea-doble { min-width: 24px; }
+.principios { --hueco: clamp(2.5rem, 6vw, 5.5rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--hueco); max-width: 1120px; margin: 2.6rem auto 0; padding: 0; list-style: none; }
+.principio { position: relative; text-align: center; }
+/* La estrella entre dos columnas, en medio del hueco y a la altura del
+   icono. Es adorno: sin texto para el lector (alt vacio). */
+.principio + .principio::before { position: absolute; top: 2.9rem; left: calc(var(--hueco) / -2); color: var(--corteza); content: "✦"; content: "✦" / ""; font-size: 1.1rem; line-height: 1; transform: translateX(-50%); }
+.principio-numero { display: block; }
+.principio-icono { display: block; width: 44px; height: 44px; margin: .9rem auto .8rem; color: var(--corteza); transform-origin: center 80%; }
+.principio h3 { margin: 0 0 .45rem; font: 500 1.45rem/1.2 var(--letra-titulo); }
+.principio p { max-width: 26ch; margin: 0 auto; color: var(--horno-suave); font: .95rem/1.5 var(--letra-texto); }
+/* Con el puntero encima, el icono de cada principio hace su movimiento
+   breve, como los de la cinta: el tarro da un saltito, la aguja del reloj
+   da la vuelta y la espiga se mece. */
+.principio-aguja { transform-box: view-box; transform-origin: 12px 12px; }
+.con-puntero .principio-masa:hover .principio-icono { animation: salta-galleta var(--dur-slow) var(--ease-soft) both; }
+.con-puntero .principio-tiempo:hover .principio-aguja { animation: da-la-vuelta var(--dur-slow) var(--ease-soft) both; }
+.con-puntero .principio-origen:hover .principio-icono { animation: baila-botella var(--dur-slow) var(--ease-soft) both; }
+@keyframes da-la-vuelta { to { transform: rotate(1turn); } }
+
+/* Aparecen al llegar a ellos (useAparecer de Nosotros.jsx). Solo se
+   esconden cuando el JS lo ha marcado (data-aparece="espera"): sin la
+   marca todo se ve. Las lineas se dibujan y las columnas suben una tras
+   otra; si ya se veian al abrir ("escena"), un poco despues de la
+   historia, dentro de la misma escena. */
+.nosotros-principios[data-aparece="espera"] .linea-doble { transform: scaleX(0); }
+.nosotros-principios[data-aparece="espera"] .principio { opacity: 0; }
+.nosotros-principios[data-aparece="escena"] { --retraso: 520ms; }
+.nosotros-principios:is([data-aparece="ya"], [data-aparece="escena"]) .linea-doble { animation: traza var(--dur-scene) var(--ease-soft) var(--retraso, 0ms) both; }
+.nosotros-principios:is([data-aparece="ya"], [data-aparece="escena"]) .principio { animation: sube var(--dur-editorial) var(--ease-soft) both; animation-delay: calc(var(--retraso, 0ms) + 220ms + var(--n, 0) * 120ms); }
+
+/* Con menos movimiento, quietos y a la vista: useAparecer ya no marca nada;
+   esto es por si el ajuste cambia con la vista abierta. */
+@media (prefers-reduced-motion: reduce) {
+  .nosotros-principios[data-aparece] .linea-doble, .nosotros-principios[data-aparece] .principio { opacity: 1; transform: none; animation: none; }
+  .con-puntero .principio:hover .principio-icono, .con-puntero .principio:hover .principio-aguja { animation: none; }
+}
 
 /* ---- La tienda: la cabeza oscura ----------------------------------------- */
 
@@ -228,6 +307,12 @@
   .portada-foto { width: min(100%, clamp(160px, 52svh, 340px)); margin-inline: auto; }
   .portada-sello { right: -8px; bottom: -40px; left: auto; width: 112px; height: 112px; }
   .portada-foto figcaption { padding-right: 104px; text-align: left; }
+  /* Nosotros sigue en dos columnas hasta el telefono, mas juntas, con el
+     sello mas pequeno y menos asomado: a 681 px el hueco mide unos 41 px y
+     con -44 el sello rozaba el parrafo de la madrugada; con -28 le quedan
+     13 px de aire (26 a 900). */
+  .nosotros-rejilla { gap: clamp(2.5rem, 6vw, 3.5rem); }
+  .nosotros-sello { right: -28px; width: 104px; height: 104px; }
   .contacto-rejilla { grid-template-columns: 1fr; grid-template-areas: "datos" "mapa" "horario" "escribir"; }
 }
 @media (min-width: 681px) and (max-width: 900px) {
@@ -268,10 +353,25 @@
   .cinta-dentro { gap: .2rem .6rem; }
   .cinta-enlace { font-size: 1.08rem; }
   .cinta-estrella { display: none; }
-  .nosotros-principios { margin-bottom: 2.5rem; }
-  .nosotros-principios h2 { font-size: 1.6rem; }
-  .nosotros-principios-banda { margin: 0 8px; padding: 1rem 0; }
-  .nosotros-historia { padding-bottom: 3rem; }
+  /* Nosotros en una columna: el texto arriba y la foto debajo, centrada,
+     con el sello abajo a la derecha como en la portada. */
+  .nosotros-historia { padding-bottom: 3.4rem; }
+  .nosotros-rejilla { grid-template-columns: minmax(0, 1fr); grid-template-areas: "texto" "foto"; gap: 2.6rem; }
+  .nosotros-texto .titular { font-size: clamp(2.5rem, 11vw, 3.4rem); }
+  .nosotros-texto .titular em { padding-left: .45em; }
+  .nosotros-texto .frase { font-size: 1.3rem; }
+  .nosotros-foto { width: min(100%, 300px); margin-inline: auto; }
+  .nosotros-sello { right: -8px; bottom: -40px; width: 104px; height: 104px; }
+  .nosotros-foto figcaption { padding-right: 96px; }
+  /* Los principios en una columna, con la estrella entre ellos en
+     horizontal, entre dos filetes finos. */
+  .nosotros-principios { padding-bottom: 2rem; }
+  .principios-cabeza { gap: .8rem; }
+  .principios-titulo { font-size: .8rem; letter-spacing: .16em; }
+  .principios { grid-template-columns: minmax(0, 1fr); margin-top: 1.8rem; }
+  .principio + .principio::before { position: static; display: block; width: 168px; margin: 1.6rem auto 1.2rem; background: linear-gradient(var(--masa-linea), var(--masa-linea)) left center / calc(50% - 1.1rem) 1px no-repeat, linear-gradient(var(--masa-linea), var(--masa-linea)) right center / calc(50% - 1.1rem) 1px no-repeat; transform: none; }
+  .principio-icono { margin: .6rem auto .55rem; }
+  .principio h3 { font-size: 1.3rem; }
   /* La canasta flota abajo a la derecha: lo ultimo de cada vista no se
      queda debajo de ella al llegar al final. Las que acaban en la franja
      de espigas no lo necesitan: la franja es adorno y llega al borde. */
@@ -283,6 +383,13 @@
    pegado al borde y algo mas pequeno. */
 @media (max-width: 360px) {
   .vista-inicio .portada-sello { right: 0; }
+}
+
+/* Al imprimir no hay desplazamiento que los haga aparecer: los principios
+   salen a la vista aunque no se haya bajado hasta ellos. */
+@media print {
+  .nosotros-principios[data-aparece] .principio { opacity: 1; animation: none; }
+  .nosotros-principios[data-aparece] .linea-doble { transform: none; animation: none; }
 }
 
 /* ---- Motion ---------------------------------------------------------------- */
@@ -322,8 +429,7 @@
 .fondo-inicio { opacity: .34; }
 .fondo-inicio .fondo-pieza.is-patron path { stroke-width: .65; }
 .fondo-nosotros .is-abajo-derecha { right: 1%; bottom: -50px; width: 300px; }
-.fondo-nosotros .is-arriba-izquierda { top: 20px; left: 38%; width: 300px; }
-.fondo-principios .is-abajo-derecha { right: 2%; bottom: 0; width: 380px; }
+.fondo-nosotros .is-arriba-izquierda { top: 6px; right: 4%; left: auto; width: 300px; }
 .fondo-tienda .is-arriba-izquierda { top: 14px; left: 14%; width: 230px; }
 .fondo-tienda .is-arriba-derecha { top: 6px; right: 6%; width: 260px; }
 .fondo-contacto .is-abajo-izquierda { right: 3%; bottom: -10px; left: auto; width: 230px; }
@@ -335,7 +441,6 @@
   .fondo-inicio .fondo-pieza.is-patron { top: var(--pieza-movil-y); left: var(--pieza-movil-x); width: var(--pieza-movil-ancho); }
   .fondo-nosotros .is-abajo-derecha { right: -60px; width: 280px; }
   .fondo-nosotros .is-arriba-izquierda { display: none; }
-  .fondo-principios .is-abajo-derecha { right: -80px; width: 280px; }
   .fondo-tienda .is-arriba-izquierda { display: none; }
   .fondo-tienda .is-arriba-derecha { top: 4px; right: -40px; width: 170px; }
   .fondo-contacto .is-abajo-izquierda { left: auto; right: -40px; bottom: auto; top: 40px; width: 200px; }

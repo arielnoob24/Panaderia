@@ -49,14 +49,10 @@ const PIEZAS = {
     motivoPortada('espiga-18', '-80 -150 160 300', [espiga({ giro: 24, escala: 0.6 })], { x: '67%', y: '64%', ancho: '128px' }, { x: '67%', y: '63%', ancho: '94px' }),
   ],
   // #/nosotros, sobre la masa: la gavilla grande junto al texto y unas
-  // espigas sueltas arriba, junto a la foto.
+  // espigas sueltas arriba a la derecha, lejos del rotulo (vistas.css).
   nosotros: [
     { donde: 'abajo-derecha', caja: '-150 -190 300 290', trazos: [gavilla({ giro: -10, escala: 1.2 })] },
     { donde: 'arriba-izquierda', caja: '-140 -60 280 120', trazos: [espiga({ x: -40, y: 20, giro: 70, escala: 0.6 }), espiga({ x: 40, y: 10, giro: 100, escala: 0.55 }), grano({ x: 110, y: -30, giro: 40 }), grano({ x: -120, y: -36, giro: -20 })] },
-  ],
-  // Los principios, en la banda oscura: dos espigas tumbadas.
-  principios: [
-    { donde: 'abajo-derecha', caja: '-170 -80 340 160', trazos: [espiga({ x: -20, y: 30, giro: -78, escala: 0.9 }), espiga({ x: 30, y: 50, giro: -96, escala: 0.8 })] },
   ],
   // La tienda: panes a los lados del titulo.
   tienda: [

@@ -9,7 +9,7 @@
 > `.claude/CLAUDE.md`. Las secciones 1 a 14 describen el sitio **como está
 > hoy** (React); la 15 es la historia corta de cómo se llegó aquí.
 
-Última actualización: 23 de octubre de 2026.
+Última actualización: 24 de octubre de 2026.
 
 ---
 
@@ -109,7 +109,7 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
 | Menú | Ruta | Contenido |
 |---|---|---|
 | Logo / Inicio | `#/` | Cabecera de periódico, portada y la cinta de categorías (Panes, Dulces y pasteles, Bebidas), y nada más: sin carrusel |
-| Nosotros | `#/nosotros` | La historia y los principios (una columna bajo 420 px); la galería cuando haya fotos |
+| Nosotros | `#/nosotros` | La historia (foto en arco, sello y titular como la portada) y los tres principios numerados sobre la masa (sección 10, "Nosotros con el estilo de la portada"); la galería cuando haya fotos |
 | Tienda | `#/tienda-catalogo`, `#/tienda-<categoría>` | El catálogo; cambiar de categoría no vuelve a montar la vista |
 | Contáctanos | `#/contacto` | Horario con el día de hoy marcado, abierto/cerrado, dirección, mapa y contacto |
 | — | `#/confirmar`, `#/comprobante` | El pedido (sección 6) |
@@ -622,6 +622,46 @@ ritmo del movimiento y la accesibilidad no cambian.
   **cesta con asa**, que pasa a ser el icono de la canasta (arriba y la
   flotante del teléfono).
 
+### Nosotros con el estilo de la portada (24 de octubre de 2026)
+
+Segunda vuelta de Nosotros, aplicada sin muestra (el usuario lo eligió así).
+Las piezas son las de la portada; lo que se reutiliza va en las mismas
+clases o en piezas comunes, no copiado.
+
+- **La historia**, en dos columnas como la portada pero en espejo: **la
+  foto del amasado a la izquierda**, en el mismo **arco** con marco fino y
+  el pie "Despacio sabe mejor"; a la derecha el rótulo con la espiga
+  **"Nuestra historia"**, el `h1` "El tiempo es / *nuestro ingrediente*"
+  con el tratamiento del `h1` de la portada (Fraunces grande, la segunda
+  línea en cursiva cobriza y desplazada), "No hacemos pan rápido. Hacemos
+  pan que vale la espera." en cursiva como la frase de la portada, el
+  párrafo de la madrugada en Arial, y **"Conoce nuestro local"** con el
+  aspecto y la ola de "Cómo llegar" (pin, Fraunces en cursiva, filete
+  `--corteza`), que sigue llevando a `#/contacto`.
+- **Sello propio** sobre la foto: "Masa madre · Hecho despacio", el mismo
+  dibujo y comportamiento que el de la portada (`aria-hidden`, cae girando
+  al entrar, gira un poco con el puntero encima, nunca con el scroll).
+- **Entrada**: la escena de la portada (rótulo, título, frase y enlace
+  suben uno tras otro; la foto se descubre de abajo arriba; el sello cae
+  girando). Una vez, al llegar a la vista.
+- **Los tres principios**, sin la banda oscura: sobre la masa con el grano
+  de papel. El `h2` "Tres cosas que no cambiamos" va en versalitas entre
+  las **líneas dobles** de la cabecera de periódico, que se dibujan de
+  izquierda a derecha. Debajo, tres columnas separadas por ✦, cada una con
+  su número editorial (**"N.º 1"**, "N.º 2", "N.º 3", en versalitas
+  `--corteza-oscura`), el icono de línea, el nombre en Fraunces y su
+  frase. En el teléfono, una columna y el ✦ entre ellas en horizontal.
+- **Aparecen al llegar a ellas**: la única excepción a "un solo momento de
+  entrada por vista". Las líneas se dibujan y las tres columnas suben una
+  tras otra cuando la sección entra en pantalla (`IntersectionObserver`,
+  una sola vez); si ya se ven al abrir, van en la misma escena de arriba.
+  Con el puntero encima, el icono de cada principio hace un movimiento
+  breve propio, como los de la cinta.
+- Con menos movimiento todo está quieto y visible desde el principio, sin
+  ola ni giros. Nada queda oculto si el JS del observador no llega.
+- Termina, como ahora, en la franja de espigas pegada abajo. Fondo con el
+  estampado de trazos de Nosotros (`FondoDibujo`), tenue.
+
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
 
 - Todo con teclado; paneles que atrapan el foco, Esc y devolución del foco;
@@ -732,11 +772,25 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [ ] Acciones que no son `.button` y siguen con su estilo: "Ver la
       vitrina" (canasta vacía), "Pedir otra vez", "Editar" de la cuenta y
       `.order-button`. Decidir con el usuario si pasan al ticket.
-- [ ] Georgia sigue en `body`: la heredan "Saltar al contenido", el párrafo
-      de Nosotros y el `<noscript>` de `index.html` (los botones ya no, con
-      el punto de arriba). La sección 10 dice texto corrido en Arial.
-- [ ] Segunda vuelta: el aspecto de Nosotros, Contacto, canasta y cuenta
-      más allá de los botones, con otra muestra antes.
+- [ ] Georgia sigue en `body`: la heredan "Saltar al contenido" y el
+      `<noscript>` de `index.html` (los botones y el párrafo de Nosotros ya
+      no). La sección 10 dice texto corrido en Arial.
+- [x] Nosotros con el estilo de la portada (sección 10, 24 de octubre de
+      2026): arco, sello propio, escena de entrada, principios numerados
+      sobre la masa entre líneas dobles que se dibujan al llegar. Las
+      piezas comunes con la portada: `comun/FotoEnArco.jsx`, `Sello.jsx` y
+      `EnlaceLlegar.jsx`; lo prueba `pruebas/casos/nosotros.mjs`.
+- [ ] Portada en el teléfono (revisión de `ux-accesibilidad` del 24 de
+      octubre de 2026, ya pasaba antes): con poca altura (390×700 o menos)
+      el sello tapa el final de "Miga abierta, corteza tostada" (1.4.10);
+      donde una espiga del fondo pasa bajo la letra, el `h1 em` baja a
+      2,67:1 y el pie y la frase a unos 4,3:1 (bajar `.fondo-inicio` a .22
+      como Nosotros); y en la cinta a 390 px "Dulces y pasteles" sale con
+      los espacios comidos (`.vista-inicio .cinta-enlace .letras span`).
+- [ ] `axe.mjs` mide los principios de Nosotros a 390 px aún ocultos
+      (`data-aparece="espera"`): que baje hasta el final antes de medir.
+- [ ] Segunda vuelta: el aspecto de Contacto, canasta y cuenta más allá
+      de los botones, con otra muestra antes.
 
 ### Aspecto y movimiento (revisión visual del 21 de octubre de 2026)
 - [x] Barra siempre `--horno`, sin invertirse; línea ámbar sobre lo oscuro.

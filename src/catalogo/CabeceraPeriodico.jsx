@@ -1,5 +1,6 @@
 // ---- La cabecera de periodico de la portada (seccion 10 del plan) ---------
-// La fecha de hoy, el nombre del oficio entre dos filetes dobles y si esta
+// La fecha de hoy, el nombre del oficio entre dos filetes dobles (los mismos
+// que enmarcan los principios de #/nosotros, .linea-doble) y si esta
 // abierto. La fecha y el estado salen del mismo reloj que #/contacto
 // (useHorario, que se pone al dia cada minuto), asi que a medianoche cambian
 // los dos a la vez. En el telefono solo quedan la fecha y el estado (CSS).
@@ -29,11 +30,11 @@ function CabeceraPeriodico() {
   return (
     <div className="periodico">
       <time className="rotulo periodico-fecha" dateTime={hoyEnCifras(hoy)}>{hoyEnLetra(hoy)}</time>
-      <span className="periodico-doble" aria-hidden="true"></span>
+      <span className="linea-doble periodico-doble" aria-hidden="true"></span>
       {/* El oficio repite la marca, que ya dice el logo: el lector se lo
           salta y no lee "Pastelería Cerrado..." de corrido. */}
       <span className="rotulo periodico-oficio" aria-hidden="true">Panadería &amp; Pastelería</span>
-      <span className="periodico-doble" aria-hidden="true"></span>
+      <span className="linea-doble periodico-doble" aria-hidden="true"></span>
       <span className="rotulo periodico-estado">
         <span className={horario.abierto ? 'status-dot' : 'status-dot is-closed'}></span>
         {estadoDeHoy(horario)}
