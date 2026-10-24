@@ -57,8 +57,9 @@ la cuenta, `logica-datos`.
 - La regla 60-30-10 del plan: mide con las capturas, no a ojo.
 - El estilo elegido (seccion 10, "Estilo"): compara con las muestras que
   el usuario aprobo, `.claude/referencias/muestra-editorial.html` y, para
-  los botones en ticket, "Como llegar" y el menu, `muestra-menu.html`
-  (P2, G3 y M2). El sitio no tiene pie de pagina.
+  los botones en ticket, `muestra-menu.html` (P2), y para el menu en
+  blanco, "Ir a pagar" y "Como llegar", `muestra-colores.html` (W1, S2, K1
+  y L1). El sitio no tiene pie de pagina.
 
 ## El informe
 

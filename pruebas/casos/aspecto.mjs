@@ -50,7 +50,7 @@ export default async function aspecto(t) {
     t.ok(arriba.logo.includes('invert'), `[${nombre}] el logo no va invertido (${arriba.logo})`);
 
     // La portada es la cabecera de periodico, la portada y la cinta: sin
-    // carrusel, fichas ni pie. Bajo la cinta queda aire hasta el final.
+    // carrusel, fichas ni pie. En todos los cortes llena la ventana.
     const portada = await p.evaluate(() => {
       const cinta = document.querySelector('.cinta').getBoundingClientRect();
       const final = document.documentElement.scrollHeight - (cinta.bottom + window.scrollY);
@@ -59,10 +59,13 @@ export default async function aspecto(t) {
         carrusel: document.querySelectorAll('.mostrador, .fila-flecha, .fila-barra, #mas-pedidos-titulo').length,
         pie: document.querySelectorAll('footer').length,
         aire: final,
+        altoDocumento: document.documentElement.scrollHeight,
+        altoVentana: window.innerHeight,
+        finalCinta: cinta.bottom,
       };
     });
     t.ok(portada.fichas === 0 && portada.carrusel === 0 && portada.pie === 0, `[${nombre}] la portada todavia lleva fichas, carrusel o pie (${JSON.stringify(portada)})`);
-    t.ok(portada.aire >= 24, `[${nombre}] la cinta queda pegada al borde de abajo (${Math.round(portada.aire)} px)`);
+    t.ok(portada.altoDocumento <= portada.altoVentana && Math.abs(portada.finalCinta - portada.altoVentana) <= 1, `[${nombre}] la portada no llena la pantalla o la cinta no llega al borde (${JSON.stringify(portada)})`);
 
     // Sobre una banda oscura sigue horno y gana la linea ambar. En #/ no hay
     // ninguna, asi que se mira con la cabeza oscura de la tienda.
@@ -318,6 +321,61 @@ async function editorial(t) {
     const llegada = await p.evaluate(() => ({ hash: location.hash, h1: document.querySelector('h1')?.textContent.trim() }));
     t.ok(llegada.hash === '#/tienda-dulces' && llegada.h1 === 'Dulces y pasteles', `[${nombre}] la cinta llevo a ${llegada.hash} ("${llegada.h1}")`);
     t.ok(await p.locator('#main-nav a[href="#/"]').getAttribute('aria-current') === null, `[${nombre}] Inicio sigue con aria-current fuera de #/`);
+    await ctx.close();
+  }
+
+  for (const [nombre, ventana] of [
+    ['escritorio-bajo', { viewport: { width: 1280, height: 720 } }],
+    ['tableta', { viewport: { width: 900, height: 900 } }],
+    ['tableta-baja', { viewport: { width: 768, height: 700 } }],
+    ['movil-compacto', VENTANAS.m320],
+  ]) {
+    const ctx = await t.contexto(ventana, { nombre: `portada-${nombre}` });
+    const p = await ctx.newPage();
+    await p.goto(t.REACT + '#/');
+    await p.waitForSelector('.portada-arco img.is-loaded');
+    const ajuste = await p.evaluate(() => ({
+      ancho: document.documentElement.scrollWidth,
+      alto: document.documentElement.scrollHeight,
+      anchoVentana: document.documentElement.clientWidth,
+      altoVentana: document.documentElement.clientHeight,
+      cintaAbajo: document.querySelector('.cinta').getBoundingClientRect().bottom,
+      fotoVisible: document.querySelector('.portada-arco').getBoundingClientRect().height,
+      textoCinta: Math.min(...[...document.querySelectorAll('.cinta-enlace')].map((e) => parseFloat(getComputedStyle(e).fontSize))),
+      dibujosFondo: document.querySelectorAll('.fondo-inicio .fondo-pieza.is-patron').length,
+      soloEspigas: [...document.querySelectorAll('.fondo-inicio .fondo-pieza.is-patron')].every((p) => p.querySelectorAll('path').length === 1 && p.className.baseVal.includes('fondo-pieza-espiga-')),
+      trazoEspiga: parseFloat(getComputedStyle(document.querySelector('.fondo-inicio .fondo-pieza.is-patron path')).strokeWidth),
+      granoAncho: [...document.querySelectorAll('.fondo-inicio .fondo-pieza.is-patron path')].reduce((ancho, p) => Math.max(ancho, p.getBoundingClientRect().width), 0),
+      fondoDecorativo: document.querySelector('.fondo-inicio')?.getAttribute('aria-hidden'),
+      opacidadFondo: parseFloat(getComputedStyle(document.querySelector('.fondo-inicio')).opacity),
+      motivosVisibles: [...document.querySelectorAll('.fondo-inicio .fondo-pieza.is-patron')].filter((p) => {
+        const r = p.getBoundingClientRect();
+        const anchoVisible = Math.min(r.right, innerWidth) - Math.max(r.left, 0);
+        const altoVisible = Math.min(r.bottom, innerHeight) - Math.max(r.top, 0);
+        return anchoVisible >= 32 && altoVisible >= 24;
+      }).map((p) => [...p.classList].find((clase) => clase.startsWith('fondo-pieza-'))),
+      espigasVisibles: [...document.querySelectorAll('.fondo-inicio [class*="fondo-pieza-espiga-"]')].filter((p) => {
+        const r = p.getBoundingClientRect();
+        return Math.min(r.right, innerWidth) - Math.max(r.left, 0) >= 32
+          && Math.min(r.bottom, innerHeight) - Math.max(r.top, 0) >= 24;
+      }).length,
+      hogazasVisibles: [...document.querySelectorAll('.fondo-inicio [class*="fondo-pieza-hogaza-"]')].filter((p) => {
+        const r = p.getBoundingClientRect();
+        return Math.min(r.right, innerWidth) - Math.max(r.left, 0) >= 32
+          && Math.min(r.bottom, innerHeight) - Math.max(r.top, 0) >= 24;
+      }).length,
+      otrosPanesVisibles: [...document.querySelectorAll('.fondo-inicio [class*="fondo-pieza-barra-"], .fondo-inicio [class*="fondo-pieza-enrollado-"]')].filter((p) => {
+        const r = p.getBoundingClientRect();
+        return Math.min(r.right, innerWidth) - Math.max(r.left, 0) >= 32
+          && Math.min(r.bottom, innerHeight) - Math.max(r.top, 0) >= 24;
+      }).length,
+    }));
+    t.ok(ajuste.ancho <= ajuste.anchoVentana && ajuste.alto <= ajuste.altoVentana, `[${nombre}] la portada tiene desplazamiento (${JSON.stringify(ajuste)})`);
+    t.ok(Math.abs(ajuste.cintaAbajo - ajuste.altoVentana) <= 1 && ajuste.fotoVisible >= 100 && ajuste.textoCinta >= 12, `[${nombre}] la cinta no llega al borde, la foto desaparece o sus enlaces quedan ilegibles (${JSON.stringify(ajuste)})`);
+    t.ok(ajuste.dibujosFondo === 18 && ajuste.soloEspigas && ajuste.fondoDecorativo === 'true', `[${nombre}] el fondo no tiene solo espigas como decoracion (${JSON.stringify(ajuste)})`);
+    t.ok(ajuste.opacidadFondo >= .3 && ajuste.opacidadFondo <= .4, `[${nombre}] el estampado de trigo no queda tenue (${JSON.stringify(ajuste)})`);
+    t.ok(ajuste.trazoEspiga <= .7 && ajuste.granoAncho >= 22, `[${nombre}] los trazos siguen gruesos o los granos se ven demasiado pequenos (${JSON.stringify(ajuste)})`);
+    t.ok(ajuste.motivosVisibles.length >= 16 && ajuste.espigasVisibles >= 16, `[${nombre}] las espigas no cubren de forma repartida el fondo (${JSON.stringify(ajuste)})`);
     await ctx.close();
   }
 }

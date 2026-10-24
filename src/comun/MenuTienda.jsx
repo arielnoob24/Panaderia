@@ -10,6 +10,7 @@
 import { useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { CATEGORIAS } from '../catalogo/categorias.js';
+import IndicadorNav from './IndicadorNav.jsx';
 
 // Se mira quien entra cada vez, por pointerType, y no con la media query
 // (hover: hover): en un portatil con pantalla tactil el navegador dice que no
@@ -18,7 +19,7 @@ const esRaton = (e) => e.pointerType === 'mouse' || e.pointerType === 'pen';
 // En el telefono la lista vive dentro del menu de hamburguesa y no se asoma.
 const hayBarra = () => window.innerWidth > 680;
 
-function MenuTienda({ abierta, setAbierta, botonRef, alElegir }) {
+function MenuTienda({ abierta, setAbierta, botonRef, alElegir, reducido }) {
   const { pathname } = useLocation();
   const grupoRef = useRef(null);
   const enlacesRef = useRef([]);
@@ -97,6 +98,7 @@ function MenuTienda({ abierta, setAbierta, botonRef, alElegir }) {
         aria-current={pathname.startsWith('/tienda-') ? 'page' : undefined}
         onClick={elegir}
       >
+        {pathname.startsWith('/tienda-') && <IndicadorNav reducido={reducido} />}
         Tienda
       </Link>
       <button

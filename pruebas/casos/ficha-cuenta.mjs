@@ -33,6 +33,11 @@ async function ficha(t, nombre, ventana) {
   await p.reload();
   await espera(400);
   const boton = '.nav-cuenta';
+  const colores = () => p.locator(boton).evaluate((b) => ({
+    fondo: getComputedStyle(b).backgroundColor,
+    texto: getComputedStyle(b).color,
+  }));
+  const normal = await colores();
   ok((await p.evaluate(() => document.querySelector('.nav-cuenta').tagName)) === 'BUTTON', 'con sesion no es boton');
   ok((await p.textContent(boton)).trim() === 'AM', 'iniciales');
   ok((await p.getAttribute(boton, 'aria-controls')) === 'cuenta-menu', 'aria-controls');
@@ -43,6 +48,21 @@ async function ficha(t, nombre, ventana) {
   await pulsar(boton);
   await espera(250);
   ok((await p.getAttribute(boton, 'aria-expanded')) === 'true', 'no se abre al pulsar');
+  ok((await colores()).fondo !== normal.fondo, 'la cuenta abierta no cambia de color para indicar su estado');
+  if (!ventana.hasTouch) {
+    await p.mouse.move(10, 600);
+    await espera(250);
+    const fondoActivo = await colores();
+    await p.hover(boton);
+    await espera(250);
+    const fondoHover = await colores();
+    ok(fondoActivo.fondo === 'rgb(255, 253, 248)' && fondoActivo.fondo !== normal.fondo && fondoHover.fondo === fondoActivo.fondo, `el estado seleccionado no queda blanco o cambia al pasar el cursor (${JSON.stringify({ normal, fondoActivo, fondoHover })})`);
+    ok(fondoHover.texto === fondoActivo.texto && fondoHover.texto === 'rgb(58, 40, 34)', 'el estado seleccionado cambia el color del icono/texto al pasar el cursor');
+  } else {
+    const seleccionado = await colores();
+    ok(seleccionado.fondo === 'rgb(255, 253, 248)' && seleccionado.fondo !== normal.fondo, 'el estado seleccionado en tactil no queda blanco');
+    ok(seleccionado.texto === 'rgb(58, 40, 34)', 'el estado seleccionado en tactil no cambia el icono/texto a horno');
+  }
   ok(await p.isVisible('#cuenta-menu >> text=Mis datos'), 'Mis datos no se ve');
   const nombrePedidos = await p.evaluate(() => [...document.querySelectorAll('#cuenta-menu .cuenta-menu-opcion')][1].textContent.replace(/\s+/g, ' ').trim());
   ok(nombrePedidos === 'Mis pedidos(1)', `nombre de Mis pedidos: "${nombrePedidos}"`);
@@ -89,6 +109,7 @@ async function ficha(t, nombre, ventana) {
   await espera(400);
   ok((await p.evaluate(() => location.hash)) === '#/cuenta/pedidos', 'Mis pedidos no lleva a su vista');
   ok((await p.getAttribute(boton, 'aria-expanded')) === 'false', 'navegar no la cierra');
+  ok((await p.getAttribute(boton, 'data-vista-cuenta')) === 'true' && (await p.locator(boton).evaluate((b) => getComputedStyle(b).backgroundColor)) === 'rgb(255, 253, 248)', 'la cabecera no marca que se esta en una vista de cuenta con fondo blanco');
   ok((await activo()) === 'cuenta-vista-titulo', `foco tras elegir: ${await activo()}`);
   // Navegar con Atras tambien la cierra.
   await pulsar(boton);

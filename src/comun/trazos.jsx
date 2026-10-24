@@ -15,16 +15,16 @@ const lugar = ({ x = 0, y = 0, giro = 0, escala = 1 }) => `translate(${x} ${y}) 
 function trazoEspiga(granos = 7) {
   const partes = ['M0 70C1.5 30 .5 -30 0 -92'];
   for (let i = 0; i < granos; i += 1) {
-    const y = -18 - i * 11;
-    const t = 1 - i * 0.06;
-    const w = r(10 * t);
-    const h = r(22 * t);
+    const y = -16 - i * 12;
+    const t = 1 - i * 0.045;
+    const w = r(14 * t);
+    const h = r(25 * t);
     // Grano izquierdo y derecho: una gota que se aparta del tallo hacia arriba.
-    partes.push(`M0 ${y}C${-w} ${r(y - 4)} ${r(-w - 2)} ${r(y - h * 0.6)} ${-w} ${r(y - h)}C${r(-w * 0.4)} ${r(y - h * 0.8)} -1 ${r(y - h * 0.45)} 0 ${y}Z`);
-    partes.push(`M0 ${y}C${w} ${r(y - 4)} ${r(w + 2)} ${r(y - h * 0.6)} ${w} ${r(y - h)}C${r(w * 0.4)} ${r(y - h * 0.8)} 1 ${r(y - h * 0.45)} 0 ${y}Z`);
+    partes.push(`M0 ${y}C${-w} ${r(y - 5)} ${r(-w - 3)} ${r(y - h * 0.6)} ${-w} ${r(y - h)}C${r(-w * 0.4)} ${r(y - h * 0.8)} -1 ${r(y - h * 0.45)} 0 ${y}Z`);
+    partes.push(`M0 ${y}C${w} ${r(y - 5)} ${r(w + 3)} ${r(y - h * 0.6)} ${w} ${r(y - h)}C${r(w * 0.4)} ${r(y - h * 0.8)} 1 ${r(y - h * 0.45)} 0 ${y}Z`);
     // Las barbas salen de la punta de cada grano, largas y finas.
-    partes.push(`M${-w} ${r(y - h)}L${r(-w - 7)} ${r(y - h - 30)}`);
-    partes.push(`M${w} ${r(y - h)}L${r(w + 7)} ${r(y - h - 30)}`);
+    partes.push(`M${-w} ${r(y - h)}L${r(-w - 6)} ${r(y - h - 24)}`);
+    partes.push(`M${w} ${r(y - h)}L${r(w + 6)} ${r(y - h - 24)}`);
   }
   partes.push('M0 -92C-4 -100 -1 -110 0 -116C1 -110 4 -100 0 -92Z', 'M0 -116V-150');
   return partes.join('');

@@ -1,28 +1,36 @@
-// Los botones en ticket (P2, G3 y C1), "Como llegar" como enlace, el menu y
-// la cinta que se encienden en su sitio (M2), seccion 10 del plan, en
-// escritorio y en el telefono (390 px, tactil):
+// Los botones en ticket (P2, G3 y C1), "Como llegar" como enlace con la ola
+// (L1), el menu todo en blanco (W1 y S2) y la cinta en papel con ola, seccion
+// 10 del plan, en escritorio y en el telefono (390 px, tactil):
 // - todo .button (portada, canasta, hoja de pagar, iniciar sesion, crear
 //   cuenta, contacto) es ticket: la forma mordida va en la mascara de sus
 //   capas (::before el papel, ::after la sombra dura) y no en el boton, en
 //   Arial y no en Georgia, de 44 px de alto o mas y sin texto que se salga;
 // - con el foco del teclado, el anillo de 3 px es el outline del boton, que
 //   no lleva mascara, y la sombra dura sustituye al halo;
-// - "Ir a pagar" y el boton final de pagar son horno con texto papel y
-//   sombra ambar, a todo lo ancho; el secundario es hueco (filete en anillo)
-//   y se rellena de masa con el raton;
-// - "Como llegar" es un enlace en Fraunces cursiva, sin caja ni raya;
-// - el menu: con el raton la pastilla ambar aparece sobre el enlace que hay
-//   debajo (no viaja: las demas siguen apagadas), Tienda se enciende entera
-//   y sigue asi en su desplegable, la pagina actual lleva el aro ambar y no
-//   raya, el teclado no enciende nada y con el dedo no hay pastilla; el aro
-//   tambien en el menu del telefono;
-// - la cinta se enciende igual con el raton;
+// - "Ir a pagar" y el boton final de pagar son corteza con texto papel
+//   (4,5:1 o mas, medido) y sombra horno, a todo lo ancho; el secundario es
+//   hueco (filete en anillo) y se rellena de masa con el raton; mientras se
+//   paga, el giro se ve;
+// - "Como llegar" es un enlace en Fraunces cursiva 600 de unos 1.35rem, con
+//   el pin corteza de 24 px, un filete fino y sin raya, y se llama "Cómo llegar"
+//   aunque cada letra vaya en su span aria-hidden; con el raton las letras
+//   saltan (salta) y con menos movimiento no;
+// - el menu: con el raton el blanco tenue (papel al 16 %) aparece sobre el
+//   enlace que hay debajo (no viaja: las demas siguen apagadas) y el texto
+//   sigue claro, sin ambar; Tienda se enciende entera y sigue asi en su
+//   desplegable; la pagina actual es la pastilla papel llena con el texto
+//   horno (la flecha de Tienda tambien), sin raya ni aro, y se queda igual
+//   con el raton encima; el anillo del foco se ve sobre ella; el teclado no
+//   enciende nada y con el dedo no hay tenue; la pagina actual igual en el
+//   menu del telefono;
+// - la cinta con el raton se enciende en papel lleno con texto e icono horno,
+//   sus letras saltan en secuencia y cada icono tiene su propio movimiento;
 // - entre 681 y 900 px logo, menu y botones de la derecha no se pisan;
 // - un .button apagado (aria-disabled) se ve apagado, sin sombra, y no se
 //   levanta.
 import { VENTANAS, espera, esperaQue, crearCuenta } from '../arranque.mjs';
 
-export const descripcion = 'botones en ticket (mascara, sombra, foco fuera de la mascara, pagar en horno, hueco, Arial, 44 px), Como llegar como enlace, menu y cinta que se encienden en su sitio con aro en la pagina actual (raton si, dedo no)';
+export const descripcion = 'botones en ticket (mascara, sombra, foco fuera de la mascara, pagar en corteza con 4,5:1, hueco, Arial, 44 px), Como llegar con la ola y su nombre, menu en blanco (tenue con el raton, pagina actual papel con texto horno, tambien en el telefono) y cinta en papel con ola e iconos animados';
 export const limite = 180;
 
 const HORNO = 'rgb(58, 40, 34)';
@@ -30,7 +38,23 @@ const AMBAR = 'rgb(215, 155, 74)';
 const AMBAR_CLARO = 'rgb(242, 202, 104)';
 const PAPEL = 'rgb(255, 253, 248)';
 const MASA = 'rgb(247, 241, 231)';
+const CORTEZA = 'rgb(168, 95, 69)';
 const CORRIDA = 'matrix(1, 0, 0, 1, 4, 4)';
+
+// El contraste WCAG entre dos colores rgb(...).
+const luz = (texto) => {
+  const [r, g, b] = (texto.match(/\d+(\.\d+)?/g) || []).slice(0, 3).map((v) => {
+    const x = Number(v) / 255;
+    return x <= 0.04045 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contraste = (a, b) => {
+  const [x, y] = [luz(a), luz(b)].sort((m, n) => n - m);
+  return (x + 0.05) / (y + 0.05);
+};
+// El blanco tenue: papel con alfa .16 (el navegador lo da como rgba o como color(srgb ...)).
+const esTenue = (c) => /^(rgba\(255, 253, 248, 0\.16\)|color\(srgb 1 0\.99\d* 0\.97\d* \/ 0\.16\))$/.test(c);
 
 // Mide los .button que se ven en la pagina.
 const medirBotones = (p) => p.evaluate(() => [...document.querySelectorAll('.button')]
@@ -86,33 +110,63 @@ export default async function botones(t) {
     const pulsar = (sel) => (nombre === 'movil' ? p.locator(sel).first().tap() : p.locator(sel).first().click());
 
     // La portada: "Nuestros panes" es el ticket ambar con sombra horno, y
-    // "Como llegar" un enlace sin caja.
+    // "Como llegar" es un enlace con un filete fino, no un boton relleno.
     await p.goto(t.REACT + '#/');
     await p.waitForSelector('.cinta');
     await espera(300);
+    if (nombre === 'escritorio') {
+      for (const [selector, icono, control] of [
+        ['.nav-cuenta', '.nav-cuenta-icono', 'cuenta'],
+        ['.nav-acciones .floating-whatsapp.is-canasta', '.canasta-icono', 'canasta'],
+      ]) {
+        await p.mouse.move(5, 5);
+        await p.hover(selector);
+        const activo = await p.locator(selector).evaluate((b, sel) => getComputedStyle(b.querySelector(sel)).transform !== 'none', icono);
+        t.ok(activo, `[${nombre}] el icono de ${control} no responde al pasar el cursor`);
+      }
+    }
     revisar(t, nombre, 'la portada', await medirBotones(p));
     const principal = await capas(p, '.portada-acciones .button-yellow');
     t.ok(principal.papel === AMBAR && principal.sombra === HORNO && principal.corrida === CORRIDA, `[${nombre}] "Nuestros panes" no es el ticket ambar con sombra dura horno (${JSON.stringify(principal)})`);
     const llegar = await p.locator('.portada-llegar').evaluate((a) => {
       const c = getComputedStyle(a);
+      const pin = a.querySelector('svg');
+      const letras = a.querySelector('.letras');
       return {
-        texto: a.textContent.trim(), letra: c.fontFamily, estilo: c.fontStyle, borde: c.borderTopStyle,
+        letra: c.fontFamily, estilo: c.fontStyle, peso: c.fontWeight, tamano: parseFloat(c.fontSize), borde: c.borderTopStyle,
+        bordeColor: c.borderTopColor, bordeAncho: c.borderTopWidth, radio: c.borderRadius,
         fondo: c.backgroundColor, raya: c.textDecorationLine, rayaDespues: getComputedStyle(a, '::after').content,
-        pin: Boolean(a.querySelector('svg')), alto: a.getBoundingClientRect().height,
+        pin: Boolean(pin), pinAncho: pin ? Math.round(pin.getBoundingClientRect().width) : 0, pinColor: pin ? getComputedStyle(pin).color : '',
+        alto: a.getBoundingClientRect().height,
+        letrasEscondidas: letras ? letras.getAttribute('aria-hidden') : null,
+        letras: letras ? [...letras.children].map((s) => s.textContent).join('') : '',
+        sueltas: letras ? letras.children.length : 0,
       };
     });
-    t.ok(llegar.texto === 'Cómo llegar' && /^"?Fraunces/.test(llegar.letra) && llegar.estilo === 'italic' && llegar.pin, `[${nombre}] "Como llegar" no es el enlace en Fraunces cursiva con el pin (${JSON.stringify(llegar)})`);
-    t.ok(llegar.borde === 'none' && llegar.fondo === 'rgba(0, 0, 0, 0)' && llegar.raya === 'none' && llegar.rayaDespues === 'none' && llegar.alto >= 24, `[${nombre}] "Como llegar" lleva caja o raya, o mide menos de 24 px (${JSON.stringify(llegar)})`);
+    // El nombre accesible es uno y entero, aunque las letras vayan sueltas.
+    const conNombre = await p.getByRole('link', { name: 'Cómo llegar', exact: true }).count();
+    t.ok(conNombre === 1 && llegar.letrasEscondidas === 'true' && llegar.letras === 'Cómo llegar' && llegar.sueltas === 11, `[${nombre}] "Como llegar" no se llama "Cómo llegar" con sus letras sueltas escondidas (${conNombre} enlaces con ese nombre, ${JSON.stringify(llegar)})`);
+    const tamanoLlegar = nombre === 'movil' ? 16 : 21.6;
+    t.ok(/^"?Fraunces/.test(llegar.letra) && llegar.estilo === 'italic' && llegar.peso === '600' && Math.abs(llegar.tamano - tamanoLlegar) < 0.5, `[${nombre}] "Como llegar" no tiene el tamano responsive Fraunces cursiva 600 (${JSON.stringify(llegar)})`);
+    t.ok(llegar.pin && llegar.pinAncho === 24 && llegar.pinColor === CORTEZA, `[${nombre}] el pin de "Como llegar" no es corteza de 24 px (${JSON.stringify(llegar)})`);
+    t.ok(llegar.borde === 'solid' && llegar.bordeColor === CORTEZA && llegar.bordeAncho === '1px' && llegar.radio === '12px' && llegar.fondo === 'rgba(0, 0, 0, 0)' && llegar.raya === 'none' && llegar.rayaDespues === 'none' && llegar.alto >= 24, `[${nombre}] "Como llegar" no tiene un filete fino sin relleno, lleva raya o mide menos de 24 px (${JSON.stringify(llegar)})`);
     t.ok(await p.locator('.h-imprenta, .h-ola, .boton-duro, .nav-pastilla').count() === 0, `[${nombre}] quedan piezas viejas (h-imprenta, h-ola, boton-duro o nav-pastilla)`);
 
-    // Con el raton, "Como llegar" pasa a corteza oscura y el pin salta.
+    // Con el raton, "Como llegar" pasa a corteza oscura, el pin salta y las
+    // letras saltan una tras otra.
     if (nombre === 'escritorio') {
       await p.mouse.move(10, 400);
       await p.mouse.move(14, 404);
       await p.hover('.portada-llegar');
       await esperaQue(() => p.locator('.portada-llegar').evaluate((a) => getComputedStyle(a).color === 'rgb(122, 64, 48)'));
-      const encima = await p.locator('.portada-llegar').evaluate((a) => ({ color: getComputedStyle(a).color, pin: getComputedStyle(a.querySelector('svg')).transform }));
+      const encima = await p.locator('.portada-llegar').evaluate((a) => ({
+        color: getComputedStyle(a).color,
+        pin: getComputedStyle(a.querySelector('svg')).transform,
+        ola: [...a.querySelectorAll('.letras span')].map((s) => getComputedStyle(s).animationName),
+        turnos: [...a.querySelectorAll('.letras span')].map((s) => getComputedStyle(s).animationDelay),
+      }));
       t.ok(encima.color === 'rgb(122, 64, 48)' && encima.pin !== 'none', `[${nombre}] con el raton "Como llegar" no cambia a corteza oscura o el pin no salta (${JSON.stringify(encima)})`);
+      t.ok(encima.ola.length === 11 && encima.ola.every((n) => n === 'salta') && encima.turnos[0] !== encima.turnos[10], `[${nombre}] con el raton las letras de "Como llegar" no saltan en ola (${JSON.stringify(encima)})`);
 
       // Con el foco del teclado: el anillo de 3 px es el outline del boton
       // (fuera de la mascara) y la sombra dura se queda en lugar del halo.
@@ -141,7 +195,8 @@ export default async function botones(t) {
     await espera(500);
     revisar(t, nombre, 'la canasta', await medirBotones(p));
     const pagar = await capas(p, '.canasta-enviar');
-    t.ok(pagar.papel === HORNO && pagar.texto === PAPEL && pagar.sombra === AMBAR, `[${nombre}] "Ir a pagar" no es el ticket horno con texto papel y sombra ambar (${JSON.stringify(pagar)})`);
+    t.ok(pagar.papel === CORTEZA && pagar.texto === PAPEL && pagar.sombra === HORNO, `[${nombre}] "Ir a pagar" no es el ticket corteza con texto papel y sombra horno (${JSON.stringify(pagar)})`);
+    t.ok(contraste(pagar.texto, pagar.papel) >= 4.5, `[${nombre}] el texto de "Ir a pagar" da ${contraste(pagar.texto, pagar.papel).toFixed(2)}:1 sobre su fondo`);
     t.ok(Math.abs(pagar.ancho - pagar.anchoPadre) <= 1, `[${nombre}] "Ir a pagar" mide ${pagar.ancho} px y su pie ${pagar.anchoPadre}: no va a todo lo ancho`);
     await pulsar('.canasta-enviar');
     await p.waitForSelector('.pide-cuenta:not([hidden]) .pide-cuenta-otra');
@@ -175,7 +230,20 @@ export default async function botones(t) {
     await espera(400);
     revisar(t, nombre, 'confirmar el pedido', await medirBotones(p));
     const final = await capas(p, '.canasta-pagar');
-    t.ok(final.papel === HORNO && final.texto === PAPEL && final.sombra === AMBAR && Math.abs(final.ancho - final.anchoPadre) <= 1, `[${nombre}] el boton final de pagar no es el ticket horno a todo lo ancho (${JSON.stringify(final)})`);
+    t.ok(final.papel === CORTEZA && final.texto === PAPEL && final.sombra === HORNO && Math.abs(final.ancho - final.anchoPadre) <= 1, `[${nombre}] el boton final de pagar no es el ticket corteza a todo lo ancho (${JSON.stringify(final)})`);
+    t.ok(contraste(final.texto, final.papel) >= 4.5, `[${nombre}] el texto del boton final de pagar da ${contraste(final.texto, final.papel).toFixed(2)}:1`);
+    // Mientras se paga, el boton se queda entero y el giro papel se ve sobre
+    // la corteza. Con retiro y efectivo basta pulsar.
+    await p.locator('.canasta-pagar').evaluate((b) => b.click());
+    await esperaQue(() => p.locator('.canasta-pagar .pago-girando').count().then((n) => n === 1), 15);
+    const giro = await p.locator('.canasta-pagar').evaluate((b) => {
+      const g = b.querySelector('.pago-girando');
+      return g ? {
+        opacidad: getComputedStyle(b).opacity, punta: getComputedStyle(g).borderTopColor,
+        fondo: getComputedStyle(b, '::before').backgroundColor, ancho: g.getBoundingClientRect().width,
+      } : null;
+    });
+    t.ok(giro && giro.opacidad === '1' && giro.punta === PAPEL && giro.ancho >= 12 && contraste(giro.punta, giro.fondo) >= 3, `[${nombre}] mientras se paga el giro no se ve (${JSON.stringify(giro)})`);
     await ctx.close();
   }
 
@@ -183,6 +251,27 @@ export default async function botones(t) {
   await cinta(t);
   await barraSinPisarse(t);
   await apagado(t);
+  await llegarQuieto(t);
+}
+
+// ---- "Como llegar" con menos movimiento ----------------------------------------
+// Con el raton cambia de color, pero ni las letras ni el pin saltan.
+async function llegarQuieto(t) {
+  const ctx = await t.contexto({ ...VENTANAS.escritorio, reducedMotion: 'reduce' }, { nombre: 'llegar-quieto' });
+  const p = await ctx.newPage();
+  await p.goto(t.REACT + '#/');
+  await p.waitForSelector('.cinta');
+  await p.mouse.move(10, 400);
+  await p.mouse.move(14, 404);
+  await p.hover('.portada-llegar');
+  await esperaQue(() => p.locator('.portada-llegar').evaluate((a) => getComputedStyle(a).color === 'rgb(122, 64, 48)'));
+  const quieto = await p.locator('.portada-llegar').evaluate((a) => ({
+    color: getComputedStyle(a).color,
+    pin: getComputedStyle(a.querySelector('svg')).transform,
+    ola: [...new Set([...a.querySelectorAll('.letras span')].map((s) => getComputedStyle(s).animationName))],
+  }));
+  t.ok(quieto.color === 'rgb(122, 64, 48)' && quieto.pin === 'none' && quieto.ola.join() === 'none', `[menos movimiento] "Como llegar" se mueve con el raton (${JSON.stringify(quieto)})`);
+  await ctx.close();
 }
 
 // ---- La barra entre 681 y 900 px ---------------------------------------------
@@ -233,19 +322,21 @@ async function apagado(t) {
   await ctx.close();
 }
 
-// ---- El menu de arriba (M2) ----------------------------------------------------
-// Como esta cada opcion: su pastilla (::before), su aro (::after), su color y
-// su raya.
+// ---- El menu de arriba (W1 y S2) ----------------------------------------------
+// Como esta cada opcion: su blanco tenue (::before), la pastilla de la pagina
+// actual (::after), su color y su raya.
 const estadoMenu = (p) => p.evaluate(() => [...document.querySelectorAll('#main-nav > a, #main-nav > .nav-grupo')].map((o) => {
   const texto = o.matches('a') ? o : o.querySelector('.nav-grupo-enlace');
   const antes = getComputedStyle(o, '::before');
-  const despues = getComputedStyle(o, '::after');
+  const indicador = o.querySelector('.nav-indicador');
   return {
     nombre: texto.textContent.trim(),
     pastilla: antes.content !== 'none' && antes.content !== 'normal' ? antes.opacity : 'sin',
     pastillaColor: antes.backgroundColor,
-    aro: despues.content !== 'none' && despues.content !== 'normal' ? despues.boxShadow : 'sin',
+    actual: indicador ? getComputedStyle(indicador).backgroundColor : 'sin',
+    aro: indicador ? getComputedStyle(indicador).boxShadow : 'none',
     color: getComputedStyle(texto).color,
+    flecha: o.matches('a') ? null : getComputedStyle(o.querySelector('.nav-grupo-boton')).color,
     raya: getComputedStyle(texto).textDecorationLine,
   };
 }));
@@ -255,7 +346,7 @@ const encendidas = (estado) => estado.filter((o) => o.pastilla === '1').map((o) 
 async function menu(t) {
   // Con raton.
   {
-    const ctx = await t.contexto(VENTANAS.escritorio, { nombre: 'menu-raton' });
+    const ctx = await t.contexto({ ...VENTANAS.escritorio, reducedMotion: 'no-preference' }, { nombre: 'menu-raton' });
     const p = await ctx.newPage();
     await p.goto(t.REACT + '#/');
     await p.waitForSelector('.cinta');
@@ -264,65 +355,100 @@ async function menu(t) {
     await p.mouse.move(644, 604);
     await espera(250);
 
-    // La pagina actual: aro ambar de 1,5 px, texto ambar claro, sin raya.
+    // La pagina actual: pastilla papel llena, texto horno, sin raya ni aro.
     const quieto = await estadoMenu(p);
     const inicio = opcion(quieto, 'Inicio');
-    t.ok(inicio.aro.includes(AMBAR) && inicio.aro.includes('1.5px') && inicio.aro.includes('inset'), `[raton] Inicio, la pagina actual, no lleva el aro ambar (${JSON.stringify(inicio)})`);
-    t.ok(inicio.color === AMBAR_CLARO && inicio.raya === 'none', `[raton] Inicio no va en ambar claro sin raya (${JSON.stringify(inicio)})`);
-    t.ok(quieto.filter((o) => o.aro !== 'sin').length === 1, `[raton] hay mas de un aro en el menu (${JSON.stringify(quieto)})`);
+    t.ok(inicio.actual === PAPEL && inicio.aro === 'none', `[raton] Inicio, la pagina actual, no es la pastilla papel sin aro (${JSON.stringify(inicio)})`);
+    t.ok(inicio.color === HORNO && inicio.raya === 'none', `[raton] Inicio no va en horno sin raya (${JSON.stringify(inicio)})`);
+    t.ok(quieto.filter((o) => o.actual !== 'sin').length === 1, `[raton] hay mas de una pagina actual en el menu (${JSON.stringify(quieto)})`);
+    t.ok(quieto.filter((o) => o.actual === 'sin').every((o) => o.color !== HORNO && contraste(o.color, HORNO) >= 4.5), `[raton] las demas opciones no van en claro sobre la barra (${JSON.stringify(quieto)})`);
     t.ok(encendidas(quieto).length === 0, `[raton] hay opciones encendidas sin el raton encima (${encendidas(quieto).join(', ')})`);
+    t.ok(!JSON.stringify(quieto).includes(AMBAR) && !JSON.stringify(quieto).includes(AMBAR_CLARO), `[raton] queda ambar en el menu (${JSON.stringify(quieto)})`);
 
-    // Sobre Nosotros se enciende Nosotros y nada mas: no viaja.
+    // Sobre Nosotros se enciende el blanco tenue en Nosotros y nada mas (no
+    // viaja), y el texto sigue claro.
     await p.hover('#main-nav a[href="#/nosotros"]');
     await esperaQue(async () => opcion(await estadoMenu(p), 'Nosotros').pastilla === '1');
     const nosotros = await estadoMenu(p);
-    t.ok(encendidas(nosotros).join() === 'Nosotros' && opcion(nosotros, 'Nosotros').pastillaColor === AMBAR, `[raton] con el raton en Nosotros no se enciende solo Nosotros en ambar (${JSON.stringify(nosotros)})`);
-    await esperaQue(async () => opcion(await estadoMenu(p), 'Nosotros').color === HORNO);
-    t.ok(opcion(await estadoMenu(p), 'Nosotros').color === HORNO, '[raton] Nosotros encendido no pasa a horno');
+    t.ok(encendidas(nosotros).join() === 'Nosotros' && esTenue(opcion(nosotros, 'Nosotros').pastillaColor), `[raton] con el raton en Nosotros no se enciende solo Nosotros en blanco tenue (${JSON.stringify(nosotros)})`);
+    await esperaQue(async () => opcion(await estadoMenu(p), 'Nosotros').color === PAPEL);
+    t.ok(opcion(await estadoMenu(p), 'Nosotros').color === PAPEL, `[raton] el texto de Nosotros encendido no sigue claro (${opcion(await estadoMenu(p), 'Nosotros').color})`);
 
-    // Sobre la pagina actual el aro se rellena.
+    // Sobre la pagina actual se queda igual: papel lleno y texto horno.
     await p.hover('#main-nav a[href="#/"]');
-    await esperaQue(async () => opcion(await estadoMenu(p), 'Inicio').pastilla === '1');
-    await esperaQue(async () => opcion(await estadoMenu(p), 'Inicio').color === HORNO);
+    await espera(350);
     const sobreActual = opcion(await estadoMenu(p), 'Inicio');
-    t.ok(sobreActual.pastilla === '1' && sobreActual.color === HORNO, `[raton] con el raton en la pagina actual no se rellena (${JSON.stringify(sobreActual)})`);
+    t.ok(sobreActual.actual === PAPEL && sobreActual.color === HORNO, `[raton] con el raton en la pagina actual cambia (${JSON.stringify(sobreActual)})`);
 
     // Tienda se enciende entera, abre su desplegable y sigue encendida en el.
     await p.hover('#main-nav .nav-grupo-enlace');
     await esperaQue(async () => opcion(await estadoMenu(p), 'Tienda').pastilla === '1');
     await esperaQue(() => p.evaluate(() => document.querySelector('.nav-grupo').classList.contains('is-open')));
     const tienda = await estadoMenu(p);
-    t.ok(encendidas(tienda).join() === 'Tienda', `[raton] con el raton en Tienda no se enciende solo Tienda (${JSON.stringify(tienda)})`);
+    t.ok(encendidas(tienda).join() === 'Tienda' && esTenue(opcion(tienda, 'Tienda').pastillaColor), `[raton] con el raton en Tienda no se enciende solo Tienda en blanco tenue (${JSON.stringify(tienda)})`);
     t.ok(await p.evaluate(() => document.querySelector('.nav-grupo').classList.contains('is-open')), '[raton] con el raton en Tienda el desplegable no se abre');
     const flecha = await p.locator('.nav-grupo-boton').evaluate((b) => getComputedStyle(b).color);
     await p.hover('#nav-tienda a[data-filtro="dulces"]');
     await espera(250);
     t.ok(encendidas(await estadoMenu(p)).join() === 'Tienda', '[raton] al bajar a las categorias Tienda se apaga');
-    t.ok(flecha === HORNO, `[raton] la flecha de Tienda encendida es ${flecha}, no horno`);
+    t.ok(flecha === PAPEL, `[raton] la flecha de Tienda encendida es ${flecha}, no papel`);
 
     // Al salir se apaga todo; el teclado no enciende nada.
     await p.mouse.move(640, 600);
     await esperaQue(async () => encendidas(await estadoMenu(p)).length === 0);
     t.ok(encendidas(await estadoMenu(p)).length === 0, '[raton] al salir del menu queda una opcion encendida');
+    await p.keyboard.press('Shift');
     await p.focus('#main-nav a[href="#/contacto"]');
     await espera(300);
     t.ok(encendidas(await estadoMenu(p)).length === 0, '[raton] el foco del teclado enciende una opcion');
 
-    // En otra vista el aro se va con ella.
+    // El anillo del foco sobre la pagina actual: papel y por fuera de la
+    // pastilla, donde la barra es horno.
+    await p.focus('#main-nav a[href="#/"]');
+    const focoInicio = await p.locator('#main-nav a[href="#/"]').evaluate((a) => {
+      const c = getComputedStyle(a);
+      return { visible: a.matches(':focus-visible'), color: c.outlineColor, ancho: c.outlineWidth, separa: parseFloat(c.outlineOffset) };
+    });
+    t.ok(focoInicio.visible && focoInicio.color === PAPEL && focoInicio.ancho === '3px' && focoInicio.separa >= 2, `[raton] el anillo del foco de la pagina actual no es papel por fuera de su pastilla (${JSON.stringify(focoInicio)})`);
+
+    // En otra vista la pastilla se va con ella.
     await p.click('#main-nav a[href="#/nosotros"]');
     await esperaQue(() => p.evaluate(() => location.hash === '#/nosotros'));
     await p.mouse.move(640, 600);
     await espera(300);
     const otra = await estadoMenu(p);
-    t.ok(opcion(otra, 'Nosotros').aro.includes(AMBAR) && opcion(otra, 'Inicio').aro === 'sin', `[raton] en #/nosotros el aro no pasa a Nosotros (${JSON.stringify(otra)})`);
+    t.ok(opcion(otra, 'Nosotros').actual === PAPEL && opcion(otra, 'Nosotros').color === HORNO && opcion(otra, 'Inicio').actual === 'sin', `[raton] en #/nosotros la pastilla no pasa a Nosotros (${JSON.stringify(otra)})`);
+    const origen = await p.locator('#main-nav .nav-indicador').boundingBox();
+    const recorrido = await p.evaluate(() => new Promise((resolver) => {
+      const posiciones = [];
+      let cuadros = 0;
+      document.querySelector('#main-nav a[href="#/contacto"]').click();
+      const medir = () => {
+        posiciones.push(document.querySelector('#main-nav .nav-indicador').getBoundingClientRect().x);
+        cuadros += 1;
+        if (cuadros === 18) resolver(posiciones);
+        else requestAnimationFrame(medir);
+      };
+      requestAnimationFrame(medir);
+    }));
+    await esperaQue(() => p.evaluate(() => location.hash === '#/contacto'));
+    const destino = await p.locator('#main-nav .nav-indicador').boundingBox();
+    t.ok(origen && destino && recorrido.some((x) => x > origen.x + 1 && x < destino.x - 1), `[raton] la pastilla no recorre el menu hacia Contáctanos (${JSON.stringify({ origen, recorrido, destino })})`);
     await p.goto(t.REACT + '#/tienda-dulces');
     await p.waitForSelector('.product-card:not([hidden])');
     await espera(300);
-    t.ok(opcion(await estadoMenu(p), 'Tienda').aro.includes(AMBAR), '[raton] en una categoria de la tienda Tienda no lleva el aro');
+    const enTienda = opcion(await estadoMenu(p), 'Tienda');
+    t.ok(enTienda.actual === PAPEL && enTienda.color === HORNO && enTienda.flecha === HORNO, `[raton] en una categoria de la tienda Tienda no es la pastilla papel con palabra y flecha horno (${JSON.stringify(enTienda)})`);
+    // La palabra de Tienda va dentro de su pastilla papel: su anillo es horno.
+    await p.keyboard.press('Shift');
+    await p.focus('#main-nav .nav-grupo-enlace');
+    const focoTienda = await p.locator('#main-nav .nav-grupo-enlace').evaluate((a) => ({ visible: a.matches(':focus-visible'), color: getComputedStyle(a).outlineColor }));
+    t.ok(focoTienda.visible && focoTienda.color === HORNO, `[raton] el anillo del foco de Tienda, la pagina actual, no es horno sobre su pastilla papel (${JSON.stringify(focoTienda)})`);
     await ctx.close();
   }
 
-  // Con el dedo, en el telefono: no hay pastilla, y el aro sigue en el menu.
+  // Con el dedo, en el telefono: no hay blanco tenue, y la pagina actual
+  // sigue en papel con el texto horno.
   {
     const ctx = await t.contexto(VENTANAS.movil, { nombre: 'menu-dedo' });
     const p = await ctx.newPage();
@@ -336,29 +462,37 @@ async function menu(t) {
     await p.tap('.menu-toggle');
     await espera(400);
     const dedo = await estadoMenu(p);
-    t.ok(dedo.every((o) => o.pastilla === 'sin'), `[dedo] hay pastilla en el menu sin raton (${JSON.stringify(dedo)})`);
+    t.ok(dedo.every((o) => o.pastilla === 'sin'), `[dedo] hay blanco tenue en el menu sin raton (${JSON.stringify(dedo)})`);
     const nosotros = opcion(dedo, 'Nosotros');
-    t.ok(nosotros.aro.includes(AMBAR) && nosotros.color === AMBAR_CLARO && nosotros.raya === 'none', `[dedo] en el menu del telefono la pagina actual no lleva el aro (${JSON.stringify(nosotros)})`);
-    // En la tienda, el aro de Tienda abraza su renglon (palabra y flecha, el
-    // texto centrado dentro) y la flecha va del mismo ambar claro.
+    t.ok(nosotros.actual === PAPEL && nosotros.color === HORNO && nosotros.raya === 'none' && nosotros.aro === 'none', `[dedo] en el menu del telefono la pagina actual no es la pastilla papel con texto horno (${JSON.stringify(nosotros)})`);
+    t.ok(!JSON.stringify(dedo).includes(AMBAR) && !JSON.stringify(dedo).includes(AMBAR_CLARO), `[dedo] queda ambar en el menu del telefono (${JSON.stringify(dedo)})`);
+    // En la tienda, la pastilla de Tienda abraza su renglon (palabra y
+    // flecha, el texto centrado dentro) y la flecha va en horno.
     await p.tap('.menu-toggle');
     await p.goto(t.REACT + '#/tienda-panes');
     await p.waitForSelector('.product-card:not([hidden])');
     await p.tap('.menu-toggle');
     await espera(400);
     const tienda = await p.locator('#main-nav .nav-grupo').evaluate((g) => {
-      const caja = g.getBoundingClientRect();
-      const aro = getComputedStyle(g, '::after');
-      const arriba = caja.top + parseFloat(aro.top);
+      const indicador = g.querySelector('.nav-indicador');
+      const pastilla = indicador.getBoundingClientRect();
       const texto = g.querySelector('.nav-grupo-enlace').getBoundingClientRect();
       return {
         flecha: getComputedStyle(g.querySelector('.nav-grupo-boton')).color,
-        aro: aro.boxShadow,
-        descentrado: Math.abs((arriba + parseFloat(aro.height) / 2) - (texto.top + texto.height / 2)),
+        pastilla: getComputedStyle(indicador).backgroundColor,
+        descentrado: Math.abs((pastilla.top + pastilla.height / 2) - (texto.top + texto.height / 2)),
       };
     });
-    t.ok(tienda.aro.includes(AMBAR) && tienda.flecha === AMBAR_CLARO, `[dedo] en la tienda la flecha de Tienda no va en ambar claro o falta el aro (${JSON.stringify(tienda)})`);
-    t.ok(tienda.descentrado <= 3, `[dedo] el aro de Tienda no esta centrado en su renglon (${Math.round(tienda.descentrado)} px)`);
+    t.ok(tienda.pastilla === PAPEL && tienda.flecha === HORNO, `[dedo] en la tienda la flecha de Tienda no va en horno o falta la pastilla papel (${JSON.stringify(tienda)})`);
+    t.ok(tienda.descentrado <= 3, `[dedo] la pastilla de Tienda no esta centrada en su renglon (${Math.round(tienda.descentrado)} px)`);
+    // Su anillo, horno y por dentro de la pastilla (la palabra empieza en su borde).
+    await p.keyboard.press('Shift');
+    await p.focus('#main-nav .nav-grupo-enlace');
+    const foco = await p.locator('#main-nav .nav-grupo-enlace').evaluate((a) => {
+      const c = getComputedStyle(a);
+      return { visible: a.matches(':focus-visible'), color: c.outlineColor, separa: parseFloat(c.outlineOffset) };
+    });
+    t.ok(foco.visible && foco.color === HORNO && foco.separa < 0, `[dedo] el anillo de Tienda en el telefono no es horno por dentro de su pastilla (${JSON.stringify(foco)})`);
     await ctx.close();
   }
 }
@@ -366,7 +500,13 @@ async function menu(t) {
 // ---- La cinta ----------------------------------------------------------------
 async function cinta(t) {
   const estado = (p) => p.locator('.cinta-enlace').evaluateAll((as) => as.map((a) => ({
-    pastilla: getComputedStyle(a, '::before').opacity, color: getComputedStyle(a).color,
+    pastilla: getComputedStyle(a, '::before').opacity, fondo: getComputedStyle(a, '::before').backgroundColor,
+    color: getComputedStyle(a).color, icono: getComputedStyle(a.querySelector('svg')).color,
+    nombre: a.querySelector('.sr-only')?.textContent,
+    letrasOcultas: a.querySelector('.letras')?.getAttribute('aria-hidden'),
+    letras: a.querySelector('.letras') ? [...a.querySelector('.letras').children].map((s) => s.textContent).join('') : '',
+    animacion: a.querySelector('.letras span') ? getComputedStyle(a.querySelector('.letras span')).animationName : '',
+    animacionIcono: getComputedStyle(a.querySelector('.ico')).animationName,
   })));
   for (const [nombre, ventana] of [['escritorio', VENTANAS.escritorio], ['movil', VENTANAS.movil]]) {
     const ctx = await t.contexto(ventana, { nombre: `cinta-${nombre}` });
@@ -379,11 +519,30 @@ async function cinta(t) {
       await p.hover('.cinta-enlace >> nth=1');
       await esperaQue(async () => (await estado(p))[1].pastilla === '1' && (await estado(p))[1].color === HORNO);
       const e = await estado(p);
-      t.ok(e[1].pastilla === '1' && e[1].color === HORNO && e[0].pastilla === '0' && e[2].pastilla === '0', `[${nombre}] con el raton la cinta no enciende solo su enlace en ambar con texto horno (${JSON.stringify(e)})`);
+      t.ok(e[1].pastilla === '1' && e[1].fondo === PAPEL && e[1].color === HORNO && e[1].icono === HORNO && e[0].pastilla === '0' && e[2].pastilla === '0', `[${nombre}] con el raton la cinta no enciende solo su enlace en papel con texto e icono horno (${JSON.stringify(e)})`);
+      t.ok(contraste(e[1].color, e[1].fondo) >= 4.5, `[${nombre}] el texto de la cinta encendida da ${contraste(e[1].color, e[1].fondo).toFixed(2)}:1`);
+      t.ok(e[1].animacion === 'salta' && e[0].animacion !== 'salta' && e[2].animacion !== 'salta', `[${nombre}] al pasar el raton las letras no saltan en ola solo en el enlace bajo el puntero (${JSON.stringify(e)})`);
+      const iconos = [['panes', 'salta-hogaza'], ['dulces', 'salta-galleta'], ['bebidas-frias', 'baila-botella']];
+      for (const [i, [categoria, animacion]] of iconos.entries()) {
+        await p.hover(`.cinta-enlace-${categoria}`);
+        await esperaQue(() => p.locator(`.cinta-enlace-${categoria} .ico`).evaluate((svg, nombre) => getComputedStyle(svg).animationName === nombre, animacion));
+        t.ok((await estado(p))[i].animacionIcono === animacion, `[${nombre}] el icono de ${categoria} no tiene su animacion (${JSON.stringify(await estado(p))})`);
+      }
+      const galleta = await p.locator('.cinta-enlace-dulces .ico').evaluate((svg) => ({
+        viewBox: svg.getAttribute('viewBox'),
+        relleno: getComputedStyle(svg).fill,
+        silueta: svg.querySelector('path')?.getAttribute('d'),
+      }));
+      t.ok(galleta.viewBox === '0 -960 960 960' && galleta.relleno !== 'none' && galleta.silueta?.startsWith('M480-80q-83 0-156'), `[${nombre}] la galleta no conserva la silueta rellena solicitada (${JSON.stringify(galleta)})`);
+      for (const [i, etiqueta] of ['Panes', 'Dulces y pasteles', 'Bebidas'].entries()) {
+        const enlace = e[i];
+        t.ok(enlace.nombre === etiqueta && enlace.letrasOcultas === 'true' && enlace.letras === etiqueta, `[${nombre}] la categoria "${etiqueta}" no conserva un nombre accesible unico con letras decorativas (${JSON.stringify(enlace)})`);
+      }
     } else {
       await p.tap('.portada-frase');
       const e = await estado(p);
       t.ok(e.every((x) => x.pastilla === '0' && x.color === PAPEL), `[${nombre}] la cinta se enciende sin raton (${JSON.stringify(e)})`);
+      t.ok(e.every((x) => x.animacion === 'none' && x.animacionIcono === 'none' && x.nombre === x.letras && x.letrasOcultas === 'true'), `[${nombre}] la cinta tactil no conserva el texto accesible o aplica la ola sin raton (${JSON.stringify(e)})`);
     }
     await ctx.close();
   }

@@ -9,7 +9,7 @@
 > `.claude/CLAUDE.md`. Las secciones 1 a 14 describen el sitio **como está
 > hoy** (React); la 15 es la historia corta de cómo se llegó aquí.
 
-Última actualización: 22 de octubre de 2026.
+Última actualización: 23 de octubre de 2026.
 
 ---
 
@@ -216,9 +216,11 @@ panes", con la cinta o con el menú.
   `+` a su color oscuro) y el fondo acaba de fundirse; en todo momento el
   texto cumple 4,5:1 y el anillo 3:1. Al acabar, la clase se quita (si no,
   el anillo del `+` destellaba al enfocarlo). Con prisa, cada toque lo
-  reinicia. Solo en las
-  fichas de la tienda; las líneas de la canasta no lo llevan. Café oscuro y
-  no verde: el verde sería un sexto color.
+  reinicia. Café oscuro y no verde: el verde sería un sexto color.
+- **Las líneas de la canasta se mueven igual que las fichas** (23 de
+  octubre de 2026): su `− n +` suelta el "+1" o "−1", destella al agregar
+  y su número entra deslizándose, con el mismo código
+  (`comun/golpes.js`). La canasta de arriba no brinca: ya está abierta.
 - Al cambiar de vista el foco va al `h1`, pero sin dibujarle el recuadro
   ámbar: un título no es un control.
 
@@ -297,7 +299,10 @@ Una cuenta por navegador. Cada paso es una vista propia:
 - **Cabecera**: sin sesión, la silueta ("Iniciar sesión / Registrarse") lleva
   a `#/cuenta/entrar`; con sesión, las iniciales abren una ficha con "Mis
   datos", "Mis pedidos (N)" y "Cerrar sesión" (flechas, Inicio, Fin, Esc,
-  `aria-current` en la vista en la que se está).
+  `aria-current` en la vista en la que se está). El botón usa tonos claros:
+  línea blanca al inicio y papel tenue con sesión; al abrir la ficha o estar
+  dentro de una vista de cuenta queda en papel, y al pasar el puntero vuelve
+  al blanco tenue del menú superior.
 - **Al terminar** de iniciar sesión, verificar o recuperar: a `#/confirmar`
   si se venía de "Ir a pagar" y la canasta tiene algo; si no, a `#/cuenta`.
   Cerrar sesión no borra la cuenta y lleva a `#/`. Los pasos van con
@@ -539,11 +544,23 @@ ritmo del movimiento y la accesibilidad no cambian.
   mano · Pan de la casa", quieto (solo gira un poco con el puntero encima;
   **nunca con el scroll**: marea). La nota "Horneando ahora mismo" sale de
   la portada: su estado lo dice ya la cabecera de periódico.
+  - Se ajusta al alto visible en escritorio, tableta y teléfono: la cinta
+    termina en el borde inferior, y la foto y los espacios se reducen según
+    la altura sin desaparecer ni generar scroll.
+  - Un estampado de 18 espigas propias, repartidas en posiciones, tamaños
+    y giros distintos, llena el fondo de la portada. La tinta queda tenue
+    bajo el contenido y no añade desplazamiento.
   - Al entrar: rótulo, título, frase y botones suben uno tras otro; la foto
     se descubre de abajo arriba; el sello cae girando. Una vez, escena.
 - **Cinta cobriza** (en lugar de la franja de trigo): Panes, Dulces y
-  pasteles, Bebidas, cada una con su icono de línea (hogaza, rebanada,
-  botella) y separadas por ✦; cada una es un enlace a su categoría.
+  pasteles, Bebidas, cada una con su icono de línea (hogaza, galleta con
+  chispas, botella), separadas por ✦; cada una es un enlace a su categoría. Al pasar
+  el puntero, cada icono acompaña la ola de las letras con un movimiento
+  breve propio; con menos movimiento se queda quieto.
+- **Navegación superior**: la pastilla de la vista actual viaja a la opción
+  elegida con una animación breve, también al entrar a Tienda desde una de
+  sus categorías; se desactiva con movimiento reducido. La cuenta seleccionada
+  permanece blanca y no cambia al pasar el puntero.
 - **Botones: ticket de panadería** (P2 y G3, elegidos el 22 de octubre de
   2026 en `.claude/referencias/muestra-menu.html`; sustituyen a la pastilla
   B1, que no gustó). Las cuatro esquinas van **mordidas hacia dentro**
@@ -560,8 +577,11 @@ ritmo del movimiento y la accesibilidad no cambian.
     acción ("Iniciar sesión", "Crear cuenta", "Verificar", "Listo, cerrar",
     "Reintentar", "Ver en el mapa"…).
   - **"Ir a pagar" y el botón final de pagar**, los protagonistas: el mismo
-    ticket en **`--horno` con texto `--papel` y sombra `--ambar`**, a todo
-    lo ancho de la canasta. Así no se confunde con el `+` ámbar de agregar.
+    ticket en **`--corteza` con texto `--papel` y sombra `--horno`** (K1 de
+    `muestra-colores.html`, 23 de octubre de 2026; el `--horno` de antes
+    era demasiado oscuro), a todo lo ancho de la canasta. Así no se
+    confunde con el `+` ámbar de agregar. Papel sobre corteza da 4,7:1:
+    el texto no puede ir más fino ni más pequeño que hoy.
   - **Secundario** (`.button-otro`: "Ya tengo cuenta…", "No tengo
     cuenta…", "Cerrar sesión"): ticket hueco, solo el borde de 1,5 px
     `--horno` siguiendo las mordidas (dibujado, porque un `border` no las
@@ -570,23 +590,33 @@ ritmo del movimiento y la accesibilidad no cambian.
     `ButtonText` de 1,5 px (`GrayText` si está apagado).
   - Apagado (`aria-disabled`): opacidad .45 y sin reaccionar al puntero.
   **Recto lo que se lee**: las fichas siguen con esquinas rectas.
-- **"Cómo llegar" de la portada**: enlace, no botón. Fraunces en cursiva
-  (unos 1.1rem) con el icono del pin, **sin caja ni raya**: con el puntero
-  el texto pasa a `--corteza-oscura` y el pin da un saltito.
-- **Menú de arriba: se enciende en su sitio** (M2, de
-  `muestra-menu.html`; sustituye a la pastilla que viajaba, N3). Con el
-  puntero, sobre el mismo enlace aparece una pastilla `--ambar` que crece
-  un poco (opacidad y `scale(.85)` → 1, respuesta rápida) y el texto pasa
-  a `--horno`; no viaja de un enlace a otro. **La página actual** no lleva
-  raya: lleva un **aro `--ambar`** de 1,5 px en forma de pastilla y el
-  texto en `--ambar-claro`; con el puntero encima se rellena como los
-  demás; el aro va también en el menú del teléfono. "Tienda" con su
-  flecha es un enlace y sigue encendida mientras se baja a su desplegable. Solo con ratón o lápiz
-  (`.con-puntero`); el foco de teclado sigue con su anillo `--papel`.
-  Entre 681 y 900 px el menú va centrado en el hueco entre el logo y los
-  botones (rejilla `auto 1fr auto`, logo de 52 px), para que nada se pise.
-- **La cinta de categorías** se enciende igual que el menú (las dos son
-  navegación): pastilla `--ambar` que aparece en su sitio, texto `--horno`.
+- **"Cómo llegar" de la portada**: enlace, no botón (L1 de
+  `muestra-colores.html`). Fraunces en cursiva de unos 1.35rem y 600, con
+  el pin en `--corteza` (24 px) y un filete fino de `--corteza`, sin relleno
+  ni raya, para distinguirlo del fondo sin competir con "Nuestros panes".
+  Con el puntero las letras **saltan una tras otra** (la ola: cada letra en
+  un `span` `aria-hidden`, sin cambiar el nombre accesible), el texto y el
+  borde pasan a `--corteza-oscura` y el pin da un saltito. Con menos
+  movimiento solo cambia el color.
+- **Menú de arriba: todo en blanco** (W1 y S2 de `muestra-colores.html`,
+  23 de octubre de 2026; sustituye al ámbar de M2, que no gustó). Con el
+  puntero, sobre el mismo enlace se enciende en su sitio un **blanco
+  tenue** (`--papel` al 16 %, opacidad y `scale(.85)` → 1, respuesta
+  rápida) y el texto sigue claro; no viaja de un enlace a otro. **La
+  página actual** es la única en **blanco lleno**: pastilla `--papel` con
+  el texto `--horno` (también su flecha en "Tienda"), sin raya ni aro, y
+  así también en el menú del teléfono. "Tienda" con su flecha es un
+  enlace y sigue encendida mientras se baja a su desplegable. Solo con
+  ratón o lápiz (`.con-puntero`); el foco de teclado sigue con su anillo
+  `--papel`. Entre 681 y 900 px el menú va centrado en el hueco entre el
+  logo y los botones (rejilla `auto 1fr auto`, logo de 52 px), para que
+  nada se pise.
+- **La cinta de categorías** también sin ámbar: con el puntero se enciende
+  en su sitio una pastilla `--papel` llena con el texto y el icono en
+  `--horno` y las letras saltan en secuencia, como una ola; el lector de
+  pantalla sigue recibiendo el nombre de cada categoría como una sola frase.
+  Con menos movimiento no hay ola. (Un blanco tenue sobre el cobrizo dejaría
+  el texto por debajo de 4,5:1.)
 - **Iconos de línea** del mismo trazo que los dibujos de trigo
   (`comun/iconos.jsx`): hogaza, rebanada, botella, espiga, pin, flecha y
   **cesta con asa**, que pasa a ser el icono de la canasta (arriba y la
@@ -695,6 +725,10 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       "Cómo llegar" como enlace sin raya, menú y cinta que se encienden en
       su sitio con aro en la página actual, y fuera el pie de página
       (22 de octubre de 2026, sección 10 y sección 2).
+- [ ] Menú y cinta en blanco (W1, S2), "Ir a pagar" y pagar en cobrizo
+      (K1), "Cómo llegar" más grande y con la ola (L1), y las líneas de la
+      canasta con el "+1", el destello y el número que entra (23 de
+      octubre de 2026).
 - [ ] Acciones que no son `.button` y siguen con su estilo: "Ver la
       vitrina" (canasta vacía), "Pedir otra vez", "Editar" de la cuenta y
       `.order-button`. Decidir con el usuario si pasan al ticket.

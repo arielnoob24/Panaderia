@@ -8,10 +8,12 @@
 // su vista (comun/vistas.js); la de la vista en la que se esta lleva
 // aria-current="page", que NavLink pone solo.
 import { useEffect, useRef, useState } from 'react';
+import { LayoutGroup, useReducedMotion } from 'motion/react';
 import mascota from '/assets/img/mascota.png';
 import logo from '/assets/img/logo.png';
 import { Link, NavLink } from 'react-router-dom';
 import MenuTienda from './MenuTienda.jsx';
+import IndicadorNav from './IndicadorNav.jsx';
 import BotonCanasta from '../pedido/BotonCanasta.jsx';
 import FichaCuenta from '../cuenta/FichaCuenta.jsx';
 
@@ -21,6 +23,7 @@ import FichaCuenta from '../cuenta/FichaCuenta.jsx';
 const OSCURAS = '.banda-oscura';
 
 function Cabecera() {
+  const reducido = useReducedMotion();
   const [pegada, setPegada] = useState(false);
   const [sobreOscuro, setSobreOscuro] = useState(false);
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -121,15 +124,24 @@ function Cabecera() {
           {/* Inicio delante (seccion 4 del plan), tambien en el menu del
               telefono. end: solo esta en Inicio quien esta en #/, no en
               cualquier vista que empiece por la barra. */}
-          <NavLink ref={primerEnlaceRef} to="/" end state={{ entrar: true }} onClick={cerrarMenu}>Inicio</NavLink>
-          <NavLink to="/nosotros" state={{ entrar: true }} onClick={cerrarMenu}>Nosotros</NavLink>
-          <MenuTienda
-            abierta={tiendaAbierta}
-            setAbierta={setTiendaAbierta}
-            botonRef={botonTiendaRef}
-            alElegir={cerrarMenu}
-          />
-          <NavLink to="/contacto" state={{ entrar: true }} onClick={cerrarMenu}>Contáctanos</NavLink>
+          <LayoutGroup id="navegacion-principal">
+            <NavLink ref={primerEnlaceRef} to="/" end state={{ entrar: true }} onClick={cerrarMenu}>
+              {({ isActive }) => <>{isActive && <IndicadorNav reducido={reducido} />}Inicio</>}
+            </NavLink>
+            <NavLink to="/nosotros" state={{ entrar: true }} onClick={cerrarMenu}>
+              {({ isActive }) => <>{isActive && <IndicadorNav reducido={reducido} />}Nosotros</>}
+            </NavLink>
+            <MenuTienda
+              abierta={tiendaAbierta}
+              setAbierta={setTiendaAbierta}
+              botonRef={botonTiendaRef}
+              alElegir={cerrarMenu}
+              reducido={reducido}
+            />
+            <NavLink to="/contacto" state={{ entrar: true }} onClick={cerrarMenu}>
+              {({ isActive }) => <>{isActive && <IndicadorNav reducido={reducido} />}Contáctanos</>}
+            </NavLink>
+          </LayoutGroup>
         </nav>
         <div className="nav-acciones">
           {/* Como en el sitio presentado: la cuenta primero, luego la canasta y el

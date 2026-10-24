@@ -7,10 +7,11 @@
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { CATEGORIAS } from './categorias.js';
-import { IconoBotella, IconoHogaza, IconoPastel } from '../comun/iconos.jsx';
+import { IconoBotella, IconoGalleta, IconoHogaza } from '../comun/iconos.jsx';
+import TextoOla from '../comun/TextoOla.jsx';
 
 // Si se anade una categoria sin dibujo, sale con la hogaza: mejor que sin nada.
-const ICONOS = { panes: IconoHogaza, dulces: IconoPastel, 'bebidas-frias': IconoBotella };
+const ICONOS = { panes: IconoHogaza, dulces: IconoGalleta, 'bebidas-frias': IconoBotella };
 
 function Cinta() {
   return (
@@ -21,9 +22,9 @@ function Cinta() {
           return (
             <Fragment key={c.id}>
               {i > 0 && <span className="cinta-estrella" aria-hidden="true">✦</span>}
-              <Link className="cinta-enlace" to={`/tienda-${c.id}`} state={{ entrar: true }}>
+              <Link className={`cinta-enlace cinta-enlace-${c.id}`} to={`/tienda-${c.id}`} state={{ entrar: true }}>
                 <Icono />
-                {c.nombre}
+                <TextoOla>{c.nombre}</TextoOla>
               </Link>
             </Fragment>
           );

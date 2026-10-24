@@ -220,6 +220,7 @@ function FichaCuenta({ alAbrir }) {
         aria-expanded={abierta}
         aria-controls="cuenta-menu"
         aria-label={`Tu cuenta, ${nombre}`}
+        data-vista-cuenta={location.pathname.startsWith('/cuenta') ? 'true' : undefined}
         data-tip="Tu cuenta"
         onClick={() => (abierta ? setAbierta(false) : abrir())}
         onKeyDown={alTeclearBoton}

@@ -14,10 +14,16 @@
 // ocupar su hueco en vez de saltar. Solo se anima la posicion (layout
 // "position"): al preguntar "¿Lo quitamos?" la linea cambia de alto, y
 // escalarla deformaria el texto. Con menos movimiento, nada de esto.
+//
+// Su "− n +" se mueve igual que el de las fichas (seccion 4 del plan, con
+// comun/golpes.js): cada toque suelta un "+1" o "−1", el + que agrega hace
+// destellar la pastilla y el numero entra deslizandose. La canasta de
+// arriba no brinca: ya esta abierta. Es aspecto, no cambia lo que se pide.
 import { useLayoutEffect, useRef } from 'react';
 import { m, useReducedMotion } from 'motion/react';
 import { dinero } from '../servicios/state.js';
 import { CURVA, DURACION } from '../comun/movimiento.js';
+import { destellar, soltarGolpe, useNumeroQueEntra } from '../comun/golpes.js';
 import { useCanasta } from './CanastaProvider.jsx';
 import { Basurero } from './iconosPedido.jsx';
 import { enTope, consejoTope } from '../estado/pedido.js';
@@ -57,6 +63,32 @@ function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, 
 
   const { nombre, cantidad, precio } = linea;
 
+  // El movimiento del control. El destello se pide en el clic y se enciende
+  // despues de pintar la cantidad nueva, como en ControlCantidad.jsx.
+  const pastillaRef = useRef(null);
+  const golpesRef = useRef(null);
+  const numeroRef = useRef(null);
+  useNumeroQueEntra(numeroRef, cantidad);
+  const pideDestello = useRef(false);
+  useLayoutEffect(() => {
+    if (!pideDestello.current) return;
+    pideDestello.current = false;
+    destellar(pastillaRef.current);
+  }, [cantidad]);
+  // En el tope el + no suma (solo avisa): ni "+1" ni destello. Con la ultima
+  // unidad el − pregunta antes de quitar: todavia no se quito nada.
+  const alMas = () => {
+    if (!enTope(cantidad)) {
+      soltarGolpe(golpesRef.current, '+1');
+      pideDestello.current = true;
+    }
+    onMas(id, linea);
+  };
+  const alMenos = () => {
+    if (cantidad > 1) soltarGolpe(golpesRef.current, '−1');
+    onMenos(id, linea);
+  };
+
   if (confirmando) {
     const alTeclear = (e) => {
       if (e.key !== 'Escape') return;
@@ -95,12 +127,13 @@ function LineaCanasta({ id, linea, foto, confirmando, onMenos, onMas, onQuitar, 
         </div>
         <p className="canasta-precio">{dinero(precio)} c/u</p>
         <div className="canasta-fila canasta-fila-baja">
-          <div className="canasta-cantidad">
-            <button ref={refs.menos} type="button" data-menos="" aria-label={ultima ? `Quitar ${nombre} de la canasta` : `Quitar uno de ${nombre}`} onClick={() => onMenos(id, linea)}>
+          <div ref={pastillaRef} className="canasta-cantidad">
+            <button ref={refs.menos} type="button" data-menos="" aria-label={ultima ? `Quitar ${nombre} de la canasta` : `Quitar uno de ${nombre}`} onClick={alMenos}>
               {ultima ? <Basurero /> : '−'}
             </button>
-            <output>{cantidad}</output>
-            <button ref={refs.mas} type="button" data-mas="" aria-label={`Añadir uno de ${nombre}`} aria-disabled={tope || undefined} data-tip={tope ? consejoTope : undefined} onClick={() => onMas(id, linea)}>+</button>
+            <output ref={numeroRef}>{cantidad}</output>
+            <button ref={refs.mas} type="button" data-mas="" aria-label={`Añadir uno de ${nombre}`} aria-disabled={tope || undefined} data-tip={tope ? consejoTope : undefined} onClick={alMas}>+</button>
+            <span ref={golpesRef} className="card-golpes" aria-hidden="true"></span>
           </div>
           <span className="canasta-subtotal">{dinero(precio * cantidad)}</span>
         </div>

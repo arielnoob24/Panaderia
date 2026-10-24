@@ -62,13 +62,21 @@
 .portada h1 em { display: block; padding-left: .9em; color: var(--corteza); font-weight: 300; font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; }
 .portada-frase { max-width: 30rem; margin: 0; color: var(--horno-suave); font: italic 400 1.6rem/1.4 var(--letra-titulo); font-variation-settings: "opsz" 24; }
 .portada-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 1.6rem; margin-top: 2rem; }
-/* "Como llegar" es un enlace y no un boton: Fraunces en cursiva con el pin,
-   sin caja ni raya. Con el puntero el texto pasa a corteza oscura (7,18:1
-   sobre la masa) y el pin da un saltito. Mide 30 px de alto: pasa los 24. */
-.portada-llegar { display: inline-flex; align-items: center; gap: .5rem; padding: .3rem 0; color: var(--horno); font: italic 500 1.1rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui); }
-.portada-llegar .ico { width: 20px; height: 20px; stroke-width: 1.6; transition: transform var(--dur-base) var(--ease-soft); }
-.portada-llegar:hover { color: var(--corteza-oscura); }
+/* "Como llegar" es un enlace y no un boton (L1, seccion 10 del plan):
+   Fraunces en cursiva, grande y gruesa para que se vea junto al ticket, con
+   el pin en corteza, sin caja ni raya. Con el puntero las letras saltan una
+   tras otra (la ola: cada una es un span de TextoOla.jsx con su turno en
+   --i), el texto pasa a corteza oscura (7,18:1 sobre la masa) y el pin da
+   un saltito. Mide mas de 30 px de alto: pasa los 24. Relativa por el
+   nombre escondido (sr-only) que lleva dentro. */
+.portada-llegar { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding: .42rem .9rem; border: 1px solid var(--corteza); border-radius: var(--r-btn); color: var(--horno); font: italic 600 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.portada-llegar .ico { width: 24px; height: 24px; color: var(--corteza); stroke-width: 1.8; transition: transform var(--dur-base) var(--ease-soft); }
+.portada-llegar .letras span { display: inline-block; white-space: pre; }
+.portada-llegar:hover { border-color: var(--corteza-oscura); color: var(--corteza-oscura); }
+.portada-llegar:active { transform: scale(.97); }
 .con-puntero .portada-llegar:hover .ico { transform: translateY(-3px); }
+.con-puntero .portada-llegar:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
+@keyframes salta { 40% { transform: translateY(-5px); } }
 
 /* La foto cuadrada en arco, con un marco fino a 10 px. */
 .portada-foto { position: relative; width: min(100%, 460px); margin-left: auto; }
@@ -102,30 +110,50 @@
 /* ---- #/ : la cinta cobriza con las categorias (Cinta.jsx) --------------- */
 
 /* Papel sobre corteza: 4,7:1. Los enlaces van en cursiva de titulo y se
-   encienden como el menu de arriba (M2, las dos son navegacion): con el
-   raton aparece en su sitio una pastilla ambar que crece un poco, y el
-   texto y el icono pasan a horno (5,8:1 sobre el ambar). */
+   encienden en su sitio como el menu de arriba (las dos son navegacion),
+   sin ambar: con el raton aparece una pastilla papel llena que crece un
+   poco, y el texto y el icono pasan a horno (13,9:1). Las letras saltan en
+   secuencia, sin cambiar el nombre accesible. Un blanco tenue, como el del
+   menu, dejaria el texto claro sobre el cobrizo por debajo de 4,5:1. */
 .cinta { background: var(--corteza); color: var(--papel); border-block: 6px double var(--masa); }
 .cinta-dentro { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 2rem; padding-block: .7rem; }
 .cinta-enlace { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--papel); font: italic 400 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
-.cinta-enlace .ico { width: 1.35em; height: 1.35em; color: var(--masa); stroke-width: 1.4; transition: color var(--dur-fast) var(--ease-ui); }
-.cinta-enlace::before { position: absolute; inset: 0; z-index: -1; content: ""; background: var(--ambar); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-soft); }
+.cinta-enlace .ico { width: 1.35em; height: 1.35em; color: var(--masa); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
+.cinta-enlace .letras span { display: inline-block; white-space: pre; }
+.cinta-enlace::before { position: absolute; inset: 0; z-index: -1; content: ""; background: var(--papel); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-soft); }
 .con-puntero .cinta-enlace:hover::before { opacity: 1; transform: none; }
 .con-puntero .cinta-enlace:hover, .con-puntero .cinta-enlace:hover .ico { color: var(--horno); }
+.con-puntero .cinta-enlace:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
+.con-puntero .cinta-enlace-panes:hover .ico { animation: salta-hogaza var(--dur-slow) var(--ease-soft) both; }
+.con-puntero .cinta-enlace-dulces:hover .ico { animation: salta-galleta var(--dur-slow) var(--ease-soft) both; }
+.con-puntero .cinta-enlace-bebidas-frias:hover .ico { animation: baila-botella var(--dur-slow) var(--ease-soft) both; }
 .cinta-enlace:active { transform: scale(.97); }
+@keyframes salta-hogaza { 40% { transform: translateY(-4px) rotate(-7deg); } }
+@keyframes salta-galleta { 40% { transform: translateY(-4px) rotate(7deg); } }
+@keyframes baila-botella { 25%, 65% { transform: rotate(-8deg); } 45%, 85% { transform: rotate(8deg); } }
 /* Sobre la corteza el anillo horno no llega a 3:1: aqui es papel. */
 .cinta a:focus-visible { outline-color: var(--papel); }
 .cinta-estrella { color: var(--ambar); }
 /* La cinta es lo ultimo de #/ (sin carrusel ni pie debajo): un respiro de
    masa hasta el borde de la pantalla. */
-.vista-inicio { padding-bottom: clamp(2rem, 5vw, 3.5rem); }
+.vista-inicio { display: flex; width: 100%; height: 100vh; height: 100svh; min-height: 0; flex-direction: column; }
+#raiz:has(.vista-inicio) { height: 100vh; height: 100svh; min-height: 0; }
+#raiz > main:has(.vista-inicio) { min-height: 0; flex: 1 1 0; padding-bottom: 0; }
+.vista-inicio .portada { display: flex; min-height: 0; flex: 1 1 auto; flex-direction: column; }
+.vista-inicio .portada > .container { display: flex; min-height: 0; flex: 1; flex-direction: column; }
+.vista-inicio .portada-rejilla { min-height: 0; flex: 1; padding-block: clamp(.4rem, 2.5svh, 2rem); }
+.vista-inicio .portada-foto { width: min(100%, clamp(160px, 52svh, 460px)); }
 
 /* Con menos movimiento la portada esta quieta desde el principio: sin
    entrada, sin filetes que se dibujan y sin sello que gire. */
 @media (prefers-reduced-motion: reduce) {
   .portada-texto > *, .periodico-doble, .portada-arco img.is-loaded, .portada-sello { animation: none; }
   .con-puntero .portada-sello:hover svg { transform: none; transition: none; }
-  .con-puntero .portada-llegar:hover .ico, .cinta-enlace:active, .con-puntero .cinta-enlace:hover::before { transform: none; }
+  .con-puntero .portada-llegar:hover .ico, .portada-llegar:active, .cinta-enlace:active, .con-puntero .cinta-enlace:hover::before { transform: none; }
+  /* Sin la ola: "Como llegar" solo cambia de color. */
+  .con-puntero .portada-llegar:hover .letras span { animation: none; }
+  .con-puntero .cinta-enlace:hover .letras span { animation: none; }
+  .con-puntero .cinta-enlace:hover .ico { animation: none; }
 }
 
 /* ---- #/nosotros --------------------------------------------------------- */
@@ -197,14 +225,41 @@
 
 @media (max-width: 900px) {
   .portada-rejilla { grid-template-columns: 1fr; gap: 2.4rem; padding-bottom: 3.4rem; }
-  .portada-foto { width: min(100%, 340px); margin-inline: auto; }
+  .portada-foto { width: min(100%, clamp(160px, 52svh, 340px)); margin-inline: auto; }
   .portada-sello { right: -8px; bottom: -40px; left: auto; width: 112px; height: 112px; }
   .portada-foto figcaption { padding-right: 104px; text-align: left; }
   .contacto-rejilla { grid-template-columns: 1fr; grid-template-areas: "datos" "mapa" "horario" "escribir"; }
 }
+@media (min-width: 681px) and (max-width: 900px) {
+  .portada-rejilla { grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(1.2rem, 3vw, 2rem); padding-block: 1.4rem; }
+  .portada h1 { font-size: clamp(3rem, 6.4vw, 3.6rem); }
+}
 @media (max-width: 680px) {
   .vista-nosotros, .vista-contacto { padding-top: 96px; }
-  .portada { padding-top: 70px; }
+  .vista-inicio { padding-bottom: 0; }
+  .vista-inicio .portada { flex: 1 1 0; }
+  .vista-inicio .portada > .container { width: calc(100% - 2 * var(--borde)); }
+  .vista-inicio .portada-rejilla { align-content: center; gap: clamp(.1rem, 1svh, .6rem); padding-block: .2rem; }
+  .vista-inicio .portada-foto { width: min(100%, clamp(104px, calc((100svh - 470px) * .48), 220px)); }
+  .vista-inicio .portada-sello { right: -4px; bottom: -24px; width: clamp(68px, 12svh, 96px); height: auto; aspect-ratio: 1; }
+  .vista-inicio .portada-foto figcaption { margin-top: .35rem; padding-right: 72px; font-size: .72rem; }
+  .vista-inicio .periodico { flex-wrap: nowrap; gap: .25rem; padding-block: .3rem; }
+  .vista-inicio .periodico .rotulo { min-width: 0; font-size: clamp(.56rem, 2.45vw, .7rem); letter-spacing: .06em; white-space: nowrap; }
+  .vista-inicio .periodico-estado { justify-content: flex-end; }
+  .vista-inicio .portada h1 { margin: .25rem 0 .4rem; font-size: clamp(2rem, 10vw, 2.75rem); line-height: .86; }
+  .vista-inicio .portada h1 em { padding-left: .45em; }
+  .vista-inicio .portada-frase { font-size: clamp(.92rem, 4vw, 1.18rem); line-height: 1.2; }
+  .vista-inicio .portada-acciones { gap: .45rem .7rem; margin-top: .65rem; }
+  .vista-inicio .portada-llegar { min-height: 36px; padding: .25rem .55rem; font-size: clamp(.95rem, 4vw, 1.12rem); }
+  .vista-inicio .cinta { flex: 0 0 auto; }
+  .vista-inicio .cinta-dentro { flex-wrap: nowrap; gap: 0; padding: .3rem 52px .3rem .25rem; }
+  .vista-inicio .cinta-enlace { min-width: 0; flex: 1 1 0; justify-content: center; gap: .2rem; padding: .3rem .12rem; font-size: clamp(.75rem, 3.2vw, .9rem); }
+  .vista-inicio .cinta-enlace .ico { width: 1.15em; height: 1.15em; }
+  .vista-inicio .cinta-enlace .letras { min-width: 0; }
+  .vista-inicio .cinta-enlace .letras span { white-space: normal; }
+  .vista-inicio .cinta-estrella { display: none; }
+  body:has(.vista-inicio) .floating-whatsapp.is-canasta { right: 8px; bottom: calc(5px + env(safe-area-inset-bottom)); width: 44px; height: 44px; }
+  body:has(.vista-inicio) .floating-whatsapp .canasta-icono { width: 24px; height: 24px; }
   /* En el telefono la cabecera de periodico se queda en la fecha y el estado. */
   .periodico { flex-wrap: wrap; justify-content: space-between; gap: .3rem 1rem; padding-block: .7rem; }
   .periodico .rotulo { letter-spacing: .12em; }
@@ -222,13 +277,12 @@
      de espigas no lo necesitan: la franja es adorno y llega al borde. */
   #raiz > main { padding-bottom: 92px; }
   #raiz > main:has(.franja-pie) { padding-bottom: 0; }
-  .vista-inicio { padding-bottom: 0; }
+  #raiz > main:has(.vista-inicio) { padding-bottom: 0; }
 }
 /* Por debajo de 360 px el sello sobresalia por la derecha (2 px a 320):
    pegado al borde y algo mas pequeno. */
 @media (max-width: 360px) {
-  .portada-sello { right: 0; width: 100px; height: 100px; }
-  .portada-foto figcaption { padding-right: 96px; }
+  .vista-inicio .portada-sello { right: 0; }
 }
 
 /* ---- Motion ---------------------------------------------------------------- */
@@ -261,7 +315,12 @@
 .fondo-pieza.is-arriba-izquierda { top: 0; left: 0; }
 .fondo-pieza.is-abajo-derecha { right: 0; bottom: 0; }
 .fondo-pieza.is-abajo-izquierda { bottom: 0; left: 0; }
+.fondo-pieza.is-medio-izquierda { top: 48%; left: 0; }
+.fondo-pieza.is-medio-derecha { top: 48%; right: 0; }
+.fondo-inicio .fondo-pieza.is-patron { top: var(--pieza-y); left: var(--pieza-x); width: var(--pieza-ancho); }
 
+.fondo-inicio { opacity: .34; }
+.fondo-inicio .fondo-pieza.is-patron path { stroke-width: .65; }
 .fondo-nosotros .is-abajo-derecha { right: 1%; bottom: -50px; width: 300px; }
 .fondo-nosotros .is-arriba-izquierda { top: 20px; left: 38%; width: 300px; }
 .fondo-principios .is-abajo-derecha { right: 2%; bottom: 0; width: 380px; }
@@ -272,6 +331,8 @@
 
 @media (max-width: 680px) {
   .fondo-dibujo { opacity: .18; }
+  .fondo-inicio { opacity: .34; }
+  .fondo-inicio .fondo-pieza.is-patron { top: var(--pieza-movil-y); left: var(--pieza-movil-x); width: var(--pieza-movil-ancho); }
   .fondo-nosotros .is-abajo-derecha { right: -60px; width: 280px; }
   .fondo-nosotros .is-arriba-izquierda { display: none; }
   .fondo-principios .is-abajo-derecha { right: -80px; width: 280px; }

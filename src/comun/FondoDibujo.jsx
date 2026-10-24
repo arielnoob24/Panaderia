@@ -10,7 +10,44 @@
 import { barra, enrollado, espiga, gavilla, grano, hogaza, mazorca } from './trazos.jsx';
 
 // Cada vista: sus piezas, con su caja (viewBox) y donde va.
+const motivoPortada = (nombre, caja, trazos, escritorio, movil) => ({
+  nombre,
+  donde: 'patron',
+  caja,
+  trazos,
+  estilo: {
+    '--pieza-x': escritorio.x,
+    '--pieza-y': escritorio.y,
+    '--pieza-ancho': escritorio.ancho,
+    '--pieza-movil-x': movil.x,
+    '--pieza-movil-y': movil.y,
+    '--pieza-movil-ancho': movil.ancho,
+  },
+});
+
 const PIEZAS = {
+  // Papel estampado solo con espigas, repartidas y giradas para evitar
+  // una cuadricula rigida.
+  inicio: [
+    motivoPortada('espiga-01', '-80 -150 160 300', [espiga({ giro: 24, escala: 0.7 })], { x: '3%', y: '4%', ancho: '148px' }, { x: '-8%', y: '2%', ancho: '108px' }),
+    motivoPortada('espiga-02', '-80 -150 160 300', [espiga({ giro: -28, escala: 0.64 })], { x: '25%', y: '2%', ancho: '136px' }, { x: '19%', y: '1%', ancho: '96px' }),
+    motivoPortada('espiga-03', '-80 -150 160 300', [espiga({ giro: 18, escala: 0.68 })], { x: '51%', y: '5%', ancho: '142px' }, { x: '48%', y: '5%', ancho: '102px' }),
+    motivoPortada('espiga-04', '-80 -150 160 300', [espiga({ giro: -22, escala: 0.7 })], { x: '78%', y: '1%', ancho: '146px' }, { x: '77%', y: '3%', ancho: '100px' }),
+    motivoPortada('espiga-05', '-80 -150 160 300', [espiga({ giro: -16, escala: 0.62 })], { x: '8%', y: '28%', ancho: '128px' }, { x: '-5%', y: '25%', ancho: '100px' }),
+    motivoPortada('espiga-06', '-80 -150 160 300', [espiga({ giro: 22, escala: 0.66 })], { x: '34%', y: '25%', ancho: '138px' }, { x: '24%', y: '28%', ancho: '92px' }),
+    motivoPortada('espiga-07', '-80 -150 160 300', [espiga({ giro: -26, escala: 0.64 })], { x: '61%', y: '30%', ancho: '134px' }, { x: '53%', y: '27%', ancho: '104px' }),
+    motivoPortada('espiga-08', '-80 -150 160 300', [espiga({ giro: 30, escala: 0.62 })], { x: '86%', y: '25%', ancho: '132px' }, { x: '82%', y: '29%', ancho: '102px' }),
+    motivoPortada('espiga-09', '-80 -150 160 300', [espiga({ giro: 26, escala: 0.65 })], { x: '1%', y: '52%', ancho: '134px' }, { x: '-8%', y: '51%', ancho: '102px' }),
+    motivoPortada('espiga-10', '-80 -150 160 300', [espiga({ giro: -18, escala: 0.68 })], { x: '27%', y: '49%', ancho: '142px' }, { x: '19%', y: '50%', ancho: '96px' }),
+    motivoPortada('espiga-11', '-80 -150 160 300', [espiga({ giro: 24, escala: 0.6 })], { x: '54%', y: '53%', ancho: '126px' }, { x: '48%', y: '49%', ancho: '100px' }),
+    motivoPortada('espiga-12', '-80 -150 160 300', [espiga({ giro: -30, escala: 0.68 })], { x: '81%', y: '50%', ancho: '140px' }, { x: '78%', y: '52%', ancho: '104px' }),
+    motivoPortada('espiga-13', '-80 -150 160 300', [espiga({ giro: -24, escala: 0.64 })], { x: '7%', y: '76%', ancho: '132px' }, { x: '-4%', y: '75%', ancho: '96px' }),
+    motivoPortada('espiga-14', '-80 -150 160 300', [espiga({ giro: 30, escala: 0.68 })], { x: '33%', y: '74%', ancho: '140px' }, { x: '23%', y: '76%', ancho: '102px' }),
+    motivoPortada('espiga-15', '-80 -150 160 300', [espiga({ giro: -20, escala: 0.62 })], { x: '60%', y: '78%', ancho: '130px' }, { x: '51%', y: '74%', ancho: '96px' }),
+    motivoPortada('espiga-16', '-80 -150 160 300', [espiga({ giro: 26, escala: 0.66 })], { x: '86%', y: '75%', ancho: '136px' }, { x: '82%', y: '77%', ancho: '104px' }),
+    motivoPortada('espiga-17', '-80 -150 160 300', [espiga({ giro: -18, escala: 0.58 })], { x: '46%', y: '16%', ancho: '124px' }, { x: '43%', y: '16%', ancho: '88px' }),
+    motivoPortada('espiga-18', '-80 -150 160 300', [espiga({ giro: 24, escala: 0.6 })], { x: '67%', y: '64%', ancho: '128px' }, { x: '67%', y: '63%', ancho: '94px' }),
+  ],
   // #/nosotros, sobre la masa: la gavilla grande junto al texto y unas
   // espigas sueltas arriba, junto a la foto.
   nosotros: [
@@ -60,7 +97,7 @@ function FondoDibujo({ vista }) {
   return (
     <div className={`fondo-dibujo fondo-${vista}`} aria-hidden="true">
       {piezas.map((p) => (
-        <svg key={p.donde} className={`fondo-pieza is-${p.donde}`} viewBox={p.caja} focusable="false">
+        <svg key={p.nombre || p.donde} className={`fondo-pieza is-${p.donde}${p.nombre ? ` fondo-pieza-${p.nombre}` : ''}`} style={p.estilo} viewBox={p.caja} focusable="false">
           {p.trazos.map((t, i) => <g key={i}>{t}</g>)}
         </svg>
       ))}

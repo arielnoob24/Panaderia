@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muestra de colores</title>
+<!-- Solo para elegir: en el sitio Fraunces se sirve desde el propio sitio. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..900,0..100;1,9..144,300..900,0..100&display=swap" rel="stylesheet">
+<style>
+:root {
+  --masa: #f7f1e7; --horno: #3a2822; --ambar: #d79b4a; --ambar-claro: #f2ca68;
+  --corteza: #a85f45; --corteza-oscura: #7a4030; --papel: #fffdf8; --masa-linea: #ded2c2;
+  --sobre-horno: #eee4d8;
+  --titulo: "Fraunces", Georgia, serif; --texto: Arial, sans-serif;
+  --ease-soft: cubic-bezier(.22, 1, .36, 1); --ease-out: cubic-bezier(.23, 1, .32, 1);
+}
+* { box-sizing: border-box; }
+body { margin: 0; padding: 2rem 16px 4rem; background: var(--masa); color: var(--horno); font: 16px/1.5 var(--texto); }
+h1 { max-width: 1100px; margin: 0 auto .4rem; font: 500 2.4rem/1.1 var(--titulo); }
+h2.parte { max-width: 1100px; margin: 3rem auto .6rem; font: 500 1.8rem/1.1 var(--titulo); }
+.intro { max-width: 1100px; margin: 0 auto 1.4rem; color: #5e514a; }
+.opciones { display: grid; max-width: 1100px; margin: 0 auto; gap: 1.2rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); }
+.opcion { padding: 1.3rem 1.3rem 1.5rem; background: var(--papel); border: 1px solid var(--masa-linea); }
+.opcion h3 { margin: 0 0 .2rem; font: 500 1.35rem/1.2 var(--titulo); }
+.opcion h3 small { margin-left: .4rem; color: var(--corteza-oscura); font: 700 .7rem var(--texto); letter-spacing: .18em; text-transform: uppercase; vertical-align: middle; }
+.opcion p { margin: 0 0 1rem; color: #5e514a; font-size: .92rem; }
+
+/* El menu M2, como ya esta: el ambar se enciende en su sitio */
+.barra { display: flex; flex-wrap: wrap; justify-content: center; gap: .2rem; padding: 1.1rem .5rem; background: var(--horno); }
+.barra a { position: relative; isolation: isolate; padding: .5rem .85rem; border-radius: 999px; color: var(--sobre-horno); font: 700 .95rem/1.2 var(--texto); text-decoration: none; transition: color .2s var(--ease-out); }
+.barra a::before { position: absolute; inset: 0; z-index: -1; content: ""; background: var(--ambar); border-radius: 999px; opacity: 0; transform: scale(.85); transition: opacity .2s var(--ease-out), transform .3s var(--ease-soft); }
+.barra a:hover { color: var(--horno); }
+.barra a:hover::before { opacity: 1; transform: none; }
+/* S1: la pagina actual en cobrizo relleno */
+.s1 a[aria-current] { background: var(--corteza); color: var(--papel); }
+/* S2: ficha clara, al reves que la barra */
+.s2 a[aria-current] { background: var(--sobre-horno); color: var(--horno); }
+/* S3: aro claro (papel) en vez de ambar, texto claro */
+.s3 a[aria-current] { box-shadow: inset 0 0 0 1.5px var(--sobre-horno); color: var(--papel); }
+/* Hoy: aro ambar */
+.hoy a[aria-current] { box-shadow: inset 0 0 0 1.5px var(--ambar); color: var(--ambar-claro); }
+
+/* "Ir a pagar" */
+.canasta { padding: 1rem; background: var(--papel); border: 1px solid var(--masa-linea); }
+.linea { display: flex; align-items: center; justify-content: space-between; gap: .8rem; padding: .7rem; border: 1px solid var(--masa-linea); border-radius: 12px; font: 600 1rem var(--titulo); }
+.mas { display: grid; width: 34px; height: 34px; place-items: center; background: var(--ambar); border-radius: 50%; box-shadow: inset 0 0 0 1px var(--horno); font: 700 1.2rem/1 var(--texto); }
+.total { display: flex; justify-content: space-between; margin: 1.1rem 0 .8rem; font: 700 1rem var(--texto); }
+.total b { font: 600 1.35rem var(--titulo); }
+.env { display: block; transition: transform .4s var(--ease-soft), filter .4s var(--ease-soft); }
+.env:hover { transform: translate(-2px, -2px) rotate(-.6deg); }
+.pagar { --mordida: 9px; display: flex; width: 100%; justify-content: center; align-items: center; gap: .6rem; padding: 1.05rem 1.4rem; border: 0; cursor: pointer; font: 700 .85rem/1.2 var(--texto); letter-spacing: .16em; text-transform: uppercase; -webkit-mask: radial-gradient(circle var(--mordida) at 0 0, #0000 98%, #000) top left, radial-gradient(circle var(--mordida) at 100% 0, #0000 98%, #000) top right, radial-gradient(circle var(--mordida) at 0 100%, #0000 98%, #000) bottom left, radial-gradient(circle var(--mordida) at 100% 100%, #0000 98%, #000) bottom right; -webkit-mask-size: 51% 51%; -webkit-mask-repeat: no-repeat; mask: radial-gradient(circle var(--mordida) at 0 0, #0000 98%, #000) top left, radial-gradient(circle var(--mordida) at 100% 0, #0000 98%, #000) top right, radial-gradient(circle var(--mordida) at 0 100%, #0000 98%, #000) bottom left, radial-gradient(circle var(--mordida) at 100% 100%, #0000 98%, #000) bottom right; mask-size: 51% 51%; mask-repeat: no-repeat; }
+.pagar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; transition: transform .4s var(--ease-soft); }
+.env:hover svg { transform: translateX(4px); }
+.k1 .env { filter: drop-shadow(4px 4px 0 var(--horno)); } .k1 .pagar { background: var(--corteza); color: var(--papel); }
+.k2 .env { filter: drop-shadow(4px 4px 0 var(--horno)); } .k2 .pagar { background: var(--corteza-oscura); color: var(--papel); }
+.k3 .env { filter: drop-shadow(4px 4px 0 var(--corteza-oscura)); } .k3 .pagar { background: var(--ambar-claro); color: var(--horno); }
+.khoy .env { filter: drop-shadow(4px 4px 0 var(--ambar)); } .khoy .pagar { background: var(--horno); color: var(--papel); }
+
+/* "Como llegar" con letras que saltan (la ola) */
+.fila { padding: 1.4rem 1rem; background: var(--masa); }
+.llegar { display: inline-flex; align-items: center; gap: .5rem; color: var(--horno); font: italic 500 1.15rem/1.2 var(--titulo); text-decoration: none; transition: color .2s; }
+.llegar svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; transition: transform .4s var(--ease-soft); }
+.llegar .l { display: inline-block; white-space: pre; }
+.llegar:hover { color: var(--corteza-oscura); }
+.llegar:hover svg { transform: translateY(-3px); }
+.llegar:hover .l { animation: salta .5s var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
+@keyframes salta { 40% { transform: translateY(-5px); } }
+
+/* ---- Tercera ronda: todo en blanco ---- */
+.blanco a::before { background: var(--papel); }
+.blanco a:hover { color: var(--horno); }
+.blanco a[aria-current] { background: var(--papel); color: var(--horno); }
+/* W1: el raton enciende un blanco tenue; la pagina actual es blanco lleno */
+.w1 a::before { background: rgba(255, 253, 248, .16); }
+.w1 a:hover { color: var(--papel); }
+.w1 a[aria-current]:hover { color: var(--horno); }
+/* W2: el raton y la pagina actual, el mismo blanco lleno */
+
+/* "Como llegar" que resalta mas */
+.llegar.mas-grande { font-size: 1.35rem; font-weight: 600; }
+.llegar.mas-grande svg { width: 24px; height: 24px; color: var(--corteza); stroke-width: 1.8; }
+.llegar .flecha-fin { display: inline-block; margin-left: .15rem; font-style: normal; color: var(--corteza); transition: transform .4s var(--ease-soft); }
+.llegar:hover .flecha-fin { transform: translateX(5px); }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<h1>Colores</h1>
+<p class="intro">Pasa el ratón por encima. El efecto del menú es el de ahora (el ámbar se enciende en su sitio); solo cambia cómo se marca la página actual, "Inicio".</p>
+
+<h2 class="parte">La página actual del menú</h2>
+<div class="opciones">
+  <section class="opcion"><h3>S1 · Cobrizo <small>recomendada</small></h3><p>Relleno cobrizo, el color de la cinta, con texto claro. Se distingue del ámbar del ratón y no hace falta pasar por encima para verlo.</p>
+    <nav class="barra s1"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda</a><a href="#">Contáctanos</a></nav></section>
+  <section class="opcion"><h3>S2 · Ficha clara</h3><p>Relleno claro con el texto oscuro, al revés que la barra. Es la que más resalta.</p>
+    <nav class="barra s2"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda</a><a href="#">Contáctanos</a></nav></section>
+  <section class="opcion"><h3>S3 · Aro claro</h3><p>Como ahora, pero el aro y el texto en claro en vez de ámbar. La más discreta.</p>
+    <nav class="barra s3"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda</a><a href="#">Contáctanos</a></nav></section>
+  <section class="opcion"><h3>Hoy</h3><p>Aro ámbar y texto ámbar: el mismo color que el ratón.</p>
+    <nav class="barra hoy"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda</a><a href="#">Contáctanos</a></nav></section>
+</div>
+
+<h2 class="parte">"Ir a pagar"</h2>
+<p class="intro">Menos oscuro, y distinto del <b>+</b> ámbar.</p>
+<div class="opciones">
+  <section class="opcion k1"><h3>K1 · Cobrizo <small>recomendada</small></h3><p>Cobrizo con texto claro y sombra café. Cálido, se ve desde lejos y no es el ámbar del +.</p>
+    <div class="canasta"><div class="linea">Pan redondo <span class="mas">+</span></div><div class="total">Subtotal <b>$0.25</b></div><span class="env"><button class="pagar">Ir a pagar <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></span></div></section>
+  <section class="opcion k2"><h3>K2 · Cobrizo oscuro</h3><p>Un punto más oscuro que el K1, pero lejos del café de ahora.</p>
+    <div class="canasta"><div class="linea">Pan redondo <span class="mas">+</span></div><div class="total">Subtotal <b>$0.25</b></div><span class="env"><button class="pagar">Ir a pagar <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></span></div></section>
+  <section class="opcion k3"><h3>K3 · Ámbar claro</h3><p>Ámbar más claro y luminoso que el +, con texto oscuro y sombra cobriza.</p>
+    <div class="canasta"><div class="linea">Pan redondo <span class="mas">+</span></div><div class="total">Subtotal <b>$0.25</b></div><span class="env"><button class="pagar">Ir a pagar <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></span></div></section>
+  <section class="opcion khoy"><h3>Hoy</h3><p>Café oscuro con sombra ámbar.</p>
+    <div class="canasta"><div class="linea">Pan redondo <span class="mas">+</span></div><div class="total">Subtotal <b>$0.25</b></div><span class="env"><button class="pagar">Ir a pagar <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button></span></div></section>
+</div>
+
+<h2 class="parte">"Cómo llegar" con letras que saltan</h2>
+<p class="intro">Al pasar el ratón las letras saltan una tras otra, como una ola, y se ponen cobrizas; el pin sube.</p>
+<div class="opciones"><section class="opcion"><div class="fila"><a class="llegar" href="#"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span class="texto" aria-label="Cómo llegar">Cómo llegar</span></a></div></section></div>
+
+<h2 class="parte">Tercera ronda: el menú todo en blanco</h2>
+<p class="intro">Sin ámbar. La página actual va en blanco con el texto oscuro (S2, la que elegiste). Cambia solo lo que pasa con el ratón.</p>
+<div class="opciones">
+  <section class="opcion"><h3>W1 · Blanco tenue al pasar <small>recomendada</small></h3><p>Con el ratón se enciende un blanco suave, transparente. La página actual es la única en blanco lleno, así que siempre se sabe dónde estás.</p>
+    <nav class="barra blanco w1"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda</a><a href="#">Contáctanos</a></nav></section>
+  <section class="opcion"><h3>W2 · Blanco lleno al pasar</h3><p>Con el ratón se enciende el mismo blanco lleno que la página actual. Más fuerte, pero mientras pasas el ratón hay dos iguales.</p>
+    <nav class="barra blanco w2"><a href="#" aria-current="page">Inicio</a><a href="#">Nosotros</a><a href="#">Tienda</a><a href="#">Contáctanos</a></nav></section>
+</div>
+
+<h2 class="parte">"Cómo llegar" que resalta más</h2>
+<div class="opciones">
+  <section class="opcion"><h3>L1 · Más grande <small>recomendada</small></h3><p>Letra más grande y gruesa, y el pin en cobrizo. Con el ratón, la ola de letras.</p>
+    <div class="fila"><a class="llegar mas-grande" href="#"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span class="texto" aria-label="Cómo llegar">Cómo llegar</span></a></div></section>
+  <section class="opcion"><h3>L2 · Más grande y con flecha</h3><p>Lo mismo, y una flecha cobriza al final que avanza con el ratón: dice "esto lleva a otra parte".</p>
+    <div class="fila"><a class="llegar mas-grande" href="#"><svg viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span class="texto" aria-label="Cómo llegar">Cómo llegar</span><span class="flecha-fin" aria-hidden="true">→</span></a></div></section>
+</div>
+
+<script>
+// Letras sueltas para la ola (el nombre accesible lo da el aria-label).
+document.querySelectorAll('.llegar .texto').forEach((el) => {
+  const t = el.textContent; el.textContent = '';
+  [...t].forEach((c, i) => { const s = document.createElement('span'); s.className = 'l'; s.style.setProperty('--i', i); s.setAttribute('aria-hidden', 'true'); s.textContent = c; el.append(s); });
+});
+document.querySelectorAll('a[href="#"]').forEach((a) => a.addEventListener('click', (e) => e.preventDefault()));
+</script>
+</body>
+</html>

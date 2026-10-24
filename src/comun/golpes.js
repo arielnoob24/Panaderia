@@ -1,6 +1,7 @@
 // ---- "Agregar se nota aunque sea rapido" (S1, seccion 4 del plan) -----------
-// Tres movimientos del control de cantidad de la ficha, que son aspecto y no
-// logica, y por eso viven aqui y no en pedido/:
+// Tres movimientos del control de cantidad de la ficha y del de cada linea de
+// la canasta (el mismo gesto se ve igual en los dos sitios), que son aspecto
+// y no logica, y por eso viven aqui y no en pedido/:
 //
 // - soltarGolpe: cada toque del + o del - suelta un "+1" (o "−1") que sube
 //   desde el boton y se desvanece. Va por el DOM y no por estado, como el
@@ -10,9 +11,9 @@
 // - destellar: cada + que agrega pinta la pastilla de horno un momento y
 //   vuelve al papel (styles.css, is-destello, que se quita al acabar). Con
 //   prisa, cada toque lo reinicia.
-// - useNumeroQueEntra: el numero de la ficha entra deslizandose cada vez que
-//   cambia, desde abajo si crecio y desde arriba si bajo, como el de la
-//   canasta. No mientras se escribe en el: ahi el numero es de quien teclea.
+// - useNumeroQueEntra: el numero entra deslizandose cada vez que cambia,
+//   desde abajo si crecio y desde arriba si bajo, como el de la canasta de
+//   arriba. No mientras se escribe en el: ahi el numero es de quien teclea.
 //
 // Con menos movimiento no sale ninguno de los tres.
 import { useEffect, useRef } from 'react';
@@ -61,7 +62,8 @@ function destellar(pastilla) {
   pastilla.classList.add('is-destello');
 }
 
-// campoRef es el numero (un campo de texto) y n la cantidad que ensena.
+// campoRef es el numero (el campo de la ficha o el output de la linea) y n
+// la cantidad que ensena.
 function useNumeroQueEntra(campoRef, n) {
   const antes = useRef(n);
   useEffect(() => {

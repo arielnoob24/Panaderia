@@ -4,7 +4,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { HashRouter } from 'react-router-dom';
-import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
+import { LazyMotion, MotionConfig, domMax } from 'motion/react';
 // Fraunces, la letra de los titulos (seccion 10 del plan), servida desde el
 // propio sitio: Vite copia sus woff2 al build y nada se pide a Google. full
 // trae todos los ejes (opsz, SOFT, WONK y el peso), en recta y en cursiva;
@@ -39,15 +39,15 @@ precargarEnReposo();
 
 // HashRouter y no BrowserRouter: con la ruta despues del '#', GitHub Pages
 // siempre sirve el mismo index.html y no hace falta el truco del 404.
-// Motion (seccion 15 del plan): LazyMotion con domAnimation trae solo lo que
-// se usa (opacidad, transformaciones, salida), no el paquete entero; los
-// componentes animados se escriben con m.div y no con motion.div. Con
+// Motion (seccion 15 del plan): LazyMotion con domMax activa tambien las
+// transiciones de layout del indicador compartido; los componentes animados
+// se escriben con m.div y no con motion.div. Con
 // reducedMotion="user", quien pidio menos movimiento al sistema no ve
 // desplazamientos; lo que ademas tiene que quedarse quieto del todo lo mira
 // con useReducedMotion.
 createRoot(document.getElementById('raiz')).render(
   <StrictMode>
-    <LazyMotion features={domAnimation}>
+    <LazyMotion features={domMax}>
       <MotionConfig reducedMotion="user">
         <HashRouter>
           <AvisosProvider>

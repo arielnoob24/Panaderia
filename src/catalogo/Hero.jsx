@@ -14,6 +14,8 @@ import heroChica from '/assets/img/hero-900.jpg';
 import heroGrande from '/assets/img/hero-1600.jpg';
 import { useCargaImagen, clases } from '../comun/useCargaImagen.js';
 import { IconoHogaza, IconoPin, IconoTrigo } from '../comun/iconos.jsx';
+import FondoDibujo from '../comun/FondoDibujo.jsx';
+import TextoOla from '../comun/TextoOla.jsx';
 import CabeceraPeriodico from './CabeceraPeriodico.jsx';
 
 // El sello es dibujo: lo que dice ya lo dicen el titular y la foto. Va fuera
@@ -35,7 +37,8 @@ const SELLO = (
 function Hero({ tituloRef }) {
   const carga = useCargaImagen();
   return (
-    <section id="inicio" className="portada">
+    <section id="inicio" className="portada con-fondo">
+      <FondoDibujo vista="inicio" />
       <div className="container">
         <CabeceraPeriodico />
         <div className="portada-rejilla">
@@ -49,10 +52,12 @@ function Hero({ tituloRef }) {
                 <IconoHogaza clase="ico" />
                 Nuestros panes
               </Link>
-              {/* El camino secundario es un enlace, no un boton (seccion 10). */}
+              {/* El camino secundario es un enlace, no un boton (L1, seccion
+                  10): con el puntero sus letras saltan en ola, y se sigue
+                  llamando "Cómo llegar". */}
               <Link className="portada-llegar" to="/contacto" state={{ entrar: true }}>
-                <IconoPin clase="ico" />
-                Cómo llegar
+                <IconoPin clase="ico" grosor="1.8" />
+                <TextoOla>Cómo llegar</TextoOla>
               </Link>
             </div>
           </div>

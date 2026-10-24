@@ -64,9 +64,10 @@ repo>` saca capturas en los cuatro cortes.
 El estilo del sitio es **editorial artesanal con toque retro** (seccion 10
 del plan, "Estilo"). La muestra que eligio el usuario esta en
 `.claude/referencias/muestra-editorial.html`: de ahi salen los valores
-exactos (CSS y JS) de cada pieza. Los botones en ticket (P2 ambar, G3
-oscuro para pagar), "Como llegar" como enlace y el menu que se enciende en
-su sitio (M2) salen de `.claude/referencias/muestra-menu.html`; la pastilla
+exactos (CSS y JS) de cada pieza. Los botones en ticket (P2) salen de
+`.claude/referencias/muestra-menu.html`; los colores del menu en blanco
+(W1, S2), "Ir a pagar" en cobrizo (K1) y "Como llegar" con la ola (L1), de
+`.claude/referencias/muestra-colores.html`; la pastilla
 B1 y la N3 que viajaba se descartaron (`muestra-botones.html` queda solo
 como historia). El sitio no tiene pie de pagina. Su panel "Elige", sus rutas `file://` y
 sus colores escritos a mano no se copian: en el sitio van las variables de

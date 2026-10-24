@@ -43,7 +43,7 @@ async function movimiento(t, nombre, ventana, reducido) {
   await p.fill('#cuenta-clave', 'a');
   await espera(40);
   const v = await como(p, '[data-regla] .cuenta-regla-visto');
-  ok(v && (reducido ? v.escala === 1 : v.escala < 1), `visto sin rebote: ${JSON.stringify(v)}`);
+  ok(v && (reducido ? v.escala === 1 : Math.abs(v.escala - 1) > 0.01), `visto en movimiento: ${JSON.stringify(v)}`);
   if (!reducido) {
     // El resorte se pasa de 1 antes de quedarse: eso es el rebote.
     let maximo = 0;
