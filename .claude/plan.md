@@ -650,17 +650,31 @@ clases o en piezas comunes, no copiado.
   izquierda a derecha. Debajo, tres columnas separadas por ✦, cada una con
   su número editorial (**"N.º 1"**, "N.º 2", "N.º 3", en versalitas
   `--corteza-oscura`), el icono de línea, el nombre en Fraunces y su
-  frase. En el teléfono, una columna y el ✦ entre ellas en horizontal.
-- **Aparecen al llegar a ellas**: la única excepción a "un solo momento de
-  entrada por vista". Las líneas se dibujan y las tres columnas suben una
-  tras otra cuando la sección entra en pantalla (`IntersectionObserver`,
-  una sola vez); si ya se ven al abrir, van en la misma escena de arriba.
-  Con el puntero encima, el icono de cada principio hace un movimiento
-  breve propio, como los de la cinta.
+  frase. Con el puntero encima, el icono de cada principio hace un
+  movimiento breve propio, como los de la cinta.
+- **Todo en una sola pantalla, sin scroll** (pedido el 24 de octubre de
+  2026), como la portada: la vista mide el alto visible (`100svh`), la
+  franja de espigas termina en el borde de abajo, y la foto, el sello, el
+  `h1` y los espacios se reducen según la altura (`clamp` con `svh`) sin
+  desaparecer. En escritorio y tableta caben todos los textos; los
+  principios van en una fila de tres.
+- **En el teléfono** (680 px o menos), para que quepa: la foto en arco se
+  hace pequeña y va **al lado del título** (a la derecha), sin el sello ni
+  su pie; se quita el párrafo de la madrugada; los principios siguen en
+  **una fila de tres**, cada uno con su "N.º", el icono y el nombre,
+  **sin su frase**. Lo quitado no se ve ni se lee (`display: none`),
+  salvo el pie de la foto, que sigue dando nombre a la figura para el
+  lector de pantalla (no confunde).
+- Como ya no hay nada debajo, los principios **no esperan al scroll**:
+  entran en la misma escena de la vista, tras la historia (las líneas se
+  dibujan y las columnas suben una tras otra). Fuera el
+  `IntersectionObserver` y la excepción a "un solo momento de entrada".
 - Con menos movimiento todo está quieto y visible desde el principio, sin
-  ola ni giros. Nada queda oculto si el JS del observador no llega.
-- Termina, como ahora, en la franja de espigas pegada abajo. Fondo con el
-  estampado de trazos de Nosotros (`FondoDibujo`), tenue.
+  ola ni giros.
+- Con zoom o una ventana muy baja donde no quepa, la vista crece y se
+  desplaza en vez de cortar texto (WCAG 1.4.10): ajustarse al alto nunca
+  esconde contenido que en ese tamaño debería verse.
+- Fondo con el estampado de trazos de Nosotros (`FondoDibujo`), tenue.
 
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
 
@@ -787,8 +801,11 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       2,67:1 y el pie y la frase a unos 4,3:1 (bajar `.fondo-inicio` a .22
       como Nosotros); y en la cinta a 390 px "Dulces y pasteles" sale con
       los espacios comidos (`.vista-inicio .cinta-enlace .letras span`).
-- [ ] `axe.mjs` mide los principios de Nosotros a 390 px aún ocultos
-      (`data-aparece="espera"`): que baje hasta el final antes de medir.
+- [x] Nosotros en una sola pantalla sin scroll (sección 10, 24 de octubre
+      de 2026): foto al lado del título y principios sin frase en el
+      teléfono; los principios entran con la escena, sin observador. Lo
+      prueba `nosotros.mjs` de 1440×900 a 360×640, y que a 320×256 y
+      640×360 crece sin cortar.
 - [ ] Segunda vuelta: el aspecto de Contacto, canasta y cuenta más allá
       de los botones, con otra muestra antes.
 

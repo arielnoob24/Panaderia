@@ -24,7 +24,7 @@
 .vista-marco.is-saliendo { position: absolute; top: 0; right: 0; left: 0; pointer-events: none; }
 
 /* Debajo de la cabecera fija. */
-.vista-nosotros, .vista-contacto { padding-top: 132px; }
+.vista-contacto { padding-top: 132px; }
 /* El rotulo de la foto se asoma 14 px por la derecha: a 320 px eso era
    desplazamiento de lado. */
 .vista-nosotros { overflow-x: clip; }
@@ -50,7 +50,7 @@
 .periodico { display: flex; align-items: center; gap: 1rem; padding-block: .9rem; border-bottom: 1px solid var(--horno); }
 /* El filete doble: el de la cabecera de periodico y el que enmarca el h2 de
    los principios de #/nosotros. En la portada se dibuja al entrar; en
-   Nosotros, al llegar a el (data-aparece, mas abajo). */
+   Nosotros, en la misma escena, tras la historia (mas abajo). */
 .linea-doble { flex: 1; height: 3px; border-block: 1px solid var(--horno); transform-origin: left; }
 .periodico-doble { animation: traza var(--dur-scene) var(--ease-soft) 150ms both; }
 .periodico-estado { display: inline-flex; align-items: center; gap: .5rem; }
@@ -182,45 +182,60 @@
 /* ---- #/nosotros (seccion 10 del plan, "Nosotros con el estilo de la
    portada") ------------------------------------------------------------- */
 
+/* Como la portada, en una sola pantalla: la vista mide al menos el alto
+   visible y la franja de espigas queda en el borde de abajo. Es min-height
+   y no height: con zoom o una ventana muy baja donde no cabe, la vista
+   crece y se desplaza en vez de cortar texto (WCAG 1.4.10). Lo que se
+   ajusta al alto (foto, titular, espacios) va con clamp en svh y nunca
+   baja de su minimo. */
+.vista-nosotros { display: flex; min-height: 100vh; min-height: 100svh; flex-direction: column; padding-top: 86px; }
+#raiz > main:has(.vista-nosotros) { padding-bottom: 0; }
+.vista-nosotros .franja-pie { flex: 0 0 auto; margin-top: 0; }
+
 /* La historia: la portada en espejo, la foto a la izquierda. El texto va
    antes en el HTML (el lector llega primero al titulo) y la rejilla lo
-   cambia de lado. */
-.nosotros-historia { padding: 1.5rem 0 4rem; }
+   cambia de lado. El alto que sobra se reparte a partes iguales con
+   margenes auto: encima de la historia, entre ella y los principios, y
+   entre los principios y la franja (que asi queda en el borde). */
+.nosotros-historia { flex: 0 0 auto; margin-top: auto; padding-block: clamp(.75rem, 3.5svh, 3rem) clamp(.5rem, 2.5svh, 2rem); }
 .nosotros-rejilla { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); grid-template-areas: "foto texto"; gap: clamp(3.5rem, 7vw, 7rem); align-items: center; }
 .nosotros-texto { grid-area: texto; }
 /* Mas largo que "El sabor de siempre": algo mas pequeno, para que
-   "nuestro ingrediente" no se parta en su columna. */
-.nosotros-texto .titular { font-size: clamp(3rem, 6.4vw, 6.4rem); }
-.nosotros-texto .frase { margin-bottom: 1.1rem; }
+   "nuestro ingrediente" no se parta en su columna, y mas aun si la
+   pantalla es baja. */
+.nosotros-texto .titular { margin: clamp(.3rem, 1.2svh, .9rem) 0 clamp(.4rem, 1.6svh, 1.1rem); font-size: clamp(2.6rem, min(6.4vw, 9svh), 6.4rem); }
+.nosotros-texto .frase { margin-bottom: clamp(.4rem, 1.4svh, 1.1rem); font-size: clamp(1.1rem, 2.8svh, 1.6rem); }
 /* El parrafo de la madrugada es texto corrido: Arial, no la Georgia de body. */
-.nosotros-madrugada { max-width: 46ch; margin: 0; color: var(--horno-suave); font: 1.05rem/1.7 var(--letra-texto); }
-.nosotros-llegar { margin-top: 1.8rem; }
-.nosotros-foto { grid-area: foto; width: min(100%, 420px); margin-right: auto; }
+.nosotros-madrugada { max-width: 62ch; margin: 0; color: var(--horno-suave); font: 1.05rem/1.6 var(--letra-texto); }
+.nosotros-llegar { margin-top: clamp(.6rem, 2.4svh, 1.8rem); }
+.nosotros-foto { grid-area: foto; width: min(100%, clamp(150px, 53svh - 177px, 420px)); margin-right: auto; }
 /* El amasado es vertical: el arco, 4:5. */
 .nosotros-arco { aspect-ratio: 4 / 5; }
 .nosotros-arco img { object-position: center 40%; }
 /* En espejo: el sello abajo a la derecha, hacia el texto, y el pie a la
    izquierda, lejos de el. */
-.nosotros-foto figcaption { text-align: left; }
-.nosotros-sello { right: -58px; bottom: 40px; }
+.nosotros-foto figcaption { margin-top: clamp(.4rem, 1.2svh, .8rem); text-align: left; }
+.nosotros-sello { right: -58px; bottom: 40px; width: clamp(96px, 15svh, 124px); height: auto; aspect-ratio: 1; }
 
 /* Los principios, sobre la masa: el h2 en versalitas entre las lineas
-   dobles de la cabecera de periodico, y tres columnas separadas por una
-   estrella. El numero, en versalitas corteza oscura (.rotulo, 6,52:1 sobre
-   el grano). */
-.nosotros-principios { padding: 1rem 0 2.5rem; }
+   dobles de la cabecera de periodico, y una fila de tres columnas
+   separadas por una estrella. El numero, en versalitas corteza oscura
+   (.rotulo, 6,52:1 sobre el grano). Abajo dejan sitio a la curva de la
+   franja, que sube 22 px. */
+.nosotros-principios { --icono: clamp(32px, 5svh, 44px); --icono-aire: clamp(.3rem, 1.2svh, .9rem); flex: 0 0 auto; margin-block: auto; padding: 0 0 clamp(2rem, 5svh, 3rem); }
 .principios-cabeza { display: flex; align-items: center; gap: 1.4rem; }
 .principios-titulo { flex: 0 1 auto; margin: 0; color: var(--horno); font: 700 .95rem/1.4 var(--letra-texto); letter-spacing: .22em; text-align: center; text-transform: uppercase; }
 .principios-cabeza .linea-doble { min-width: 24px; }
-.principios { --hueco: clamp(2.5rem, 6vw, 5.5rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--hueco); max-width: 1120px; margin: 2.6rem auto 0; padding: 0; list-style: none; }
+.principios { --hueco: clamp(2.5rem, 6vw, 5.5rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--hueco); max-width: 1120px; margin: clamp(.8rem, 3svh, 2.6rem) auto 0; padding: 0; list-style: none; }
 .principio { position: relative; text-align: center; }
 /* La estrella entre dos columnas, en medio del hueco y a la altura del
-   icono. Es adorno: sin texto para el lector (alt vacio). */
-.principio + .principio::before { position: absolute; top: 2.9rem; left: calc(var(--hueco) / -2); color: var(--corteza); content: "✦"; content: "✦" / ""; font-size: 1.1rem; line-height: 1; transform: translateX(-50%); }
+   icono (bajo el numero, que mide .94rem). Es adorno: sin texto para el
+   lector (alt vacio). */
+.principio + .principio::before { position: absolute; top: calc(.94rem + var(--icono-aire) + var(--icono) / 2); left: calc(var(--hueco) / -2); color: var(--corteza); content: "✦"; content: "✦" / ""; font-size: 1.1rem; line-height: 1; transform: translate(-50%, -50%); }
 .principio-numero { display: block; }
-.principio-icono { display: block; width: 44px; height: 44px; margin: .9rem auto .8rem; color: var(--corteza); transform-origin: center 80%; }
-.principio h3 { margin: 0 0 .45rem; font: 500 1.45rem/1.2 var(--letra-titulo); }
-.principio p { max-width: 26ch; margin: 0 auto; color: var(--horno-suave); font: .95rem/1.5 var(--letra-texto); }
+.principio-icono { display: block; width: var(--icono); height: var(--icono); margin: var(--icono-aire) auto clamp(.3rem, 1.1svh, .8rem); color: var(--corteza); transform-origin: center 80%; }
+.principio h3 { margin: 0 0 .4rem; font: 500 clamp(1.15rem, 2.8svh, 1.45rem)/1.2 var(--letra-titulo); }
+.principio p { max-width: 26ch; margin: 0 auto; color: var(--horno-suave); font: .95rem/1.45 var(--letra-texto); }
 /* Con el puntero encima, el icono de cada principio hace su movimiento
    breve, como los de la cinta: el tarro da un saltito, la aguja del reloj
    da la vuelta y la espiga se mece. */
@@ -230,21 +245,14 @@
 .con-puntero .principio-origen:hover .principio-icono { animation: baila-botella var(--dur-slow) var(--ease-soft) both; }
 @keyframes da-la-vuelta { to { transform: rotate(1turn); } }
 
-/* Aparecen al llegar a ellos (useAparecer de Nosotros.jsx). Solo se
-   esconden cuando el JS lo ha marcado (data-aparece="espera"): sin la
-   marca todo se ve. Las lineas se dibujan y las columnas suben una tras
-   otra; si ya se veian al abrir ("escena"), un poco despues de la
-   historia, dentro de la misma escena. */
-.nosotros-principios[data-aparece="espera"] .linea-doble { transform: scaleX(0); }
-.nosotros-principios[data-aparece="espera"] .principio { opacity: 0; }
-.nosotros-principios[data-aparece="escena"] { --retraso: 520ms; }
-.nosotros-principios:is([data-aparece="ya"], [data-aparece="escena"]) .linea-doble { animation: traza var(--dur-scene) var(--ease-soft) var(--retraso, 0ms) both; }
-.nosotros-principios:is([data-aparece="ya"], [data-aparece="escena"]) .principio { animation: sube var(--dur-editorial) var(--ease-soft) both; animation-delay: calc(var(--retraso, 0ms) + 220ms + var(--n, 0) * 120ms); }
+/* La entrada es una sola escena con la de la historia: tras ella, las
+   lineas dobles se dibujan y las columnas suben una tras otra. */
+.nosotros-principios .linea-doble { animation: traza var(--dur-scene) var(--ease-soft) 560ms both; }
+.nosotros-principios .principio { animation: sube var(--dur-editorial) var(--ease-soft) both; animation-delay: calc(780ms + var(--n, 0) * 120ms); }
 
-/* Con menos movimiento, quietos y a la vista: useAparecer ya no marca nada;
-   esto es por si el ajuste cambia con la vista abierta. */
+/* Con menos movimiento, quietos y a la vista desde el principio. */
 @media (prefers-reduced-motion: reduce) {
-  .nosotros-principios[data-aparece] .linea-doble, .nosotros-principios[data-aparece] .principio { opacity: 1; transform: none; animation: none; }
+  .nosotros-principios .linea-doble, .nosotros-principios .principio { animation: none; }
   .con-puntero .principio:hover .principio-icono, .con-puntero .principio:hover .principio-aguja { animation: none; }
 }
 
@@ -309,10 +317,10 @@
   .portada-foto figcaption { padding-right: 104px; text-align: left; }
   /* Nosotros sigue en dos columnas hasta el telefono, mas juntas, con el
      sello mas pequeno y menos asomado: a 681 px el hueco mide unos 41 px y
-     con -44 el sello rozaba el parrafo de la madrugada; con -28 le quedan
-     13 px de aire (26 a 900). */
+     con -44 el sello (girado mide unos 123 px) rozaba el texto; con -20 le quedan
+     11 px de aire. */
   .nosotros-rejilla { gap: clamp(2.5rem, 6vw, 3.5rem); }
-  .nosotros-sello { right: -28px; width: 104px; height: 104px; }
+  .nosotros-sello { right: -20px; width: clamp(88px, 13svh, 104px); }
   .contacto-rejilla { grid-template-columns: 1fr; grid-template-areas: "datos" "mapa" "horario" "escribir"; }
 }
 @media (min-width: 681px) and (max-width: 900px) {
@@ -320,7 +328,7 @@
   .portada h1 { font-size: clamp(3rem, 6.4vw, 3.6rem); }
 }
 @media (max-width: 680px) {
-  .vista-nosotros, .vista-contacto { padding-top: 96px; }
+  .vista-contacto { padding-top: 96px; }
   .vista-inicio { padding-bottom: 0; }
   .vista-inicio .portada { flex: 1 1 0; }
   .vista-inicio .portada > .container { width: calc(100% - 2 * var(--borde)); }
@@ -353,25 +361,38 @@
   .cinta-dentro { gap: .2rem .6rem; }
   .cinta-enlace { font-size: 1.08rem; }
   .cinta-estrella { display: none; }
-  /* Nosotros en una columna: el texto arriba y la foto debajo, centrada,
-     con el sello abajo a la derecha como en la portada. */
-  .nosotros-historia { padding-bottom: 3.4rem; }
-  .nosotros-rejilla { grid-template-columns: minmax(0, 1fr); grid-template-areas: "texto" "foto"; gap: 2.6rem; }
-  .nosotros-texto .titular { font-size: clamp(2.5rem, 11vw, 3.4rem); }
+  /* Nosotros en el telefono (seccion 10 del plan): para caber en una
+     pantalla, la foto pequena va al lado del rotulo y el titulo, sin sello
+     ni pie; la frase y el enlace, debajo a todo lo ancho. El texto deja de
+     ser una caja (display: contents) para que sus piezas entren en la
+     rejilla; el orden de lectura no cambia. Fuera el parrafo de la
+     madrugada (display: none: ni se ve ni se lee). */
+  .vista-nosotros { padding-top: 70px; }
+  .nosotros-historia { padding-block: clamp(.6rem, 3svh, 1.6rem) .4rem; }
+  .nosotros-rejilla { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "rotulo foto" "titulo foto" "frase frase" "llegar llegar"; gap: 0 1.1rem; align-items: start; }
+  .nosotros-texto { display: contents; }
+  .nosotros-texto .rotulo-espiga { grid-area: rotulo; align-self: end; }
+  .nosotros-texto .titular { grid-area: titulo; margin: .45rem 0 0; font-size: clamp(1.9rem, min(10vw, 6svh), 2.75rem); }
   .nosotros-texto .titular em { padding-left: .45em; }
-  .nosotros-texto .frase { font-size: 1.3rem; }
-  .nosotros-foto { width: min(100%, 300px); margin-inline: auto; }
-  .nosotros-sello { right: -8px; bottom: -40px; width: 104px; height: 104px; }
-  .nosotros-foto figcaption { padding-right: 96px; }
-  /* Los principios en una columna, con la estrella entre ellos en
-     horizontal, entre dos filetes finos. */
-  .nosotros-principios { padding-bottom: 2rem; }
-  .principios-cabeza { gap: .8rem; }
-  .principios-titulo { font-size: .8rem; letter-spacing: .16em; }
-  .principios { grid-template-columns: minmax(0, 1fr); margin-top: 1.8rem; }
-  .principio + .principio::before { position: static; display: block; width: 168px; margin: 1.6rem auto 1.2rem; background: linear-gradient(var(--masa-linea), var(--masa-linea)) left center / calc(50% - 1.1rem) 1px no-repeat, linear-gradient(var(--masa-linea), var(--masa-linea)) right center / calc(50% - 1.1rem) 1px no-repeat; transform: none; }
-  .principio-icono { margin: .6rem auto .55rem; }
-  .principio h3 { font-size: 1.3rem; }
+  .nosotros-texto .frase { grid-area: frase; margin: clamp(.6rem, 2svh, 1rem) 0 0; font-size: clamp(1rem, 2.6svh, 1.25rem); line-height: 1.35; }
+  .nosotros-madrugada { display: none; }
+  .nosotros-llegar { grid-area: llegar; justify-self: start; margin-top: clamp(.6rem, 2svh, 1.1rem); }
+  /* La foto, de unos 90 a 156 px segun el alto, con el marco a 6 px: a
+     10 se comia el arco entero. */
+  .nosotros-foto { grid-area: foto; align-self: center; width: clamp(88px, 26svh - 60px, 156px); margin: 8px 7px 0 0; }
+  .nosotros-arco { box-shadow: 0 0 0 6px var(--masa), 0 0 0 7px var(--horno); }
+  .nosotros-foto figcaption, .nosotros-foto .sello { display: none; }
+  /* Los principios siguen en una fila de tres, con su numero, el icono y
+     el nombre; sin la frase. Si un nombre no cabe (texto espaciado, WCAG
+     1.4.12), la palabra se parte antes que salirse. */
+  .nosotros-principios { --icono: clamp(28px, 4.6svh, 36px); --icono-aire: clamp(.25rem, 1svh, .6rem); padding-bottom: clamp(1.9rem, 5svh, 2.6rem); }
+  .principios-cabeza { gap: .7rem; }
+  .principios-titulo { font-size: .72rem; letter-spacing: .14em; }
+  .principios { --hueco: 1rem; margin-top: clamp(.6rem, 2svh, 1.2rem); }
+  .principio + .principio::before { font-size: .9rem; }
+  .principio-numero { letter-spacing: .14em; }
+  .principio h3 { margin: 0; font-size: clamp(.8rem, 3.8vw, 1.05rem); overflow-wrap: anywhere; hyphens: auto; }
+  .principio p { display: none; }
   /* La canasta flota abajo a la derecha: lo ultimo de cada vista no se
      queda debajo de ella al llegar al final. Las que acaban en la franja
      de espigas no lo necesitan: la franja es adorno y llega al borde. */
@@ -383,13 +404,6 @@
    pegado al borde y algo mas pequeno. */
 @media (max-width: 360px) {
   .vista-inicio .portada-sello { right: 0; }
-}
-
-/* Al imprimir no hay desplazamiento que los haga aparecer: los principios
-   salen a la vista aunque no se haya bajado hasta ellos. */
-@media print {
-  .nosotros-principios[data-aparece] .principio { opacity: 1; animation: none; }
-  .nosotros-principios[data-aparece] .linea-doble { transform: none; animation: none; }
 }
 
 /* ---- Motion ---------------------------------------------------------------- */

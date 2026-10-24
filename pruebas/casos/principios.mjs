@@ -1,5 +1,6 @@
 // Los principios de Nosotros a 320 px con el texto espaciado (WCAG 1.4.12):
-// van en una columna y no se recorta ninguno. Y #/contacto, que se lleva lo
+// siguen en una fila de tres (seccion 10 del plan) y ningun nombre se sale
+// ni se recorta: la palabra se parte antes. Y #/contacto, que se lleva lo
 // del pie quitado: los contactos con la nota de que son de ejemplo y si esta
 // abierto.
 import { VENTANAS, espera } from '../arranque.mjs';
@@ -27,7 +28,7 @@ export default async function principios(t) {
       });
       return { columnas: getComputedStyle(caja).gridTemplateColumns.split(' ').length, ancho: [c.left, c.right], tarjetas, pagina: document.documentElement.scrollWidth };
     });
-    t.ok(m.columnas === 1, `[${sitio}] los principios van en ${m.columnas} columnas a 320 px`);
+    t.ok(m.columnas === 3, `[${sitio}] los principios van en ${m.columnas} columnas a 320 px`);
     m.tarjetas.forEach((x, i) => {
       t.ok(x.izq >= 0 && x.der <= 320, `[${sitio}] el principio ${i + 1} se sale: ${Math.round(x.izq)}..${Math.round(x.der)}`);
       t.ok(!x.desborda, `[${sitio}] el texto del principio ${i + 1} no cabe`);

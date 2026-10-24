@@ -6,14 +6,16 @@
 // de periodico. Las piezas son las de la portada (FotoEnArco, Sello,
 // EnlaceLlegar y las clases de vistas.css), no una copia.
 //
-// La historia entra con la escena de la portada, una vez. Los principios
-// aparecen al llegar a ellos (useAparecer). Cuando el usuario pase las fotos
-// del local, la galeria va aqui.
-import { useLayoutEffect, useRef, useState } from 'react';
+// Como la portada, cabe en una sola pantalla sin desplazarse (vistas.css):
+// la foto, el titular y los espacios se ajustan al alto visible, y en el
+// telefono la foto va al lado del titulo y se quitan el parrafo de la
+// madrugada y la frase de cada principio. Todo entra en una sola escena, una
+// vez: la historia y, tras ella, los principios. Cuando el usuario pase las
+// fotos del local, la galeria va aqui (y entonces la vista volvera a crecer).
+import { useRef } from 'react';
 import fotoChica from '/assets/img/historia-amasado-430.jpg';
 import fotoGrande from '/assets/img/historia-amasado-760.jpg';
 import { useVista } from '../comun/useVista.js';
-import { movimientoReducido } from '../comun/useMovimientoReducido.js';
 import { IconoTrigo } from '../comun/iconos.jsx';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
 import FotoEnArco from '../comun/FotoEnArco.jsx';
@@ -49,51 +51,16 @@ const PRINCIPIOS = [
   },
 ];
 
-// Los principios aparecen cuando la seccion entra en pantalla, una vez: las
-// lineas dobles se dibujan y las columnas suben una tras otra. Devuelve la
-// ref de la seccion y en que punto esta (data-aparece en vistas.css):
-//   null      sin marcar: todo visible y quieto (menos movimiento, o un
-//             navegador sin IntersectionObserver)
-//   'espera'  escondido hasta que se llegue a ella
-//   'escena'  ya se veia al abrir la vista: entra con la escena de arriba,
-//             un poco despues de la historia
-//   'ya'      se llego bajando: entra en ese momento
-// Solo se esconde cuando ya hay quien lo vaya a ensenar: si el observador no
-// se puede crear, nada queda oculto. Se marca antes de pintar (layout
-// effect) para que no se vea un cuadro con todo y luego desaparezca.
-function useAparecer() {
-  const ref = useRef(null);
-  const [aparece, setAparece] = useState(null);
-  useLayoutEffect(() => {
-    const zona = ref.current;
-    if (!zona || movimientoReducido() || !('IntersectionObserver' in window)) return undefined;
-    setAparece('espera');
-    // La primera respuesta del observador dice como estaba al abrir.
-    let primera = true;
-    const observador = new IntersectionObserver(([entrada]) => {
-      if (entrada.isIntersecting) {
-        setAparece(primera ? 'escena' : 'ya');
-        observador.disconnect();
-      }
-      primera = false;
-    }, { rootMargin: '0px 0px -12% 0px' });
-    observador.observe(zona);
-    return () => observador.disconnect();
-  }, []);
-  return [ref, aparece];
-}
-
 function Nosotros() {
   const tituloRef = useRef(null);
   useVista('Nosotros | El Tradicional', tituloRef);
-  const [principiosRef, aparece] = useAparecer();
   return (
     <div className="vista vista-nosotros">
       <section id="historia" className="nosotros-historia con-fondo" aria-labelledby="nosotros-titulo">
         <FondoDibujo vista="nosotros" />
         {/* El texto va antes que la foto, para que el lector llegue primero
             al titulo; la rejilla pone la foto a la izquierda (espejo de la
-            portada) y, en el telefono, debajo. */}
+            portada) y, en el telefono, a la derecha del titulo. */}
         <div className="container nosotros-rejilla">
           <div className="nosotros-texto sube-en-orden">
             <p className="rotulo rotulo-espiga"><IconoTrigo />Nuestra historia</p>
@@ -110,14 +77,14 @@ function Nosotros() {
             sello="Masa madre · Hecho despacio · "
             src={fotoChica}
             srcSet={`${fotoChica} 430w, ${fotoGrande} 760w`}
-            sizes="(max-width: 680px) min(100vw - 32px, 400px), (max-width: 900px) 300px, 420px"
+            sizes="(max-width: 680px) 140px, (max-width: 900px) 300px, 420px"
             alt="Un panadero bolea la masa sobre una mesa de madera enharinada, junto a un banneton, una cuchilla de greñar y un tarro de masa madre"
             width="760"
             height="950"
           />
         </div>
       </section>
-      <section ref={principiosRef} className="nosotros-principios" data-aparece={aparece || undefined} aria-labelledby="principios-titulo">
+      <section className="nosotros-principios" aria-labelledby="principios-titulo">
         <div className="container">
           <div className="principios-cabeza">
             <span className="linea-doble" aria-hidden="true"></span>
