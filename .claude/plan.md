@@ -142,7 +142,8 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
   que acaban en la franja.
 - **Mapa** en `#/contacto`: `iframe` de Google Maps sin clave
   (`https://maps.google.com/maps?q=-1.004033,-77.812690&z=17&output=embed`),
-  con `title` y `loading="lazy"`, y "Ver en el mapa" debajo.
+  con `title` y `loading="lazy"`; "Ver en el mapa" va bajo la dirección
+  (sección 10, "Contacto con el estilo de la portada").
 
 ### Datos (`data/productos.json`)
 
