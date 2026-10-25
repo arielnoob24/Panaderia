@@ -120,7 +120,7 @@ section[id] { scroll-margin-top: -12px; }
 .site-header .mascot-brand { background: radial-gradient(circle, rgba(215, 155, 74, .22) 62%, transparent 63%); }
 /* Con el puntero el texto sigue claro (W1, seccion 10 del plan): lo que se
    enciende es el blanco tenue de detras. La pagina actual no cambia. */
-.site-header .main-nav > a:not([aria-current]):hover, .site-header .nav-grupo-enlace:not([aria-current]):hover, .site-header .nav-grupo-boton:hover { color: var(--papel); }
+.site-header .main-nav > a:not([aria-current]):hover { color: var(--papel); }
 /* El anillo de siempre es horno, y sobre la barra no se veria: aqui el
    anillo es papel, con el halo ambar por dentro. */
 .site-header a:focus-visible, .site-header button:focus-visible { outline-color: var(--papel); }
@@ -146,55 +146,8 @@ section[id] { scroll-margin-top: -12px; }
 /* Al pasar el cursor solo cambia el color. Antes crecia ademas un subrayado
    desde la izquierda, que hacia la barra mas de menu de escritorio que de
    panaderia. */
-.main-nav > a, .nav-grupo-enlace, .nav-grupo-boton { transition: color var(--dur-fast) var(--ease-ui); }
-.main-nav > a:hover, .nav-grupo-enlace:hover, .nav-grupo-boton:hover { color: var(--corteza-oscura); }
-/* "Tienda" son dos piezas: la palabra es un enlace al catalogo entero, como
-   "Ver el menu", y la flecha es el boton que abre las tres categorias. Si
-   todo fuera un solo boton, o se llegaba al catalogo o se abria la lista: en
-   el telefono, donde no hay pasar por encima, una de las dos se perdia. */
-.nav-grupo { position: relative; display: inline-flex; align-items: center; padding: .8rem 0; margin: -.8rem 0; }
-.nav-grupo-enlace { color: inherit; }
-/* La flecha es pequena, pero el boton mide 24 px: el minimo de la WCAG 2.2
-   para lo que se pulsa. */
-.nav-grupo-boton { display: inline-grid; min-width: 24px; min-height: 24px; place-items: center; padding: 0; background: none; border: 0; color: inherit; cursor: pointer; font: inherit; }
-.nav-grupo-flecha { width: 15px; height: 15px; flex: 0 0 auto; transition: transform var(--dur-fast) var(--ease-ui); }
-.nav-grupo.is-open .nav-grupo-flecha { transform: rotate(180deg); }
-
-/* El desplegable toma prestado el aspecto del menu del telefono: fondo horno,
-   filete claro y sombra. Es el mismo objeto, colgado de otro sitio. */
-.nav-submenu { position: absolute; top: calc(100% + .1rem); left: 50%; z-index: 11; display: flex; visibility: hidden; color: var(--sobre-horno); min-width: 210px; flex-direction: column; gap: .1rem; padding: .5rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translate(-50%, -8px) scale(.98); transform-origin: top center; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility var(--dur-micro) var(--ease-out); }
-/* Entre el boton y el panel hay un hueco, y cruzarlo con el raton cerraria el
-   desplegable a mitad de camino. Este puente invisible lo tapa. */
-.nav-submenu::before { position: absolute; top: -.3rem; right: 0; left: 0; height: .3rem; content: ""; }
-/* Al abrir, visible al instante y no al final de la transicion: en su primer
-   cuadro seguia en hidden, y la flecha abajo no podia darle el foco a Panes. */
-.nav-grupo.is-open .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
-/* Las tres entran de una en una, no el panel entero de golpe: cada una sale
-   un poco despues que la de arriba. Al cerrar no se escalonan, que esperar a
-   que se vayan de una en una se siente lento. */
-.nav-submenu a { padding: .55rem .7rem; border-radius: var(--r-chip); white-space: nowrap; opacity: 0; transform: translateY(-7px); transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
-.nav-grupo.is-open .nav-submenu a { opacity: 1; transform: none; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-accent); }
-.nav-grupo.is-open .nav-submenu a:nth-child(1) { transition-delay: 0ms, 0ms, 50ms, 50ms; }
-.nav-grupo.is-open .nav-submenu a:nth-child(2) { transition-delay: 0ms, 0ms, 115ms, 115ms; }
-.nav-grupo.is-open .nav-submenu a:nth-child(3) { transition-delay: 0ms, 0ms, 180ms, 180ms; }
-/* Todo en blanco, como el menu de arriba (W1): el blanco tenue detras, el
-   texto papel (8,2:1) y la marca de la izquierda, que dice cual es sin
-   depender solo del color. */
-.con-puntero .nav-submenu a:hover, .nav-submenu a:focus-visible { background: var(--papel-tenue); box-shadow: inset 2px 0 0 var(--papel); color: var(--papel); }
-/* Al pasar el cursor lo abre el JavaScript, que mira si lo que entra es un
-   raton. Esto es el respaldo para cuando el JavaScript de MenuTienda no ha
-   cargado; con-puntero la pone comun/puntero.js (seccion 10 del plan). Va con
-   min-width porque en el telefono el desplegable es una sangria y no un panel
-   flotante. */
-@media (min-width: 681px) {
-  .con-puntero .nav-grupo:hover .nav-submenu { visibility: visible; opacity: 1; pointer-events: auto; transform: translate(-50%, 0); transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
-  .con-puntero .nav-grupo:hover .nav-grupo-flecha { transform: rotate(180deg); }
-  .con-puntero .nav-grupo:hover .nav-submenu a { opacity: 1; transform: none; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-accent); }
-  .con-puntero .nav-grupo:hover .nav-submenu a:nth-child(1) { transition-delay: 0ms, 0ms, 50ms, 50ms; }
-  .con-puntero .nav-grupo:hover .nav-submenu a:nth-child(2) { transition-delay: 0ms, 0ms, 115ms, 115ms; }
-  .con-puntero .nav-grupo:hover .nav-submenu a:nth-child(3) { transition-delay: 0ms, 0ms, 180ms, 180ms; }
-}
-
+.main-nav > a { transition: color var(--dur-fast) var(--ease-ui); }
+.main-nav > a:hover { color: var(--corteza-oscura); }
 /* El menu se enciende en su sitio, todo en blanco (W1 y S2, seccion 10 del
    plan). Cada opcion lleva detras dos capas en forma de pastilla: ::before,
    el blanco tenue (papel al 16 %) que aparece y crece un poco con el raton
@@ -202,36 +155,19 @@ section[id] { scroll-margin-top: -12px; }
    otra y con el texto todavia claro (8,2:1). La pastilla papel llena de la
    pagina actual comparte un indicador que recorre el menu al cambiar de vista,
    con el texto horno (13,9:1), sin raya ni aro: la unica en blanco lleno,
-   asi que siempre se sabe donde se esta. "Tienda" con su flecha (.nav-grupo) se enciende entera, y
-   sigue encendida mientras el raton baja a sus categorias, que son parte
-   del grupo. El tenue solo con raton o lapiz (con-puntero) y con la barra
-   de escritorio; la pagina actual tambien en el menu del telefono. Para que
+   asi que siempre se sabe donde se esta. El tenue solo con raton o lapiz
+   (con-puntero) y con la barra de escritorio; la pagina actual tambien en el menu del telefono. Para que
    la pastilla abrace cada opcion, las opciones llevan aire a los lados y el
    hueco entre ellas baja lo mismo: los textos quedan donde estaban. */
 .main-nav > a { position: relative; isolation: isolate; border-radius: var(--r-pill); }
-.nav-grupo { isolation: isolate; }
 .nav-indicador-marco { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
 .nav-indicador { position: absolute; inset: 0; display: block; background: var(--papel); border-radius: var(--r-pill); }
-.site-header .main-nav > a[aria-current="page"], .site-header .nav-grupo-enlace[aria-current="page"] { color: var(--horno); }
-/* La flecha de Tienda va con su palabra: si no, la mitad del grupo parecia
-   no ser la pagina actual. */
-.site-header .nav-grupo:has(> .nav-grupo-enlace[aria-current="page"]) .nav-grupo-boton { color: var(--horno); }
-/* El anillo del foco es papel en la barra. En una opcion suelta cae fuera
-   de su pastilla, sobre el horno, y se ve; pero la palabra y la flecha de
-   Tienda van dentro de la suya, y papel sobre papel no se veria: ahi el
-   anillo es horno (13,9:1), sin halo, y cabe dentro de la pastilla. */
-.site-header .nav-grupo:has(> .nav-grupo-enlace[aria-current="page"]) :is(.nav-grupo-enlace, .nav-grupo-boton):focus-visible { outline-color: var(--horno); outline-offset: 1px; box-shadow: none; }
+.site-header .main-nav > a[aria-current="page"] { color: var(--horno); }
 @media (min-width: 681px) {
   .site-header .main-nav { gap: .7rem; }
   .site-header .main-nav > a { padding: .55rem .9rem; }
-  .site-header .nav-grupo { padding-inline: .9rem; }
-  /* El grupo es mas alto (su relleno de arriba y abajo es el puente hacia el
-     desplegable); su pastilla conserva el alto de las opciones vecinas. */
-  .site-header .nav-grupo > .nav-indicador-marco { inset: 50% 0 auto; height: 2.3rem; transform: translateY(-50%); }
-  .con-puntero .site-header .main-nav > a::before, .con-puntero .site-header .nav-grupo::before { position: absolute; top: 50%; right: 0; left: 0; z-index: -1; height: 2.3rem; margin-top: -1.15rem; content: ""; background: var(--papel-tenue); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-soft); }
-  .con-puntero .site-header .main-nav > a:hover::before, .con-puntero .site-header .nav-grupo:hover::before { opacity: 1; transform: none; }
-  /* La palabra y la flecha de Tienda se encienden juntas, como su pastilla. */
-  .con-puntero .site-header .nav-grupo:not(:has(> .nav-grupo-enlace[aria-current="page"])):hover :is(.nav-grupo-enlace, .nav-grupo-boton) { color: var(--papel); }
+  .con-puntero .site-header .main-nav > a::before { position: absolute; top: 50%; right: 0; left: 0; z-index: -1; height: 2.3rem; margin-top: -1.15rem; content: ""; background: var(--papel-tenue); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-soft); }
+  .con-puntero .site-header .main-nav > a:hover::before { opacity: 1; transform: none; }
 }
 /* Entre la tableta y el corte del telefono no caben logo, menu y botones
    con el menu centrado en la pagina (rejilla 1fr auto 1fr): a 681 px
@@ -241,7 +177,7 @@ section[id] { scroll-margin-top: -12px; }
 @media (min-width: 681px) and (max-width: 900px) {
   .site-header .nav-wrap { grid-template-columns: auto minmax(0, 1fr) auto; column-gap: 1rem; }
   .site-header .main-nav { gap: 0; justify-self: center; }
-  .site-header .main-nav > a, .site-header .nav-grupo { padding-inline: .55rem; }
+  .site-header .main-nav > a { padding-inline: .55rem; }
   .site-header .brand-logo { height: 52px; }
 }
 
@@ -374,7 +310,7 @@ h2 em { color: var(--ambar); font-weight: 500; }
 /* El fondo entra creciendo desde el centro en vez de encenderse de golpe. */
 /* El puntero muestra el tono claro; lo seleccionado, el oscuro. */
 .catalog-status { min-height: 1.4em; margin: 0 0 1.25rem; color: var(--horno-suave); font: .78rem Arial, sans-serif; }
-.product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.3rem; }
+.product-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.3rem; }
 
 .product-card[hidden] { display: none; }
 /* La ficha es una columna y el pie se va al fondo: en una fila de fichas
@@ -664,11 +600,47 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .product-card:active, .con-puntero .product-card:hover:active,
 .order-button:active, .con-puntero .order-button:hover:active,
 .card-cantidad .card-mas:active, .con-puntero .card-cantidad .card-mas:hover:active, .canasta-cantidad [data-mas]:active { transform: scale(.97); transition-duration: var(--dur-micro); }
+/* Fichas mas pequenas (seccion 4 del plan): cuatro por fila cuando la tienda
+   mide 1080 px o mas, tres en la tableta y dos en el telefono. Lo que manda
+   es lo que mide la tienda y no la ventana, asi que se pregunta a su caja
+   (container query). Con cuatro, la foto, los textos, el sello y el control
+   bajan en proporcion; la letra no baja de 11 px y el - y el + no bajan de
+   24 x 24 (WCAG 2.5.8; con su zona de toque de 44 px de alto). */
+.vista-tienda > .container { container: tienda / inline-size; }
+@container tienda (min-width: 1080px) {
+  .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.1rem; }
+  .product-card { --margen-papel: .55rem; }
+  .product-tag { top: 8px; left: 8px; width: 68px; height: 68px; padding: 8px; letter-spacing: .04em; }
+  .product-info { padding: .85rem .4rem .25rem; }
+  .product-categoria { margin-bottom: .3rem; letter-spacing: .16em; }
+  .product-info h3 { margin-bottom: .4rem; font-size: 1.2rem; }
+  .product-info h3:has(+ .product-bottom) { margin-bottom: .8rem; }
+  .card-tamanos { margin-bottom: .75rem; }
+  .product-bottom { padding-top: .65rem; }
+  .product-bottom strong { font-size: 1.25rem; }
+  .card-cantidad button { width: 32px; height: 32px; }
+  .card-cantidad .card-numero { font-size: 1rem; }
+  .card-agotado { min-height: 34px; }
+}
 @media (max-width: 900px) {
   /* Cinco entradas y el boton de la cuenta no caben con el aire de escritorio:
      entre la tableta y el movil la barra se aprieta en vez de desbordarse. */
   .main-nav { gap: 1.5rem; font-size: .92rem; }
-  .product-grid { grid-template-columns: repeat(2, 1fr); }
+  /* Tres por fila en la tableta: la ficha mide lo que la del telefono, asi
+     que la foto, el nombre, el precio y el control bajan como en el. */
+  .product-grid { gap: .9rem; }
+  .product-card { --margen-papel: .45rem; }
+  .product-tag { top: 6px; left: 6px; width: 66px; height: 66px; padding: 7px; letter-spacing: .02em; }
+  .product-info { padding: .8rem .3rem .2rem; }
+  .product-categoria { margin-bottom: .2rem; letter-spacing: .12em; }
+  .product-info h3 { margin-bottom: .35rem; font-size: 1.08rem; }
+  .product-info h3:has(+ .product-bottom) { margin-bottom: .7rem; }
+  .card-tamanos { margin-bottom: .7rem; }
+  .tamano { padding: .24rem .5rem; font-size: .6875rem; }
+  .product-bottom { padding-top: .6rem; }
+  .product-bottom strong { font-size: 1.15rem; }
+  .card-cantidad button { width: 32px; height: 32px; }
+  .card-agotado { min-height: 34px; }
 }
 @media (max-width: 680px) {
   .container { width: min(100% - 32px, 540px); }
@@ -678,49 +650,23 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
   .brand-logo { height: 44px; }
   .menu-toggle { display: block; }
   .main-nav { position: absolute; top: calc(100% + .5rem); right: 16px; left: auto; display: flex; visibility: hidden; width: min(250px, calc(100vw - 32px)); flex-direction: column; align-items: stretch; gap: .15rem; padding: .55rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility var(--dur-micro) var(--ease-out); }
-  /* Visible al instante, como el submenu de Tienda: en su primer cuadro seguia
-     en hidden y el foco no podia entrar en Nosotros al abrirlo. */
+  /* Visible al instante: en su primer cuadro seguia en hidden y el foco no
+     podia entrar en Nosotros al abrirlo. */
   .main-nav.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
   /* Dentro del panel oscuro el texto vuelve a ser claro: si heredara el de
      la cabecera seria horno sobre horno. */
   .main-nav { color: var(--sobre-horno); }
-  .main-nav > a:hover, .nav-grupo-enlace:hover, .nav-grupo-boton:hover { color: var(--papel); }
+  .main-nav > a:hover { color: var(--papel); }
   .main-nav a { padding: .6rem .7rem; }
-  .nav-grupo { display: flex; flex-wrap: wrap; align-items: center; }
-  .nav-grupo-enlace { flex: 1; }
-  .nav-grupo-boton { width: 44px; height: 44px; }
-  .nav-submenu { flex-basis: 100%; }
-  .nav-submenu { position: static; display: grid; visibility: hidden; min-width: 0; max-height: 0; padding: 0 0 0 .8rem; overflow: hidden; opacity: 1; background: none; border: 0; border-radius: 0; box-shadow: none; transform: none; transition: max-height var(--dur-fast) var(--ease-ui), visibility var(--dur-fast) var(--ease-ui); }
-  .nav-submenu::before { display: none; }
-  .nav-grupo.is-open .nav-submenu { visibility: visible; max-height: 180px; transform: none; }
-  .nav-submenu a { padding: .55rem .7rem; }
-  /* El aro de Tienda abraza su renglon (la palabra y la flecha, 44 px) y
-     no el desplegable abierto debajo; el grupo lleva .8rem de relleno
-     arriba (el puente del desplegable de escritorio), que el aro salta. */
-  .nav-grupo > .nav-indicador-marco { top: .8rem; bottom: auto; height: 44px; }
-  /* Aqui la palabra de Tienda empieza en el borde de su pastilla: su anillo
-     horno va por dentro y redondo, para no salirse al horno del panel. */
-  .site-header .nav-grupo:has(> .nav-grupo-enlace[aria-current="page"]) :is(.nav-grupo-enlace, .nav-grupo-boton):focus-visible { border-radius: var(--r-pill); outline-offset: -4px; }
   .section-pad { padding: 4.5rem 0; }
   .catalog { padding-top: 3rem; }
   body.is-vista .catalog { padding-top: 110px; }
   .heading-row { display: block; }
   .section-intro { margin-top: 1.5rem; }
-  /* Dos columnas en pantalla de telefono: la ficha es la mitad de ancha, asi que
-     la foto, el nombre y el precio bajan de tamano a la vez para no apretarse. */
-  .product-grid { gap: .9rem; }
-  .product-card { --margen-papel: .45rem; }
-  .product-tag { top: 6px; left: 6px; width: 66px; height: 66px; padding: 7px; letter-spacing: .02em; }
-  .product-info { padding: .8rem .3rem .2rem; }
-  .product-categoria { margin-bottom: .2rem; letter-spacing: .12em; }
-  .product-info h3 { margin-bottom: .35rem; font-size: 1.08rem; }
-  .product-info h3:has(+ .product-bottom) { margin-bottom: .7rem; }
-  .card-tamanos { margin-bottom: .7rem; }
-  .tamano { padding: .24rem .5rem; font-size: .68rem; }
-  .product-bottom { padding-top: .6rem; }
-  .product-bottom strong { font-size: 1.15rem; }
-  .card-cantidad button, .canasta-cantidad button { width: 32px; height: 32px; }
-  .card-agotado { min-height: 34px; }
+  /* Dos columnas en pantalla de telefono: la ficha es la mitad de ancha, y
+     la foto, el nombre y el precio ya bajaron con la tableta (900 px). */
+  .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .canasta-cantidad button { width: 32px; height: 32px; }
   .sign-band-inner { min-height: 62px; }
   .sign-trigo { width: 104px; height: 24px; }
   .story { margin-bottom: 3rem; }
@@ -812,7 +758,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* El menu de la cuenta, colgando de su circulo hacia la izquierda: el circulo
    esta en el borde derecho, asi que el menu se abre hacia la pagina. */
 .cuenta-menu { position: absolute; top: calc(100% + .6rem); right: 0; z-index: 11; display: flex; visibility: hidden; width: min(280px, calc(100vw - 32px)); flex-direction: column; gap: .1rem; padding: .45rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); color: var(--sobre-horno); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility var(--dur-micro) var(--ease-out); }
-/* Visible al instante, por lo mismo que el desplegable de Tienda. */
+/* Visible al instante, por lo mismo que el menu del telefono. */
 .cuenta-menu.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
 .cuenta-menu button { padding: .6rem .75rem; background: none; border: 0; border-radius: var(--r-chip); color: inherit; cursor: pointer; font: 700 .9rem Arial, sans-serif; text-align: left; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
 /* En hover, ambar claro: el ambar de siempre sobre el fondo aclarado se
@@ -1025,7 +971,6 @@ body.is-checkout .floating-whatsapp { display: none; }
   .con-puntero :is(.button-yellow, .button-pagar):hover::after, :is(.button-yellow, .button-pagar):active::after, .con-puntero :is(.button-yellow, .button-pagar):hover:active::after { transform: translate(4px, 4px); }
   .con-puntero .button:hover > svg, .con-puntero .button:hover > span[aria-hidden] { transform: none; }
   .con-puntero .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { transform: none; }
-  .nav-submenu, .nav-grupo-flecha { transition: none; }
   .product-grid.is-filtering .product-card { opacity: 1; transform: none; }
   .product-image.is-loading { animation: none; }
   .product-image img { opacity: 1; }

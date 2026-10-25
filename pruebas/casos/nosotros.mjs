@@ -3,25 +3,31 @@
 // - la historia: rotulo con la espiga, h1 en Fraunces con la segunda linea
 //   en cursiva corteza, la frase y "Conoce nuestro local" con el aspecto y
 //   la ola de "Cómo llegar", que lleva a #/contacto;
-// - en escritorio, la foto en arco a la izquierda del texto, con su pie, el
-//   sello "Masa madre · Hecho despacio" (su texto sigue su propio aro) y el
-//   parrafo de la madrugada en Arial; en el telefono, la foto pequena al
-//   lado del titulo, sin sello ni pie, y sin el parrafo de la madrugada;
-// - los principios sin banda oscura: tres en una lista (role="list"), con
-//   N.º, icono y nombre en Fraunces, en una fila de tres separadas por la
-//   estrella; su frase solo en escritorio;
+// - "arco de pie": en escritorio, la foto en arco a la izquierda, de alto
+//   entero (unos 520 px de ancho a 1440x900, 420 a 1366x768), con su pie,
+//   el sello "Masa madre · Hecho despacio" (su texto sigue su propio aro)
+//   y el parrafo de la madrugada en Arial; los principios dentro de la
+//   historia, bajo el texto y empezando en su mismo borde; en el telefono,
+//   la foto arriba a todo lo ancho (de 150 a 300 px de alto), sin sello ni
+//   pie, y sin el parrafo de la madrugada;
+// - los principios sin banda oscura: el h2 con una sola linea doble a su
+//   derecha, y tres en una lista (role="list"), alineados a la izquierda,
+//   con N.º, icono y nombre en Fraunces, en una fila de tres separadas por
+//   la estrella; su frase solo en escritorio;
 // - todo en una sola pantalla, sin desplazarse, con la franja en el borde
-//   de abajo, de 1440x900 a 360x640; con zoom o ventana muy baja (320x256,
-//   640x360) crece y se desplaza sin cortar ni pisar nada (WCAG 1.4.10); el
-//   alto que sobra se reparte parejo arriba, en medio y abajo;
+//   de abajo, de 1440x900 a 360x640 (tambien 1024x768); con zoom o ventana
+//   muy baja (320x256, 640x360) crece y se desplaza sin cortar ni pisar
+//   nada (WCAG 1.4.10); el conjunto va centrado entre la barra y la franja,
+//   y el hueco entre el texto y los principios es menor que los de arriba
+//   y abajo;
 // - los principios entran en la misma escena que la historia, sin esperar
 //   al desplazamiento; con menos movimiento, todo visible y quieto;
 // - la canasta flotante del telefono no tapa el enlace ni los principios;
 // - el icono de cada principio se mueve con el raton encima, no con el dedo;
-// - entre 681 y 900 px el sello no roza el texto.
+// - de 681 a 1440 px el sello no roza el texto.
 import { VENTANAS, espera, esperaQue, hashDe } from '../arranque.mjs';
 
-export const descripcion = 'Nosotros en una pantalla sin scroll: arco y sello (foto al lado del titulo en el telefono), Conoce nuestro local con la ola, principios en una fila que entran con la escena, crece sin cortar con zoom, quieto con menos movimiento';
+export const descripcion = 'Nosotros en una pantalla sin scroll, arco de pie: foto de alto entero con sello (arriba a todo lo ancho en el telefono), principios bajo el texto en su columna y que entran con la escena, Conoce nuestro local con la ola, crece sin cortar con zoom, quieto con menos movimiento';
 export const limite = 150;
 
 const ES_FRAUNCES = /^"?Fraunces Variable/;
@@ -63,6 +69,15 @@ const mirar = (p) => p.evaluate(() => {
     foto: caja('.nosotros-foto .arco'),
     texto: caja('.nosotros-texto'),
     titulo: caja('.nosotros-texto h1'),
+    rotuloCaja: caja('.nosotros-texto .rotulo-espiga'),
+    cabeza: caja('.principios-cabeza'),
+    h2: caja('.principios-titulo'),
+    listaCaja: caja('ol.principios'),
+    // Los principios van dentro de la historia (una sola composicion), con
+    // una sola linea doble, a la derecha del h2.
+    dentro: Boolean(document.querySelector('.nosotros-historia .nosotros-rejilla > section.nosotros-principios')),
+    lineas: [...document.querySelectorAll('.principios-cabeza .linea-doble')].map((l) => l.getBoundingClientRect().left),
+    alineados: items.every((li) => getComputedStyle(li).textAlign === 'left'),
     oscuras: vista.querySelectorAll('.banda-oscura, .fondo-principios').length,
     ultimo: vista.lastElementChild.className,
     rol: lista.getAttribute('role'),
@@ -100,24 +115,27 @@ const medir = (p) => p.evaluate(() => {
     const c = e.getBoundingClientRect();
     return e.scrollWidth > e.clientWidth + 1 || c.left < -1 || c.right > ancho + 1;
   }).map((e) => e.className || e.tagName);
-  const historia = r('.nosotros-historia');
-  const lista = r('.principios');
+  const texto = r('.nosotros-texto');
+  const foto = r('.nosotros-foto');
+  const principios = r('.nosotros-principios');
   const cabeza = r('.principios-cabeza');
   const franja = r('.vista-nosotros .franja-pie');
   const rejilla = r('.nosotros-rejilla');
   const cabecera = r('.site-header');
+  const seCruzan = (a, b) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1;
   return {
-    // El aire que sobra: encima de la historia, entre ella y los principios,
-    // y entre los principios y la curva de la franja.
-    huecos: [rejilla.top - cabecera.bottom, cabeza.top - rejilla.bottom, franja.top - 22 - lista.bottom].map(Math.round),
+    // El aire: encima del conjunto, entre el texto y los principios, y
+    // entre el conjunto y la curva de la franja.
+    huecos: [rejilla.top - cabecera.bottom, cabeza.top - texto.bottom, franja.top - 22 - rejilla.bottom].map(Math.round),
     alto: document.documentElement.scrollHeight,
     ventana: window.innerHeight,
     anchoPagina: document.documentElement.scrollWidth,
     ancho,
     franjaAbajo: Math.round(franja.bottom + window.scrollY),
     cortados,
-    // La curva de la franja sube 22 px: lo de encima tiene que acabar antes.
-    pisa: historia.bottom > cabeza.top + 1 || lista.bottom > franja.top - 22 + 1,
+    // Ni la foto ni el texto pisan los principios, y la curva de la franja
+    // (sube 22 px) no pisa nada.
+    pisa: seCruzan(foto, principios) || seCruzan(texto, principios) || rejilla.bottom > franja.top - 22 + 1,
   };
 });
 
@@ -143,14 +161,20 @@ export default async function nosotros(t) {
     t.ok(m.frase === 'italic', `[${nombre}] la frase no va en cursiva`);
     t.ok(/\benlace-llegar\b/.test(m.enlaceClases) && m.enlaceHref === '#/contacto' && m.enlaceNombre === 'Conoce nuestro local' && m.enlaceLetras === 'true' && ES_FRAUNCES.test(m.enlaceLetra), `[${nombre}] "Conoce nuestro local" no es como "Cómo llegar" (${JSON.stringify([m.enlaceClases, m.enlaceHref, m.enlaceNombre, m.enlaceLetras, m.enlaceLetra])})`);
     t.ok(m.selloTexto?.startsWith('Masa madre · Hecho despacio') && m.selloOculto === 'true' && m.aroEnSuSello, `[${nombre}] el sello no dice lo suyo o su texto sigue otro aro (${JSON.stringify([m.selloTexto, m.selloOculto, m.aroEnSuSello])})`);
+    t.ok(m.dentro, `[${nombre}] los principios no van dentro de la historia`);
+    t.ok(m.lineas.length === 1 && m.lineas[0] >= m.h2.right, `[${nombre}] el h2 de los principios no lleva una sola linea doble a su derecha (${JSON.stringify(m.lineas)})`);
+    t.ok(m.alineados && Math.abs(m.cabeza.left - m.rotuloCaja.left) <= 1 && Math.abs(m.listaCaja.left - m.rotuloCaja.left) <= 1, `[${nombre}] los principios no empiezan en el borde del texto (${Math.round(m.cabeza.left)}, ${Math.round(m.listaCaja.left)} y el rotulo en ${Math.round(m.rotuloCaja.left)})`);
     if (nombre === 'escritorio') {
       t.ok(m.foto.right <= m.texto.left, `[${nombre}] la foto no va a la izquierda del texto (${Math.round(m.foto.right)} > ${Math.round(m.texto.left)})`);
+      // La foto ocupa el alto de las dos filas: del texto a los principios.
+      t.ok(m.foto.right <= m.listaCaja.left && m.foto.height >= (m.listaCaja.bottom - m.texto.top) * .9, `[${nombre}] la foto no ocupa el alto del texto y los principios (${Math.round(m.foto.height)} px de ${Math.round(m.listaCaja.bottom - m.texto.top)})`);
       t.ok(m.pieSeVe && m.pie === 'Despacio sabe mejor' && m.selloSeVe, `[${nombre}] falta el pie ("${m.pie}") o el sello de la foto`);
       t.ok(m.madrugadaSeVe && /^Arial/.test(m.madrugada) && !m.madrugada.includes('Georgia'), `[${nombre}] el parrafo de la madrugada no se ve o va en ${m.madrugada}`);
       t.ok(m.frasesSeVen === 3, `[${nombre}] en escritorio se ven ${m.frasesSeVen} frases de los principios`);
     } else {
-      const alLado = m.foto.left >= m.titulo.left + 40 && m.foto.top < m.titulo.bottom && m.foto.bottom > m.titulo.top;
-      t.ok(alLado, `[${nombre}] la foto no va al lado del titulo (foto ${JSON.stringify([m.foto.left, m.foto.top, m.foto.bottom].map(Math.round))}, h1 ${JSON.stringify([m.titulo.left, m.titulo.top, m.titulo.bottom].map(Math.round))})`);
+      // La foto arriba, a todo lo ancho (menos su marco), de 150 a 300 px.
+      const arriba = m.foto.bottom <= m.rotuloCaja.top && m.foto.width >= m.texto.width - 30 && m.foto.height >= 150 && m.foto.height <= 300;
+      t.ok(arriba, `[${nombre}] la foto no va arriba a todo lo ancho (foto ${JSON.stringify([m.foto.width, m.foto.height, m.foto.bottom].map(Math.round))}, texto ${Math.round(m.texto.width)} desde ${Math.round(m.rotuloCaja.top)})`);
       t.ok(!m.pieSeVe && !m.selloSeVe && !m.madrugadaSeVe, `[${nombre}] en el telefono siguen el pie, el sello o el parrafo de la madrugada`);
       t.ok(m.frasesSeVen === 0, `[${nombre}] en el telefono se ven ${m.frasesSeVen} frases de los principios`);
     }
@@ -212,16 +236,31 @@ export default async function nosotros(t) {
     const p = await ctx.newPage();
     await p.goto(t.REACT + '#/nosotros');
     await p.waitForSelector('.principios > li');
-    const caben = [[1440, 900], [1366, 768], [1280, 720], [900, 1000], [768, 1024], [390, 844], [390, 700], [375, 667], [360, 640]];
+    const caben = [[1440, 900], [1366, 768], [1280, 720], [1024, 768], [900, 1000], [768, 1024], [390, 844], [390, 700], [375, 667], [360, 640]];
+    // Lo que mide el arco en cada una (el plan pide unos 520 a 1440x900 y
+    // unos 430 a 1366x768, sin pasar de 540; en el telefono, de 150 a 300
+    // de alto).
+    const arcos = {};
     for (const [ancho, alto] of caben) {
       await p.setViewportSize({ width: ancho, height: alto });
       await espera(150);
       const d = await medir(p);
       t.ok(d.alto <= d.ventana && d.franjaAbajo === d.ventana, `[${ancho}x${alto}] Nosotros no cabe sin desplazarse (${d.alto} de ${d.ventana}, franja hasta ${d.franjaAbajo})`);
       t.ok(d.cortados.length === 0 && !d.pisa && d.anchoPagina <= d.ancho, `[${ancho}x${alto}] algo se corta o se pisa (${JSON.stringify(d)})`);
-      // El alto que sobra se reparte parejo: ningun hueco le saca mas de 30 px a otro.
-      t.ok(Math.max(...d.huecos) - Math.min(...d.huecos) <= 30, `[${ancho}x${alto}] el aire no se reparte parejo (${d.huecos.join(', ')} px)`);
+      // Centrado entre la barra y la franja, y el hueco entre el texto y los
+      // principios, menor que los de arriba y abajo.
+      const [encima, medio, debajo] = d.huecos;
+      t.ok(Math.abs(encima - debajo) <= 4 && medio < Math.min(encima, debajo), `[${ancho}x${alto}] el conjunto no va centrado o el hueco del medio no es el menor (${d.huecos.join(', ')} px)`);
+      arcos[`${ancho}x${alto}`] = await p.evaluate(() => {
+        const a = document.querySelector('.nosotros-arco').getBoundingClientRect();
+        return [Math.round(a.width), Math.round(a.height)];
+      });
     }
+    const [ancho1440] = arcos['1440x900'];
+    const [ancho1366] = arcos['1366x768'];
+    t.ok(ancho1440 >= 500 && ancho1440 <= 540 && ancho1366 >= 400 && ancho1366 <= 450, `la foto no tiene el peso del plan (${ancho1440} px a 1440x900, ${ancho1366} a 1366x768)`);
+    t.ok(Object.values(arcos).every(([a]) => a <= 540), `la foto pasa de 540 px (${JSON.stringify(arcos)})`);
+    t.ok(['390x844', '390x700', '375x667', '360x640'].every((k) => arcos[k][1] >= 150 && arcos[k][1] <= 300), `en el telefono la foto no mide de 150 a 300 px de alto (${JSON.stringify(arcos)})`);
     for (const [ancho, alto] of [[320, 256], [640, 360]]) {
       await p.setViewportSize({ width: ancho, height: alto });
       await espera(150);
@@ -229,15 +268,20 @@ export default async function nosotros(t) {
       t.ok(d.cortados.length === 0 && !d.pisa && d.anchoPagina <= d.ancho, `[${ancho}x${alto}] con poca altura algo se corta o se pisa (${JSON.stringify(d)})`);
       t.ok(d.alto > d.ventana, `[${ancho}x${alto}] con poca altura la vista no crece (${d.alto} de ${d.ventana})`);
     }
-    // Entre 681 y 900 px el sello no roza el texto.
-    for (const ancho of [681, 700, 750, 900]) {
-      await p.setViewportSize({ width: ancho, height: 900 });
+    // De 681 a 1440 px el sello no roza el texto ni, en escritorio, los
+    // principios, que van en la misma columna.
+    for (const [ancho, alto] of [[681, 900], [700, 900], [750, 900], [900, 900], [901, 700], [1024, 768], [1180, 760], [1280, 720], [1366, 768], [1440, 900]]) {
+      await p.setViewportSize({ width: ancho, height: alto });
       await espera(150);
       const aire = await p.evaluate(() => {
-        const texto = [...document.querySelectorAll('.nosotros-texto > *')].map((e) => e.getBoundingClientRect().left);
-        return Math.round(Math.min(...texto) - document.querySelector('.nosotros-sello').getBoundingClientRect().right);
+        const sello = document.querySelector('.nosotros-sello').getBoundingClientRect();
+        const texto = [...document.querySelectorAll('.nosotros-texto > *, .principios-cabeza, .principio')]
+          .map((e) => e.getBoundingClientRect())
+          .filter((c) => c.bottom > sello.top && c.top < sello.bottom)
+          .map((c) => c.left);
+        return texto.length ? Math.round(Math.min(...texto) - sello.right) : Infinity;
       });
-      t.ok(aire >= 8, `[${ancho} px] el sello queda a ${aire} px del texto`);
+      t.ok(aire >= 8, `[${ancho}x${alto}] el sello queda a ${aire} px del texto`);
     }
     await ctx.close();
   }

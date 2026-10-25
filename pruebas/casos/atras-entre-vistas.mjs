@@ -43,12 +43,13 @@ export default async function atrasEntreVistas(t) {
     await p.goBack(); await espera(1200);
     await mira('contacto y Atras a nosotros');
 
-    // En la tienda: una categoria con enlace, bajar, otra categoria, Atras.
+    // En la tienda: otra categoria, bajar, otra categoria, Atras. Tienda ya
+    // no tiene desplegable: se cambia la direccion, una entrada nueva.
     await abrir('#/tienda-catalogo');
-    await ir('.nav-submenu a[href$="tienda-panes"]'); await espera(900);
+    await p.evaluate(() => { location.hash = '#/tienda-panes'; }); await espera(900);
     await p.mouse.wheel(0, 600); await espera(700);
     const yPanes = await p.evaluate(() => Math.round(scrollY));
-    await ir('.nav-submenu a[href$="tienda-dulces"]'); await espera(1000);
+    await p.evaluate(() => { location.hash = '#/tienda-dulces'; }); await espera(1000);
     await p.goBack(); await espera(1400);
     const r = await p.evaluate(() => ({ hash: location.hash, y: Math.round(scrollY) }));
     t.ok(r.hash === '#/tienda-panes' && Math.abs(r.y - yPanes) <= 40, `[${nombre}] tienda: panes estaba en y=${yPanes} y Atras deja ${r.hash} en y=${r.y}`);

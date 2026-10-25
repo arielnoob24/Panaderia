@@ -26,9 +26,10 @@ cambia en el mismo cambio.
   redirecciones (tambien las de `#/cuenta/*`), la transicion y la carga por
   partes (`src/comun/cargaPorPartes.js`).
 - `src/vistas/` (Inicio, Nosotros, Contacto) y `src/catalogo/`: portada y
-  cinta, la tienda, filtros, orden, buscador y fichas (con el control de
+  cinta, la tienda, filtros, orden (desplegable propio, combobox de solo
+  seleccion del APG, seccion 4 del plan), buscador y fichas (con el control de
   cantidad, su "+1" y su destello al agregar).
-- `src/comun/`: cabecera, menu Tienda, avisos `aria-live`, atrapar el
+- `src/comun/`: cabecera (Tienda es un enlace simple), avisos `aria-live`, atrapar el
   foco, el globo, el horario, las rutas (`vistas.js`), abrir la pagina y el
   desplazamiento (`apertura.js`), los fondos de trazos.
 - `assets/css/styles.css` (la base: variables de `:root`, cortes en 900, 680 y

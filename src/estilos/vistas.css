@@ -196,14 +196,18 @@
 #raiz > main:has(.vista-nosotros) { padding-bottom: 0; }
 .vista-nosotros .franja-pie { flex: 0 0 auto; margin-top: 0; }
 
-/* La historia: la portada en espejo, la foto a la izquierda. El texto va
-   antes en el HTML (el lector llega primero al titulo) y la rejilla lo
-   cambia de lado. El alto que sobra se reparte a partes iguales con
-   margenes auto: encima de la historia, entre ella y los principios, y
-   entre los principios y la franja (que asi queda en el borde). */
-.nosotros-historia { flex: 0 0 auto; margin-top: auto; padding-block: clamp(.75rem, 3.5svh, 3rem) clamp(.5rem, 2.5svh, 2rem); }
-.nosotros-rejilla { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); grid-template-areas: "foto texto"; gap: clamp(3.5rem, 7vw, 7rem); align-items: center; }
-.nosotros-texto { grid-area: texto; }
+/* La historia, "arco de pie" (seccion 10 del plan): la portada en espejo,
+   la foto a la izquierda de alto entero, y a la derecha el texto con los
+   principios debajo, en la misma columna. El texto va antes en el HTML (el
+   lector llega primero al titulo) y la rejilla lo cambia de lado. El
+   conjunto va centrado en vertical entre la barra y la franja: el aire de
+   arriba y el de abajo (--aire) son iguales, y el de abajo suma los 22 px
+   que sube la curva de la franja. El hueco entre el texto y los principios
+   (--aire-medio) es menor, para que se lean como una sola pieza. Si la foto
+   es mas alta que la columna, texto y principios se juntan en su centro. */
+.nosotros-historia { --aire: clamp(.5rem, 2.5svh, 2.5rem); --aire-medio: clamp(.4rem, 1.9svh, 1.9rem); display: flex; flex: 1 0 auto; flex-direction: column; justify-content: center; padding-block: var(--aire) calc(var(--aire) + 22px); }
+.nosotros-rejilla { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "foto texto" "foto principios"; gap: var(--aire-medio) clamp(3.5rem, 6vw, 6rem); align-content: center; }
+.nosotros-texto { grid-area: texto; align-self: end; }
 /* Mas largo que "El sabor de siempre": algo mas pequeno, para que
    "nuestro ingrediente" no se parta en su columna, y mas aun si la
    pantalla es baja. */
@@ -212,34 +216,40 @@
 /* El parrafo de la madrugada es texto corrido: Arial, no la Georgia de body. */
 .nosotros-madrugada { max-width: 62ch; margin: 0; color: var(--horno-suave); font: 1.05rem/1.6 var(--letra-texto); }
 .nosotros-llegar { margin-top: clamp(.6rem, 2.4svh, 1.8rem); }
-.nosotros-foto { grid-area: foto; width: min(100%, clamp(150px, 53svh - 177px, 420px)); margin-right: auto; }
+/* La foto con peso: el arco (4:5) y su pie ocupan casi todo el alto que
+   dejan la barra (86 px), la franja con su curva (86) y el aire: unos
+   520 px de ancho a 1440x900 y 420 a 1366x768, sin pasar de 540 ni del
+   40 % del ancho (al texto le tiene que quedar sitio). */
+.nosotros-foto { grid-area: foto; align-self: center; width: min(clamp(200px, 76svh - 164px, 540px), 40vw); }
 /* El amasado es vertical: el arco, 4:5. */
 .nosotros-arco { aspect-ratio: 4 / 5; }
 .nosotros-arco img { object-position: center 40%; }
 /* En espejo: el sello abajo a la derecha, hacia el texto, y el pie a la
    izquierda, lejos de el. */
 .nosotros-foto figcaption { margin-top: clamp(.4rem, 1.2svh, .8rem); text-align: left; }
-.nosotros-sello { right: -58px; bottom: 40px; width: clamp(96px, 15svh, 124px); height: auto; aspect-ratio: 1; }
+/* Se asoma 44 px al hueco de las columnas (girado ocupa unos 12 px mas):
+   le quedan mas de 8 px hasta el texto. */
+.nosotros-sello { right: -44px; bottom: 40px; width: clamp(96px, 15svh, 124px); height: auto; aspect-ratio: 1; }
 
-/* Los principios, sobre la masa: el h2 en versalitas entre las lineas
-   dobles de la cabecera de periodico, y una fila de tres columnas
-   separadas por una estrella. El numero, en versalitas corteza oscura
-   (.rotulo, 6,52:1 sobre el grano). Abajo dejan sitio a la curva de la
-   franja, que sube 22 px. */
-.nosotros-principios { --icono: clamp(32px, 5svh, 44px); --icono-aire: clamp(.3rem, 1.2svh, .9rem); flex: 0 0 auto; margin-block: auto; padding: 0 0 clamp(2rem, 5svh, 3rem); }
+/* Los principios, sobre la masa y alineados con el texto: el h2 en
+   versalitas con una linea doble de la cabecera de periodico a su derecha,
+   y una fila de tres columnas separadas por una estrella. El numero, en
+   versalitas corteza oscura (.rotulo, 6,52:1 sobre el grano). */
+.nosotros-principios { --icono: clamp(32px, 5svh, 44px); --icono-aire: clamp(.3rem, 1.2svh, .9rem); grid-area: principios; align-self: start; }
 .principios-cabeza, .contacto-cabeza { display: flex; align-items: center; gap: 1.4rem; }
 .principios-titulo, .contacto-subtitulo { flex: 0 1 auto; margin: 0; color: var(--horno); font: 700 .95rem/1.4 var(--letra-texto); letter-spacing: .22em; text-align: center; text-transform: uppercase; }
+.principios-titulo { text-align: left; }
 :is(.principios-cabeza, .contacto-cabeza) .linea-doble { min-width: 24px; }
-.principios { --hueco: clamp(2.5rem, 6vw, 5.5rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--hueco); max-width: 1120px; margin: clamp(.8rem, 3svh, 2.6rem) auto 0; padding: 0; list-style: none; }
-.principio { position: relative; text-align: center; }
+.principios { --hueco: clamp(1.5rem, 2.6vw, 3rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--hueco); margin: clamp(.6rem, 2.2svh, 1.8rem) 0 0; padding: 0; list-style: none; }
+.principio { position: relative; text-align: left; }
 /* La estrella entre dos columnas, en medio del hueco y a la altura del
    icono (bajo el numero, que mide .94rem). Es adorno: sin texto para el
    lector (alt vacio). */
 .principio + .principio::before { position: absolute; top: calc(.94rem + var(--icono-aire) + var(--icono) / 2); left: calc(var(--hueco) / -2); color: var(--corteza); content: "✦"; content: "✦" / ""; font-size: 1.1rem; line-height: 1; transform: translate(-50%, -50%); }
 .principio-numero { display: block; }
-.principio-icono { display: block; width: var(--icono); height: var(--icono); margin: var(--icono-aire) auto clamp(.3rem, 1.1svh, .8rem); color: var(--corteza); transform-origin: center 80%; }
-.principio h3 { margin: 0 0 .4rem; font: 500 clamp(1.15rem, 2.8svh, 1.45rem)/1.2 var(--letra-titulo); }
-.principio p { max-width: 26ch; margin: 0 auto; color: var(--horno-suave); font: .95rem/1.45 var(--letra-texto); }
+.principio-icono { display: block; width: var(--icono); height: var(--icono); margin: var(--icono-aire) 0 clamp(.3rem, 1.1svh, .8rem); color: var(--corteza); transform-origin: center 80%; }
+.principio h3 { margin: 0 0 .4rem; font: 500 clamp(1.1rem, 2.6svh, 1.35rem)/1.2 var(--letra-titulo); }
+.principio p { max-width: 26ch; margin: 0; color: var(--horno-suave); font: .95rem/1.45 var(--letra-texto); }
 /* Con el puntero encima, el icono de cada principio hace su movimiento
    breve, como los de la cinta: el tarro da un saltito, la aguja del reloj
    da la vuelta y la espiga se mece. */
@@ -260,19 +270,30 @@
   .con-puntero .principio:hover .principio-icono, .con-puntero .principio:hover .principio-aguja { animation: none; }
 }
 
+/* Entre 901 y 1180 px la columna del texto es estrecha: los principios
+   parten en mas lineas y la columna acababa mas alta que la foto (a
+   1024x768 se desplazaba 23 px). La foto no pasa del 37 % del ancho, el
+   titular y los principios bajan un poco y el sello se asoma menos. */
+@media (min-width: 901px) and (max-width: 1180px) {
+  .nosotros-foto { width: min(clamp(200px, 76svh - 164px, 540px), 37vw); }
+  .nosotros-texto .titular { font-size: clamp(2.6rem, min(5.6vw, 9svh), 6.4rem); }
+  .nosotros-sello { right: -32px; }
+  .principios { --hueco: 1.25rem; }
+  .principio h3 { font-size: 1.05rem; }
+  .principio p { font-size: .88rem; }
+}
+
 /* ---- La tienda: la cabeza (VistaCabeza.jsx, seccion 10 del plan, "La
    tienda con el estilo de la portada") ----------------------------------- */
 
 /* Sobre la masa, con el grano y sus panes dibujados, alineada a la
    izquierda como la portada. Las fichas no cambian. */
 .vista-cabeza { display: flex; flex-direction: column; margin-bottom: 2rem; }
+/* Por encima de las fichas, que vienen despues: el panel de "Ordenar por"
+   cae sobre la primera fila y, sin esto, se pintaria debajo de ella. */
+.vista-cabeza.con-fondo { z-index: 2; }
 .vista-cabeza[hidden] { display: none; }
 .tienda-texto { display: flex; flex-direction: column; align-items: flex-start; }
-/* "Volver al inicio": un boton con el aspecto de "Cómo llegar"
-   (.enlace-llegar), con la flecha en corteza en lugar del pin. */
-.vista-volver { margin-bottom: clamp(1rem, 3vw, 1.8rem); padding: .3rem .85rem .3rem .55rem; background: none; cursor: pointer; font-size: 1.1rem; }
-.vista-volver svg { width: 20px; height: 20px; flex: none; color: var(--corteza); transition: transform var(--dur-base) var(--ease-soft); }
-.con-puntero .vista-volver:hover svg { transform: translateX(-3px); }
 .tienda-texto .titular { margin: .6rem 0 .7rem; font-size: clamp(2.6rem, 6.4vw, 5.6rem); line-height: .95; }
 .tienda-frase { font-size: clamp(1.15rem, 2.4vw, 1.5rem); }
 
@@ -311,13 +332,44 @@
 .vista-mandos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem 1.4rem; }
 .vista-mando { display: inline-flex; align-items: center; gap: .55rem; }
 .vista-mando > span:not(.sr-only) { color: var(--corteza-oscura); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .18em; text-transform: uppercase; }
-.vista-mando select { padding: .45rem 1.9rem .45rem .7rem; appearance: none; background: var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233a2822' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9.5l6 5.5 6-5.5'/%3E%3C/svg%3E") no-repeat right .55rem center/13px; border: 1px solid var(--horno-claro); border-radius: 2px; color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); transition: border-color var(--dur-fast) var(--ease-ui); }
+/* "Ordenar por" (OrdenarPor.jsx): el boton en papel con filete fino, que
+   dice el orden elegido y lleva la flecha, y al abrirlo un panel papel con
+   filete horno y sombra dura con las cuatro opciones en Fraunces cursiva.
+   La elegida, en la pastilla horno con texto papel como en "Filtrar por"
+   (13,7:1); la que se mira (puntero o flechas), en una pastilla masa con
+   filete horno aclarado (4,97:1), que no depende solo del tono. */
+.orden { position: relative; }
+.orden-boton { display: inline-flex; min-height: 34px; align-items: center; gap: .6rem; padding: .4rem .6rem .4rem .7rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: 2px; color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); user-select: none; transition: border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.orden-boton > span { flex: 1; white-space: nowrap; }
+.orden-flecha { width: 14px; height: 14px; flex: none; transition: transform var(--dur-fast) var(--ease-ui); }
+.orden.is-open .orden-flecha { transform: rotate(180deg); }
+.orden-boton:active { transform: scale(.97); }
+/* Cerrado, invisible y fuera del arbol de accesibilidad (visibility); al
+   abrir, visible al instante para que aria-activedescendant apunte a algo
+   que existe. Entra mas despacio de lo que sale. */
+.orden-lista { position: absolute; top: calc(100% + .4rem); left: 0; z-index: 6; display: flex; visibility: hidden; min-width: 100%; flex-direction: column; gap: .15rem; margin: 0; padding: .4rem; list-style: none; background: var(--papel); border: 1px solid var(--horno); box-shadow: 4px 4px 0 var(--horno); opacity: 0; pointer-events: none; transform: scale(.96); transform-origin: top left; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility 0s linear var(--dur-micro); }
+.orden.is-open .orden-lista { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), visibility 0s; }
+.orden-opcion { position: relative; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: italic 400 1.05rem/1.25 var(--letra-titulo); white-space: nowrap; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+.orden-opcion.is-activa { background: var(--masa); box-shadow: inset 0 0 0 1px var(--horno-claro); }
+.orden-opcion[aria-selected="true"] { background: var(--horno); color: var(--papel); }
+/* La elegida que ademas se mira: un aro corteza por fuera de su pastilla. */
+.orden-opcion[aria-selected="true"].is-activa { box-shadow: 0 0 0 2px var(--papel), 0 0 0 4px var(--corteza); }
+
+/* "Mostrar": el interruptor "Solo disponibles". Apagado, una pastilla papel
+   con filete y la marca vacia; encendido, horno con el texto papel y la ✓
+   (no depende solo del color). */
+.interruptor { display: inline-flex; min-height: 34px; align-items: center; gap: .5rem; padding: .35rem .85rem .35rem .45rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.interruptor-marca { display: grid; width: 20px; height: 20px; flex: none; place-items: center; border: 1px solid var(--horno-claro); border-radius: 50%; color: transparent; font: 700 .8rem/1 var(--letra-texto); transition: border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-accent); }
+.interruptor[aria-pressed="true"] { background: var(--horno); border-color: var(--horno); color: var(--papel); }
+.interruptor[aria-pressed="true"] .interruptor-marca { border-color: var(--papel); color: var(--papel); animation: marca-entra var(--dur-fast) var(--ease-accent); }
+@keyframes marca-entra { from { transform: scale(.6); } to { transform: none; } }
+.interruptor:active { transform: scale(.97); }
 .vista-buscar { position: relative; }
 .vista-buscar svg { position: absolute; left: .7rem; width: 15px; height: 15px; color: var(--horno-suave); pointer-events: none; }
 .vista-buscar input { width: 15rem; max-width: 100%; padding: .45rem .8rem .45rem 2rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: 2px; color: var(--horno); font: .85rem var(--letra-texto); transition: border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .vista-mando select:hover, .con-puntero .vista-buscar input:hover { border-color: var(--corteza); }
+.con-puntero .orden-boton:hover, .con-puntero .interruptor[aria-pressed="false"]:hover, .con-puntero .vista-buscar input:hover { border-color: var(--corteza); }
 /* El anillo de los campos: horno con el halo ambar (WCAG 1.4.11). */
-.vista-mando select:focus-visible, .vista-buscar input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+.orden-boton:focus-visible, .interruptor:focus-visible, .vista-buscar input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 /* "Mostrando X de Y productos", en versalitas corteza oscura bajo la fila. */
 .vista-cuenta { align-self: flex-end; margin: .7rem 0 0; font-variant-numeric: tabular-nums; }
 .vista-cuenta:empty { display: none; }
@@ -333,7 +385,11 @@
 @media (prefers-reduced-motion: reduce) {
   .vista-barra, .vista-cuenta, .vista-barra .linea-doble { animation: none; }
   .con-puntero .chip:hover .letras span, .con-puntero .chip:hover .ico { animation: none; }
-  .con-puntero .vista-volver:hover svg, .chip:active { transform: none; }
+  .chip:active, .orden-boton:active, .interruptor:active { transform: none; }
+  /* El panel solo aparece, la flecha no gira y la marca no rebota. */
+  .orden-lista, .orden.is-open .orden-lista { transform: none; transition: none; }
+  .orden-flecha { transition: none; }
+  .interruptor[aria-pressed="true"] .interruptor-marca { animation: none; }
 }
 
 /* Cuando los mandos ya no caben en una fila con sus lineas, las lineas van
@@ -358,7 +414,11 @@
      espaciado, letra grande), el selector baja a la siguiente, pegado a la
      derecha, en vez de salirse por el borde. */
   .vista-mando { flex-wrap: wrap; justify-content: space-between; }
-  .vista-mando select { flex: 0 0 62%; max-width: 100%; margin-left: auto; }
+  .vista-mando > .orden { flex: 0 0 62%; max-width: 100%; margin-left: auto; }
+  .orden-boton { width: 100%; }
+  /* El panel cuelga hacia la izquierda desde el borde derecho del boton,
+     que va pegado a la derecha de la pantalla. */
+  .orden-lista { right: 0; left: auto; transform-origin: top right; }
   .vista-buscar input { width: 100%; }
   .vista-cuenta { align-self: flex-start; }
 }
@@ -450,11 +510,14 @@
   .portada-foto { container-type: inline-size; }
   .portada-sello { --sello: 112px; top: calc(100cqw - var(--sello) * 1.1); right: -8px; bottom: auto; left: auto; width: var(--sello); height: var(--sello); }
   .portada-foto figcaption { text-align: left; }
-  /* Nosotros sigue en dos columnas hasta el telefono, mas juntas, con el
-     sello mas pequeno y menos asomado: a 681 px el hueco mide unos 41 px y
-     con -44 el sello (girado mide unos 123 px) rozaba el texto; con -20 le quedan
-     11 px de aire. */
-  .nosotros-rejilla { gap: clamp(2.5rem, 6vw, 3.5rem); }
+  /* Nosotros en la tableta: foto y texto arriba, en dos columnas mas
+     juntas, y los principios debajo a todo lo ancho. El sello, mas pequeno
+     y menos asomado: a 681 px el hueco mide unos 41 px y con -44 el sello
+     (girado mide unos 123 px) rozaba el texto; con -20 le quedan 11 px de
+     aire. */
+  .nosotros-rejilla { grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); grid-template-areas: "foto texto" "principios principios"; column-gap: clamp(2.5rem, 6vw, 3.5rem); }
+  .nosotros-texto { align-self: center; }
+  .nosotros-foto { width: min(100%, clamp(150px, 53svh - 177px, 420px)); }
   .nosotros-sello { right: -20px; width: clamp(88px, 13svh, 104px); }
 }
 @media (min-width: 681px) and (max-width: 900px) {
@@ -507,34 +570,34 @@
   .cinta-dentro { gap: .2rem .6rem; }
   .cinta-enlace { font-size: 1.08rem; }
   .cinta-estrella { display: none; }
-  /* Nosotros en el telefono (seccion 10 del plan): para caber en una
-     pantalla, la foto pequena va al lado del rotulo y el titulo, sin sello
-     ni pie; la frase y el enlace, debajo a todo lo ancho. El texto deja de
-     ser una caja (display: contents) para que sus piezas entren en la
-     rejilla; el orden de lectura no cambia. Fuera el parrafo de la
-     madrugada (display: none: ni se ve ni se lee). */
+  /* Nosotros en el telefono ("arco de pie", seccion 10 del plan): una
+     columna, con la foto en arco arriba a todo lo ancho y el alto que sobra
+     (150 a 300 px), sin sello ni pie; debajo el rotulo, el titulo, la frase
+     y el enlace, y los principios. Fuera el parrafo de la madrugada
+     (display: none: ni se ve ni se lee). Los aires, cortos. */
   .vista-nosotros { padding-top: 70px; }
-  .nosotros-historia { padding-block: clamp(.6rem, 3svh, 1.6rem) .4rem; }
-  .nosotros-rejilla { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "rotulo foto" "titulo foto" "frase frase" "llegar llegar"; gap: 0 1.1rem; align-items: start; }
-  .nosotros-texto { display: contents; }
-  .nosotros-texto .rotulo-espiga { grid-area: rotulo; align-self: end; }
-  .nosotros-texto .titular { grid-area: titulo; margin: .45rem 0 0; font-size: clamp(1.9rem, min(10vw, 6svh), 2.75rem); }
+  .nosotros-historia { --aire: clamp(.4rem, 1.6svh, 1.2rem); --aire-medio: clamp(.35rem, 1.2svh, .9rem); }
+  .nosotros-rejilla { grid-template-columns: minmax(0, 1fr); grid-template-areas: "foto" "texto" "principios"; }
+  .nosotros-texto { align-self: auto; }
+  .nosotros-texto .titular { margin: .45rem 0 0; font-size: clamp(1.9rem, min(10vw, 5.2svh), 2.75rem); }
   .nosotros-texto .titular em { padding-left: .45em; }
-  .nosotros-texto .frase { grid-area: frase; margin: clamp(.6rem, 2svh, 1rem) 0 0; font-size: clamp(1rem, 2.6svh, 1.25rem); line-height: 1.35; }
+  .nosotros-texto .frase { margin: clamp(.35rem, 1svh, .8rem) 0 0; font-size: clamp(1rem, 2.6svh, 1.25rem); line-height: 1.35; }
   .nosotros-madrugada { display: none; }
-  .nosotros-llegar { grid-area: llegar; justify-self: start; margin-top: clamp(.6rem, 2svh, 1.1rem); }
-  /* La foto, de unos 90 a 156 px segun el alto, con el marco a 6 px: a
-     10 se comia el arco entero. */
-  .nosotros-foto { grid-area: foto; align-self: center; width: clamp(88px, 26svh - 60px, 156px); margin: 8px 7px 0 0; }
-  .nosotros-arco { box-shadow: 0 0 0 6px var(--masa), 0 0 0 7px var(--horno); }
+  /* El enlace, como el de la portada en el telefono: mas bajo, sin bajar de 24 px. */
+  .nosotros-llegar { min-height: 36px; margin-top: clamp(.5rem, 1.6svh, 1rem); padding: .25rem .55rem; font-size: clamp(.95rem, 4vw, 1.12rem); }
+  /* El arco deja de ser 4:5: todo el ancho y el alto que sobra. El marco,
+     a 6 px (a 10 se comia el borde de la pantalla); el margen de 7 px es
+     para que el marco no se salga de su caja. */
+  .nosotros-foto { width: auto; margin: 7px; }
+  .nosotros-arco { height: clamp(150px, 100svh - 551px, 300px); aspect-ratio: auto; box-shadow: 0 0 0 6px var(--masa), 0 0 0 7px var(--horno); }
   .nosotros-foto figcaption, .nosotros-foto .sello { display: none; }
   /* Los principios siguen en una fila de tres, con su numero, el icono y
      el nombre; sin la frase. Si un nombre no cabe (texto espaciado, WCAG
      1.4.12), la palabra se parte antes que salirse. */
-  .nosotros-principios { --icono: clamp(28px, 4.6svh, 36px); --icono-aire: clamp(.25rem, 1svh, .6rem); padding-bottom: clamp(1.9rem, 5svh, 2.6rem); }
+  .nosotros-principios { --icono: clamp(28px, 4.6svh, 36px); --icono-aire: clamp(.25rem, 1svh, .6rem); }
   .principios-cabeza, .contacto-cabeza { gap: .7rem; }
   .principios-titulo, .contacto-subtitulo { font-size: .72rem; letter-spacing: .14em; }
-  .principios { --hueco: 1rem; margin-top: clamp(.6rem, 2svh, 1.2rem); }
+  .principios { --hueco: 1rem; margin-top: clamp(.5rem, 1.4svh, 1.2rem); }
   .principio + .principio::before { font-size: .9rem; }
   .principio-numero { letter-spacing: .14em; }
   .principio h3 { margin: 0; font-size: clamp(.8rem, 3.8vw, 1.05rem); overflow-wrap: anywhere; hyphens: auto; }
@@ -690,4 +753,9 @@ body.is-vista .franja-pie { display: block; }
   .chip-input:checked + .chip .ico { color: HighlightText; }
   /* El anillo horno no se ve en colores forzados: el del sistema. */
   .chip-input:focus-visible + .chip { outline-color: CanvasText; box-shadow: none; }
+  /* "Ordenar por" y el interruptor, igual que la categoria puesta. */
+  .orden-opcion[aria-selected="true"], .interruptor[aria-pressed="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .interruptor[aria-pressed="true"] .interruptor-marca { border-color: HighlightText; color: HighlightText; }
+  .orden-opcion.is-activa { outline: 2px solid CanvasText; outline-offset: -2px; }
+  .orden-boton:focus-visible, .interruptor:focus-visible { outline-color: CanvasText; box-shadow: none; }
 }

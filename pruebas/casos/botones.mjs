@@ -285,7 +285,7 @@ async function barraSinPisarse(t) {
     await espera(150);
     const b = await p.evaluate(() => {
       const caja = (s) => document.querySelector(s).getBoundingClientRect();
-      const opciones = [...document.querySelectorAll('#main-nav > a, #main-nav > .nav-grupo')].map((e) => e.getBoundingClientRect());
+      const opciones = [...document.querySelectorAll('#main-nav > a')].map((e) => e.getBoundingClientRect());
       return {
         marca: Math.max(caja('.brand').right, caja('.brand-logo').right),
         menuIzq: Math.min(...opciones.map((r) => r.left)),
@@ -325,8 +325,8 @@ async function apagado(t) {
 // ---- El menu de arriba (W1 y S2) ----------------------------------------------
 // Como esta cada opcion: su blanco tenue (::before), la pastilla de la pagina
 // actual (::after), su color y su raya.
-const estadoMenu = (p) => p.evaluate(() => [...document.querySelectorAll('#main-nav > a, #main-nav > .nav-grupo')].map((o) => {
-  const texto = o.matches('a') ? o : o.querySelector('.nav-grupo-enlace');
+const estadoMenu = (p) => p.evaluate(() => [...document.querySelectorAll('#main-nav > a')].map((o) => {
+  const texto = o;
   const antes = getComputedStyle(o, '::before');
   const indicador = o.querySelector('.nav-indicador');
   return {
@@ -336,7 +336,6 @@ const estadoMenu = (p) => p.evaluate(() => [...document.querySelectorAll('#main-
     actual: indicador ? getComputedStyle(indicador).backgroundColor : 'sin',
     aro: indicador ? getComputedStyle(indicador).boxShadow : 'none',
     color: getComputedStyle(texto).color,
-    flecha: o.matches('a') ? null : getComputedStyle(o.querySelector('.nav-grupo-boton')).color,
     raya: getComputedStyle(texto).textDecorationLine,
   };
 }));
@@ -380,18 +379,13 @@ async function menu(t) {
     const sobreActual = opcion(await estadoMenu(p), 'Inicio');
     t.ok(sobreActual.actual === PAPEL && sobreActual.color === HORNO, `[raton] con el raton en la pagina actual cambia (${JSON.stringify(sobreActual)})`);
 
-    // Tienda se enciende entera, abre su desplegable y sigue encendida en el.
-    await p.hover('#main-nav .nav-grupo-enlace');
+    // Tienda es un enlace simple (seccion 4 del plan): se enciende como las
+    // demas y no abre ningun desplegable.
+    await p.hover('#main-nav a[href$="tienda-catalogo"]');
     await esperaQue(async () => opcion(await estadoMenu(p), 'Tienda').pastilla === '1');
-    await esperaQue(() => p.evaluate(() => document.querySelector('.nav-grupo').classList.contains('is-open')));
     const tienda = await estadoMenu(p);
     t.ok(encendidas(tienda).join() === 'Tienda' && esTenue(opcion(tienda, 'Tienda').pastillaColor), `[raton] con el raton en Tienda no se enciende solo Tienda en blanco tenue (${JSON.stringify(tienda)})`);
-    t.ok(await p.evaluate(() => document.querySelector('.nav-grupo').classList.contains('is-open')), '[raton] con el raton en Tienda el desplegable no se abre');
-    const flecha = await p.locator('.nav-grupo-boton').evaluate((b) => getComputedStyle(b).color);
-    await p.hover('#nav-tienda a[data-filtro="dulces"]');
-    await espera(250);
-    t.ok(encendidas(await estadoMenu(p)).join() === 'Tienda', '[raton] al bajar a las categorias Tienda se apaga');
-    t.ok(flecha === PAPEL, `[raton] la flecha de Tienda encendida es ${flecha}, no papel`);
+    t.ok(await p.evaluate(() => !document.querySelector('#main-nav [aria-expanded], .nav-grupo, .nav-submenu')), '[raton] Tienda sigue teniendo un desplegable');
 
     // Al salir se apaga todo; el teclado no enciende nada.
     await p.mouse.move(640, 600);
@@ -438,12 +432,12 @@ async function menu(t) {
     await p.waitForSelector('.product-card:not([hidden])');
     await espera(300);
     const enTienda = opcion(await estadoMenu(p), 'Tienda');
-    t.ok(enTienda.actual === PAPEL && enTienda.color === HORNO && enTienda.flecha === HORNO, `[raton] en una categoria de la tienda Tienda no es la pastilla papel con palabra y flecha horno (${JSON.stringify(enTienda)})`);
-    // La palabra de Tienda va dentro de su pastilla papel: su anillo es horno.
+    t.ok(enTienda.actual === PAPEL && enTienda.color === HORNO, `[raton] en una categoria de la tienda Tienda no es la pastilla papel con el texto horno (${JSON.stringify(enTienda)})`);
+    // Como cualquier opcion: el anillo papel, por fuera de su pastilla.
     await p.keyboard.press('Shift');
-    await p.focus('#main-nav .nav-grupo-enlace');
-    const focoTienda = await p.locator('#main-nav .nav-grupo-enlace').evaluate((a) => ({ visible: a.matches(':focus-visible'), color: getComputedStyle(a).outlineColor }));
-    t.ok(focoTienda.visible && focoTienda.color === HORNO, `[raton] el anillo del foco de Tienda, la pagina actual, no es horno sobre su pastilla papel (${JSON.stringify(focoTienda)})`);
+    await p.focus('#main-nav a[href$="tienda-catalogo"]');
+    const focoTienda = await p.locator('#main-nav a[href$="tienda-catalogo"]').evaluate((a) => ({ visible: a.matches(':focus-visible'), color: getComputedStyle(a).outlineColor, separa: parseFloat(getComputedStyle(a).outlineOffset) }));
+    t.ok(focoTienda.visible && focoTienda.color === PAPEL && focoTienda.separa >= 2, `[raton] el anillo del foco de Tienda, la pagina actual, no es papel por fuera de su pastilla (${JSON.stringify(focoTienda)})`);
     await ctx.close();
   }
 
@@ -466,33 +460,33 @@ async function menu(t) {
     const nosotros = opcion(dedo, 'Nosotros');
     t.ok(nosotros.actual === PAPEL && nosotros.color === HORNO && nosotros.raya === 'none' && nosotros.aro === 'none', `[dedo] en el menu del telefono la pagina actual no es la pastilla papel con texto horno (${JSON.stringify(nosotros)})`);
     t.ok(!JSON.stringify(dedo).includes(AMBAR) && !JSON.stringify(dedo).includes(AMBAR_CLARO), `[dedo] queda ambar en el menu del telefono (${JSON.stringify(dedo)})`);
-    // En la tienda, la pastilla de Tienda abraza su renglon (palabra y
-    // flecha, el texto centrado dentro) y la flecha va en horno.
+    // En una categoria de la tienda, Tienda es la pagina actual: un enlace
+    // simple, sin flecha ni desplegable, con su pastilla papel centrada.
     await p.tap('.menu-toggle');
     await p.goto(t.REACT + '#/tienda-panes');
     await p.waitForSelector('.product-card:not([hidden])');
     await p.tap('.menu-toggle');
     await espera(400);
-    const tienda = await p.locator('#main-nav .nav-grupo').evaluate((g) => {
-      const indicador = g.querySelector('.nav-indicador');
-      const pastilla = indicador.getBoundingClientRect();
-      const texto = g.querySelector('.nav-grupo-enlace').getBoundingClientRect();
+    const tienda = await p.locator('#main-nav a[href$="tienda-catalogo"]').evaluate((a) => {
+      const indicador = a.querySelector('.nav-indicador');
+      const pastilla = indicador?.getBoundingClientRect();
+      const texto = a.getBoundingClientRect();
       return {
-        flecha: getComputedStyle(g.querySelector('.nav-grupo-boton')).color,
-        pastilla: getComputedStyle(indicador).backgroundColor,
-        descentrado: Math.abs((pastilla.top + pastilla.height / 2) - (texto.top + texto.height / 2)),
+        actual: a.getAttribute('aria-current'),
+        botones: document.querySelectorAll('#main-nav button').length,
+        pastilla: indicador && getComputedStyle(indicador).backgroundColor,
+        color: getComputedStyle(a).color,
+        descentrado: pastilla ? Math.abs((pastilla.top + pastilla.height / 2) - (texto.top + texto.height / 2)) : 99,
       };
     });
-    t.ok(tienda.pastilla === PAPEL && tienda.flecha === HORNO, `[dedo] en la tienda la flecha de Tienda no va en horno o falta la pastilla papel (${JSON.stringify(tienda)})`);
+    t.ok(tienda.actual === 'page' && tienda.botones === 0 && tienda.pastilla === PAPEL && tienda.color === HORNO, `[dedo] en la tienda, Tienda no es un enlace simple con la pastilla papel y el texto horno (${JSON.stringify(tienda)})`);
     t.ok(tienda.descentrado <= 3, `[dedo] la pastilla de Tienda no esta centrada en su renglon (${Math.round(tienda.descentrado)} px)`);
-    // Su anillo, horno y por dentro de la pastilla (la palabra empieza en su borde).
-    await p.keyboard.press('Shift');
-    await p.focus('#main-nav .nav-grupo-enlace');
-    const foco = await p.locator('#main-nav .nav-grupo-enlace').evaluate((a) => {
-      const c = getComputedStyle(a);
-      return { visible: a.matches(':focus-visible'), color: c.outlineColor, separa: parseFloat(c.outlineOffset) };
-    });
-    t.ok(foco.visible && foco.color === HORNO && foco.separa < 0, `[dedo] el anillo de Tienda en el telefono no es horno por dentro de su pastilla (${JSON.stringify(foco)})`);
+    // Tocarlo lleva al catalogo entero y pliega el menu.
+    await p.tap('#main-nav a[href$="tienda-catalogo"]');
+    await esperaQue(() => p.evaluate(() => location.hash === '#/tienda-catalogo'));
+    await espera(300);
+    const tras = await p.evaluate(() => [location.hash, document.querySelector('#main-nav').classList.contains('is-open')]);
+    t.ok(tras[0] === '#/tienda-catalogo' && tras[1] === false, `[dedo] tocar Tienda no lleva al catalogo o no pliega el menu (${tras})`);
     await ctx.close();
   }
 }

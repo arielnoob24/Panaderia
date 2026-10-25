@@ -51,9 +51,9 @@ src/
   main.jsx              monta App dentro de HashRouter, LazyMotion, MotionConfig y los proveedores
   App.jsx               las vistas, la transicion y la carga por partes
   vistas/               Inicio, Nosotros, Contacto
-  catalogo/             Catalogo, VistaCabeza, FichaProducto, Hero, CabeceraPeriodico,
-                        Cinta, categorias.js
-  comun/                cabecera, menu Tienda, avisos, globo, foco, vistas.js (rutas),
+  catalogo/             Catalogo, VistaCabeza, OrdenarPor, FichaProducto, Hero,
+                        CabeceraPeriodico, Cinta, categorias.js
+  comun/                cabecera, avisos, globo, foco, vistas.js (rutas),
                         apertura.js (abrir la pagina y desplazamiento), cargaPorPartes.js
   pedido/               canasta, lineas, deshacer, confirmar, factura, pago, comprobante,
                         pedirOtraVez.js
@@ -117,6 +117,10 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
 
 - **Menú de arriba**: Inicio, Nosotros, Tienda y Contáctanos (Inicio
   también en el menú del teléfono; el logo sigue llevando a `#/`).
+  **Tienda es un enlace simple** a `#/tienda-catalogo`, sin flecha ni
+  desplegable de categorías (quitado el 25 de octubre de 2026 por decisión
+  del usuario): las categorías se eligen con "Filtrar por" dentro de la
+  tienda o con la cinta de la portada.
 - **Al cambiar de vista**: arriba del todo, título de pestaña propio, `h1`
   con el foco (WCAG 2.4.3) y se anuncia. Transición: fundido con un pequeño
   desplazamiento hacia arriba (unos 400 ms, `--dur-base`). Al abrir la página no se mueve
@@ -153,7 +157,7 @@ Hoy: **17 productos** en 3 categorías (`panes` 6, `dulces` 5,
 | Campo | Obligatorio | Regla |
 |---|---|---|
 | `nombre` | sí | Lo que se ve en la ficha |
-| `categoria` | sí | Tiene que estar en `CATEGORIAS` (`src/catalogo/categorias.js`, la lista del menú Tienda), y al revés |
+| `categoria` | sí | Tiene que estar en `CATEGORIAS` (`src/catalogo/categorias.js`, la lista de la cinta y de "Filtrar por"), y al revés |
 | `precio` | sí | Número en dólares; con `tamanos`, igual al del primer tamaño |
 | `foto` | sí | Raíz sin ancho ni extensión; existen `-420.jpg` (420×315) y `-840.jpg` (840×630) |
 | `alt` | sí | Describe lo que se ve, no repite el nombre |
@@ -175,11 +179,37 @@ panes", con la cinta o con el menú.
 
 ### Vista de la tienda
 
-- Se entra por "Nuestros panes" (portada), la palabra Tienda (catálogo entero) o una de sus
-  categorías (con "Filtrar por" ya puesto). Entrar con un enlace limpia orden,
+- Se entra por "Nuestros panes" (portada), Tienda en el menú (catálogo
+  entero) o una categoría de la cinta (con "Filtrar por" ya puesto). Sin
+  botón "Volver al inicio" (quitado el 25 de octubre de 2026): a la
+  portada se vuelve con el logo o con Inicio. Entrar con un enlace limpia orden,
   "Mostrar" y búsqueda; Atrás y Adelante no.
 - Controles: Filtrar por (radios: Todas + 3 categorías, como la cinta), buscador (sin tildes ni
   mayúsculas), Ordenar por, Mostrar (solo disponibles).
+- **"Ordenar por" es un desplegable propio** (25 de octubre de 2026; el
+  `<select>` del navegador se veía genérico): un botón en `--papel` con
+  filete fino que dice el orden elegido y una flecha, y al abrirlo un
+  panel `--papel` con filete `--horno` y sombra dura, con las cuatro
+  opciones en Fraunces cursiva; la elegida en la **pastilla `--horno` con
+  texto `--papel`** como en "Filtrar por", y la que tiene el puntero o las
+  flechas en una pastilla `--masa` con filete `--horno-claro` (un blanco
+  tenue no se vería sobre el papel). El panel entra con fundido y `scale(.96)` → 1
+  desde el botón (respuesta rápida, `--dur-fast`), la flecha gira; con
+  menos movimiento solo aparece. Patrón APG de **combobox de solo
+  selección**: botón `role="combobox"` con `aria-expanded`,
+  `aria-controls` y `aria-activedescendant`, lista `role="listbox"` con
+  `role="option"` y `aria-selected`. Teclado: Enter, Espacio, Alt+↓ o ↓
+  abren; ↑/↓, Inicio y Fin recorren; una letra salta a la opción que
+  empieza por ella (repetida, pasa a la siguiente que empieza igual);
+  Enter o Espacio eligen y cierran; Esc y Tab cierran sin cambiar. Como
+  en el APG, además ↑, Inicio y Fin también abren y Alt+↑ elige y cierra.
+  Clic fuera cierra (`catalogo/OrdenarPor.jsx`). Al elegir, el foco vuelve al botón y el
+  orden se anuncia como antes.
+- **"Mostrar" es un interruptor**: una pastilla "Solo disponibles" con su
+  rótulo "Mostrar" en versalitas; `aria-pressed`, apagada en `--papel`
+  con filete y un círculo vacío, encendida en `--horno` con texto
+  `--papel` y la ✓ en el círculo. Un clic
+  o Espacio la cambia. Se recuerda en `sessionStorage` como antes.
 - "Mostrando X de Y productos" en una sola región `aria-live`
   (`.catalog-status`): mientras se escribe en el buscador calla y habla una
   vez, 400 ms después de la última tecla; sin resultados junta la cuenta y el
@@ -191,6 +221,13 @@ panes", con la cinta o con el menú.
   (radios), precio y control `− cantidad +` (máximo 100 por producto). Al
   agregar se anuncia; ninguna foto vuela a la canasta (se quitó el 22 de
   octubre de 2026).
+- **Fichas más pequeñas** (25 de octubre de 2026): **4 por fila** en
+  escritorio (cuando la tienda mide 1080 px o más), 3 en tableta y 2 en el
+  teléfono como antes (se pregunta a la caja de la tienda con una
+  container query, no a la ventana). Con cuatro, y en la tableta como en
+  el teléfono, foto, nombre, precio, sello y control de cantidad
+  bajan en proporción; la letra no baja de 11 px y los botones − y + no
+  bajan de 24 × 24 px (WCAG 2.5.8).
 - La ficha, en el estilo editorial (sección 10):
   esquinas rectas, borde fino `--horno` y la foto con un margen de papel;
   categoría en versalitas, nombre en Fraunces, sin hueco vacío entre el
@@ -610,9 +647,8 @@ ritmo del movimiento y la accesibilidad no cambian.
   tenue** (`--papel` al 16 %, opacidad y `scale(.85)` → 1, respuesta
   rápida) y el texto sigue claro; no viaja de un enlace a otro. **La
   página actual** es la única en **blanco lleno**: pastilla `--papel` con
-  el texto `--horno` (también su flecha en "Tienda"), sin raya ni aro, y
-  así también en el menú del teléfono. "Tienda" con su flecha es un
-  enlace y sigue encendida mientras se baja a su desplegable. Solo con
+  el texto `--horno`, sin raya ni aro, y
+  así también en el menú del teléfono. Solo con
   ratón o lápiz (`.con-puntero`); el foco de teclado sigue con su anillo
   `--papel`. Entre 681 y 900 px el menú va centrado en el hueco entre el
   logo y los botones (rejilla `auto 1fr auto`, logo de 52 px), para que
@@ -682,6 +718,44 @@ clases o en piezas comunes, no copiado.
   esconde contenido que en ese tamaño debería verse.
 - Fondo con el estampado de trazos de Nosotros (`FondoDibujo`), tenue.
 
+**Disposición "arco de pie"** (25 de octubre de 2026, elegida por el
+usuario entre tres propuestas; manda sobre lo de arriba donde choque). La
+foto pesaba poco (300 px de ancho a 1440×900, con 300 px vacíos al lado) y
+la historia y los principios se leían como dos bloques:
+
+- **Una sola composición**: los principios van **dentro de la historia**,
+  bajo el texto y en la misma columna (siguen siendo una `section` con su
+  `h2`). Rejilla de dos columnas: la foto a la izquierda ocupa **todo el
+  alto** de las dos filas; a la derecha el texto y debajo los principios.
+- **La foto con peso**: el arco mide alrededor del **80 % del alto
+  disponible** (unos 520 px de ancho a 1440×900, ~430 a 1366×768), sin
+  pasar de 540 px. El sello se queda sobre su esquina sin pisar el texto.
+- **Los principios alineados con el texto**: a la izquierda, empezando en
+  el mismo borde que el rótulo; el `h2` en versalitas con **una sola**
+  línea doble a su derecha (no a los dos lados); las tres columnas con ✦,
+  "N.º", icono, nombre y frase como antes, pero alineadas a la izquierda.
+- **El aire**: el hueco entre el texto y los principios es menor que los de
+  arriba y abajo (se acaba el reparto a partes iguales); el conjunto va
+  centrado en vertical entre la barra y la franja.
+- **Tableta** (681–900 px): foto y texto arriba, principios debajo a todo
+  lo ancho, como hasta ahora.
+- **En el teléfono** (sustituye al bullet de arriba): la foto en arco **a
+  todo el ancho, arriba**, con el alto que sobre (entre 150 y 300 px),
+  sin el sello ni su pie; debajo rótulo, título, frase y "Conoce nuestro
+  local" (más bajo, como el "Cómo llegar" de la portada en el teléfono);
+  sin el párrafo de la madrugada; los principios en una fila de tres sin su
+  frase. Sin huecos grandes entre las piezas.
+- Si a 1280×720 no cabe el texto, baja algo el `h1` antes que la foto.
+  Entre 901 y 1180 px la columna del texto es estrecha y los principios
+  parten en más líneas: la foto no pasa del 37 % del ancho (del 40 % por
+  encima), y el `h1`, los nombres y las frases de los principios bajan un
+  poco, para que 1024×768 siga cabiendo sin scroll.
+- Medido: el arco mide 520 px de ancho a 1440×900, 420 a 1366×768, 383 a
+  1280×720 y 379 a 1024×768; en el teléfono, 293 px de alto a 390×844 y
+  150 a 360×640.
+- Sigue todo lo demás: una sola pantalla sin scroll, la escena de
+  entrada, menos movimiento, y crecer con scroll cuando con zoom no quepa.
+
 ### Contacto con el estilo de la portada (24 de octubre de 2026)
 
 Como Nosotros, sin muestra (elegido por el usuario) y con las mismas piezas
@@ -748,15 +822,14 @@ entrada), no copiadas.
 ### La tienda con el estilo de la portada (25 de octubre de 2026)
 
 Como Nosotros y Contacto, sin muestra y con las mismas piezas comunes.
-**Las fichas no cambian** (ya son editoriales); cambia la cabecera de la
-vista.
+Cambia la cabecera de la vista; las fichas siguen editoriales (más
+pequeñas desde el 25 de octubre, sección 4).
 
 - **Sin la tarjeta oscura**: la cabecera va sobre la masa con el grano y
   su `FondoDibujo`. El `--horno` queda en la barra, el texto, el borde de
   las fichas y la categoría elegida.
-- **El texto**, alineado a la izquierda como la portada: "Volver al
-  inicio" con el aspecto y la ola de "Cómo llegar" (sigue siendo un
-  botón, con su flecha); el rótulo con la espiga **"Nuestra vitrina"**; el
+- **El texto**, alineado a la izquierda como la portada (sin "Volver al
+  inicio" desde el 25 de octubre): el rótulo con la espiga **"Nuestra vitrina"**; el
   `h1` con el nombre de la vista en Fraunces grande; y debajo una **frase
   en cursiva** propia de cada una (el usuario puede cambiarlas):
   - Todo el catálogo: "Panes, dulces y bebidas de la casa."
@@ -795,7 +868,7 @@ vista.
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
 
 - Todo con teclado; paneles que atrapan el foco, Esc y devolución del foco;
-  `inert` detrás de los paneles; menú Tienda y ficha de la cuenta con
+  `inert` detrás de los paneles; ficha de la cuenta y "Ordenar por" con
   flechas; enlace de salto al contenido.
 - Foco visible: anillo de 3 px en `--horno` con halo ámbar de 5 px; dentro
   de la barra (que es `--horno`) y en "Saltar al contenido", el anillo es
@@ -866,6 +939,15 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       usuario pase fotos reales; sin fotos no se enseña nada.
 
 ### Accesibilidad y UX
+- [x] Tienda sin desplegable en el menú, sin "Volver al inicio", fichas 4
+      por fila, "Ordenar por" desplegable propio y "Mostrar" interruptor
+      (secciones 3, 4 y 10, 25 de octubre de 2026). Lo prueba
+      `pruebas/casos/tienda-mandos.mjs`.
+- [x] Nosotros con la disposición "arco de pie" (sección 10, 25 de
+      octubre de 2026): la foto de alto entero y los principios bajo el
+      texto, en su columna. Lo prueba `pruebas/casos/nosotros.mjs` (sin
+      scroll de 1440×900 a 360×640 y a 1024×768, peso de la foto, aire
+      centrado con el hueco del medio menor, sello lejos del texto).
 - [ ] `user-select: none`: los precios, el WhatsApp y los datos del
       comprobante (salvo el número) todavía no se pueden copiar.
 - [x] Canasta sin cuenta: el usuario quiere que cualquiera la llene y que

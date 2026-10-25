@@ -11,8 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { LayoutGroup, useReducedMotion } from 'motion/react';
 import mascota from '/assets/img/mascota.png';
 import logo from '/assets/img/logo.png';
-import { Link, NavLink } from 'react-router-dom';
-import MenuTienda from './MenuTienda.jsx';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import IndicadorNav from './IndicadorNav.jsx';
 import BotonCanasta from '../pedido/BotonCanasta.jsx';
 import FichaCuenta from '../cuenta/FichaCuenta.jsx';
@@ -24,18 +23,21 @@ const OSCURAS = '.banda-oscura';
 
 function Cabecera() {
   const reducido = useReducedMotion();
+  const { pathname } = useLocation();
+  // Todas las categorias son la misma vista, la tienda: estando en
+  // cualquiera, Tienda es la opcion actual (NavLink solo la marcaria en
+  // #/tienda-catalogo).
+  const enTienda = pathname.startsWith('/tienda-');
   const [pegada, setPegada] = useState(false);
   const [sobreOscuro, setSobreOscuro] = useState(false);
   const [menuAbierto, setMenuAbierto] = useState(false);
-  const [tiendaAbierta, setTiendaAbierta] = useState(false);
   const cabeceraRef = useRef(null);
   const navRef = useRef(null);
   const botonMenuRef = useRef(null);
   const primerEnlaceRef = useRef(null);
-  const botonTiendaRef = useRef(null);
   // Lo abierto, a mano de los escuchadores del documento, que se ponen una vez.
-  const abierto = useRef({ menu: false, tienda: false });
-  useEffect(() => { abierto.current = { menu: menuAbierto, tienda: tiendaAbierta }; });
+  const abierto = useRef(false);
+  useEffect(() => { abierto.current = menuAbierto; });
 
   // La cabecera se queda arriba al bajar, y con sombra en cuanto se baja.
   // React no repinta si el valor no cambia, asi que no se toca el DOM a cada pixel.
@@ -54,37 +56,26 @@ function Cabecera() {
     return () => window.removeEventListener('scroll', mirarScroll);
   }, []);
 
-  const cerrarMenu = () => {
-    setMenuAbierto(false);
-    // Al plegarse el menu del telefono, la tienda no se queda abierta debajo.
-    setTiendaAbierta(false);
-  };
+  const cerrarMenu = () => setMenuAbierto(false);
 
   useEffect(() => {
     // Un clic fuera del menu del telefono lo pliega, y el foco que se va
     // tambien: si no, al tabular mas alla de Contactanos el menu se quedaba
     // abierto tapando lo que tenia el foco.
     const plegarSiEsFuera = (e) => {
-      if (!abierto.current.menu) return;
+      if (!abierto.current) return;
       if (navRef.current?.contains(e.target) || botonMenuRef.current?.contains(e.target)) return;
       setMenuAbierto(false);
-      setTiendaAbierta(false);
     };
-    // Escape cierra lo que haya abierto y devuelve el foco a quien lo abrio:
-    // al boton del menu en el telefono, o a la flecha de Tienda en la barra,
-    // que en pantalla grande el del menu ni siquiera se ve.
+    // Escape pliega el menu del telefono y devuelve el foco a su boton.
     const alTeclear = (e) => {
-      if (e.key !== 'Escape') return;
-      const { menu, tienda } = abierto.current;
-      if (!menu && !tienda) return;
+      if (e.key !== 'Escape' || !abierto.current) return;
       setMenuAbierto(false);
-      setTiendaAbierta(false);
-      if (menu) botonMenuRef.current?.focus();
-      else botonTiendaRef.current?.focus();
+      botonMenuRef.current?.focus();
     };
     // En pantalla grande no hay menu del telefono que tener abierto.
     const alCambiarTamano = () => {
-      if (window.innerWidth > 680) { setMenuAbierto(false); setTiendaAbierta(false); }
+      if (window.innerWidth > 680) setMenuAbierto(false);
     };
     document.addEventListener('click', plegarSiEsFuera);
     document.addEventListener('focusin', plegarSiEsFuera);
@@ -131,13 +122,12 @@ function Cabecera() {
             <NavLink to="/nosotros" state={{ entrar: true }} onClick={cerrarMenu}>
               {({ isActive }) => <>{isActive && <IndicadorNav reducido={reducido} />}Nosotros</>}
             </NavLink>
-            <MenuTienda
-              abierta={tiendaAbierta}
-              setAbierta={setTiendaAbierta}
-              botonRef={botonTiendaRef}
-              alElegir={cerrarMenu}
-              reducido={reducido}
-            />
+            {/* Tienda es un enlace simple al catalogo entero, sin
+                desplegable (seccion 4 del plan): las categorias se eligen
+                con "Filtrar por" o con la cinta de la portada. */}
+            <Link to="/tienda-catalogo" state={{ entrar: true }} aria-current={enTienda ? 'page' : undefined} onClick={cerrarMenu}>
+              {enTienda && <IndicadorNav reducido={reducido} />}Tienda
+            </Link>
             <NavLink to="/contacto" state={{ entrar: true }} onClick={cerrarMenu}>
               {({ isActive }) => <>{isActive && <IndicadorNav reducido={reducido} />}Contáctanos</>}
             </NavLink>

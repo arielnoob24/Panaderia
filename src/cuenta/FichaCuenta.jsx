@@ -7,7 +7,7 @@
 //   - Con sesion son tus iniciales, y abren una ficha pequena con quien eres,
 //     "Mis datos", "Mis pedidos (N)" y "Cerrar sesion". Es un boton con
 //     aria-expanded y aria-controls; la ficha se recorre con las flechas,
-//     Inicio y Fin, como la lista de Tienda. Escape la cierra y devuelve el
+//     Inicio y Fin. Escape la cierra y devuelve el
 //     foco al circulo; un clic o el foco fuera la cierran, y tambien navegar.
 // El circulo no lleva texto a la vista: el nombre va en aria-label para el
 // lector de pantalla y en data-tip (el globo) para el raton.

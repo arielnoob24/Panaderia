@@ -1,7 +1,7 @@
 // Como se llama cada categoria a la vista. En el sitio presentado lo decia el
-// menu Tienda de index.html y view.js lo leia de ahi; aqui el menu sale de esta
-// lista (MenuTienda.jsx), asi que sigue habiendo un solo sitio donde cambiar
-// "Bebidas". El orden es el del menu, y el de "Filtrar por". Cada una lleva
+// menu Tienda de index.html y view.js lo leia de ahi; aqui la cinta de la
+// portada y "Filtrar por" salen de esta lista, asi que sigue habiendo un solo
+// sitio donde cambiar "Bebidas". El orden es el de los dos. Cada una lleva
 // la frase en cursiva que sale bajo el titulo de la tienda (seccion 10 del
 // plan, "La tienda con el estilo de la portada"); el usuario puede cambiarlas.
 const CATEGORIAS = [

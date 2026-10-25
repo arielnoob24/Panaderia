@@ -4,7 +4,7 @@
 # una copia que se quede atras):
 #   1. el paso "Construir" (build sin avisos);
 #   2. el paso "Validar catalogo, fotos y textos" (revisar() de cada producto,
-#      fotos, categorias y menu Tienda, palabras prohibidas y
+#      fotos, categorias de la tienda, palabras prohibidas y
 #      espacios al final de linea);
 #   3. y, en vez de solo la prueba de humo del CI, todas las pruebas de
 #      navegador de pruebas/ (npm run probar), con Edge.

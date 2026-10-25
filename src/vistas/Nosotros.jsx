@@ -1,14 +1,15 @@
 // ---- #/nosotros ------------------------------------------------------------
 // Con el estilo de la portada (seccion 10 del plan, "Nosotros con el estilo
-// de la portada"): la historia en dos columnas como la portada pero en
-// espejo, la foto del amasado en arco a la izquierda con su sello, y debajo
-// los tres principios sobre la masa, entre las lineas dobles de la cabecera
-// de periodico. Las piezas son las de la portada (FotoEnArco, Sello,
-// EnlaceLlegar y las clases de vistas.css), no una copia.
+// de la portada" y "arco de pie"): la portada en espejo, con la foto del
+// amasado en arco a la izquierda, de alto entero, con su sello; a la
+// derecha el texto y, debajo, los tres principios sobre la masa, con su h2
+// y una linea doble de la cabecera de periodico. Las piezas son las de la
+// portada (FotoEnArco, Sello, EnlaceLlegar y las clases de vistas.css), no
+// una copia.
 //
 // Como la portada, cabe en una sola pantalla sin desplazarse (vistas.css):
 // la foto, el titular y los espacios se ajustan al alto visible, y en el
-// telefono la foto va al lado del titulo y se quitan el parrafo de la
+// telefono la foto va arriba a todo lo ancho y se quitan el parrafo de la
 // madrugada y la frase de cada principio. Todo entra en una sola escena, una
 // vez: la historia y, tras ella, los principios. Cuando el usuario pase las
 // fotos del local, la galeria va aqui (y entonces la vista volvera a crecer).
@@ -60,7 +61,7 @@ function Nosotros() {
         <FondoDibujo vista="nosotros" />
         {/* El texto va antes que la foto, para que el lector llegue primero
             al titulo; la rejilla pone la foto a la izquierda (espejo de la
-            portada) y, en el telefono, a la derecha del titulo. */}
+            portada) y, en el telefono, arriba. */}
         <div className="container nosotros-rejilla">
           <div className="nosotros-texto sube-en-orden">
             <p className="rotulo rotulo-espiga"><IconoTrigo />Nuestra historia</p>
@@ -77,34 +78,35 @@ function Nosotros() {
             sello="Masa madre · Hecho despacio · "
             src={fotoChica}
             srcSet={`${fotoChica} 430w, ${fotoGrande} 760w`}
-            sizes="(max-width: 680px) 140px, (max-width: 900px) 300px, 420px"
+            sizes="(max-width: 680px) 100vw, (max-width: 900px) 320px, 540px"
             alt="Un panadero bolea la masa sobre una mesa de madera enharinada, junto a un banneton, una cuchilla de greñar y un tarro de masa madre"
             width="760"
             height="950"
           />
-        </div>
-      </section>
-      <section className="nosotros-principios" aria-labelledby="principios-titulo">
-        <div className="container">
-          <div className="principios-cabeza">
-            <span className="linea-doble" aria-hidden="true"></span>
-            <h2 id="principios-titulo" className="principios-titulo">Tres cosas que no cambiamos</h2>
-            <span className="linea-doble" aria-hidden="true"></span>
-          </div>
-          {/* La lista ya dice cuantos son y en que puesto va cada uno: el
-              "N.º" es para la vista y el lector se lo salta. Las estrellas
-              que los separan son de CSS (::before), sin texto. role="list"
-              porque Safari quita el rol de lista con list-style: none. */}
-          <ol className="principios" role="list">
-            {PRINCIPIOS.map((p, i) => (
-              <li key={p.clase} className={`principio ${p.clase}`} style={{ '--n': i }}>
-                <span className="rotulo principio-numero" aria-hidden="true">N.º {i + 1}</span>
-                {p.dibujo}
-                <h3>{p.nombre}</h3>
-                <p>{p.frase}</p>
-              </li>
-            ))}
-          </ol>
+          {/* Los principios van dentro de la historia, bajo el texto y en su
+              columna ("arco de pie", seccion 10 del plan): una sola
+              composicion con la foto de alto entero al lado. Siguen siendo
+              su propia seccion con su h2. */}
+          <section className="nosotros-principios" aria-labelledby="principios-titulo">
+            <div className="principios-cabeza">
+              <h2 id="principios-titulo" className="principios-titulo">Tres cosas que no cambiamos</h2>
+              <span className="linea-doble" aria-hidden="true"></span>
+            </div>
+            {/* La lista ya dice cuantos son y en que puesto va cada uno: el
+                "N.º" es para la vista y el lector se lo salta. Las estrellas
+                que los separan son de CSS (::before), sin texto. role="list"
+                porque Safari quita el rol de lista con list-style: none. */}
+            <ol className="principios" role="list">
+              {PRINCIPIOS.map((p, i) => (
+                <li key={p.clase} className={`principio ${p.clase}`} style={{ '--n': i }}>
+                  <span className="rotulo principio-numero" aria-hidden="true">N.º {i + 1}</span>
+                  {p.dibujo}
+                  <h3>{p.nombre}</h3>
+                  <p>{p.frase}</p>
+                </li>
+              ))}
+            </ol>
+          </section>
         </div>
       </section>
       <Franja className="franja-pie" />

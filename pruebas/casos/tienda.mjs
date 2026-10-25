@@ -3,8 +3,8 @@
 // (390 px, tactil):
 // - sin la tarjeta oscura: sobre la masa, y la barra de arriba no gana la
 //   linea ambar al pasar por encima;
-// - "Volver al inicio" sigue siendo un boton, con el aspecto y la ola de
-//   "Cómo llegar"; el rotulo "Nuestra vitrina" con la espiga; el h1 en
+// - sin "Volver al inicio" (quitado el 25 de octubre de 2026; lo mira
+//   tienda-mandos.mjs); el rotulo "Nuestra vitrina" con la espiga; el h1 en
 //   Fraunces a la izquierda y la frase en cursiva de cada vista;
 // - "Filtrar por" como la cinta: radios con su nombre de siempre, Fraunces
 //   cursiva, el icono de cada categoria (Todas sin), estrellas de adorno,
@@ -19,7 +19,7 @@
 //   el espaciado de texto de WCAG 1.4.12 a 320 px nada se sale.
 import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
 
-export const descripcion = 'Tienda como la portada: cabeza sobre la masa sin banda oscura, Volver con la ola, rotulo, h1 y frase por categoria, Filtrar por como la cinta (radios, flechas, pastilla horno), mandos entre lineas dobles, escena que no se repite al cambiar de categoria';
+export const descripcion = 'Tienda como la portada: cabeza sobre la masa sin banda oscura, rotulo, h1 y frase por categoria, Filtrar por como la cinta (radios, flechas, pastilla horno), mandos entre lineas dobles, escena que no se repite al cambiar de categoria';
 export const limite = 150;
 
 const ES_FRAUNCES = /^"?Fraunces Variable/;
@@ -36,7 +36,7 @@ const VISTAS = [
 const mirar = (p) => p.evaluate(() => {
   const q = (s) => document.querySelector(s);
   const cabeza = q('.vista-cabeza');
-  const volver = q('.vista-volver');
+  const rotulo = q('.tienda-texto .rotulo-espiga');
   const h1 = q('.tienda-texto h1');
   const grupo = q('.vista-chips');
   const etiquetas = [...grupo.querySelectorAll('.chip')];
@@ -47,11 +47,10 @@ const mirar = (p) => p.evaluate(() => {
   return {
     oscuras: document.querySelectorAll('.vista-tienda .banda-oscura').length,
     fondo: getComputedStyle(cabeza).backgroundColor,
-    volver: [volver.tagName, volver.classList.contains('enlace-llegar'), Boolean(volver.querySelector('svg')), volver.querySelector('.letras')?.getAttribute('aria-hidden'), getComputedStyle(volver).fontFamily],
     rotulo: [q('.tienda-texto .rotulo-espiga')?.textContent.trim(), Boolean(q('.tienda-texto .rotulo-espiga svg'))],
     h1: h1.textContent,
     h1Letra: getComputedStyle(h1).fontFamily,
-    h1Izquierda: Math.abs(h1.getBoundingClientRect().left - volver.getBoundingClientRect().left) <= 2 && getComputedStyle(h1).textAlign !== 'center',
+    h1Izquierda: Math.abs(h1.getBoundingClientRect().left - rotulo.getBoundingClientRect().left) <= 2 && getComputedStyle(h1).textAlign !== 'center',
     frase: [q('.tienda-frase').textContent, getComputedStyle(q('.tienda-frase')).fontStyle],
     rol: grupo.getAttribute('role'),
     rotuloFiltro: [q('#vista-sub-rotulo').textContent, getComputedStyle(q('#vista-sub-rotulo')).textTransform],
@@ -66,7 +65,7 @@ const mirar = (p) => p.evaluate(() => {
     estrellas: [...grupo.querySelectorAll('.chip-estrella')].map((e) => e.getAttribute('aria-hidden')),
     elegida: elegida && [getComputedStyle(elegida).backgroundColor, getComputedStyle(elegida).color],
     lineas: barra.querySelectorAll('.linea-doble').length,
-    campos: [...document.querySelectorAll('.vista-mando select, .vista-buscar input')].map((c) => getComputedStyle(c).backgroundColor),
+    campos: [...document.querySelectorAll('.orden-boton, .interruptor, .vista-buscar input')].map((c) => getComputedStyle(c).backgroundColor),
     mando: [getComputedStyle(mando).textTransform, getComputedStyle(mando).color],
     cuenta: [cuenta.textContent, getComputedStyle(cuenta).textTransform, getComputedStyle(cuenta).color],
     aviso: q('.catalog-status')?.getAttribute('aria-live'),
@@ -93,8 +92,6 @@ export default async function tienda(t) {
 
     const m = await mirar(p);
     t.ok(m.oscuras === 0 && m.fondo === 'rgba(0, 0, 0, 0)', `[${nombre}] la cabeza sigue en la tarjeta oscura (${m.oscuras}, ${m.fondo})`);
-    t.ok(m.volver[0] === 'BUTTON' && m.volver[1] && m.volver[2] && m.volver[3] === 'true' && ES_FRAUNCES.test(m.volver[4]), `[${nombre}] "Volver al inicio" no es un boton con la ola de "Cómo llegar" (${JSON.stringify(m.volver)})`);
-    t.ok((await p.getByRole('button', { name: 'Volver al inicio', exact: true }).count()) === 1, `[${nombre}] el boton no se llama "Volver al inicio"`);
     t.ok(m.rotulo[0] === 'Nuestra vitrina' && m.rotulo[1], `[${nombre}] falta el rotulo con la espiga (${m.rotulo})`);
     t.ok(m.h1 === 'Todo el catálogo' && ES_FRAUNCES.test(m.h1Letra) && m.h1Izquierda, `[${nombre}] el h1 no va en Fraunces a la izquierda ("${m.h1}", ${m.h1Letra})`);
     t.ok(m.rol === 'radiogroup' && m.rotuloFiltro[0] === 'Filtrar por' && m.rotuloFiltro[1] === 'uppercase', `[${nombre}] "Filtrar por" cambio (${m.rol}, ${m.rotuloFiltro})`);
@@ -106,7 +103,7 @@ export default async function tienda(t) {
     t.ok(m.etiquetas.every((e) => ES_FRAUNCES.test(e.letra) && e.cursiva === 'italic' && e.ola === 'true' && e.alto >= 24), `[${nombre}] las categorias no van en Fraunces cursiva con la ola, o miden menos de 24 px (${JSON.stringify(m.etiquetas)})`);
     t.ok(m.estrellas.length === 3 && m.estrellas.every((a) => a === 'true'), `[${nombre}] las estrellas no son adorno (${m.estrellas})`);
     t.ok(m.elegida?.[0] === HORNO && m.elegida?.[1] === PAPEL, `[${nombre}] la elegida no va en pastilla horno con texto papel (${m.elegida})`);
-    t.ok(m.lineas === 2 && m.campos.every((c) => c === PAPEL), `[${nombre}] los mandos no van entre lineas dobles o los campos no son papel (${m.lineas}, ${m.campos})`);
+    t.ok(m.lineas === 2 && m.campos.length === 3 && m.campos.every((c) => c === PAPEL), `[${nombre}] los mandos no van entre lineas dobles o los campos no son papel (${m.lineas}, ${m.campos})`);
     t.ok(m.mando[0] === 'uppercase' && m.cuenta[0].startsWith('Mostrando 17 de 17') && m.cuenta[1] === 'uppercase' && m.cuenta[2] === CORTEZA_OSCURA, `[${nombre}] los rotulos o la cuenta no van en versalitas (${JSON.stringify([m.mando, m.cuenta])})`);
     t.ok(m.aviso === 'polite', `[${nombre}] el aviso del catalogo cambio (${m.aviso})`);
     t.ok(m.anchoPagina <= m.ancho && m.etiquetas.every((e) => e.derecha <= m.ancho), `[${nombre}] "Filtrar por" se sale de la pantalla (${JSON.stringify(m.etiquetas.map((e) => Math.round(e.derecha)))})`);
@@ -122,7 +119,7 @@ export default async function tienda(t) {
     const tapa = await p.evaluate(() => {
       const f = document.querySelector('.floating-whatsapp.is-canasta')?.getBoundingClientRect();
       if (!f) return [];
-      return [...document.querySelectorAll('.vista-cabeza :is(button, .chip, select, input:not(.chip-input))')].filter((e) => {
+      return [...document.querySelectorAll('.vista-cabeza :is(button, .chip, [role="combobox"], input:not(.chip-input))')].filter((e) => {
         const r = e.getBoundingClientRect();
         return Math.min(r.right, f.right) > Math.max(r.left, f.left) && Math.min(r.bottom, f.bottom) > Math.max(r.top, f.top);
       }).map((e) => e.className || e.tagName);
@@ -220,7 +217,7 @@ export default async function tienda(t) {
     await p.setViewportSize({ width: 320, height: 640 });
     await p.addStyleTag({ content: '*:not(svg *) { line-height: 1.5 !important; letter-spacing: .12em !important; word-spacing: .16em !important; }' });
     await espera(200);
-    const fuera = await p.evaluate(() => [...document.querySelectorAll('.vista-cabeza :is(button, .rotulo, h1, .tienda-frase, .chip, .vista-mando, select, input:not(.chip-input))')]
+    const fuera = await p.evaluate(() => [...document.querySelectorAll('.vista-cabeza :is(button, .rotulo, h1, .tienda-frase, .chip, .vista-mando, [role="combobox"], input:not(.chip-input))')]
       .filter((e) => { const r = e.getBoundingClientRect(); return r.width && (r.left < -1 || r.right > window.innerWidth + 1); })
       .map((e) => e.className || e.tagName));
     const ancho = await p.evaluate(() => document.documentElement.scrollWidth);

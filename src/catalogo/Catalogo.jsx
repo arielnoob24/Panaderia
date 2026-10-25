@@ -250,7 +250,6 @@ function Catalogo({ categoria }) {
   const alSolo = (solo) => { setSoloDisponibles(solo); animarEntrada(); };
   // Mientras se escribe no se anima: las fichas entrando a cada tecla marean.
   const alBuscar = (texto) => setBusqueda(texto);
-  const alVolver = () => navegar('/', { state: { entrar: true } });
 
   const alElegir = useCallback((producto, i) => {
     setElegidos((antes) => ({ ...antes, [producto.nombre]: i }));
@@ -278,7 +277,6 @@ function Catalogo({ categoria }) {
             onSolo={alSolo}
             cuenta={dice}
             vacio={vacio}
-            onVolver={alVolver}
           />
           <p className="catalog-status" role="status" aria-live="polite">{dicho}</p>
           <div ref={gridRef} className="product-grid">

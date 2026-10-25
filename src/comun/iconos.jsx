@@ -63,7 +63,7 @@ const IconoCestaAsa = ({ clase = 'canasta-icono' }) => (
   </Linea>
 );
 
-// El chevron de "Volver al inicio" y "Volver a la tienda".
+// El chevron de "Volver a la tienda".
 function Chevron({ izquierda, grosor = '1.9' }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={grosor} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">

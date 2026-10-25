@@ -99,7 +99,7 @@ El campo `foto` es la raiz del nombre del archivo, sin ancho ni extension: de
 `pan-redondo-840.jpg`, y el navegador elige la que le cabe. El CI comprueba que
 esten las dos.
 
-La categoria tiene que estar en `src/catalogo/categorias.js` (el menu Tienda);
+La categoria tiene que estar en `src/catalogo/categorias.js` (la cinta y "Filtrar por");
 si no, sus productos quedan inalcanzables y el CI no publica.
 
 ## Donde se guarda cada cosa
@@ -123,7 +123,7 @@ escribir puede fallar, y eso no puede tumbar la pagina.
 El objetivo es WCAG 2.2 nivel AA, y axe no encuentra fallos automaticos.
 
 - **Teclado.** Todo se usa sin raton. La canasta atrapa el foco, se cierra con
-  `Escape` y lo devuelve al boton. El menu Tienda y la ficha de la cuenta se
+  `Escape` y lo devuelve al boton. "Ordenar por" y la ficha de la cuenta se
   recorren con las flechas. Al cambiar de vista el foco va al titulo.
 - **Foco visible** con un anillo propio y `:focus-visible`.
 - **ARIA donde hace falta y no mas**: `role="dialog"` con `aria-modal`,

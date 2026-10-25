@@ -35,7 +35,7 @@ reglas de abajo no son de estilo: si no se cumplen, el sitio no publica.
 
 - **categoria**: una de las que ya existen (`panes`, `dulces`, `bebidas-frias`).
   Una categoria nueva necesita ademas su entrada en `CATEGORIAS` de
-  `src/catalogo/categorias.js` (de ahi salen el menu Tienda, su ruta
+  `src/catalogo/categorias.js` (de ahi salen la cinta, "Filtrar por", su ruta
   `#/tienda-<id>` y su nombre), o el CI falla porque sus productos quedan
   inalcanzables.
 - **foto**: la raiz, **sin** `-420`, sin `-840` y sin `.jpg`. En disco tienen que

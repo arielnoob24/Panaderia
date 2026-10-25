@@ -1,8 +1,7 @@
 // ---- La cinta cobriza de #/ (seccion 10 del plan) ---------------------------
 // Debajo de la portada, en lugar de la franja de espigas: las tres
-// categorias de la tienda, cada una con su icono y enlazada a su vista, como
-// las del menu Tienda (entrar con el enlace limpia orden, Mostrar y
-// busqueda). Con el raton se encienden como el menu de arriba (vistas.css).
+// categorias de la tienda, cada una con su icono y enlazada a su vista
+// (entrar con el enlace limpia orden, Mostrar y busqueda). Con el raton se encienden como el menu de arriba (vistas.css).
 // Las estrellas que las separan son adorno.
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';

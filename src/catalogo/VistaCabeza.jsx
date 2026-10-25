@@ -1,9 +1,10 @@
 // ---- La cabeza de la vista de catalogo ---------------------------------
 // Con el estilo de la portada (seccion 10 del plan, "La tienda con el estilo
-// de la portada"), sobre la masa: "Volver al inicio" con la ola de "Cómo
-// llegar", el rotulo con la espiga, el titulo y la frase de la vista,
-// "Filtrar por" como la cinta de #/, y los mandos (buscador, Ordenar por y
-// Mostrar) entre lineas dobles. No decide nada, solo pinta lo que le da el
+// de la portada"), sobre la masa: el rotulo con la espiga, el titulo y la
+// frase de la vista, "Filtrar por" como la cinta de #/, y los mandos
+// (buscador, Ordenar por y el interruptor de Mostrar) entre lineas dobles.
+// Sin "Volver al inicio" (seccion 4 del plan): a la portada se vuelve con el
+// logo o con Inicio. No decide nada, solo pinta lo que le da el
 // catalogo y le cuenta lo que se toca.
 //
 // La escena de entrada es CSS de montaje (vistas.css): las categorias son la
@@ -12,29 +13,32 @@
 // y las fichas.
 import { Fragment } from 'react';
 import { CATEGORIAS } from './categorias.js';
-import { Chevron, IconoCategoria, IconoTrigo } from '../comun/iconos.jsx';
+import { IconoCategoria, IconoTrigo } from '../comun/iconos.jsx';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
 import TextoOla from '../comun/TextoOla.jsx';
+import OrdenarPor from './OrdenarPor.jsx';
 
 // La categoria se elige de un vistazo, con una etiqueta por cada una, y no
 // abriendo un desplegable: son cuatro y caben. Por dentro son radios, asi que
 // Tab entra una vez y las flechas cambian. "Todas" no lleva icono.
 const OPCIONES = [['todas', 'Todas'], ...CATEGORIAS.map((c) => [c.id, c.nombre])];
 
+// Los cuatro ordenes, con lo que dice el boton de "Ordenar por".
+const ORDENES = [
+  ['recomendados', 'Recomendados'],
+  ['precio-asc', 'Precio: de menor a mayor'],
+  ['precio-desc', 'Precio: de mayor a menor'],
+  ['nombre', 'Nombre: de la A a la Z'],
+];
+
 function VistaCabeza({
   visible, titulo, frase, tituloRef, subcategoria, onSub, busqueda, onBusqueda,
-  orden, onOrden, soloDisponibles, onSolo, cuenta, vacio, onVolver,
+  orden, onOrden, soloDisponibles, onSolo, cuenta, vacio,
 }) {
   return (
     <div className="vista-cabeza es-catalogo con-fondo" hidden={!visible}>
       <FondoDibujo vista="tienda" />
       <div className="tienda-texto sube-en-orden">
-        {/* Un boton y no un enlace (vuelve con onVolver), con el aspecto y la
-            ola de "Cómo llegar" (.enlace-llegar). */}
-        <button className="vista-volver enlace-llegar" type="button" onClick={onVolver}>
-          <Chevron izquierda />
-          <TextoOla>Volver al inicio</TextoOla>
-        </button>
         <p className="rotulo rotulo-espiga"><IconoTrigo />Nuestra vitrina</p>
         {/* Es el h1 de la vista: el de la portada queda apartado con ella. */}
         <h1 className="vista-titulo titular" tabIndex={-1} ref={tituloRef}>{titulo}</h1>
@@ -83,22 +87,27 @@ function VistaCabeza({
               onChange={(e) => onBusqueda(e.target.value)}
             />
           </label>
-          <label className="vista-mando">
-            <span>Ordenar por</span>
-            <select className="vista-orden" value={orden} onChange={(e) => onOrden(e.target.value)}>
-              <option value="recomendados">Recomendados</option>
-              <option value="precio-asc">Precio: de menor a mayor</option>
-              <option value="precio-desc">Precio: de mayor a menor</option>
-              <option value="nombre">Nombre: de la A a la Z</option>
-            </select>
-          </label>
-          <label className="vista-mando">
-            <span>Mostrar</span>
-            <select className="vista-filtro" value={soloDisponibles ? 'disponibles' : 'todos'} onChange={(e) => onSolo(e.target.value === 'disponibles')}>
-              <option value="todos">Todos</option>
-              <option value="disponibles">Solo los disponibles</option>
-            </select>
-          </label>
+          <div className="vista-mando">
+            <span id="vista-orden-rotulo">Ordenar por</span>
+            <OrdenarPor opciones={ORDENES} valor={orden} onCambio={onOrden} rotuloId="vista-orden-rotulo" />
+          </div>
+          {/* "Mostrar" es un interruptor (seccion 4 del plan): un boton con
+              aria-pressed, que se cambia con un clic, Enter o Espacio. Su
+              nombre es lo que dice ("Solo disponibles"); el rotulo es de
+              adorno para quien ve, y la marca dice encendido sin depender
+              del color. */}
+          <div className="vista-mando">
+            <span aria-hidden="true">Mostrar</span>
+            <button
+              className="interruptor"
+              type="button"
+              aria-pressed={soloDisponibles}
+              onClick={() => onSolo(!soloDisponibles)}
+            >
+              <span className="interruptor-marca" aria-hidden="true">✓</span>
+              Solo disponibles
+            </button>
+          </div>
         </div>
         <span className="linea-doble" aria-hidden="true"></span>
       </div>

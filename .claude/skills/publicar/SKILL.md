@@ -66,7 +66,7 @@ que mas lo tumba:
 - Un aviso de `npm run build` (un import que no se resuelve, un trozo de mas de
   500 kB).
 - Un producto que no pasa `revisar()` (`src/servicios/reglasCatalogo.js`), una
-  categoria que no esta en el menu Tienda (`CATEGORIAS` de
+  categoria que no esta en `CATEGORIAS` (
   `src/catalogo/categorias.js`) o al reves,
   o una foto del catalogo sin su `-420.jpg` o `-840.jpg`.
 - Una prueba de `pruebas/` que falla: el resumen del final dice cual.
