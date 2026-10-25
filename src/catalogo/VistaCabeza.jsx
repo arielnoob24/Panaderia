@@ -1,52 +1,76 @@
 // ---- La cabeza de la vista de catalogo ---------------------------------
-// "Volver al inicio", el titulo y la barra de mandos: Filtrar por, el
-// buscador, Ordenar por y Mostrar. El mismo HTML que arma view.js; no decide
-// nada, solo pinta lo que le da el catalogo y le cuenta lo que se toca.
+// Con el estilo de la portada (seccion 10 del plan, "La tienda con el estilo
+// de la portada"), sobre la masa: "Volver al inicio" con la ola de "Cómo
+// llegar", el rotulo con la espiga, el titulo y la frase de la vista,
+// "Filtrar por" como la cinta de #/, y los mandos (buscador, Ordenar por y
+// Mostrar) entre lineas dobles. No decide nada, solo pinta lo que le da el
+// catalogo y le cuenta lo que se toca.
+//
+// La escena de entrada es CSS de montaje (vistas.css): las categorias son la
+// misma vista y el catalogo no se vuelve a montar entre ellas (App.jsx), asi
+// que al cambiar de categoria no se repite; solo cambian el titulo, la frase
+// y las fichas.
 import { Fragment } from 'react';
 import { CATEGORIAS } from './categorias.js';
-import { Chevron } from '../comun/iconos.jsx';
+import { Chevron, IconoCategoria, IconoTrigo } from '../comun/iconos.jsx';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
+import TextoOla from '../comun/TextoOla.jsx';
 
-// La categoria va primero y en su propia fila. Se elige de un vistazo, con un
-// boton por cada una, y no abriendo un desplegable: son cuatro y caben. Por
-// dentro son radios, asi que Tab entra una vez y las flechas cambian.
-const CHIPS = [['todas', 'Todas'], ...CATEGORIAS.map((c) => [c.id, c.nombre])];
+// La categoria se elige de un vistazo, con una etiqueta por cada una, y no
+// abriendo un desplegable: son cuatro y caben. Por dentro son radios, asi que
+// Tab entra una vez y las flechas cambian. "Todas" no lleva icono.
+const OPCIONES = [['todas', 'Todas'], ...CATEGORIAS.map((c) => [c.id, c.nombre])];
 
 function VistaCabeza({
-  visible, titulo, tituloRef, subcategoria, onSub, busqueda, onBusqueda,
+  visible, titulo, frase, tituloRef, subcategoria, onSub, busqueda, onBusqueda,
   orden, onOrden, soloDisponibles, onSolo, cuenta, vacio, onVolver,
 }) {
   return (
-    // En React la cabeza es la banda oscura de la tienda (la parte de horno
-    // del 60-30-10, seccion 15 del plan), con sus panes dibujados detras.
-    <div className="vista-cabeza es-catalogo banda-oscura con-fondo" hidden={!visible}>
+    <div className="vista-cabeza es-catalogo con-fondo" hidden={!visible}>
       <FondoDibujo vista="tienda" />
-      <button className="vista-volver" type="button" onClick={onVolver}>
-        <Chevron izquierda />Volver al inicio
-      </button>
-      {/* Es el h1 de la vista: el de la portada queda apartado con ella. */}
-      <h1 className="vista-titulo" tabIndex={-1} ref={tituloRef}>{titulo}</h1>
+      <div className="tienda-texto sube-en-orden">
+        {/* Un boton y no un enlace (vuelve con onVolver), con el aspecto y la
+            ola de "Cómo llegar" (.enlace-llegar). */}
+        <button className="vista-volver enlace-llegar" type="button" onClick={onVolver}>
+          <Chevron izquierda />
+          <TextoOla>Volver al inicio</TextoOla>
+        </button>
+        <p className="rotulo rotulo-espiga"><IconoTrigo />Nuestra vitrina</p>
+        {/* Es el h1 de la vista: el de la portada queda apartado con ella. */}
+        <h1 className="vista-titulo titular" tabIndex={-1} ref={tituloRef}>{titulo}</h1>
+        <p className="frase tienda-frase">{frase}</p>
+        {/* Como la cinta de #/: cada categoria con su icono y la ola de
+            letras; la elegida en una pastilla horno. Las estrellas son
+            adorno. El nombre de cada radio es el de su etiqueta (TextoOla
+            deja el texto entero escondido a la vista). */}
+        <div className="vista-chips solo-catalogo" role="radiogroup" aria-labelledby="vista-sub-rotulo">
+          <span id="vista-sub-rotulo" className="rotulo">Filtrar por</span>
+          {OPCIONES.map(([valor, texto], i) => (
+            <Fragment key={valor}>
+              {i > 0 && <span className="chip-estrella" aria-hidden="true">✦</span>}
+              <input
+                className="chip-input"
+                type="radio"
+                name="vista-sub"
+                id={`vista-sub-${valor}`}
+                value={valor}
+                checked={subcategoria === valor}
+                onChange={() => onSub(valor)}
+              />
+              <label className={`chip chip-${valor}`} htmlFor={`vista-sub-${valor}`}>
+                {valor !== 'todas' && <IconoCategoria id={valor} />}
+                <TextoOla>{texto}</TextoOla>
+              </label>
+            </Fragment>
+          ))}
+        </div>
+      </div>
       {/* Ordenar y filtrar viven aqui y no en el mostrador: la fila de la
-          portada es un escaparate, y ordenar seis no le hace falta a nadie. */}
+          portada es un escaparate, y ordenar seis no le hace falta a nadie.
+          Entre las lineas dobles de la cabecera de periodico. */}
       <div className="vista-barra">
+        <span className="linea-doble" aria-hidden="true"></span>
         <div className="vista-mandos">
-          <div className="vista-mando vista-chips solo-catalogo" role="radiogroup" aria-labelledby="vista-sub-rotulo">
-            <span id="vista-sub-rotulo">Filtrar por</span>
-            {CHIPS.map(([valor, texto]) => (
-              <Fragment key={valor}>
-                <input
-                  className="chip-input"
-                  type="radio"
-                  name="vista-sub"
-                  id={`vista-sub-${valor}`}
-                  value={valor}
-                  checked={subcategoria === valor}
-                  onChange={() => onSub(valor)}
-                />
-                <label className="chip" htmlFor={`vista-sub-${valor}`}>{texto}</label>
-              </Fragment>
-            ))}
-          </div>
           <label className="vista-mando vista-buscar solo-catalogo">
             <span className="sr-only">Buscar en el catálogo</span>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" /><path d="m16 16 4.5 4.5" /></svg>
@@ -76,10 +100,11 @@ function VistaCabeza({
             </select>
           </label>
         </div>
-        {/* Lo que se ve de lo que hay. Mudo para el lector de pantalla, que ya
-            tiene el aviso del catalogo y oirlo dos veces es peor que no oirlo. */}
-        <p className="vista-cuenta" aria-hidden="true">{cuenta}</p>
+        <span className="linea-doble" aria-hidden="true"></span>
       </div>
+      {/* Lo que se ve de lo que hay. Mudo para el lector de pantalla, que ya
+          tiene el aviso del catalogo y oirlo dos veces es peor que no oirlo. */}
+      <p className="vista-cuenta rotulo" aria-hidden="true">{cuenta}</p>
       {/* Una busqueda sin resultados no se queda en una pantalla vacia: se dice
           que no hay y por que. Sin role="status": lo dice el aviso del
           catalogo, que ya lleva la cuenta, y dos avisos a la vez se pisaban. */}

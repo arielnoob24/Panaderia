@@ -178,7 +178,7 @@ panes", con la cinta o con el menú.
 - Se entra por "Nuestros panes" (portada), la palabra Tienda (catálogo entero) o una de sus
   categorías (con "Filtrar por" ya puesto). Entrar con un enlace limpia orden,
   "Mostrar" y búsqueda; Atrás y Adelante no.
-- Controles: Filtrar por (chips: Todas + 3 categorías), buscador (sin tildes ni
+- Controles: Filtrar por (radios: Todas + 3 categorías, como la cinta), buscador (sin tildes ni
   mayúsculas), Ordenar por, Mostrar (solo disponibles).
 - "Mostrando X de Y productos" en una sola región `aria-live`
   (`.catalog-status`): mientras se escribe en el buscador calla y habla una
@@ -501,7 +501,8 @@ pedido sigue valiendo.
 - Contenido hasta 1440 px. **La barra de arriba siempre es `--horno`**,
   opaca desde que carga la página, con el logo y el texto en claro; va de
   borde a borde y se pega al bajar. Sobre secciones oscuras **no se
-  invierte**: sigue en `--horno` y gana una línea ámbar fina abajo para separarse.
+  invierte**: sigue en `--horno` y gana una línea ámbar fina abajo para separarse
+  (hoy solo queda la banda de la cuenta).
   Cortes en 900, 680 y 420 px.
 - El hover no depende de media queries: el portátil del usuario es táctil y
   `(hover: hover)` le da falso, así que **nunca veía el hover** (y
@@ -744,6 +745,53 @@ entrada), no copiadas.
   y se desplaza en vez de cortar texto (WCAG 1.4.10).
 - Con menos movimiento todo está quieto y visible desde el principio.
 
+### La tienda con el estilo de la portada (25 de octubre de 2026)
+
+Como Nosotros y Contacto, sin muestra y con las mismas piezas comunes.
+**Las fichas no cambian** (ya son editoriales); cambia la cabecera de la
+vista.
+
+- **Sin la tarjeta oscura**: la cabecera va sobre la masa con el grano y
+  su `FondoDibujo`. El `--horno` queda en la barra, el texto, el borde de
+  las fichas y la categoría elegida.
+- **El texto**, alineado a la izquierda como la portada: "Volver al
+  inicio" con el aspecto y la ola de "Cómo llegar" (sigue siendo un
+  botón, con su flecha); el rótulo con la espiga **"Nuestra vitrina"**; el
+  `h1` con el nombre de la vista en Fraunces grande; y debajo una **frase
+  en cursiva** propia de cada una (el usuario puede cambiarlas):
+  - Todo el catálogo: "Panes, dulces y bebidas de la casa."
+  - Panes: "Lo que sale del horno cada mañana."
+  - Dulces y pasteles: "Para endulzar la tarde."
+  - Bebidas: "Para acompañar el pan."
+- **"Filtrar por" como la cinta**: Todas ✦ Panes ✦ Dulces y pasteles ✦
+  Bebidas, en Fraunces cursiva, cada categoría con su icono de la cinta
+  (hogaza, galleta, botella) y la ola de letras con el puntero. La
+  elegida en una **pastilla `--horno` con el texto `--papel`**. Siguen
+  siendo radios (Tab entra una vez, las flechas cambian), con el rótulo
+  "Filtrar por" en versalitas. El nombre de cada radio es el de siempre
+  (el texto entero escondido de la ola); las estrellas son adorno; el
+  foco se ve en la etiqueta con el anillo de los campos. En el teléfono
+  el rótulo va encima y las categorías parten en las líneas que hagan
+  falta, sin estrellas. El icono de cada categoría es uno solo para la
+  cinta y el filtro (`IconoCategoria` en `comun/iconos.jsx`).
+- **Los mandos** (buscador, "Ordenar por", "Mostrar") en una fila entre
+  **líneas dobles**, como los títulos de Nosotros y Contacto: campos en
+  `--papel` con filete fino, rótulos en versalitas. "Mostrando X de Y
+  productos" en versalitas `--corteza-oscura`, bajo la fila a la derecha.
+  Cuando los mandos no caben en una fila (1080 px o menos) las líneas van
+  encima y debajo, a todo lo ancho; en el teléfono los mandos se apilan
+  como antes.
+- **Entrada**: la escena de la portada (rótulo, título, frase y filtro
+  suben uno tras otro; luego los mandos suben y sus líneas se dibujan).
+  Es de montaje: las categorías son la misma vista y no se vuelve a
+  montar, así que al cambiar de categoría dentro de la tienda no se
+  repite la escena: solo cambian el título, la frase y las fichas (que
+  entran escalonadas como ya hacían).
+- Los panes dibujados del fondo van a la derecha, lejos del texto; con
+  1080 px o menos se quita el pan largo, que caía bajo el filtro.
+- **Con scroll**: la tienda no se ajusta a una pantalla (son 17 fichas).
+- Con menos movimiento, todo quieto y visible.
+
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
 
 - Todo con teclado; paneles que atrapan el foco, Esc y devolución del foco;
@@ -763,7 +811,10 @@ entrada), no copiadas.
   (vale por ser letra grande). En la portada, donde una espiga del
   estampado pasa bajo la letra, el peor píxel de 320 a 1440 px (texto
   transparente, 24 de octubre de 2026): `h1 em` 3,14:1, pie 5,03:1,
-  frase 5,10:1, rótulo 5,37:1. En #/contacto, sobre el grano y los
+  frase 5,10:1, rótulo 5,37:1. En la cabeza de la tienda, sobre el grano
+  y sus panes (de 320 a 1440 px): rótulos 6,52:1, `h1` 9,28:1, frase
+  6,17:1, categorías 8,99:1, la elegida (papel sobre horno) 13,71:1.
+  En #/contacto, sobre el grano y los
   trazos del fondo (mismo método, de 320 a 1440 px): `h1 em` 3,87:1,
   rótulos 5,16:1, dirección 5,07:1, nota de ejemplo 6,17:1, días del
   horario 6,17:1. El estado abierto/cerrado va en su pastilla papel:
@@ -890,6 +941,13 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       junto a "Dónde estamos", el `h1` en una línea, el mapa hasta 120 px
       y la nota de ejemplo más corta; cabe sin desplazarse a 390×700,
       375×667 y 360×640, y la canasta flotante no tapa ningún enlace.
+- [x] La tienda con el estilo de la portada (sección 10, 25 de octubre de
+      2026): cabecera sobre la masa, frase por categoría, filtro como la
+      cinta, mandos entre líneas dobles. Lo prueba `pruebas/casos/tienda.mjs`.
+- [ ] `.claude/herramientas/axe.mjs` (y cualquier script de revisión que
+      cree una cuenta) manda un correo real por EmailJS: el 25 de octubre
+      de 2026 llegó uno a `ana@correo.com`. Que corte EmailJS como hace
+      `t.contexto` en `pruebas/`.
 - [ ] Segunda vuelta: el aspecto de la canasta y la cuenta más allá
       de los botones, con otra muestra antes.
 

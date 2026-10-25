@@ -24,7 +24,7 @@ import { posicionTienda } from '../comun/apertura.js';
 import FichaProducto from './FichaProducto.jsx';
 import VistaCabeza from './VistaCabeza.jsx';
 import Franja from '../comun/Franja.jsx';
-import { filtroDe, nombreCategoria } from './categorias.js';
+import { filtroDe, fraseCategoria, nombreCategoria } from './categorias.js';
 
 const { productos } = catalogo;
 const ORDENES = ['recomendados', 'precio-asc', 'precio-desc', 'nombre'];
@@ -266,6 +266,7 @@ function Catalogo({ categoria }) {
           <VistaCabeza
             visible
             titulo={titulo}
+            frase={fraseCategoria(subcategoria)}
             tituloRef={tituloRef}
             subcategoria={subcategoria}
             onSub={alSub}

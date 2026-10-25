@@ -1,7 +1,7 @@
 // Lo de la revision visual del 21 de octubre de 2026 (secciones 4 y 10 del
 // plan), en escritorio y en el telefono (390 px, tactil):
 // - la barra de arriba es horno y opaca desde que carga, y sobre lo oscuro
-//   (la cabeza de la tienda) gana la linea ambar;
+//   (la banda de la cuenta) gana la linea ambar;
 // - la portada no lleva carrusel, fichas ni pie, y la cinta no queda pegada
 //   al borde de abajo;
 // - las fichas de la tienda, sin hueco entre nombre y precio;
@@ -67,12 +67,15 @@ export default async function aspecto(t) {
     t.ok(portada.fichas === 0 && portada.carrusel === 0 && portada.pie === 0, `[${nombre}] la portada todavia lleva fichas, carrusel o pie (${JSON.stringify(portada)})`);
     t.ok(portada.altoDocumento <= portada.altoVentana && Math.abs(portada.finalCinta - portada.altoVentana) <= 1, `[${nombre}] la portada no llena la pantalla o la cinta no llega al borde (${JSON.stringify(portada)})`);
 
-    // Sobre una banda oscura sigue horno y gana la linea ambar. En #/ no hay
-    // ninguna, asi que se mira con la cabeza oscura de la tienda.
-    await p.goto(t.REACT + '#/tienda-catalogo');
-    await p.waitForSelector('.vista-cabeza.banda-oscura');
+    // Sobre una banda oscura sigue horno y gana la linea ambar. En #/ ni en
+    // la tienda hay ninguna, asi que se mira con la banda de la cuenta.
+    await p.goto(t.REACT + '#/cuenta/entrar');
+    await p.waitForSelector('.cuenta-vista-banda.banda-oscura');
     await p.evaluate(() => {
-      const banda = document.querySelector('.vista-cabeza.banda-oscura');
+      const banda = document.querySelector('.cuenta-vista-banda.banda-oscura');
+      // La vista de entrar es corta: sitio de sobra para llevar la banda
+      // bajo la barra.
+      document.body.style.paddingBottom = '2000px';
       window.scrollTo(0, banda.getBoundingClientRect().top + window.scrollY - 40);
     });
     const sobre = await esperaQue(() => p.evaluate(() => document.querySelector('.site-header').classList.contains('is-sobre-oscuro')));
@@ -86,6 +89,7 @@ export default async function aspecto(t) {
 
     // Las fichas de la tienda: sin hueco entre el nombre y el precio, el
     // nombre en Fraunces y los sellos con letra legible.
+    await p.goto(t.REACT + '#/tienda-catalogo');
     await p.waitForSelector('.product-card:not([hidden])');
     const fichas = await p.evaluate(() => {
       const vistas = [...document.querySelectorAll('.product-card:not([hidden])')];

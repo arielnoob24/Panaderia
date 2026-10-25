@@ -33,10 +33,9 @@
 /* La opcion de la vista en la que se esta lleva el aro ambar de styles.css
    (menu M2), que no depende solo del color del texto. */
 
-/* Una banda oscura en la cabeza de la tienda y en la de la cuenta. En #/,
-   #/nosotros y #/contacto no hay: el horno lo pone ahi la barra, y los
-   principios de Nosotros y el horario de Contacto van sobre la masa
-   (seccion 10 del plan). */
+/* Una banda oscura en la cabeza de la cuenta. En #/, #/nosotros,
+   #/contacto y la tienda no hay: el horno lo pone ahi la barra, y lo demas
+   va sobre la masa (seccion 10 del plan). */
 .banda-oscura { background: var(--horno); color: var(--sobre-horno); }
 
 /* ---- #/ : la portada (Hero.jsx, seccion 10 del plan, "Estilo") --------- */
@@ -95,7 +94,7 @@
    parte (nowrap) y el espacio es un espacio de verdad, en linea, que se ve
    y es donde se parte si no cabe. */
 .letras { white-space: nowrap; }
-:is(.enlace-llegar, .cinta-enlace) .letras .ola-espacio { display: inline; white-space: normal; }
+:is(.enlace-llegar, .cinta-enlace, .chip) .letras .ola-espacio { display: inline; white-space: normal; }
 .enlace-llegar:hover { border-color: var(--corteza-oscura); color: var(--corteza-oscura); }
 .enlace-llegar:active { transform: scale(.97); }
 .con-puntero .enlace-llegar:hover .ico { transform: translateY(-3px); }
@@ -261,25 +260,108 @@
   .con-puntero .principio:hover .principio-icono, .con-puntero .principio:hover .principio-aguja { animation: none; }
 }
 
-/* ---- La tienda: la cabeza oscura ----------------------------------------- */
+/* ---- La tienda: la cabeza (VistaCabeza.jsx, seccion 10 del plan, "La
+   tienda con el estilo de la portada") ----------------------------------- */
 
-/* Titulo, volver y mandos van sobre el horno; las fichas, sobre la masa.
-   Lo de styles.css esta pensado para fondo claro: aqui se pasa a los tonos
-   de texto sobre horno (8,7:1 el mas flojo). */
-.vista-tienda .vista-cabeza { padding: 1.6rem clamp(1.1rem, 3vw, 2.4rem) 1.5rem; border-radius: var(--r-card); }
-.vista-tienda .vista-titulo { color: var(--papel); }
-.vista-tienda .vista-volver { border-color: rgba(255, 255, 255, .3); color: var(--sobre-horno); }
-.con-puntero .vista-tienda .vista-volver:hover { background: rgba(255, 255, 255, .08); border-color: var(--ambar); }
-.vista-tienda .vista-barra { border-top-color: rgba(255, 255, 255, .16); }
-.vista-tienda .vista-mando, .vista-tienda .vista-cuenta { color: var(--sobre-horno-tenue); }
-.vista-tienda .vista-vacio { color: var(--sobre-horno); }
-.vista-tienda .chip { background: transparent; border-color: rgba(255, 255, 255, .3); color: var(--sobre-horno); }
-.con-puntero .vista-tienda .chip:hover { border-color: var(--ambar); }
-/* La categoria puesta, en ambar: es la eleccion que manda en la vista. */
-.vista-tienda .chip-input:checked + .chip { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
-.vista-tienda .chip-input:focus-visible + .chip { outline: 2px solid var(--papel); outline-offset: 2px; box-shadow: none; }
-.vista-tienda .vista-mando select, .vista-tienda .vista-buscar input { border-color: transparent; }
-.vista-tienda .vista-mando select:focus-visible, .vista-tienda .vista-buscar input:focus-visible { outline-color: var(--papel); }
+/* Sobre la masa, con el grano y sus panes dibujados, alineada a la
+   izquierda como la portada. Las fichas no cambian. */
+.vista-cabeza { display: flex; flex-direction: column; margin-bottom: 2rem; }
+.vista-cabeza[hidden] { display: none; }
+.tienda-texto { display: flex; flex-direction: column; align-items: flex-start; }
+/* "Volver al inicio": un boton con el aspecto de "Cómo llegar"
+   (.enlace-llegar), con la flecha en corteza en lugar del pin. */
+.vista-volver { margin-bottom: clamp(1rem, 3vw, 1.8rem); padding: .3rem .85rem .3rem .55rem; background: none; cursor: pointer; font-size: 1.1rem; }
+.vista-volver svg { width: 20px; height: 20px; flex: none; color: var(--corteza); transition: transform var(--dur-base) var(--ease-soft); }
+.con-puntero .vista-volver:hover svg { transform: translateX(-3px); }
+.tienda-texto .titular { margin: .6rem 0 .7rem; font-size: clamp(2.6rem, 6.4vw, 5.6rem); line-height: .95; }
+.tienda-frase { font-size: clamp(1.15rem, 2.4vw, 1.5rem); }
+
+/* "Filtrar por" como la cinta de #/: Fraunces cursiva, el icono de cada
+   categoria y la ola de letras con el puntero. Por dentro son radios: el
+   de verdad queda escondido y lo que se ve y se pulsa es su etiqueta. La
+   elegida, en una pastilla horno con el texto papel (14:1); con el puntero,
+   una pastilla papel. */
+/* Entre filas, sitio para los 44 px de cada etiqueta: su zona de toque
+   (::before) no invade la de la fila de al lado. */
+.vista-chips { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem .45rem; margin-top: clamp(1.2rem, 3vw, 2rem); }
+.vista-chips > .rotulo { margin-right: .7rem; }
+.chip-input { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; pointer-events: none; }
+.chip { position: relative; display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .9rem; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: italic 400 1.3rem/1.2 var(--letra-titulo); transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+/* Se toca en 44 px de alto aunque se vea mas bajo. */
+.chip::before { position: absolute; inset: min(0px, calc((100% - 44px) / 2)) -2px; content: ""; }
+.chip .ico { width: 1.2em; height: 1.2em; flex: none; color: var(--corteza); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
+.chip .letras span { display: inline-block; white-space: pre; }
+.chip-estrella { color: var(--corteza); font-size: .95rem; line-height: 1; }
+.con-puntero .chip:hover { background: var(--papel); }
+.con-puntero .chip:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
+.con-puntero .chip-panes:hover .ico { animation: salta-hogaza var(--dur-slow) var(--ease-soft) both; }
+.con-puntero .chip-dulces:hover .ico { animation: salta-galleta var(--dur-slow) var(--ease-soft) both; }
+.con-puntero .chip-bebidas-frias:hover .ico { animation: baila-botella var(--dur-slow) var(--ease-soft) both; }
+.chip:active { transform: scale(.97); }
+.chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { background: var(--horno); color: var(--papel); }
+.chip-input:checked + .chip .ico { color: var(--masa); }
+/* El anillo de los campos, sobre la etiqueta del radio que tiene el foco. */
+.chip-input:focus-visible + .chip { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+
+/* Los mandos en una fila entre lineas dobles, como los titulos de Nosotros
+   y Contacto: campos en papel con filete fino (horno aclarado, 4,97:1) y
+   rotulos en versalitas. */
+.vista-barra { display: flex; align-items: center; gap: 1.2rem; margin-top: clamp(1.4rem, 3.5vw, 2.4rem); }
+.vista-barra .linea-doble { min-width: 24px; }
+.vista-mandos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem 1.4rem; }
+.vista-mando { display: inline-flex; align-items: center; gap: .55rem; }
+.vista-mando > span:not(.sr-only) { color: var(--corteza-oscura); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .18em; text-transform: uppercase; }
+.vista-mando select { padding: .45rem 1.9rem .45rem .7rem; appearance: none; background: var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233a2822' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9.5l6 5.5 6-5.5'/%3E%3C/svg%3E") no-repeat right .55rem center/13px; border: 1px solid var(--horno-claro); border-radius: 2px; color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); transition: border-color var(--dur-fast) var(--ease-ui); }
+.vista-buscar { position: relative; }
+.vista-buscar svg { position: absolute; left: .7rem; width: 15px; height: 15px; color: var(--horno-suave); pointer-events: none; }
+.vista-buscar input { width: 15rem; max-width: 100%; padding: .45rem .8rem .45rem 2rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: 2px; color: var(--horno); font: .85rem var(--letra-texto); transition: border-color var(--dur-fast) var(--ease-ui); }
+.con-puntero .vista-mando select:hover, .con-puntero .vista-buscar input:hover { border-color: var(--corteza); }
+/* El anillo de los campos: horno con el halo ambar (WCAG 1.4.11). */
+.vista-mando select:focus-visible, .vista-buscar input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+/* "Mostrando X de Y productos", en versalitas corteza oscura bajo la fila. */
+.vista-cuenta { align-self: flex-end; margin: .7rem 0 0; font-variant-numeric: tabular-nums; }
+.vista-cuenta:empty { display: none; }
+.vista-cabeza:not(.es-catalogo) .solo-catalogo { display: none; }
+.vista-vacio { width: 100%; margin: 1.5rem 0 0; color: var(--horno-suave); font: 1rem var(--letra-titulo); text-align: center; }
+
+/* La entrada: el texto sube en orden (.sube-en-orden) y despues llegan los
+   mandos y se dibujan sus lineas. Es de montaje: al cambiar de categoria
+   la vista no se vuelve a montar y no se repite. */
+.vista-barra, .vista-cuenta { animation: sube var(--dur-editorial) var(--ease-soft) 640ms both; }
+.vista-barra .linea-doble { animation: traza var(--dur-scene) var(--ease-soft) 760ms both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .vista-barra, .vista-cuenta, .vista-barra .linea-doble { animation: none; }
+  .con-puntero .chip:hover .letras span, .con-puntero .chip:hover .ico { animation: none; }
+  .con-puntero .vista-volver:hover svg, .chip:active { transform: none; }
+}
+
+/* Cuando los mandos ya no caben en una fila con sus lineas, las lineas van
+   encima y debajo, a todo lo ancho, y el pan largo del fondo se quita (caia
+   bajo el filtro). */
+@media (max-width: 1080px) {
+  .vista-barra { flex-direction: column; align-items: stretch; gap: .9rem; }
+  .vista-barra .linea-doble { flex: none; }
+  .fondo-tienda .is-arriba-izquierda { display: none; }
+}
+
+@media (max-width: 680px) {
+  /* En el telefono el rotulo va encima y las categorias debajo, en las
+     filas que hagan falta, sin estrellas. */
+  .vista-chips { row-gap: .85rem; }
+  .vista-chips > .rotulo { flex-basis: 100%; margin: 0 0 .1rem; }
+  .chip { padding: .3rem .65rem; font-size: 1.1rem; }
+  .chip-estrella { display: none; }
+  /* Los mandos se apilan, entre las lineas de arriba y abajo. */
+  .vista-mandos { flex-direction: column; align-items: stretch; }
+  /* Si el rotulo y el selector no caben en una linea (texto con mas
+     espaciado, letra grande), el selector baja a la siguiente, pegado a la
+     derecha, en vez de salirse por el borde. */
+  .vista-mando { flex-wrap: wrap; justify-content: space-between; }
+  .vista-mando select { flex: 0 0 62%; max-width: 100%; margin-left: auto; }
+  .vista-buscar input { width: 100%; }
+  .vista-cuenta { align-self: flex-start; }
+}
 
 /* ---- #/contacto (seccion 10 del plan, "Contacto con el estilo de la
    portada") -------------------------------------------------------------- */
@@ -552,8 +634,9 @@
 .fondo-inicio .fondo-pieza.is-patron path { stroke-width: .65; }
 .fondo-nosotros .is-abajo-derecha { right: 1%; bottom: -50px; width: 300px; }
 .fondo-nosotros .is-arriba-izquierda { top: 6px; right: 4%; left: auto; width: 300px; }
-.fondo-tienda .is-arriba-izquierda { top: 14px; left: 14%; width: 230px; }
-.fondo-tienda .is-arriba-derecha { top: 6px; right: 6%; width: 260px; }
+/* Los panes de la tienda, a la derecha: el texto va a la izquierda. */
+.fondo-tienda .is-arriba-izquierda { top: 150px; right: 30%; left: auto; width: 200px; }
+.fondo-tienda .is-arriba-derecha { top: 30px; right: 4%; width: 260px; }
 /* El maiz, en la esquina de abajo, a la derecha de Instagram y de la nota,
    no debajo de ellos. */
 .fondo-contacto .is-abajo-izquierda { right: -30px; bottom: -50px; left: auto; width: 170px; }
@@ -601,7 +684,10 @@ body.is-vista .franja-pie { display: block; }
 @media (max-width: 680px) { .vista-fallo { padding-top: 120px; } }
 
 /* Colores forzados: la categoria puesta se marca con Highlight, como en
-   styles.css; esta regla pesa mas que aquella y le pisaria el ambar. */
+   styles.css; esta regla pesa mas que aquella y le pisaria el horno. */
 @media (forced-colors: active) {
-  .vista-tienda .chip-input:checked + .chip { forced-color-adjust: none; background: Highlight; border-color: Highlight; color: HighlightText; }
+  .chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .chip-input:checked + .chip .ico { color: HighlightText; }
+  /* El anillo horno no se ve en colores forzados: el del sistema. */
+  .chip-input:focus-visible + .chip { outline-color: CanvasText; box-shadow: none; }
 }

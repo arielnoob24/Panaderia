@@ -89,7 +89,16 @@ function Trigo({ derecha }) {
   );
 }
 
+// El icono de cada categoria de la tienda, en la cinta de #/ y en "Filtrar
+// por". Si se anade una categoria sin dibujo, sale con la hogaza: mejor que
+// sin nada.
+const ICONOS_CATEGORIA = { panes: IconoHogaza, dulces: IconoGalleta, 'bebidas-frias': IconoBotella };
+function IconoCategoria({ id, clase }) {
+  const Icono = ICONOS_CATEGORIA[id] || IconoHogaza;
+  return <Icono clase={clase} />;
+}
+
 export {
   IconoPin, Chevron, Trigo,
-  IconoHogaza, IconoGalleta, IconoBotella, IconoTrigo, IconoCestaAsa,
+  IconoHogaza, IconoGalleta, IconoBotella, IconoTrigo, IconoCestaAsa, IconoCategoria,
 };

@@ -7,28 +7,22 @@
 import { Fragment } from 'react';
 import { Link } from 'react-router-dom';
 import { CATEGORIAS } from './categorias.js';
-import { IconoBotella, IconoGalleta, IconoHogaza } from '../comun/iconos.jsx';
+import { IconoCategoria } from '../comun/iconos.jsx';
 import TextoOla from '../comun/TextoOla.jsx';
-
-// Si se anade una categoria sin dibujo, sale con la hogaza: mejor que sin nada.
-const ICONOS = { panes: IconoHogaza, dulces: IconoGalleta, 'bebidas-frias': IconoBotella };
 
 function Cinta() {
   return (
     <nav className="cinta" aria-label="Comprar por categoría">
       <div className="container cinta-dentro">
-        {CATEGORIAS.map((c, i) => {
-          const Icono = ICONOS[c.id] || IconoHogaza;
-          return (
-            <Fragment key={c.id}>
-              {i > 0 && <span className="cinta-estrella" aria-hidden="true">✦</span>}
-              <Link className={`cinta-enlace cinta-enlace-${c.id}`} to={`/tienda-${c.id}`} state={{ entrar: true }}>
-                <Icono />
-                <TextoOla>{c.nombre}</TextoOla>
-              </Link>
-            </Fragment>
-          );
-        })}
+        {CATEGORIAS.map((c, i) => (
+          <Fragment key={c.id}>
+            {i > 0 && <span className="cinta-estrella" aria-hidden="true">✦</span>}
+            <Link className={`cinta-enlace cinta-enlace-${c.id}`} to={`/tienda-${c.id}`} state={{ entrar: true }}>
+              <IconoCategoria id={c.id} />
+              <TextoOla>{c.nombre}</TextoOla>
+            </Link>
+          </Fragment>
+        ))}
       </div>
     </nav>
   );

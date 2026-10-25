@@ -558,59 +558,8 @@ body.is-vista .catalog .section-heading { display: none; }
 /* Teniendo la categoria entera delante, contar cuantos hay sobra; para quien
    escucha la pagina no, asi que el aviso sigue sonando aunque no se vea. */
 body.is-vista .catalog-status { position: absolute; width: 1px; height: 1px; min-height: 0; margin: 0; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-.vista-cabeza { display: flex; flex-direction: column; align-items: flex-start; gap: .9rem; margin-bottom: 2rem; }
-.vista-cabeza[hidden] { display: none; }
-.vista-volver { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem .5rem .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .vista-volver:hover { background: var(--masa); border-color: var(--corteza); }
-.vista-volver svg { width: 16px; height: 16px; }
-/* El nombre de la categoria va centrado, que es lo unico que manda en esta
-   pantalla. El boton de volver se queda a la izquierda, a plomo con la
-   primera columna de la cuadricula. */
-.vista-titulo { align-self: stretch; margin: 0; font: 500 clamp(2.4rem, 5vw, 3.6rem)/1 var(--letra-titulo); text-align: center; }
-/* La barra de la vista: los mandos a la izquierda y la cuenta a la derecha, en
-   la misma linea, separados por una raya que la despega del titulo. */
-.vista-barra { display: flex; width: 100%; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .8rem 1.2rem; margin-top: .4rem; padding-top: 1.1rem; border-top: 1px solid var(--masa-linea); }
-.vista-mandos { display: flex; flex-wrap: wrap; align-items: center; gap: .7rem 1.1rem; }
-.vista-mando { display: inline-flex; align-items: center; gap: .45rem; color: var(--horno-suave); font: .78rem Arial, sans-serif; }
-.vista-mando select { padding: .42rem 1.9rem .42rem .65rem; appearance: none; background: var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233a2822' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9.5l6 5.5 6-5.5'/%3E%3C/svg%3E") no-repeat right .55rem center/13px; border: 1px solid var(--horno-claro); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .8rem Arial, sans-serif; transition: border-color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .vista-mando select:hover { border-color: var(--corteza); }
-/* Borde en horno aclarado (4,97:1 sobre el papel; el filete de masa daba
-   1,46:1) y el anillo de los campos: horno con el halo ambar (WCAG 1.4.11). */
-.vista-mando select:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
-/* Los botones de categoria. Mismo apaño que los tamanios de las fichas: el
-   radio de verdad queda escondido y lo que se ve y se pulsa es su etiqueta. */
-.vista-chips { flex-basis: 100%; flex-wrap: wrap; }
-.chip-input { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; pointer-events: none; }
-.chip { position: relative; padding: .42rem .85rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .8rem/1.2 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-/* Se toca en 44 px de alto aunque se vea mas bajo, como los tamanios. */
-.chip::before { position: absolute; inset: min(0px, calc((100% - 44px) / 2)) -2px; content: ""; }
-.con-puntero .chip:hover { border-color: var(--corteza); }
-.chip-input:checked + .chip { background: var(--horno); border-color: var(--horno); color: var(--papel); }
-.chip-input:focus-visible + .chip { outline: 2px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 4px var(--ambar); }
-.vista-cuenta { margin: 0; color: var(--horno-suave); font: .82rem Arial, sans-serif; font-variant-numeric: tabular-nums; }
-.vista-cuenta:empty { display: none; }
-.vista-cabeza:not(.es-catalogo) .solo-catalogo { display: none; }
-.vista-buscar { position: relative; }
-.vista-buscar svg { position: absolute; left: .7rem; width: 15px; height: 15px; color: var(--horno-suave); pointer-events: none; }
-.vista-buscar input { width: 15rem; max-width: 100%; padding: .45rem .8rem .45rem 2rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: var(--r-pill); color: var(--horno); font: .85rem Arial, sans-serif; transition: border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .vista-buscar input:hover { border-color: var(--corteza); }
-/* Como "Ordenar por": borde en horno aclarado y el anillo de los campos. */
-.vista-buscar input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
-.vista-vacio { width: 100%; margin: 1.5rem 0 0; color: var(--horno-suave); font: 1rem var(--letra-titulo); text-align: center; }
-@media (max-width: 680px) {
-  .vista-barra { flex-direction: column; align-items: stretch; }
-  .vista-mandos { flex-direction: column; align-items: stretch; }
-  /* Si el rotulo y el selector no caben en una linea (texto con mas
-     espaciado, letra grande), el selector baja a la siguiente, pegado a la
-     derecha como siempre, en vez de salirse por el borde. */
-  .vista-mando { flex-wrap: wrap; justify-content: space-between; }
-  .vista-mando select { flex: 0 0 62%; max-width: 100%; margin-left: auto; }
-  /* En el telefono el rotulo va encima y los botones debajo, en las filas
-     que hagan falta. */
-  .vista-chips { justify-content: flex-start; }
-  .vista-chips > span { flex-basis: 100%; }
-  .vista-buscar input { width: 100%; }
-}
+/* La cabeza de la tienda (VistaCabeza.jsx) va en vistas.css, con el
+   estilo de la portada (seccion 10 del plan). */
 
 /* Al cambiar de vista el foco va al h1 (tabindex="-1", WCAG 2.4.3), pero un
    titulo no es un control: no se le dibuja el recuadro ambar, ni con el
@@ -810,7 +759,15 @@ body.is-checkout .catalog, body.is-checkout .story { display: none; }
 body.is-checkout .floating-whatsapp { display: none; }
 .checkout { padding-top: 150px; }
 .checkout[hidden] { display: none; }
-.checkout-cabeza { margin-bottom: 1.6rem; }
+/* La cabeza del pago (CabezaPedido.jsx): "Volver a la tienda" a la
+   izquierda y el titulo centrado. Es el aspecto que tenia la cabeza de la
+   tienda; la tienda cambio (vistas.css) y el pago espera a la segunda
+   vuelta. */
+.checkout-cabeza { display: flex; flex-direction: column; align-items: flex-start; gap: .9rem; margin-bottom: 1.6rem; }
+.checkout-volver { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem .5rem .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.con-puntero .checkout-volver:hover { background: var(--masa); border-color: var(--corteza); }
+.checkout-volver svg { width: 16px; height: 16px; }
+.checkout-titulo { align-self: stretch; margin: 0; font: 500 clamp(2.4rem, 5vw, 3.6rem)/1 var(--letra-titulo); text-align: center; }
 .checkout-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); align-items: start; gap: 1.6rem 2.4rem; }
 .checkout-datos { min-width: 0; }
 /* La columna del resumen se queda a la vista al desplazarse. Es de alto
@@ -1453,6 +1410,8 @@ body:has(.deshacer-barra:not([hidden])) .canasta-panel.is-open .canasta-cuerpo {
 @media (forced-colors: active) {
   .tamano-input:checked + .tamano, .chip-input:checked + .chip, .canasta-opciones input:checked + span { forced-color-adjust: none; background: Highlight; border-color: Highlight; color: HighlightText; }
   .canasta-opciones input:checked + span small { color: HighlightText; }
+  /* El anillo horno del tamano elegido con el foco no se ve aqui: el del sistema. */
+  .tamano-input:focus-visible + .tamano { outline-color: CanvasText; box-shadow: none; }
   .cuenta-metodo input:checked + .cuenta-metodo-caja { outline: 3px solid Highlight; outline-offset: -1px; }
   .cuenta-metodo input:checked + .cuenta-metodo-caja::after { border-color: Highlight; }
   /* El mas en el tope pierde el ambar, que en este modo ya no se ve: lo dice el color de lo desactivado. */
