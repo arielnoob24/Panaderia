@@ -23,8 +23,6 @@
 #raiz > main { position: relative; overflow-x: clip; }
 .vista-marco.is-saliendo { position: absolute; top: 0; right: 0; left: 0; pointer-events: none; }
 
-/* Debajo de la cabecera fija. */
-.vista-contacto { padding-top: 132px; }
 /* El rotulo de la foto se asoma 14 px por la derecha: a 320 px eso era
    desplazamiento de lado. */
 .vista-nosotros { overflow-x: clip; }
@@ -35,9 +33,10 @@
 /* La opcion de la vista en la que se esta lleva el aro ambar de styles.css
    (menu M2), que no depende solo del color del texto. */
 
-/* Una banda oscura en #/contacto (el horario) y la cabeza de la tienda. En
-   #/ y en #/nosotros no hay: el horno lo pone ahi la barra, y los
-   principios de Nosotros van sobre la masa (seccion 10 del plan). */
+/* Una banda oscura en la cabeza de la tienda y en la de la cuenta. En #/,
+   #/nosotros y #/contacto no hay: el horno lo pone ahi la barra, y los
+   principios de Nosotros y el horario de Contacto van sobre la masa
+   (seccion 10 del plan). */
 .banda-oscura { background: var(--horno); color: var(--sobre-horno); }
 
 /* ---- #/ : la portada (Hero.jsx, seccion 10 del plan, "Estilo") --------- */
@@ -229,9 +228,9 @@
    (.rotulo, 6,52:1 sobre el grano). Abajo dejan sitio a la curva de la
    franja, que sube 22 px. */
 .nosotros-principios { --icono: clamp(32px, 5svh, 44px); --icono-aire: clamp(.3rem, 1.2svh, .9rem); flex: 0 0 auto; margin-block: auto; padding: 0 0 clamp(2rem, 5svh, 3rem); }
-.principios-cabeza { display: flex; align-items: center; gap: 1.4rem; }
-.principios-titulo { flex: 0 1 auto; margin: 0; color: var(--horno); font: 700 .95rem/1.4 var(--letra-texto); letter-spacing: .22em; text-align: center; text-transform: uppercase; }
-.principios-cabeza .linea-doble { min-width: 24px; }
+.principios-cabeza, .contacto-cabeza { display: flex; align-items: center; gap: 1.4rem; }
+.principios-titulo, .contacto-subtitulo { flex: 0 1 auto; margin: 0; color: var(--horno); font: 700 .95rem/1.4 var(--letra-texto); letter-spacing: .22em; text-align: center; text-transform: uppercase; }
+:is(.principios-cabeza, .contacto-cabeza) .linea-doble { min-width: 24px; }
 .principios { --hueco: clamp(2.5rem, 6vw, 5.5rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--hueco); max-width: 1120px; margin: clamp(.8rem, 3svh, 2.6rem) auto 0; padding: 0; list-style: none; }
 .principio { position: relative; text-align: center; }
 /* La estrella entre dos columnas, en medio del hueco y a la altura del
@@ -282,33 +281,74 @@
 .vista-tienda .vista-mando select, .vista-tienda .vista-buscar input { border-color: transparent; }
 .vista-tienda .vista-mando select:focus-visible, .vista-tienda .vista-buscar input:focus-visible { outline-color: var(--papel); }
 
-/* ---- #/contacto ---------------------------------------------------------- */
+/* ---- #/contacto (seccion 10 del plan, "Contacto con el estilo de la
+   portada") -------------------------------------------------------------- */
 
-.contacto-vista { padding: 1.5rem 0 4rem; }
-.contacto-rejilla { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, .85fr); grid-template-areas: "datos horario" "mapa horario" "mapa escribir"; grid-template-rows: auto auto 1fr; gap: 2.2rem clamp(2.5rem, 6vw, 6rem); align-items: start; }
-.contacto-datos { grid-area: datos; }
-.contacto-mapa { grid-area: mapa; }
-/* El mapa con el radio de las tarjetas y un filete de masa: sin borde, el
-   gris de Google se pegaba a la masa sin limite claro. */
-.contacto-mapa-marco { display: block; width: 100%; aspect-ratio: 4 / 3; max-height: 420px; border: 1px solid var(--masa-linea); border-radius: var(--r-card); background: var(--masa-honda); }
-.contacto-horario { grid-area: horario; }
-.contacto-escribir { grid-area: escribir; }
-.contacto-datos h1 { margin: 0 0 1.6rem; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 var(--letra-titulo); }
-.contacto-direccion { margin: 0; font: normal 1.45rem/1.35 var(--letra-titulo); }
-.contacto-mapa-enlace { margin-top: 1rem; }
-.contacto-subtitulo { margin: 0 0 1rem; font: 500 1.5rem/1.2 var(--letra-titulo); }
-.contacto-lista { display: flex; flex-wrap: wrap; gap: 1.2rem 2.6rem; }
-/* .contacto esta pensado en styles.css para fondo oscuro; sobre la masa, los
-   tonos de texto claro pasan a los de fondo claro. */
-.contacto-lista .contacto-tipo { color: var(--horno-suave); }
-.contacto-lista .contacto-valor { color: var(--corteza-oscura); }
-.contacto-lista .contacto-valor:hover { color: var(--horno); }
-.contacto-nota { max-width: 46ch; margin: 1.4rem 0 0; color: var(--horno-suave); font: .8rem/1.5 Arial, sans-serif; }
-.contacto-horario { padding: 2rem clamp(1.4rem, 3vw, 2.2rem) 1.8rem; border-radius: var(--r-card); }
-.contacto-horario h2 { margin: 0 0 1rem; color: var(--papel); font: 500 1.6rem/1.15 var(--letra-titulo); }
-.contacto-horario .open-label { margin-bottom: 1.2rem; font-size: .78rem; }
-.contacto-horario .footer-horario { font-size: 1rem; }
-.contacto-horario-nota { margin: 1rem 0 0; color: var(--sobre-horno-tenue); font: .8rem/1.5 Arial, sans-serif; }
+/* Como Nosotros, en una sola pantalla: la vista mide al menos el alto
+   visible y la franja queda en el borde de abajo; el alto que sobra se
+   reparte arriba y abajo (margenes auto). Con zoom o una ventana muy baja
+   crece y se desplaza en vez de cortar texto (WCAG 1.4.10). El sello se
+   asoma por la derecha del mapa: clip, sin desplazamiento de lado. */
+.vista-contacto { display: flex; min-height: 100vh; min-height: 100svh; flex-direction: column; padding-top: 86px; overflow-x: clip; }
+#raiz > main:has(.vista-contacto) { padding-bottom: 0; }
+.vista-contacto .franja-pie { flex: 0 0 auto; margin-top: 0; }
+.contacto-vista { flex: 0 0 auto; margin-block: auto; padding-block: clamp(.75rem, 3.5svh, 3rem) clamp(2rem, 5svh, 3rem); }
+
+/* Arriba, como la portada: el texto a la izquierda y el mapa a la derecha.
+   Debajo, el horario y Escribenos, cada uno con su cabeza entre lineas
+   dobles. */
+.contacto-rejilla { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); grid-template-areas: "texto mapa" "horario escribir"; gap: clamp(1.4rem, 5svh, 3.4rem) clamp(2.5rem, 6vw, 6rem); align-items: center; }
+.contacto-texto { grid-area: texto; }
+.contacto-texto .titular { margin: clamp(.3rem, 1.2svh, .9rem) 0 clamp(.4rem, 1.6svh, 1.1rem); font-size: clamp(2.6rem, min(6.4vw, 10svh), 6.4rem); }
+/* La direccion, en cursiva como la frase de la portada. */
+.contacto-direccion { font-size: clamp(1.1rem, 2.8svh, 1.6rem); }
+.contacto-mapa-enlace { margin-top: clamp(.8rem, 3svh, 2rem); }
+/* El estado junto al rotulo es el de los telefonos bajos (mas abajo); en
+   los demas tamanos va bajo el h2 del horario. */
+.contacto-texto > .open-label { display: none; }
+
+/* El mapa en el marco de la foto en arco (a 10 px), recto para no recortar
+   el mapa. Se descubre de abajo arriba al entrar, como la foto; la
+   animacion va en el iframe para que el clip no se coma el marco. */
+.contacto-mapa { grid-area: mapa; position: relative; }
+.contacto-mapa-marco { height: clamp(200px, 50svh - 100px, 420px); margin: 11px; background: var(--masa-honda); box-shadow: 0 0 0 10px var(--masa), 0 0 0 11px var(--horno); }
+.contacto-mapa-marco iframe { display: block; width: 100%; height: 100%; border: 0; animation: descubre var(--dur-scene) var(--ease-soft) 200ms both; }
+/* El sello, arriba a la derecha: abajo estan el logo y los creditos de
+   Google, a la derecha los mandos del zoom y arriba a la izquierda la
+   tarjeta del sitio. Es adorno: deja pasar el puntero al mapa (sin el giro
+   del puntero de la portada). */
+.contacto-sello { top: -16px; right: -26px; width: clamp(96px, 14svh, 120px); height: auto; aspect-ratio: 1; pointer-events: none; }
+
+/* El horario y Escribenos, sobre la masa. Entran en la misma escena, tras
+   el texto: los bloques suben y las lineas dobles se dibujan. */
+.contacto-horario { grid-area: horario; align-self: start; }
+.contacto-escribir { grid-area: escribir; align-self: start; }
+.contacto-horario, .contacto-escribir { animation: sube var(--dur-editorial) var(--ease-soft) 700ms both; }
+.contacto-escribir { animation-delay: 820ms; }
+.contacto-cabeza { margin-bottom: clamp(.5rem, 1.8svh, 1.1rem); }
+.contacto-cabeza .linea-doble { animation: traza var(--dur-scene) var(--ease-soft) 900ms both; }
+.contacto-horario .open-label { margin-bottom: clamp(.3rem, 1.2svh, .8rem); }
+/* Cada fila como una carta: el dia, los puntos guia hasta la hora y la
+   hora. Los puntos son el borde de un ::after del dt que crece lo que haga
+   falta: no son texto y el lector no los oye. La fila de hoy, en horno y
+   con su pastilla. */
+.carta-horario { max-width: 30rem; margin: 0; }
+/* Si no cabe la fila (texto espaciado, WCAG 1.4.12), la hora baja a la
+   linea de abajo en vez de salirse. */
+.carta-horario div { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 .6rem; padding-block: clamp(.05rem, .5svh, .3rem); }
+.carta-horario dt { display: flex; flex: 1 1 auto; align-items: baseline; white-space: nowrap; color: var(--horno-suave); font: 400 clamp(1.05rem, 2.6svh, 1.25rem)/1.35 var(--letra-titulo); }
+.carta-horario dt::after { min-width: 1.2rem; flex: 1; margin-left: .6rem; content: ""; border-bottom: 2px dotted var(--horno-claro); }
+.carta-horario dd { margin: 0; white-space: nowrap; color: var(--horno); font: 600 clamp(1.05rem, 2.6svh, 1.25rem)/1.35 var(--letra-titulo); font-variant-numeric: lining-nums tabular-nums; }
+.carta-horario .is-today dt { color: var(--horno); font-weight: 600; }
+.contacto-horario-nota { margin: clamp(.2rem, .8svh, .6rem) 0 0; color: var(--horno-suave); font: italic 400 1rem/1.4 var(--letra-titulo); }
+/* WhatsApp e Instagram, uno al lado del otro, con su rotulo encima. */
+.contacto-lista { display: flex; flex-wrap: wrap; gap: .8rem 2.2rem; }
+.contacto-nota { max-width: 52ch; margin: clamp(.5rem, 1.8svh, 1.1rem) 0 0; color: var(--horno-suave); font: .85rem/1.5 var(--letra-texto); }
+
+/* Con menos movimiento, todo quieto y a la vista desde el principio. */
+@media (prefers-reduced-motion: reduce) {
+  .contacto-mapa-marco iframe, .contacto-horario, .contacto-escribir, .contacto-cabeza .linea-doble { animation: none; }
+}
 
 /* En la tienda los precios van en corteza, como pide el reparto (el 10 %
    son botones, precios y acentos). Corteza oscura sobre papel: 7,9:1. */
@@ -334,14 +374,23 @@
      11 px de aire. */
   .nosotros-rejilla { gap: clamp(2.5rem, 6vw, 3.5rem); }
   .nosotros-sello { right: -20px; width: clamp(88px, 13svh, 104px); }
-  .contacto-rejilla { grid-template-columns: 1fr; grid-template-areas: "datos" "mapa" "horario" "escribir"; }
 }
 @media (min-width: 681px) and (max-width: 900px) {
+  /* En la tableta las columnas de Contacto son estrechas: menos hueco y la
+     cabeza del horario mas pequena, para que quepa en una linea; el maiz
+     del fondo caeria bajo Escribenos y se quita. */
+  .contacto-rejilla { column-gap: clamp(1.5rem, 4vw, 2.5rem); }
+  .contacto-cabeza { gap: .8rem; }
+  .contacto-subtitulo { font-size: .8rem; letter-spacing: .14em; }
+  .carta-horario dt, .carta-horario dd { font-size: 1.05rem; }
+  .fondo-contacto .is-abajo-izquierda { display: none; }
+  /* El margen de la pagina es estrecho: el sello no se asoma tanto, o la
+     ventana lo cortaria. */
+  .contacto-sello { right: -6px; }
   .portada-rejilla { grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(1.2rem, 3vw, 2rem); padding-block: 1.4rem; }
   .portada h1 { font-size: clamp(3rem, 6.4vw, 3.6rem); }
 }
 @media (max-width: 680px) {
-  .vista-contacto { padding-top: 96px; }
   .vista-inicio { padding-bottom: 0; }
   .vista-inicio .portada { flex: 1 1 0; }
   .vista-inicio .portada > .container { width: calc(100% - 2 * var(--borde)); }
@@ -401,19 +450,64 @@
      el nombre; sin la frase. Si un nombre no cabe (texto espaciado, WCAG
      1.4.12), la palabra se parte antes que salirse. */
   .nosotros-principios { --icono: clamp(28px, 4.6svh, 36px); --icono-aire: clamp(.25rem, 1svh, .6rem); padding-bottom: clamp(1.9rem, 5svh, 2.6rem); }
-  .principios-cabeza { gap: .7rem; }
-  .principios-titulo { font-size: .72rem; letter-spacing: .14em; }
+  .principios-cabeza, .contacto-cabeza { gap: .7rem; }
+  .principios-titulo, .contacto-subtitulo { font-size: .72rem; letter-spacing: .14em; }
   .principios { --hueco: 1rem; margin-top: clamp(.6rem, 2svh, 1.2rem); }
   .principio + .principio::before { font-size: .9rem; }
   .principio-numero { letter-spacing: .14em; }
   .principio h3 { margin: 0; font-size: clamp(.8rem, 3.8vw, 1.05rem); overflow-wrap: anywhere; hyphens: auto; }
   .principio p { display: none; }
+  /* Contacto en el telefono (seccion 10 del plan): una columna, con el
+     mapa bajo (150 a 200 px segun el alto) y todos los textos. */
+  .vista-contacto { padding-top: 70px; }
+  .contacto-vista { padding-block: clamp(.4rem, 1.4svh, 1rem) clamp(1.75rem, 3.5svh, 2.2rem); }
+  .contacto-rejilla { grid-template-columns: minmax(0, 1fr); grid-template-areas: "texto" "mapa" "horario" "escribir"; gap: clamp(.5rem, 1.6svh, 1rem); }
+  /* La direccion va al lado del titulo, abajo, y el boton debajo de los
+     dos: el orden de lectura no cambia. */
+  .contacto-texto { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "rotulo rotulo" "titulo direccion" "boton boton"; column-gap: 1rem; align-items: end; }
+  .contacto-texto .rotulo-espiga { grid-area: rotulo; }
+  .contacto-texto .titular { grid-area: titulo; margin: .3rem 0 0; font-size: clamp(1.9rem, min(10vw, 6svh), 2.75rem); }
+  .contacto-texto .titular em { padding-left: .45em; }
+  .contacto-direccion { grid-area: direccion; font-size: clamp(.88rem, 2.2svh, 1.05rem); line-height: 1.3; }
+  .contacto-mapa-enlace { grid-area: boton; justify-self: start; margin-top: clamp(.5rem, 1svh, .8rem); }
+  .contacto-mapa-marco { height: clamp(150px, 40svh - 150px, 200px); margin: 7px; box-shadow: 0 0 0 6px var(--masa), 0 0 0 7px var(--horno); }
+  .contacto-sello { top: -10px; right: -6px; width: clamp(60px, 9svh, 80px); }
+  .contacto-cabeza { margin-bottom: clamp(.3rem, 1svh, .6rem); }
+  .carta-horario dt, .carta-horario dd { font-size: clamp(.95rem, 2.4svh, 1.1rem); }
+  .contacto-horario-nota { font-size: .9rem; }
+  /* WhatsApp e Instagram caben uno al lado del otro desde 360 px. */
+  .contacto-lista { gap: .4rem .9rem; }
+  .contacto .rotulo { font-size: .62rem; letter-spacing: .16em; }
+  .contacto-valor { gap: .3rem; padding: .2rem .45rem; font-size: clamp(.85rem, 3.9vw, 1.05rem); }
+  .contacto-valor .ico { width: 20px; height: 20px; }
+  .contacto-nota { font-size: .75rem; }
   /* La canasta flota abajo a la derecha: lo ultimo de cada vista no se
      queda debajo de ella al llegar al final. Las que acaban en la franja
      de espigas no lo necesitan: la franja es adorno y llega al borde. */
   #raiz > main { padding-bottom: 92px; }
   #raiz > main:has(.franja-pie) { padding-bottom: 0; }
   #raiz > main:has(.vista-inicio) { padding-bottom: 0; }
+}
+
+/* Contacto en los telefonos bajos (seccion 10 del plan): para caber sin
+   desplazarse, el estado sube junto a "Dónde estamos", como en la cabecera
+   de periodico (y el del horario se quita: solo uno se ve y se lee), el h1
+   va en una linea sin el desplazamiento, la direccion en una (el <br> se
+   quita; un espacio lo sigue) y el mapa puede bajar hasta 120 px. */
+@media (max-width: 680px) and (max-height: 800px) {
+  .contacto-texto { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "rotulo estado" "titulo titulo" "direccion direccion" "boton boton"; align-items: center; }
+  .contacto-texto > .open-label { display: inline-flex; grid-area: estado; justify-self: end; padding: .2rem .6rem .2rem .5rem; font-size: .66rem; }
+  .contacto-horario > .open-label { display: none; }
+  .contacto-texto .titular { margin: .25rem 0 .1rem; font-size: clamp(1.6rem, 8.4vw, 2.2rem); line-height: 1.05; }
+  .contacto-texto .titular em { display: inline; padding-left: 0; }
+  .contacto-direccion br { display: none; }
+  .contacto-mapa-marco { height: clamp(120px, 40svh - 150px, 200px); }
+  /* Y los espacios, al minimo; el ticket sigue en 44 px de alto. */
+  .contacto-vista { padding-top: .25rem; }
+  .contacto-rejilla { gap: .35rem; }
+  .contacto-mapa-enlace { min-height: 44px; margin-top: .45rem; padding-block: .7rem; }
+  .contacto-cabeza { margin-bottom: .25rem; }
+  .carta-horario div { padding-block: 0; }
 }
 
 /* ---- Motion ---------------------------------------------------------------- */
@@ -460,7 +554,9 @@
 .fondo-nosotros .is-arriba-izquierda { top: 6px; right: 4%; left: auto; width: 300px; }
 .fondo-tienda .is-arriba-izquierda { top: 14px; left: 14%; width: 230px; }
 .fondo-tienda .is-arriba-derecha { top: 6px; right: 6%; width: 260px; }
-.fondo-contacto .is-abajo-izquierda { right: 3%; bottom: -10px; left: auto; width: 230px; }
+/* El maiz, en la esquina de abajo, a la derecha de Instagram y de la nota,
+   no debajo de ellos. */
+.fondo-contacto .is-abajo-izquierda { right: -30px; bottom: -50px; left: auto; width: 170px; }
 .fondo-contacto .is-arriba-derecha { top: 0; right: 40%; width: 200px; }
 
 @media (max-width: 680px) {

@@ -111,7 +111,7 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
 | Logo / Inicio | `#/` | Cabecera de periódico, portada y la cinta de categorías (Panes, Dulces y pasteles, Bebidas), y nada más: sin carrusel |
 | Nosotros | `#/nosotros` | La historia (foto en arco, sello y titular como la portada) y los tres principios numerados sobre la masa (sección 10, "Nosotros con el estilo de la portada"); la galería cuando haya fotos |
 | Tienda | `#/tienda-catalogo`, `#/tienda-<categoría>` | El catálogo; cambiar de categoría no vuelve a montar la vista |
-| Contáctanos | `#/contacto` | Horario con el día de hoy marcado, abierto/cerrado, dirección, mapa y contacto |
+| Contáctanos | `#/contacto` | Dirección, mapa con su sello, horario estilo carta con el día de hoy marcado, abierto/cerrado y contacto, en una sola pantalla (sección 10, "Contacto con el estilo de la portada") |
 | — | `#/confirmar`, `#/comprobante` | El pedido (sección 6) |
 | Silueta / iniciales | `#/cuenta/*` | La cuenta (sección 7) |
 
@@ -680,6 +680,69 @@ clases o en piezas comunes, no copiado.
   esconde contenido que en ese tamaño debería verse.
 - Fondo con el estampado de trazos de Nosotros (`FondoDibujo`), tenue.
 
+### Contacto con el estilo de la portada (24 de octubre de 2026)
+
+Como Nosotros, sin muestra (elegido por el usuario) y con las mismas piezas
+comunes (`EnlaceLlegar`/`TextoOla`, `Sello`, `.linea-doble`, la escena de
+entrada), no copiadas.
+
+- **Arriba, como la portada**: el texto a la izquierda y el mapa a la
+  derecha; **debajo**, el horario a la izquierda y Escríbenos a la
+  derecha, cada uno con su cabeza entre líneas dobles. En el teléfono, una
+  columna en ese orden.
+- **El texto**: el rótulo con la espiga **"Dónde estamos"**, el `h1`
+  "Visítanos / *en Tena*" con el tratamiento del de la portada (la segunda
+  línea en cursiva cobriza y desplazada), la dirección, dentro de su
+  `<address>`, en cursiva como la frase de la portada, y "Ver en el mapa".
+  En el teléfono la dirección va al lado del título, abajo, y el botón
+  debajo de los dos.
+- **El mapa** en un **marco fino recto** (el mismo filete de la foto en
+  arco, pero sin arco para no recortar el mapa), con un **sello propio**
+  arriba a la derecha, "Eloy Alfaro · Gabriel Espinosa", que se comporta
+  como el de la portada (`aria-hidden`, cae girando al entrar, nunca con
+  el scroll) y no tapa los controles ni los créditos de Google (abajo y a
+  la izquierda). Deja pasar el puntero al mapa (`pointer-events: none`),
+  así que no gira con el puntero encima. "Ver en el mapa" sigue siendo el
+  ticket ámbar, bajo la dirección.
+- **El horario**, sin la tarjeta oscura: sobre la masa, con el `h2`
+  "Horario de atención" en versalitas entre **líneas dobles** (como los
+  principios de Nosotros), el estado abierto/cerrado debajo y cada fila
+  **como una carta**: el día, **puntos guía** y la hora, en Fraunces (la
+  fila de hoy en horno, con su pastilla "hoy"). Sigue siendo un `<dl>`;
+  los puntos son el borde punteado de un `::after` del `dt`, sin texto.
+  Si la fila no cabe, la hora baja a la línea siguiente. "En feriados
+  nacionales cerramos." debajo, en cursiva. El estado va en una pastilla
+  papel con el texto en horno (abierto) o corteza oscura (cerrado): el
+  ámbar de antes era para el fondo oscuro.
+- **Escríbenos**: WhatsApp e Instagram con el aspecto de "Cómo llegar"
+  (Fraunces en cursiva, filete `--corteza`, su icono y la ola de letras;
+  es el mismo `EnlaceLlegar`, que con `href` se abre en otra pestaña y lo
+  dice en el nombre), uno al lado del otro con el rótulo de cada uno
+  encima, y la nota de que son de ejemplo, que **se ve siempre**:
+  "Teléfono y redes de ejemplo (proyecto de clase)."
+- **Entrada**: la escena de la portada (rótulo, título, dirección y
+  enlaces suben uno tras otro; el mapa se descubre de abajo arriba; el
+  sello cae girando; las líneas del horario se dibujan). Una vez.
+- **Todo en una sola pantalla, sin scroll**, como Nosotros: la vista mide
+  el alto visible (`min-height: 100svh`), la franja en el borde de abajo,
+  y el mapa, el sello, el `h1` y los espacios se reducen según la altura
+  (`clamp` con `svh`). Cabe de 1440×900 a 360×640 (también 1366×768,
+  1280×720, 900×1000, 768×1024, 390×844, 390×700 y 375×667). En el
+  teléfono el mapa se hace bajo (150–200 px según la altura) y no se
+  quita ningún texto.
+- **En los teléfonos bajos** (680 px de ancho o menos y 800 px de alto o
+  menos), para que quepa: el estado abierto/cerrado sube **junto a
+  "Dónde estamos"**, como en la cabecera de periódico, y el del horario
+  se quita (solo uno se ve y se lee a la vez: el otro va con
+  `display: none`); el `h1` va **en una línea**, "Visítanos *en Tena*",
+  sin el desplazamiento de la segunda; la dirección, en una línea; el
+  mapa puede bajar **hasta 120 px**; y los espacios quedan al mínimo (el
+  ticket sigue en 44 px). La canasta flotante no tapa ningún enlace.
+- A 320 px de ancho WhatsApp e Instagram van uno debajo del otro y la
+  vista crece unos 55 px. Con zoom o una ventana muy baja, la vista crece
+  y se desplaza en vez de cortar texto (WCAG 1.4.10).
+- Con menos movimiento todo está quieto y visible desde el principio.
+
 ## 11. Accesibilidad (objetivo: WCAG 2.2 AA)
 
 - Todo con teclado; paneles que atrapan el foco, Esc y devolución del foco;
@@ -699,7 +762,13 @@ clases o en piezas comunes, no copiado.
   (vale por ser letra grande). En la portada, donde una espiga del
   estampado pasa bajo la letra, el peor píxel de 320 a 1440 px (texto
   transparente, 24 de octubre de 2026): `h1 em` 3,14:1, pie 5,03:1,
-  frase 5,10:1, rótulo 5,37:1. En todos los botones principales
+  frase 5,10:1, rótulo 5,37:1. En #/contacto, sobre el grano y los
+  trazos del fondo (mismo método, de 320 a 1440 px): `h1 em` 3,87:1,
+  rótulos 5,16:1, dirección 5,07:1, nota de ejemplo 6,17:1, días del
+  horario 6,17:1. El estado abierto/cerrado va en su pastilla papel:
+  abierto, horno sobre papel, 13,71:1; cerrado, corteza oscura sobre
+  papel, 7,93:1. WhatsApp e Instagram llevan su rótulo escondido delante
+  en el nombre ("WhatsApp: +593…"). En todos los botones principales
   (ticket) la sombra dura sustituye al halo ámbar; el anillo de 3 px se queda. Un
   `.button` con `aria-disabled` se ve apagado (opacidad .45, `GrayText` con
   `forced-colors`) y no reacciona al puntero.
@@ -812,7 +881,15 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       teléfono; los principios entran con la escena, sin observador. Lo
       prueba `nosotros.mjs` de 1440×900 a 360×640, y que a 320×256 y
       640×360 crece sin cortar.
-- [ ] Segunda vuelta: el aspecto de Contacto, canasta y cuenta más allá
+- [x] Contacto con el estilo de la portada (sección 10, 24 de octubre de
+      2026): rótulo y titular, mapa con marco y sello, horario estilo carta
+      sobre la masa, Escríbenos con la ola, una sola pantalla de 1440×900 a
+      360×640. Lo prueba `pruebas/casos/contacto.mjs`.
+- [x] Contacto en los teléfonos bajos (24 de octubre de 2026): el estado
+      junto a "Dónde estamos", el `h1` en una línea, el mapa hasta 120 px
+      y la nota de ejemplo más corta; cabe sin desplazarse a 390×700,
+      375×667 y 360×640, y la canasta flotante no tapa ningún enlace.
+- [ ] Segunda vuelta: el aspecto de la canasta y la cuenta más allá
       de los botones, con otra muestra antes.
 
 ### Aspecto y movimiento (revisión visual del 21 de octubre de 2026)

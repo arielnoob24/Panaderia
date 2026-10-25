@@ -1,14 +1,23 @@
 // ---- #/contacto -------------------------------------------------------------
-// Donde estamos y cuando: la direccion, el mapa con "Ver en el mapa" debajo,
-// WhatsApp e Instagram con la nota de que son de ejemplo, y en la tarjeta
-// oscura si se esta abierto y el horario con el dia de hoy marcado. El sitio
-// no tiene pie (seccion 4 del plan): esto es lo que llevaba.
+// Con el estilo de la portada (seccion 10 del plan, "Contacto con el estilo
+// de la portada"): arriba, como la portada, el texto (rotulo con la espiga,
+// el titular, la direccion y "Ver en el mapa") y a su lado el mapa en un
+// marco fino con su sello; debajo, sobre la masa y entre las lineas dobles
+// de la cabecera de periodico, el horario como una carta (con el dia de hoy
+// marcado y si se esta abierto) y Escribenos, con WhatsApp e Instagram con
+// la ola de "Cómo llegar" y la nota de que son de ejemplo. El sitio no tiene
+// pie (seccion 4 del plan): esto es lo que llevaba.
+//
+// Como la portada y Nosotros, cabe en una sola pantalla sin desplazarse
+// (vistas.css): el mapa, el titular y los espacios se ajustan al alto
+// visible. Todo entra en una sola escena, una vez.
 import { useRef } from 'react';
 import { useVista } from '../comun/useVista.js';
 import { useHorario } from '../comun/useHorario.js';
 import EstadoAbierto from '../comun/EstadoAbierto.jsx';
 import Contactos from '../comun/Contactos.jsx';
-import { IconoPin } from '../comun/iconos.jsx';
+import Sello from '../comun/Sello.jsx';
+import { IconoPin, IconoTrigo } from '../comun/iconos.jsx';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
 import Franja from '../comun/Franja.jsx';
 
@@ -31,30 +40,48 @@ function Contacto() {
       <section id="visitanos" className="contacto-vista con-fondo" aria-labelledby="contacto-titulo">
         <FondoDibujo vista="contacto" />
         <div className="container contacto-rejilla">
-          <div className="contacto-datos">
-            <h1 ref={tituloRef} id="contacto-titulo" tabIndex={-1}>Visítanos en Tena</h1>
-            <address className="contacto-direccion">Esquina de Eloy Alfaro<br />y Gabriel Espinosa, Tena</address>
-          </div>
-          <div className="contacto-mapa">
-            {/* loading="lazy": el mapa pesa y en el telefono queda mas abajo;
-                se pide cuando se acerca a la pantalla. */}
-            <iframe
-              className="contacto-mapa-marco"
-              src={MAPA_EMBEBIDO}
-              title="Mapa de la ubicación de El Tradicional, en Eloy Alfaro y Gabriel Espinosa, Tena"
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-            ></iframe>
+          <div className="contacto-texto sube-en-orden">
+            <p className="rotulo rotulo-espiga"><IconoTrigo />Dónde estamos</p>
+            {/* En los telefonos bajos el estado sube aqui, junto al rotulo,
+                como en la cabecera de periodico de la portada, para que la
+                vista quepa; el del horario se quita entonces. Solo uno de
+                los dos se ve (y se lee) a la vez: el otro va display: none
+                (vistas.css). */}
+            <EstadoAbierto />
+            <h1 ref={tituloRef} id="contacto-titulo" className="titular" tabIndex={-1}>Visítanos{' '}<em>en Tena</em></h1>
+            <address className="frase contacto-direccion">Esquina de Eloy Alfaro<br />{' '}y Gabriel Espinosa, Tena</address>
             {/* Lo que se viene a hacer aqui es llegar: es el boton principal
-                de la vista, en ambar como "Ver el menu" en el inicio. */}
+                de la vista, el ticket ambar como "Nuestros panes". */}
             <a className="button button-yellow contacto-mapa-enlace" href={MAPA} target="_blank" rel="noopener">
-              <IconoPin grosor="1.6" />Ver en el mapa <span aria-hidden="true">↗</span><span className="sr-only"> (abre en una pestaña nueva)</span>
+              <IconoPin clase="ico" grosor="1.6" />Ver en el mapa <span aria-hidden="true">↗</span><span className="sr-only"> (abre en una pestaña nueva)</span>
             </a>
           </div>
-          <div className="contacto-horario banda-oscura">
-            <h2>Horario de atención</h2>
+          <div className="contacto-mapa">
+            {/* El marco es el filete de la foto en arco, recto para no
+                recortar el mapa. loading="lazy": en el telefono queda mas
+                abajo y pesa; se pide cuando se acerca a la pantalla. */}
+            <div className="contacto-mapa-marco">
+              <iframe
+                src={MAPA_EMBEBIDO}
+                title="Mapa de la ubicación de El Tradicional, en Eloy Alfaro y Gabriel Espinosa, Tena"
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              ></iframe>
+            </div>
+            {/* Arriba a la derecha, donde el mapa de Google no pone mandos
+                ni creditos; deja pasar el puntero al mapa (vistas.css). */}
+            <Sello texto="Eloy Alfaro · Gabriel Espinosa · " className="contacto-sello" />
+          </div>
+          <div className="contacto-horario">
+            <div className="contacto-cabeza">
+              <span className="linea-doble" aria-hidden="true"></span>
+              <h2 className="contacto-subtitulo">Horario de atención</h2>
+              <span className="linea-doble" aria-hidden="true"></span>
+            </div>
             <EstadoAbierto />
-            <dl className="footer-horario">
+            {/* Una carta: el dia, los puntos guia y la hora. Los puntos son
+                un borde del dt (vistas.css), sin texto que leer. */}
+            <dl className="carta-horario">
               {HORARIO.map((fila) => {
                 const esHoy = fila.dias.includes(horario.day);
                 return (
@@ -67,12 +94,16 @@ function Contacto() {
             </dl>
             <p className="contacto-horario-nota">En feriados nacionales cerramos.</p>
           </div>
-          {/* Va despues del horario: en el telefono, lo primero que se busca
-              es donde y si esta abierto; escribir viene luego. */}
+          {/* Va despues del horario: lo primero que se busca es donde y si
+              esta abierto; escribir viene luego. */}
           <div className="contacto-escribir">
-            <h2 className="contacto-subtitulo">Escríbenos</h2>
+            <div className="contacto-cabeza">
+              <span className="linea-doble" aria-hidden="true"></span>
+              <h2 className="contacto-subtitulo">Escríbenos</h2>
+              <span className="linea-doble" aria-hidden="true"></span>
+            </div>
             <div className="contacto-lista"><Contactos /></div>
-            <p className="contacto-nota">Teléfono y redes de ejemplo: es un proyecto de clase y todavía no hay números reales que publicar.</p>
+            <p className="contacto-nota">Teléfono y redes de ejemplo (proyecto de clase).</p>
           </div>
         </div>
       </section>

@@ -1,7 +1,6 @@
 // "Abierto · cierra 20:00" o "Cerrado · abre 08:00", con su punto. Lo calcula
 // servicios/horario.js, las cuentas del sitio presentado, y se pone al dia cada minuto
-// (useHorario). Va en el horario de #/contacto; la insignia esta hecha para
-// fondo oscuro (styles.css).
+// (useHorario). Va en el horario de #/contacto, sobre la masa (styles.css).
 import { estadoDelPie } from '../servicios/horario.js';
 import { useHorario } from './useHorario.js';
 

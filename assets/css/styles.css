@@ -66,7 +66,7 @@ body { -webkit-user-select: none; -ms-user-select: none; user-select: none; -web
 /* Lo que alguien puede querer copiar: el codigo del recuadro de respaldo (si
    no se puede seleccionar hay que copiarlo a mano, WCAG 3.3.8), el numero
    ET-XXXX de un pedido y los datos y el correo de la cuenta. */
-input, textarea, address, .footer-horario, a[href^="tel:"], .codigo-valor, .cuenta-pedido-numero, .cuenta-datos dd, .cuenta-sesion-correo, .cuenta-menu-correo { -webkit-user-select: text; -ms-user-select: text; user-select: text; -webkit-touch-callout: default; }
+input, textarea, address, .carta-horario, a[href^="tel:"], .codigo-valor, .cuenta-pedido-numero, .cuenta-datos dd, .cuenta-sesion-correo, .cuenta-menu-correo { -webkit-user-select: text; -ms-user-select: text; user-select: text; -webkit-touch-callout: default; }
 html { scroll-behavior: smooth; }
 body { margin: 0; background: var(--masa) var(--grano); color: var(--horno); font-family: Georgia, "Times New Roman", serif; font-size: 16px; line-height: 1.55; }
 img { display: block; max-width: 100%; }
@@ -641,36 +641,21 @@ h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 /* En la cabecera el panadero acompana al logo, asi que va mas pequeno que
    cuando vivia en el hero: manda el logo, el es la compania. */
 .mascot-brand { width: 50px; height: 50px; flex: 0 0 auto; background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
-/* La insignia de abierto/cerrado, pensada para fondo oscuro (el horario de
-   #/contacto). */
-.open-label { display: inline-flex; gap: .45rem; align-items: center; margin-bottom: .75rem; padding: .34rem .7rem .34rem .55rem; background: rgba(215, 155, 74, .1); border: 1px solid rgba(215, 155, 74, .4); border-radius: var(--r-pill); color: var(--ambar); font: 700 .68rem/1.3 Arial, sans-serif; }
-.open-label.is-closed { background: rgba(168, 95, 69, .2); border-color: rgba(168, 95, 69, .55); color: var(--aviso-cerrado); }
+/* La insignia de abierto/cerrado, en el horario de #/contacto, sobre la
+   masa: el texto en horno (abierto) o corteza oscura (cerrado), que pasan
+   de 4,5:1 sobre el grano, y el punto ambar o corteza al lado. */
+.open-label { display: inline-flex; gap: .5rem; align-items: center; padding: .3rem .75rem .3rem .6rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); font: 700 .74rem/1.3 var(--letra-texto); }
+.open-label.is-closed { color: var(--corteza-oscura); }
 /* El margen superior del punto es del aviso del hero; dentro de la insignia va centrado. */
 .open-label .status-dot { margin-top: 0; }
-/* La corteza oscura del punto se pierde sobre el horno: cerrado toma el mismo tinte claro que su texto. */
-.open-label .status-dot.is-closed { background: var(--aviso-cerrado); box-shadow: 0 0 0 4px rgba(217, 185, 169, .18); }
-.footer-horario { margin: 0; padding: .7rem .9rem; background: rgba(255, 255, 255, .06); border: 1px solid rgba(255, 255, 255, .2); border-radius: var(--r-btn); color: var(--sobre-horno-tenue); font: .85rem/1.5 Arial, sans-serif; }
-.footer-horario div { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; padding: .22rem 0; }
-/* La fila de hoy se marca con un filete ambar a la izquierda, que es lo que
-   hace que el cuadro sirva de algo y no sea solo un recuadro bonito. */
-.footer-horario div.is-today { margin: 0 -.9rem; padding: .22rem .9rem; background: rgba(215, 155, 74, .12); border-left: 2px solid var(--ambar); }
-.footer-horario dt { color: var(--sobre-horno-tenue); }
-.footer-horario dd { margin: 0; color: var(--sobre-horno); font-variant-numeric: tabular-nums; font-weight: 700; }
-/* La fila de hoy la marca el JS con el mismo dia que ya calcula para abierto/cerrado.
-   El texto va claro y lo ambar es el filete y la pastilla de "hoy": el ambar
-   sobre el fondo tenido de la fila no llegaba a 4,5:1. */
-.footer-horario div.is-today dt, .footer-horario div.is-today dd { color: var(--sobre-horno); }
+/* El dia de hoy en el horario: la pastilla ambar con el texto horno (6,1:1). */
 .dia-hoy { margin-left: .5rem; padding: .1rem .38rem; background: var(--ambar); border-radius: var(--r-hair); color: var(--horno); font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; vertical-align: .08em; }
-/* Etiqueta encima y el dato debajo con icono, subrayado, para que el dato sea lo que pesa. */
-.contacto { display: flex; flex-direction: column; gap: .3rem; }
-.contacto-tipo { color: var(--sobre-horno-tenue); font: .72rem/1.3 Arial, sans-serif; letter-spacing: .04em; }
-.contacto-valor { display: inline-flex; align-items: center; gap: .5rem; color: var(--ambar); font: 700 1rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 4px; }
-.contacto-valor:hover { color: var(--ambar-claro); }
-.contacto-icono { display: block; width: 26px; height: 26px; flex: 0 0 auto; }
+/* WhatsApp e Instagram: el rotulo encima y el enlace con la ola debajo. */
+.contacto { display: flex; flex-direction: column; align-items: flex-start; gap: .35rem; }
 .floating-whatsapp { cursor: pointer; position: fixed; right: 20px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 8; display: flex; gap: .5rem; align-items: center; padding: .85rem 1.15rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-pill); box-shadow: var(--shadow-float); font: 700 .78rem Arial, sans-serif; animation: pop var(--dur-base) var(--ease-out) 1200ms both; transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 @keyframes pop { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: none; } }
 /* Familia de microinteracciones: la flecha de bajar baja, la de salir se va en diagonal. */
-.text-link > span[aria-hidden], .order-button > span[aria-hidden], .contacto-valor > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
+.text-link > span[aria-hidden], .order-button > span[aria-hidden] { display: inline-block; transition: transform var(--dur-fast) var(--ease-ui); }
 .text-link:focus-visible > span[aria-hidden] { transform: translate(4px, -4px); }
 .text-link { transition: color var(--dur-fast) var(--ease-ui), background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui); }
 .order-button:focus-visible { transform: translateY(-2px); }
@@ -1064,7 +1049,7 @@ body.is-checkout .floating-whatsapp { display: none; }
   .floating-whatsapp { animation: none; opacity: 1; transform: none; }
   .con-puntero .nav-cuenta:hover .nav-cuenta-icono, .con-puntero .nav-cuenta:hover .nav-cuenta-iniciales,
   .con-puntero .floating-whatsapp.is-canasta:hover .canasta-icono { transform: none; }
-  .text-link > span[aria-hidden], .order-button > span[aria-hidden], .contacto-valor > span[aria-hidden] { transform: none !important; }
+  .text-link > span[aria-hidden], .order-button > span[aria-hidden] { transform: none !important; }
   .menu-toggle span, .con-puntero .order-button:hover, .order-button:focus-visible { transform: none; }
   .con-puntero .product-card:hover, .con-puntero .product-card:hover .product-image img { transform: none; }
   /* Tampoco se hunde nada al pulsar. */
