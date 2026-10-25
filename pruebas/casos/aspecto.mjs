@@ -373,7 +373,8 @@ async function editorial(t) {
     t.ok(ajuste.ancho <= ajuste.anchoVentana && ajuste.alto <= ajuste.altoVentana, `[${nombre}] la portada tiene desplazamiento (${JSON.stringify(ajuste)})`);
     t.ok(Math.abs(ajuste.cintaAbajo - ajuste.altoVentana) <= 1 && ajuste.fotoVisible >= 100 && ajuste.textoCinta >= 12, `[${nombre}] la cinta no llega al borde, la foto desaparece o sus enlaces quedan ilegibles (${JSON.stringify(ajuste)})`);
     t.ok(ajuste.dibujosFondo === 18 && ajuste.soloEspigas && ajuste.fondoDecorativo === 'true', `[${nombre}] el fondo no tiene solo espigas como decoracion (${JSON.stringify(ajuste)})`);
-    t.ok(ajuste.opacidadFondo >= .3 && ajuste.opacidadFondo <= .4, `[${nombre}] el estampado de trigo no queda tenue (${JSON.stringify(ajuste)})`);
+    // Al .2 (seccion 11): se ve, pero el texto que cae sobre una espiga sigue con contraste.
+    t.ok(ajuste.opacidadFondo >= .15 && ajuste.opacidadFondo <= .2, `[${nombre}] el estampado de trigo no queda tenue (${JSON.stringify(ajuste)})`);
     t.ok(ajuste.trazoEspiga <= .7 && ajuste.granoAncho >= 22, `[${nombre}] los trazos siguen gruesos o los granos se ven demasiado pequenos (${JSON.stringify(ajuste)})`);
     t.ok(ajuste.motivosVisibles.length >= 16 && ajuste.espigasVisibles >= 16, `[${nombre}] las espigas no cubren de forma repartida el fondo (${JSON.stringify(ajuste)})`);
     await ctx.close();

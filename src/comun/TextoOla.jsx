@@ -11,7 +11,9 @@ function TextoOla({ children }) {
       <span className="letras" aria-hidden="true">
         {[...texto].map((letra, i) => (
           // El indice es la clave buena: el texto no cambia de orden.
-          <span key={i} style={{ '--i': i }}>{letra}</span>
+          // El espacio lleva su clase: en linea, para que se vea y la linea
+          // se parta por ahi y no por dentro de una palabra (vistas.css).
+          <span key={i} className={letra === ' ' ? 'ola-espacio' : undefined} style={{ '--i': i }}>{letra}</span>
         ))}
       </span>
       <span className="sr-only">{texto}</span>

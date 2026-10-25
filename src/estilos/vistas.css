@@ -91,6 +91,12 @@
 .enlace-llegar { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding: .42rem .9rem; border: 1px solid var(--corteza); border-radius: var(--r-btn); color: var(--horno); font: italic 600 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 .enlace-llegar .ico { width: 24px; height: 24px; color: var(--corteza); stroke-width: 1.8; transition: transform var(--dur-base) var(--ease-soft); }
 .enlace-llegar .letras span { display: inline-block; white-space: pre; }
+/* Las letras de la ola (TextoOla.jsx) van cada una en su caja, y entre dos
+   cajas el navegador puede partir la linea: "pastel / es". La palabra no se
+   parte (nowrap) y el espacio es un espacio de verdad, en linea, que se ve
+   y es donde se parte si no cabe. */
+.letras { white-space: nowrap; }
+:is(.enlace-llegar, .cinta-enlace) .letras .ola-espacio { display: inline; white-space: normal; }
 .enlace-llegar:hover { border-color: var(--corteza-oscura); color: var(--corteza-oscura); }
 .enlace-llegar:active { transform: scale(.97); }
 .con-puntero .enlace-llegar:hover .ico { transform: translateY(-3px); }
@@ -313,8 +319,15 @@
 @media (max-width: 900px) {
   .portada-rejilla { grid-template-columns: 1fr; gap: 2.4rem; padding-bottom: 3.4rem; }
   .portada-foto { width: min(100%, clamp(160px, 52svh, 340px)); margin-inline: auto; }
-  .portada-sello { right: -8px; bottom: -40px; left: auto; width: 112px; height: 112px; }
-  .portada-foto figcaption { padding-right: 104px; text-align: left; }
+  /* El sello, sobre la esquina de abajo a la derecha de la foto y no sobre
+     el pie: colgando bajo el arco tapaba el final de "Miga abierta,
+     corteza tostada" cuando la foto se achica con poca altura (WCAG
+     1.4.10). La foto es la caja de referencia (container-type), asi que
+     100cqw es el alto del arco cuadrado, sea cual sea el pie; 1,1 veces el
+     sello cubre lo que crece al ir girado. */
+  .portada-foto { container-type: inline-size; }
+  .portada-sello { --sello: 112px; top: calc(100cqw - var(--sello) * 1.1); right: -8px; bottom: auto; left: auto; width: var(--sello); height: var(--sello); }
+  .portada-foto figcaption { text-align: left; }
   /* Nosotros sigue en dos columnas hasta el telefono, mas juntas, con el
      sello mas pequeno y menos asomado: a 681 px el hueco mide unos 41 px y
      con -44 el sello (girado mide unos 123 px) rozaba el texto; con -20 le quedan
@@ -334,8 +347,11 @@
   .vista-inicio .portada > .container { width: calc(100% - 2 * var(--borde)); }
   .vista-inicio .portada-rejilla { align-content: center; gap: clamp(.1rem, 1svh, .6rem); padding-block: .2rem; }
   .vista-inicio .portada-foto { width: min(100%, clamp(104px, calc((100svh - 470px) * .48), 220px)); }
-  .vista-inicio .portada-sello { right: -4px; bottom: -24px; width: clamp(68px, 12svh, 96px); height: auto; aspect-ratio: 1; }
-  .vista-inicio .portada-foto figcaption { margin-top: .35rem; padding-right: 72px; font-size: .72rem; }
+  /* En el telefono la foto es estrecha y esta centrada: el sello asoma la
+     mitad por fuera, en el margen, para no tapar el pan. */
+  .vista-inicio .portada-sello { --sello: clamp(68px, 12svh, 96px); right: calc(var(--sello) * -.5); }
+  /* El marco del arco cuelga 11 px bajo la foto: el pie empieza despues. */
+  .vista-inicio .portada-foto figcaption { margin-top: calc(11px + .2rem); font-size: .72rem; }
   .vista-inicio .periodico { flex-wrap: nowrap; gap: .25rem; padding-block: .3rem; }
   .vista-inicio .periodico .rotulo { min-width: 0; font-size: clamp(.56rem, 2.45vw, .7rem); letter-spacing: .06em; white-space: nowrap; }
   .vista-inicio .periodico-estado { justify-content: flex-end; }
@@ -349,7 +365,6 @@
   .vista-inicio .cinta-enlace { min-width: 0; flex: 1 1 0; justify-content: center; gap: .2rem; padding: .3rem .12rem; font-size: clamp(.75rem, 3.2vw, .9rem); }
   .vista-inicio .cinta-enlace .ico { width: 1.15em; height: 1.15em; }
   .vista-inicio .cinta-enlace .letras { min-width: 0; }
-  .vista-inicio .cinta-enlace .letras span { white-space: normal; }
   .vista-inicio .cinta-estrella { display: none; }
   body:has(.vista-inicio) .floating-whatsapp.is-canasta { right: 8px; bottom: calc(5px + env(safe-area-inset-bottom)); width: 44px; height: 44px; }
   body:has(.vista-inicio) .floating-whatsapp .canasta-icono { width: 24px; height: 24px; }
@@ -400,11 +415,6 @@
   #raiz > main:has(.franja-pie) { padding-bottom: 0; }
   #raiz > main:has(.vista-inicio) { padding-bottom: 0; }
 }
-/* Por debajo de 360 px el sello sobresalia por la derecha (2 px a 320):
-   pegado al borde y algo mas pequeno. */
-@media (max-width: 360px) {
-  .vista-inicio .portada-sello { right: 0; }
-}
 
 /* ---- Motion ---------------------------------------------------------------- */
 
@@ -440,7 +450,11 @@
 .fondo-pieza.is-medio-derecha { top: 48%; right: 0; }
 .fondo-inicio .fondo-pieza.is-patron { top: var(--pieza-y); left: var(--pieza-x); width: var(--pieza-ancho); }
 
-.fondo-inicio { opacity: .34; }
+/* Las espigas de la portada, al .2 (casi como el resto de fondos): al .34, donde
+   una pasaba justo bajo la letra, el h1 em bajaba a 2,65:1 y la frase a
+   4,2:1. Medido el peor pixel de 320 a 1440 px con el texto transparente:
+   ver seccion 11 del plan. */
+.fondo-inicio { opacity: .2; }
 .fondo-inicio .fondo-pieza.is-patron path { stroke-width: .65; }
 .fondo-nosotros .is-abajo-derecha { right: 1%; bottom: -50px; width: 300px; }
 .fondo-nosotros .is-arriba-izquierda { top: 6px; right: 4%; left: auto; width: 300px; }
@@ -451,7 +465,7 @@
 
 @media (max-width: 680px) {
   .fondo-dibujo { opacity: .18; }
-  .fondo-inicio { opacity: .34; }
+  .fondo-inicio { opacity: .2; }
   .fondo-inicio .fondo-pieza.is-patron { top: var(--pieza-movil-y); left: var(--pieza-movil-x); width: var(--pieza-movil-ancho); }
   .fondo-nosotros .is-abajo-derecha { right: -60px; width: 280px; }
   .fondo-nosotros .is-arriba-izquierda { display: none; }

@@ -549,7 +549,11 @@ ritmo del movimiento y la accesibilidad no cambian.
     la altura sin desaparecer ni generar scroll.
   - Un estampado de 18 espigas propias, repartidas en posiciones, tamaños
     y giros distintos, llena el fondo de la portada. La tinta queda tenue
-    bajo el contenido y no añade desplazamiento.
+    (opacidad .2) bajo el contenido, para que el texto que cae encima de
+    una espiga siga con contraste (sección 11), y no añade desplazamiento.
+  - En la tableta y el teléfono el sello va sobre la esquina de abajo a la
+    derecha de la foto, nunca sobre el pie; en el teléfono asoma la mitad
+    por fuera de la foto, en el margen, para no tapar el pan.
   - Al entrar: rótulo, título, frase y botones suben uno tras otro; la foto
     se descubre de abajo arriba; el sello cae girando. Una vez, escena.
 - **Cinta cobriza** (en lugar de la franja de trigo): Panes, Dulces y
@@ -692,7 +696,10 @@ clases o en piezas comunes, no copiado.
   `aria-invalid` + `aria-describedby`.
 - Sobre el grano de papel el contraste se mide con su píxel más oscuro,
   rgb(238,230,220): rótulos 6,52:1, pie de foto 6,17:1, `h1 em` 3,87:1
-  (vale por ser letra grande). En todos los botones principales
+  (vale por ser letra grande). En la portada, donde una espiga del
+  estampado pasa bajo la letra, el peor píxel de 320 a 1440 px (texto
+  transparente, 24 de octubre de 2026): `h1 em` 3,14:1, pie 5,03:1,
+  frase 5,10:1, rótulo 5,37:1. En todos los botones principales
   (ticket) la sombra dura sustituye al halo ámbar; el anillo de 3 px se queda. Un
   `.button` con `aria-disabled` se ve apagado (opacidad .45, `GrayText` con
   `forced-colors`) y no reacciona al puntero.
@@ -794,13 +801,12 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       sobre la masa entre líneas dobles que se dibujan al llegar. Las
       piezas comunes con la portada: `comun/FotoEnArco.jsx`, `Sello.jsx` y
       `EnlaceLlegar.jsx`; lo prueba `pruebas/casos/nosotros.mjs`.
-- [ ] Portada en el teléfono (revisión de `ux-accesibilidad` del 24 de
-      octubre de 2026, ya pasaba antes): con poca altura (390×700 o menos)
-      el sello tapa el final de "Miga abierta, corteza tostada" (1.4.10);
-      donde una espiga del fondo pasa bajo la letra, el `h1 em` baja a
-      2,67:1 y el pie y la frase a unos 4,3:1 (bajar `.fondo-inicio` a .22
-      como Nosotros); y en la cinta a 390 px "Dulces y pasteles" sale con
-      los espacios comidos (`.vista-inicio .cinta-enlace .letras span`).
+- [x] Portada en el teléfono (revisión de `ux-accesibilidad` del 24 de
+      octubre de 2026): el sello va sobre la esquina de la foto y ya no
+      tapa el pie ni la cinta (también a 320×640 con el espaciado de
+      1.4.12); las espigas del fondo bajan a .2 (medidas en la sección
+      11); y en la cinta los espacios de la ola son espacios de verdad,
+      la línea se parte entre palabras. Lo prueba `pruebas/casos/portada.mjs`.
 - [x] Nosotros en una sola pantalla sin scroll (sección 10, 24 de octubre
       de 2026): foto al lado del título y principios sin frase en el
       teléfono; los principios entran con la escena, sin observador. Lo
