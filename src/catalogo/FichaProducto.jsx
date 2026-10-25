@@ -16,10 +16,11 @@ import ControlCantidad from '../pedido/ControlCantidad.jsx';
 
 // Cuanto mide la foto en la cuadricula, igual que SIZES_CUADRICULA de
 // view.js: sin esto el telefono bajaria la de 840 donde basta la de 420.
-// Dos por fila en el telefono, tres en la tableta y, con la tienda de 1080 px
-// o mas, cuatro (seccion 4 del plan): ninguna pasa de unos 340 px.
+// Dos por fila en el telefono, tres en la tableta y, con la tienda de 860 px
+// o mas, cuatro, y cinco desde 1080 (seccion 4 del plan): en escritorio
+// ninguna foto pasa de unos 260 px, ni con la tienda de 1440.
 const SIZES = {
-  cuadricula: '(max-width: 680px) calc(50vw - 23px), (max-width: 900px) calc(33vw - 30px), 340px',
+  cuadricula: '(max-width: 680px) calc(50vw - 23px), (max-width: 900px) calc(33vw - 30px), 260px',
 };
 
 // La etiqueta de agotado no viene en los datos: sale de que no haya existencia.

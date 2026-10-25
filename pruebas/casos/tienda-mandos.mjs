@@ -11,14 +11,16 @@
 //   y con menos movimiento solo aparece.
 // - "Mostrar" es un interruptor "Solo disponibles" con aria-pressed: un clic
 //   o Espacio lo cambian, esconde los agotados y se recuerda como antes.
-// - Las fichas: 4 por fila con la tienda de 1080 px o mas, 3 en la tableta y
-//   2 en el telefono; la letra no baja de 11 px y el - y el + no bajan de
-//   24 x 24.
+// - Las fichas: 5 por fila con la tienda de 1080 px o mas, 4 desde unos 860,
+//   3 en la tableta y 2 en el telefono; la letra no baja de 11 px y el - y
+//   el + no bajan de 24 x 24. Con 5 y con 4 (1440, 1280 y 1024 px), con el
+//   "- n +" abierto en todas, el precio y el control van en una linea sin
+//   salirse de la ficha y ninguna palabra del nombre se parte.
 // - Sin "Volver al inicio" en la tienda, y Tienda en el menu es un enlace
 //   simple, sin flecha ni desplegable.
 import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
 
-export const descripcion = 'Tienda: Ordenar por como combobox del APG (teclado, letras, Esc, Tab, clic fuera), Mostrar como interruptor aria-pressed, fichas 4/3/2 por fila con letra >= 11 px y - + >= 24 px, sin Volver al inicio ni desplegable en el menu';
+export const descripcion = 'Tienda: Ordenar por como combobox del APG (teclado, letras, Esc, Tab, clic fuera), Mostrar como interruptor aria-pressed, fichas 5/4/3/2 por fila con letra >= 11 px, - + >= 24 px y precio y - n + en una linea, sin Volver al inicio ni desplegable en el menu';
 export const limite = 150;
 
 const HORNO = 'rgb(58, 40, 34)';
@@ -80,7 +82,7 @@ export default async function tiendaMandos(t) {
       const botones = vistas.flatMap((v) => [...v.querySelectorAll('.card-cantidad button:not([hidden])')].map((b) => { const r = b.getBoundingClientRect(); return Math.min(r.width, r.height); }));
       return { porFila, menorLetra: Math.min(...letras), menorBoton: Math.min(...botones), tienda: document.querySelector('.vista-tienda > .container').getBoundingClientRect().width };
     });
-    const esperadas = nombre === 'escritorio' ? 4 : 2;
+    const esperadas = nombre === 'escritorio' ? 5 : 2;
     t.ok(fichas.porFila === esperadas, `[${nombre}] con la tienda de ${Math.round(fichas.tienda)} px van ${fichas.porFila} fichas por fila y deberian ser ${esperadas}`);
     t.ok(fichas.menorLetra >= 11 && fichas.menorBoton >= 24, `[${nombre}] en las fichas hay letra de ${fichas.menorLetra} px o un - / + de ${fichas.menorBoton} px`);
 
@@ -231,9 +233,12 @@ export default async function tiendaMandos(t) {
     await ctx.close();
   }
 
-  // En la tableta van tres fichas por fila.
-  {
-    const ctx = await t.contexto({ viewport: { width: 900, height: 1000 } }, { nombre: 'tableta' });
+  // Cinco a 1440, cuatro a 1024 y tres en la tableta. Con cinco y con cuatro
+  // la ficha baja a unos 200 px: con el "- n +" abierto en todas, el precio
+  // y el control siguen en una linea y dentro de la ficha, y el nombre mas
+  // largo parte entre palabras, nunca dentro de una.
+  for (const [ancho, esperadas] of [[1440, 5], [1280, 5], [1024, 4], [900, 3]]) {
+    const ctx = await t.contexto({ viewport: { width: ancho, height: 1000 } }, { nombre: `${ancho}` });
     const p = await ctx.newPage();
     await p.goto(t.REACT + '#/tienda-catalogo');
     await p.waitForSelector('.product-card:not([hidden])');
@@ -241,7 +246,34 @@ export default async function tiendaMandos(t) {
       const tops = [...document.querySelectorAll('.product-card:not([hidden])')].map((v) => Math.round(v.getBoundingClientRect().top));
       return tops.filter((x) => x === Math.min(...tops)).length;
     });
-    t.ok(porFila === 3, `[tableta] a 900 px van ${porFila} fichas por fila y deberian ser 3`);
+    t.ok(porFila === esperadas, `[${ancho}] van ${porFila} fichas por fila y deberian ser ${esperadas}`);
+    if (esperadas >= 4) {
+      await p.evaluate(() => document.querySelectorAll('.product-card:not([hidden]) .card-mas').forEach((b) => b.click()));
+      await espera(900);
+      const malas = await p.evaluate(() => [...document.querySelectorAll('.product-card:not([hidden])')].flatMap((ficha) => {
+        const fallos = [];
+        const nombre = ficha.querySelector('h3');
+        const caja = ficha.getBoundingClientRect();
+        const precio = ficha.querySelector('.product-bottom strong');
+        const control = ficha.querySelector('.card-cantidad, .card-agotado');
+        const rp = precio.getBoundingClientRect();
+        const rc = control.getBoundingClientRect();
+        if (ficha.querySelector('.card-cantidad') && !ficha.querySelector('.card-cantidad.is-lleno')) fallos.push('control sin abrir');
+        if (rc.left < caja.left || rc.right > caja.right) fallos.push(`control fuera (${Math.round(rc.left)}-${Math.round(rc.right)} en ${Math.round(caja.left)}-${Math.round(caja.right)})`);
+        if (rc.top > rp.bottom || rc.bottom < rp.top) fallos.push('precio y control en dos lineas');
+        if (precio.scrollWidth > precio.clientWidth + 1 || precio.getClientRects().length !== 1) fallos.push('precio partido');
+        if (nombre.scrollWidth > nombre.clientWidth + 1) fallos.push('nombre se sale');
+        const texto = nombre.firstChild;
+        const rango = document.createRange();
+        for (const m of texto.textContent.matchAll(/\S+/g)) {
+          rango.setStart(texto, m.index);
+          rango.setEnd(texto, m.index + m[0].length);
+          if (new Set([...rango.getClientRects()].map((r) => Math.round(r.top))).size > 1) fallos.push(`"${m[0]}" partida`);
+        }
+        return fallos.length ? [`${nombre.textContent}: ${fallos.join(', ')}`] : [];
+      }));
+      t.ok(malas.length === 0, `[${ancho}] con el control abierto: ${malas.join(' | ')}`);
+    }
     await ctx.close();
   }
 

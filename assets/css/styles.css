@@ -600,27 +600,35 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .product-card:active, .con-puntero .product-card:hover:active,
 .order-button:active, .con-puntero .order-button:hover:active,
 .card-cantidad .card-mas:active, .con-puntero .card-cantidad .card-mas:hover:active, .canasta-cantidad [data-mas]:active { transform: scale(.97); transition-duration: var(--dur-micro); }
-/* Fichas mas pequenas (seccion 4 del plan): cuatro por fila cuando la tienda
-   mide 1080 px o mas, tres en la tableta y dos en el telefono. Lo que manda
-   es lo que mide la tienda y no la ventana, asi que se pregunta a su caja
-   (container query). Con cuatro, la foto, los textos, el sello y el control
-   bajan en proporcion; la letra no baja de 11 px y el - y el + no bajan de
-   24 x 24 (WCAG 2.5.8; con su zona de toque de 44 px de alto). */
+/* Fichas mas pequenas (seccion 4 del plan): cinco por fila cuando la tienda
+   mide 1080 px o mas, cuatro desde unos 860, tres en la tableta y dos en el
+   telefono. Lo que manda es lo que mide la tienda y no la ventana, asi que
+   se pregunta a su caja (container query). Con cinco o cuatro la ficha mide
+   de 200 a 260 px, asi que la foto, los textos, el sello y el control bajan
+   en proporcion y lo justo para que el precio y el "- n +" abierto quepan en
+   una linea a 200 px; la letra no baja de 11 px y el - y el + se quedan en
+   30 x 30 (WCAG 2.5.8 pide 24; con su zona de toque de 44 px de alto). */
 .vista-tienda > .container { container: tienda / inline-size; }
+@container tienda (min-width: 860px) {
+  .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+  .product-card { --margen-papel: .45rem; }
+  .product-tag { top: 6px; left: 6px; width: 66px; height: 66px; padding: 7px; letter-spacing: .02em; }
+  .product-info { padding: .75rem .3rem .2rem; }
+  .product-categoria { margin-bottom: .25rem; font-size: .6875rem; letter-spacing: .12em; }
+  .product-info h3 { margin-bottom: .35rem; font-size: 1.06rem; }
+  .product-info h3:has(+ .product-bottom) { margin-bottom: .7rem; }
+  .card-tamanos { margin-bottom: .7rem; }
+  .tamano { padding: .24rem .5rem; font-size: .6875rem; }
+  .product-bottom { gap: .45rem; padding-top: .6rem; }
+  .product-bottom strong { font-size: 1.12rem; }
+  .card-cantidad button { width: 30px; height: 30px; font-size: 1.1rem; }
+  .card-cantidad .card-icono { width: 15px; height: 15px; }
+  .card-cantidad .card-numero { font-size: .95rem; }
+  .card-golpe { font-size: 1.15rem; }
+  .card-agotado { min-height: 32px; font-size: .72rem; }
+}
 @container tienda (min-width: 1080px) {
-  .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.1rem; }
-  .product-card { --margen-papel: .55rem; }
-  .product-tag { top: 8px; left: 8px; width: 68px; height: 68px; padding: 8px; letter-spacing: .04em; }
-  .product-info { padding: .85rem .4rem .25rem; }
-  .product-categoria { margin-bottom: .3rem; letter-spacing: .16em; }
-  .product-info h3 { margin-bottom: .4rem; font-size: 1.2rem; }
-  .product-info h3:has(+ .product-bottom) { margin-bottom: .8rem; }
-  .card-tamanos { margin-bottom: .75rem; }
-  .product-bottom { padding-top: .65rem; }
-  .product-bottom strong { font-size: 1.25rem; }
-  .card-cantidad button { width: 32px; height: 32px; }
-  .card-cantidad .card-numero { font-size: 1rem; }
-  .card-agotado { min-height: 34px; }
+  .product-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); }
 }
 @media (max-width: 900px) {
   /* Cinco entradas y el boton de la cuenta no caben con el aire de escritorio:

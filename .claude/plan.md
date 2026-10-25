@@ -221,10 +221,11 @@ panes", con la cinta o con el menú.
   (radios), precio y control `− cantidad +` (máximo 100 por producto). Al
   agregar se anuncia; ninguna foto vuela a la canasta (se quitó el 22 de
   octubre de 2026).
-- **Fichas más pequeñas** (25 de octubre de 2026): **4 por fila** en
-  escritorio (cuando la tienda mide 1080 px o más), 3 en tableta y 2 en el
+- **Fichas más pequeñas** (25 de octubre de 2026, segunda vuelta el mismo
+  día): **5 por fila** en escritorio (cuando la tienda mide 1080 px o
+  más), 4 entre unos 860 y 1080 px, 3 en tableta y 2 en el
   teléfono como antes (se pregunta a la caja de la tienda con una
-  container query, no a la ventana). Con cuatro, y en la tableta como en
+  container query, no a la ventana). Con cinco o cuatro, y en la tableta como en
   el teléfono, foto, nombre, precio, sello y control de cantidad
   bajan en proporción; la letra no baja de 11 px y los botones − y + no
   bajan de 24 × 24 px (WCAG 2.5.8).
@@ -943,6 +944,12 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       por fila, "Ordenar por" desplegable propio y "Mostrar" interruptor
       (secciones 3, 4 y 10, 25 de octubre de 2026). Lo prueba
       `pruebas/casos/tienda-mandos.mjs`.
+- [x] Fichas 5 por fila con la tienda de 1080 px o más y 4 desde unos 860
+      (sección 4, segunda vuelta del 25 de octubre de 2026): a 1440 la ficha
+      mide 258 px, a 1280 y a 1024, 228; el − y el + en 30 × 30. Lo prueba
+      `tienda-mandos.mjs` a 1440, 1280, 1024 y 900 px, con el `− n +`
+      abierto en todas (precio y control en una línea, dentro de la ficha,
+      sin partir palabras del nombre).
 - [x] Nosotros con la disposición "arco de pie" (sección 10, 25 de
       octubre de 2026): la foto de alto entero y los principios bajo el
       texto, en su columna. Lo prueba `pruebas/casos/nosotros.mjs` (sin
@@ -958,6 +965,12 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [ ] Tras recargar, la tienda no recuerda el desplazamiento de las entradas
       de antes (Atrás entre categorías da arriba); se arreglaría con
       `sessionStorage`. No urge.
+- [ ] Las entradas creadas cambiando la dirección a mano (escribir
+      `#/tienda-dulces` estando en `#/tienda-panes`) no llevan clave de React
+      Router (todas `default`), así que Atrás entre ellas no vuelve a donde
+      se estaba. Con los enlaces del sitio sí. Lo destapó el caso
+      `atras-entre-vistas` con 5 fichas por fila; ahora prueba el recorrido
+      con enlaces (cinta → Panes, menú → Tienda, Atrás).
 - [ ] El caso `reenviar-codigo` todavía espera a que crear acabe de salir y
       su comentario dice que está "apuntado para frontend"; ya no hace falta.
 - [ ] Sección de contenidos de IHC en el agente de UX (cuando el usuario pase los temas).

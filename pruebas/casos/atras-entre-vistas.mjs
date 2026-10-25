@@ -43,13 +43,18 @@ export default async function atrasEntreVistas(t) {
     await p.goBack(); await espera(1200);
     await mira('contacto y Atras a nosotros');
 
-    // En la tienda: otra categoria, bajar, otra categoria, Atras. Tienda ya
-    // no tiene desplegable: se cambia la direccion, una entrada nueva.
-    await abrir('#/tienda-catalogo');
-    await p.evaluate(() => { location.hash = '#/tienda-panes'; }); await espera(900);
+    // En la tienda: una categoria, bajar, otra entrada de la tienda, Atras.
+    // Tienda ya no tiene desplegable, asi que se llega como llega quien usa
+    // el sitio: Panes desde la cinta de la portada y luego Tienda en el menu
+    // (todo el catalogo). Antes se cambiaba location.hash a mano, pero esas
+    // entradas no llevan clave de React Router ('default' todas) y solo
+    // pasaba porque Dulces era lo bastante alta para no mover la pagina; con
+    // 5 fichas por fila cabe en una y el navegador la subia.
+    await abrir('#/');
+    await ir('.cinta-enlace-panes'); await espera(1200);
     await p.mouse.wheel(0, 600); await espera(700);
     const yPanes = await p.evaluate(() => Math.round(scrollY));
-    await p.evaluate(() => { location.hash = '#/tienda-dulces'; }); await espera(1000);
+    await ir('.site-header a[href$="tienda-catalogo"]'); await espera(1200);
     await p.goBack(); await espera(1400);
     const r = await p.evaluate(() => ({ hash: location.hash, y: Math.round(scrollY) }));
     t.ok(r.hash === '#/tienda-panes' && Math.abs(r.y - yPanes) <= 40, `[${nombre}] tienda: panes estaba en y=${yPanes} y Atras deja ${r.hash} en y=${r.y}`);
