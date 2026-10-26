@@ -197,7 +197,7 @@ panes", con la cinta o con el menú.
   letra de ese menú (Arial 700). La que tiene el puntero o las flechas en
   `rgba(255,255,255,.1)` con texto `--ambar-claro`; la elegida en
   `--ambar` con texto `--horno`. **Solo se sombrean**, como en el menú de
-  "Tu cuenta" (27 de octubre de 2026): ningún fondo viaja de una opción a
+  "Tu cuenta" (26 de octubre de 2026): ningún fondo viaja de una opción a
   otra, el color cambia con `--dur-fast`. El panel entra con fundido y `scale(.96)` → 1
   desde el botón (respuesta rápida, `--dur-fast`), la flecha gira; con
   menos movimiento solo aparece. Patrón APG de **combobox de solo
