@@ -24,10 +24,10 @@ export default async function filtrosAtras(t) {
     await irA('#/tienda-panes');
     await irA('#/tienda-dulces');
     // En dulces: orden por nombre, solo disponibles y busqueda.
-    t.ok((await p.locator('.orden-boton[role="combobox"]').count()) === 1 && (await p.getByRole('radiogroup', { name: 'Mostrar' }).getByRole('radio').count()) === 2, `[${nv}] la tienda no tiene el desplegable de Ordenar y los dos radios de Mostrar`);
+    t.ok((await p.locator('.orden-boton[role="combobox"]').count()) === 1 && (await p.getByRole('switch', { name: 'Mostrar Solo disponibles' }).count()) === 1, `[${nv}] la tienda no tiene el desplegable de Ordenar y el interruptor de Mostrar`);
     await ir('.orden-boton'); await espera(250);
     await ir('.orden-opcion:last-child'); await espera(200);
-    await ir('label[for="vista-mostrar-solo"]'); await espera(200);
+    await ir('.interruptor'); await espera(200);
     await p.fill('.vista-buscar input', 'tor'); await espera(400);
     const puesto = await estado();
     await p.goBack(); await espera(900);

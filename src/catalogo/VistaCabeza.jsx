@@ -2,7 +2,7 @@
 // Con el estilo de la portada (seccion 10 del plan, "La tienda con el estilo
 // de la portada"), sobre la masa: el rotulo con la espiga, el titulo y la
 // frase de la vista, "Filtrar por" como la cinta de #/, y los mandos
-// (buscador, Ordenar por y los dos radios de Mostrar) entre lineas dobles.
+// (buscador, Ordenar por y el interruptor de Mostrar) entre lineas dobles.
 // Sin "Volver al inicio" (seccion 4 del plan): a la portada se vuelve con el
 // logo o con Inicio. No decide nada, solo pinta lo que le da el
 // catalogo y le cuenta lo que se toca.
@@ -32,9 +32,6 @@ const ORDENES = [
   ['precio-desc', 'Precio: de mayor a menor'],
   ['nombre', 'Nombre: de la A a la Z'],
 ];
-
-// "Mostrar": [soloDisponibles, texto].
-const MOSTRAR = [[false, 'Todos'], [true, 'Solo disponibles']];
 
 function VistaCabeza({
   visible, titulo, frase, tituloRef, subcategoria, onSub, busqueda, onBusqueda,
@@ -111,41 +108,25 @@ function VistaCabeza({
             <span id="vista-orden-rotulo">Ordenar por</span>
             <OrdenarPor opciones={ORDENES} valor={orden} onCambio={onOrden} rotuloId="vista-orden-rotulo" />
           </div>
-          {/* "Mostrar" son dos radios a la vista (seccion 4 del plan), con la
-              misma pastilla horno que viaja de "Filtrar por" pero en su
-              propio LayoutGroup para no mezclarse con ella. Tab entra una
-              vez y las flechas cambian; el grupo se llama "Mostrar". */}
-          <LayoutGroup id="mostrar-solo">
-            <div className="vista-mando">
-              <span id="vista-mostrar-rotulo">Mostrar</span>
-              <div className="mostrar-opciones" role="radiogroup" aria-labelledby="vista-mostrar-rotulo">
-                {MOSTRAR.map(([solo, texto]) => (
-                  <Fragment key={texto}>
-                    <input
-                      className="chip-input"
-                      type="radio"
-                      name="vista-mostrar"
-                      id={`vista-mostrar-${solo ? 'solo' : 'todos'}`}
-                      checked={soloDisponibles === solo}
-                      onChange={() => onSolo(solo)}
-                    />
-                    <label className="chip chip-mostrar" htmlFor={`vista-mostrar-${solo ? 'solo' : 'todos'}`}>
-                      {soloDisponibles === solo && (
-                        <m.span
-                          className="chip-pastilla"
-                          layoutId="mostrar-pastilla"
-                          style={{ borderRadius: 999 }}
-                          transition={reducido ? { duration: 0 } : RESORTE.pastilla}
-                          aria-hidden="true"
-                        />
-                      )}
-                      {texto}
-                    </label>
-                  </Fragment>
-                ))}
-              </div>
-            </div>
-          </LayoutGroup>
+          {/* "Mostrar solo disponibles" es un interruptor como los de Wifi o
+              Bluetooth (seccion 4 del plan): un checkbox con role="switch",
+              la pista y el boton redondo son CSS. */}
+          <div className="vista-mando">
+            <span id="vista-mostrar-rotulo">Mostrar</span>
+            <label className="interruptor">
+              <input
+                id="vista-mostrar-solo"
+                className="interruptor-input"
+                type="checkbox"
+                role="switch"
+                aria-labelledby="vista-mostrar-rotulo vista-mostrar-texto"
+                checked={soloDisponibles}
+                onChange={(e) => onSolo(e.target.checked)}
+              />
+              <span className="interruptor-pista" aria-hidden="true"><span className="interruptor-bola"></span></span>
+              <span id="vista-mostrar-texto">Solo disponibles</span>
+            </label>
+          </div>
         </div>
         <span className="linea-doble" aria-hidden="true"></span>
       </div>

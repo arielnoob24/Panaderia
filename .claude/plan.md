@@ -210,15 +210,17 @@ panes", con la cinta o con el menú.
   en el APG, además ↑, Inicio y Fin también abren y Alt+↑ elige y cierra.
   Clic fuera cierra (`catalogo/OrdenarPor.jsx`). Al elegir, el foco vuelve al botón y el
   orden se anuncia como antes.
-- **"Mostrar" son dos opciones a la vista** (26 de octubre de 2026; el
-  interruptor "Solo disponibles" no convencía y el usuario no quiere
-  recuadro de fondo): `Todos` y `Solo disponibles`, con su rótulo
-  "Mostrar" en versalitas, en Fraunces cursiva como las categorías de
-  "Filtrar por" y **sin caja alrededor**. La elegida, en la pastilla
-  `--horno` con texto `--papel`, que se desliza de una a otra (`layoutId`,
-  mismo resorte que las otras; con menos movimiento salta). Por dentro
-  son dos radios (Tab entra una vez, las flechas cambian) con el nombre
-  del grupo "Mostrar". Se recuerda en `sessionStorage` como antes.
+- **"Mostrar" es un interruptor "Solo disponibles" como los de Wifi o
+  Bluetooth** (26 de octubre de 2026; antes fue un interruptor distinto y
+  luego dos opciones `Todos | Solo disponibles`; el usuario quiere este
+  aspecto): rótulo "Mostrar" en versalitas, una pista redondeada de
+  46 × 26 px y el texto "Solo disponibles". Apagado, la pista va en
+  `--papel` con filete `--horno-claro` y el botón redondo a la izquierda;
+  encendido, la pista se llena de `--horno` y el botón (`--papel`) se
+  desliza a la derecha (CSS, `--dur-fast`; con menos movimiento salta). Por
+  dentro es un `<input type="checkbox" role="switch">` (Espacio o un toque
+  lo cambian) llamado "Mostrar Solo disponibles". Encendido esconde los
+  agotados. Se recuerda en `sessionStorage` como antes.
 - "Mostrando X de Y productos" en una sola región `aria-live`
   (`.catalog-status`): mientras se escribe en el buscador calla y habla una
   vez, 400 ms después de la última tecla; sin resultados junta la cuenta y el
