@@ -132,8 +132,8 @@ export default async function tiendaMandos(t) {
       t.ok((await aviso(p)).includes('Ordenado por precio, de menor a mayor.'), `[teclado] el orden no se anuncia (${await aviso(p)})`);
       t.ok((await primero(p)) === 'Pan redondo', `[teclado] de menor a mayor no empieza por el mas barato (${await primero(p)})`);
       // La elegida, en la pastilla horno con el texto papel.
-      const pastilla = await p.evaluate(() => { const e = document.querySelector('.orden-opcion[aria-selected="true"]'); return [getComputedStyle(e).backgroundColor, getComputedStyle(e).color]; });
-      t.ok(pastilla[0] === HORNO && pastilla[1] === PAPEL, `[teclado] la elegida no va en horno con texto papel (${pastilla})`);
+      const pastilla = await p.evaluate(() => { const e = document.querySelector('.orden-opcion[aria-selected="true"]'); return [getComputedStyle(e.querySelector('.orden-pastilla')).backgroundColor, getComputedStyle(e).color, document.querySelectorAll('.orden-pastilla').length]; });
+      t.ok(pastilla[0] === HORNO && pastilla[1] === PAPEL && pastilla[2] === 1, `[teclado] la elegida no va en horno con texto papel (${pastilla})`);
       // Espacio y Alt+Abajo abren; Espacio elige.
       await p.keyboard.press('Space');
       t.ok((await combo(p)).expandido === 'true', '[teclado] Espacio no abre');

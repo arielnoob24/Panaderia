@@ -16,10 +16,14 @@
 // donde tiene que estar. Quien anuncia el orden es el catalogo (onCambio),
 // solo si cambia, como hacia el onChange del <select>.
 //
-// El movimiento es CSS (vistas.css): el panel entra con fundido y
-// scale(.96) desde el boton, en --dur-fast, y la flecha gira; con menos
-// movimiento solo aparece.
+// El panel entra con fundido y scale(.96) desde el boton (CSS, vistas.css,
+// --dur-fast) y la flecha gira; con menos movimiento solo aparece. Las dos
+// pastillas (la de la elegida y la de la que se mira) son un elemento cada una
+// (layoutId de Motion) y viajan de una opcion a otra con un resorte corto; con
+// menos movimiento saltan.
 import { useEffect, useId, useRef, useState } from 'react';
+import { m, useReducedMotion } from 'motion/react';
+import { RESORTE } from '../comun/movimiento.js';
 
 // Lo que se ha escrito seguido para saltar a una opcion. Pasado este rato
 // sin teclear, se empieza de cero (como en un <select>).
@@ -27,6 +31,8 @@ const PAUSA_LETRAS = 500;
 
 function OrdenarPor({ opciones, valor, onCambio, rotuloId }) {
   const base = useId();
+  const reducido = useReducedMotion();
+  const viaje = reducido ? { duration: 0 } : RESORTE.pastilla;
   const [abierto, setAbierto] = useState(false);
   // La opcion que se esta mirando (puntero o flechas), por su indice.
   const [activa, setActiva] = useState(0);
@@ -151,6 +157,17 @@ function OrdenarPor({ opciones, valor, onCambio, rotuloId }) {
             onPointerMove={(e) => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') setActiva(i); }}
             onClick={() => elegir(i)}
           >
+            {i === elegida && (
+              <m.span className="orden-pastilla" layoutId={`${base}-elegida`} transition={viaje} aria-hidden="true" />
+            )}
+            {abierto && i === activa && (
+              <m.span
+                className={i === elegida ? 'orden-mirada sobre-elegida' : 'orden-mirada'}
+                layoutId={`${base}-mirada`}
+                transition={viaje}
+                aria-hidden="true"
+              />
+            )}
             {texto}
           </li>
         ))}

@@ -63,7 +63,7 @@ const mirar = (p) => p.evaluate(() => {
       derecha: e.getBoundingClientRect().right,
     })),
     estrellas: [...grupo.querySelectorAll('.chip-estrella')].map((e) => e.getAttribute('aria-hidden')),
-    elegida: elegida && [getComputedStyle(elegida).backgroundColor, getComputedStyle(elegida).color],
+    elegida: elegida && [getComputedStyle(elegida.querySelector(':scope > .chip-pastilla') || elegida).backgroundColor, getComputedStyle(elegida).color, document.querySelectorAll('.chip-pastilla').length],
     lineas: barra.querySelectorAll('.linea-doble').length,
     campos: [...document.querySelectorAll('.orden-boton, .interruptor, .vista-buscar input')].map((c) => getComputedStyle(c).backgroundColor),
     mando: [getComputedStyle(mando).textTransform, getComputedStyle(mando).color],
@@ -102,7 +102,7 @@ export default async function tienda(t) {
     t.ok(m.etiquetas.map((e) => e.icono).join() === 'false,true,true,true', `[${nombre}] los iconos de las categorias no son los de la cinta (${JSON.stringify(m.etiquetas)})`);
     t.ok(m.etiquetas.every((e) => ES_FRAUNCES.test(e.letra) && e.cursiva === 'italic' && e.ola === 'true' && e.alto >= 24), `[${nombre}] las categorias no van en Fraunces cursiva con la ola, o miden menos de 24 px (${JSON.stringify(m.etiquetas)})`);
     t.ok(m.estrellas.length === 3 && m.estrellas.every((a) => a === 'true'), `[${nombre}] las estrellas no son adorno (${m.estrellas})`);
-    t.ok(m.elegida?.[0] === HORNO && m.elegida?.[1] === PAPEL, `[${nombre}] la elegida no va en pastilla horno con texto papel (${m.elegida})`);
+    t.ok(m.elegida?.[0] === HORNO && m.elegida?.[1] === PAPEL && m.elegida?.[2] === 1, `[${nombre}] la elegida no va en la pastilla horno (una sola, la que viaja) con texto papel (${m.elegida})`);
     t.ok(m.lineas === 2 && m.campos.length === 3 && m.campos.every((c) => c === PAPEL), `[${nombre}] los mandos no van entre lineas dobles o los campos no son papel (${m.lineas}, ${m.campos})`);
     t.ok(m.mando[0] === 'uppercase' && m.cuenta[0].startsWith('Mostrando 17 de 17') && m.cuenta[1] === 'uppercase' && m.cuenta[2] === CORTEZA_OSCURA, `[${nombre}] los rotulos o la cuenta no van en versalitas (${JSON.stringify([m.mando, m.cuenta])})`);
     t.ok(m.aviso === 'polite', `[${nombre}] el aviso del catalogo cambio (${m.aviso})`);

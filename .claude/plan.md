@@ -189,11 +189,16 @@ panes", con la cinta o con el menú.
 - **"Ordenar por" es un desplegable propio** (25 de octubre de 2026; el
   `<select>` del navegador se veía genérico): un botón en `--papel` con
   filete fino que dice el orden elegido y una flecha, y al abrirlo un
-  panel `--papel` con filete `--horno` y sombra dura, con las cuatro
+  panel **en `--masa`, sin sombra dura, solo con filete fino
+  `--horno-claro`** (26 de octubre de 2026: en `--papel` se veía como una
+  tarjeta blanca suelta), con las cuatro
   opciones en Fraunces cursiva; la elegida en la **pastilla `--horno` con
   texto `--papel`** como en "Filtrar por", y la que tiene el puntero o las
-  flechas en una pastilla `--masa` con filete `--horno-claro` (un blanco
-  tenue no se vería sobre el papel). El panel entra con fundido y `scale(.96)` → 1
+  flechas en una pastilla `--papel` (sobre la masa sí se distingue) con filete `--horno-claro`
+  para no depender solo del tono. **Las dos pastillas se deslizan**: la de
+  la elegida y la de la que se mira son un solo elemento cada una
+  (`layoutId` de Motion) que viaja de una opción a otra con un resorte
+  corto (~250 ms); con menos movimiento salta sin viajar. El panel entra con fundido y `scale(.96)` → 1
   desde el botón (respuesta rápida, `--dur-fast`), la flecha gira; con
   menos movimiento solo aparece. Patrón APG de **combobox de solo
   selección**: botón `role="combobox"` con `aria-expanded`,
@@ -840,7 +845,10 @@ pequeñas desde el 25 de octubre, sección 4).
 - **"Filtrar por" como la cinta**: Todas ✦ Panes ✦ Dulces y pasteles ✦
   Bebidas, en Fraunces cursiva, cada categoría con su icono de la cinta
   (hogaza, galleta, botella) y la ola de letras con el puntero. La
-  elegida en una **pastilla `--horno` con el texto `--papel`**. Siguen
+  elegida en una **pastilla `--horno` con el texto `--papel`, que se
+  desliza de una categoría a otra** (un solo elemento compartido,
+  `layoutId` de Motion, resorte corto de ~250 ms; con menos movimiento
+  salta; si las categorías parten en dos filas, cruza de una a otra). Siguen
   siendo radios (Tab entra una vez, las flechas cambian), con el rótulo
   "Filtrar por" en versalitas. El nombre de cada radio es el de siempre
   (el texto entero escondido de la ola); las estrellas son adorno; el

@@ -307,7 +307,7 @@
 .vista-chips { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem .45rem; margin-top: clamp(1.2rem, 3vw, 2rem); }
 .vista-chips > .rotulo { margin-right: .7rem; }
 .chip-input { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; pointer-events: none; }
-.chip { position: relative; display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .9rem; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: italic 400 1.3rem/1.2 var(--letra-titulo); transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.chip { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .9rem; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: italic 400 1.3rem/1.2 var(--letra-titulo); transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 /* Se toca en 44 px de alto aunque se vea mas bajo. */
 .chip::before { position: absolute; inset: min(0px, calc((100% - 44px) / 2)) -2px; content: ""; }
 .chip .ico { width: 1.2em; height: 1.2em; flex: none; color: var(--corteza); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
@@ -319,8 +319,11 @@
 .con-puntero .chip-dulces:hover .ico { animation: salta-galleta var(--dur-slow) var(--ease-soft) both; }
 .con-puntero .chip-bebidas-frias:hover .ico { animation: baila-botella var(--dur-slow) var(--ease-soft) both; }
 .chip:active { transform: scale(.97); }
-.chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { background: var(--horno); color: var(--papel); }
-.chip-input:checked + .chip .ico { color: var(--masa); }
+/* El fondo horno es la pastilla que viaja (.chip-pastilla); la etiqueta solo
+   cambia el color del texto y del icono, y lo hace al llegar la pastilla. */
+.chip-pastilla { position: absolute; inset: 0; z-index: -1; display: block; background: var(--horno); border-radius: var(--r-pill); pointer-events: none; }
+.chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { background: transparent; color: var(--papel); transition-delay: 90ms, 90ms, 0s; }
+.chip-input:checked + .chip .ico { color: var(--masa); transition-delay: 90ms; }
 /* El anillo de los campos, sobre la etiqueta del radio que tiene el foco. */
 .chip-input:focus-visible + .chip { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 
@@ -347,13 +350,18 @@
 /* Cerrado, invisible y fuera del arbol de accesibilidad (visibility); al
    abrir, visible al instante para que aria-activedescendant apunte a algo
    que existe. Entra mas despacio de lo que sale. */
-.orden-lista { position: absolute; top: calc(100% + .4rem); left: 0; z-index: 6; display: flex; visibility: hidden; min-width: 100%; flex-direction: column; gap: .15rem; margin: 0; padding: .4rem; list-style: none; background: var(--papel); border: 1px solid var(--horno); box-shadow: 4px 4px 0 var(--horno); opacity: 0; pointer-events: none; transform: scale(.96); transform-origin: top left; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility 0s linear var(--dur-micro); }
+.orden-lista { position: absolute; top: calc(100% + .4rem); left: 0; z-index: 6; display: flex; visibility: hidden; min-width: 100%; flex-direction: column; gap: .15rem; margin: 0; padding: .4rem; list-style: none; background: var(--masa); border: 1px solid var(--horno-claro); opacity: 0; pointer-events: none; transform: scale(.96); transform-origin: top left; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility 0s linear var(--dur-micro); }
 .orden.is-open .orden-lista { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), visibility 0s; }
-.orden-opcion { position: relative; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: italic 400 1.05rem/1.25 var(--letra-titulo); white-space: nowrap; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.orden-opcion.is-activa { background: var(--masa); box-shadow: inset 0 0 0 1px var(--horno-claro); }
-.orden-opcion[aria-selected="true"] { background: var(--horno); color: var(--papel); }
-/* La elegida que ademas se mira: un aro corteza por fuera de su pastilla. */
-.orden-opcion[aria-selected="true"].is-activa { box-shadow: 0 0 0 2px var(--papel), 0 0 0 4px var(--corteza); }
+.orden-opcion { position: relative; isolation: isolate; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: italic 400 1.05rem/1.25 var(--letra-titulo); white-space: nowrap; transition: color var(--dur-fast) var(--ease-ui); }
+/* Las pastillas viajan (Motion): la elegida en horno y la que se mira en papel
+   con filete horno aclarado, sobre la masa del panel. Todas las opciones miden
+   lo mismo, asi que el viaje no deforma nada. */
+.orden-pastilla, .orden-mirada { position: absolute; inset: 0; z-index: -1; display: block; border-radius: var(--r-pill); pointer-events: none; }
+.orden-pastilla { background: var(--horno); }
+.orden-mirada { background: var(--papel); box-shadow: inset 0 0 0 1px var(--horno-claro); }
+.orden-opcion[aria-selected="true"] { color: var(--papel); transition-delay: 90ms; }
+/* La elegida que ademas se mira: sin papel encima, un aro corteza por fuera. */
+.orden-mirada.sobre-elegida { background: transparent; box-shadow: 0 0 0 2px var(--masa), 0 0 0 4px var(--corteza); }
 
 /* "Mostrar": el interruptor "Solo disponibles". Apagado, una pastilla papel
    con filete y la marca vacia; encendido, horno con el texto papel y la ✓
@@ -749,13 +757,16 @@ body.is-vista .franja-pie { display: block; }
 /* Colores forzados: la categoria puesta se marca con Highlight, como en
    styles.css; esta regla pesa mas que aquella y le pisaria el horno. */
 @media (forced-colors: active) {
-  .chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { forced-color-adjust: none; color: HighlightText; }
+  .chip-pastilla, .orden-pastilla { forced-color-adjust: none; background: Highlight; }
   .chip-input:checked + .chip .ico { color: HighlightText; }
   /* El anillo horno no se ve en colores forzados: el del sistema. */
   .chip-input:focus-visible + .chip { outline-color: CanvasText; box-shadow: none; }
   /* "Ordenar por" y el interruptor, igual que la categoria puesta. */
-  .orden-opcion[aria-selected="true"], .interruptor[aria-pressed="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .orden-opcion[aria-selected="true"] { forced-color-adjust: none; color: HighlightText; }
+  .interruptor[aria-pressed="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
   .interruptor[aria-pressed="true"] .interruptor-marca { border-color: HighlightText; color: HighlightText; }
-  .orden-opcion.is-activa { outline: 2px solid CanvasText; outline-offset: -2px; }
+  .orden-mirada { box-shadow: none; outline: 2px solid CanvasText; outline-offset: -2px; }
+  .orden-mirada.sobre-elegida { box-shadow: none; }
   .orden-boton:focus-visible, .interruptor:focus-visible { outline-color: CanvasText; box-shadow: none; }
 }

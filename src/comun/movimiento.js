@@ -32,6 +32,9 @@ const CURVA = {
 const RESORTE = {
   rebote: { type: 'spring', stiffness: 640, damping: 17, mass: 0.7 },
   salto: { type: 'spring', stiffness: 520, damping: 26, mass: 0.6 },
+  // La pastilla que viaja de una opcion a otra (Filtrar por, Ordenar por):
+  // unos 250 ms y casi sin rebote.
+  pastilla: { type: 'spring', duration: 0.25, bounce: 0.08 },
 };
 
 // Al pulsar, botones y fichas bajan un poco (respuesta).

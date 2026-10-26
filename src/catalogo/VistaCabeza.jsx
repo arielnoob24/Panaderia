@@ -12,6 +12,8 @@
 // que al cambiar de categoria no se repite; solo cambian el titulo, la frase
 // y las fichas.
 import { Fragment } from 'react';
+import { LayoutGroup, m, useReducedMotion } from 'motion/react';
+import { RESORTE } from '../comun/movimiento.js';
 import { CATEGORIAS } from './categorias.js';
 import { IconoCategoria, IconoTrigo } from '../comun/iconos.jsx';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
@@ -35,6 +37,7 @@ function VistaCabeza({
   visible, titulo, frase, tituloRef, subcategoria, onSub, busqueda, onBusqueda,
   orden, onOrden, soloDisponibles, onSolo, cuenta, vacio,
 }) {
+  const reducido = useReducedMotion();
   return (
     <div className="vista-cabeza es-catalogo con-fondo" hidden={!visible}>
       <FondoDibujo vista="tienda" />
@@ -47,6 +50,7 @@ function VistaCabeza({
             letras; la elegida en una pastilla horno. Las estrellas son
             adorno. El nombre de cada radio es el de su etiqueta (TextoOla
             deja el texto entero escondido a la vista). */}
+        <LayoutGroup id="filtro-categoria">
         <div className="vista-chips solo-catalogo" role="radiogroup" aria-labelledby="vista-sub-rotulo">
           <span id="vista-sub-rotulo" className="rotulo">Filtrar por</span>
           {OPCIONES.map(([valor, texto], i) => (
@@ -63,11 +67,24 @@ function VistaCabeza({
               />
               <label className={`chip chip-${valor}`} htmlFor={`vista-sub-${valor}`}>
                 {valor !== 'todas' && <IconoCategoria id={valor} />}
+                {/* La pastilla horno es una sola y viaja a la etiqueta elegida
+                    (layoutId); con menos movimiento salta. Es adorno: el radio
+                    sigue siendo quien dice cual esta elegida. */}
+                {subcategoria === valor && (
+                  <m.span
+                    className="chip-pastilla"
+                    layoutId="chip-pastilla"
+                    style={{ borderRadius: 999 }}
+                    transition={reducido ? { duration: 0 } : RESORTE.pastilla}
+                    aria-hidden="true"
+                  />
+                )}
                 <TextoOla>{texto}</TextoOla>
               </label>
             </Fragment>
           ))}
         </div>
+        </LayoutGroup>
       </div>
       {/* Ordenar y filtrar viven aqui y no en el mostrador: la fila de la
           portada es un escaparate, y ordenar seis no le hace falta a nadie.
