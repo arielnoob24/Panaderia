@@ -23,11 +23,11 @@ const SIZES = {
   cuadricula: '(max-width: 680px) calc(50vw - 23px), (max-width: 900px) calc(33vw - 30px), 260px',
 };
 
-// La etiqueta de agotado no viene en los datos: sale de que no haya existencia.
+// El unico sello es el de agotado, que no viene en los datos: sale de que no
+// haya existencia. Lo disponible va sin sello.
 function Etiqueta({ producto }) {
-  if (!producto.disponible) return <span className="product-tag agotado">Agotado</span>;
-  if (!producto.etiqueta) return null;
-  return <span className={`product-tag ${producto.etiqueta.color}`}>{producto.etiqueta.texto}</span>;
+  if (producto.disponible) return null;
+  return <span className="product-tag agotado">Agotado</span>;
 }
 
 // Lo que viene en varios tamanos lleva un grupo de radios. El identificador

@@ -162,7 +162,7 @@ Hoy: **17 productos** en 3 categorías (`panes` 6, `dulces` 5,
 | `foto` | sí | Raíz sin ancho ni extensión; existen `-420.jpg` (420×315) y `-840.jpg` (840×630) |
 | `alt` | sí | Describe lo que se ve, no repite el nombre |
 | `disponible` | no | `false` = agotado ("Vuelve mañana") |
-| `etiqueta` | no | `{ color: green \| yellow, texto }`, sello redondo de 2–3 palabras |
+| `etiqueta` | no | `{ color: green \| yellow, texto }`. **Ya no se pinta** (26 de octubre de 2026): la ficha solo lleva sello redondo cuando está agotada. El campo queda en los datos hasta quitarlo (ver Pendiente) |
 | `tamanos` | no | `[{ valor, precio }]`; cada tamaño es una línea distinta en la canasta |
 | `destacado` | no | `true` o `false`. Desde que la portada no tiene carrusel (22 de octubre de 2026) el sitio no lo usa; se queda en el JSON y en la base por si vuelve |
 
@@ -238,7 +238,9 @@ panes", con la cinta o con el menú.
   esquinas rectas, borde fino `--horno` y la foto con un margen de papel;
   categoría en versalitas, nombre en Fraunces, sin hueco vacío entre el
   nombre y el precio. El precio en Fraunces y, entre el precio y el
-  control, **puntos como en una pizarra**. Sellos como **sello de tinta**
+  control, **puntos como en una pizarra**. **Solo hay un sello, el de
+  "Agotado"** (26 de octubre de 2026: los de "Nuevo", "Favorito" y
+  similares sobraban en las demás fichas), como **sello de tinta**
   (doble aro), letra de al menos 11 px. Con el puntero encima sube con
   **sombra dura** `6px 6px 0 --horno`, la foto se acerca despacio y el sello
   gira un poco; al pulsar baja a `scale(.97)`.
@@ -947,7 +949,13 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [ ] Galería del local en `#/nosotros` (`assets/img/local/`), cuando el
       usuario pase fotos reales; sin fotos no se enseña nada.
 
+- [ ] Quitar `etiqueta` de `data/productos.json`, de `reglasCatalogo.js`, de
+      la tabla de campos y de `bd/` (ya no se pinta; hay que tocar el modelo
+      y probar con `probar-bd`).
+
 ### Accesibilidad y UX
+- [ ] "Solo disponibles": cambiar su aspecto (la pastilla actual no convence;
+      el usuario no quiere un recuadro de fondo). Opciones en conversación.
 - [x] Tienda sin desplegable en el menú, sin "Volver al inicio", fichas 4
       por fila, "Ordenar por" desplegable propio y "Mostrar" interruptor
       (secciones 3, 4 y 10, 25 de octubre de 2026). Lo prueba
