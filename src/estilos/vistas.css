@@ -335,14 +335,15 @@
 .vista-mandos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem 1.4rem; }
 .vista-mando { display: inline-flex; align-items: center; gap: .55rem; }
 .vista-mando > span:not(.sr-only) { color: var(--corteza-oscura); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .18em; text-transform: uppercase; }
-/* "Ordenar por" (OrdenarPor.jsx): el boton en papel con filete fino, que
-   dice el orden elegido y lleva la flecha, y al abrirlo un panel papel con
-   filete horno y sombra dura con las cuatro opciones en Fraunces cursiva.
-   La elegida, en la pastilla horno con texto papel como en "Filtrar por"
-   (13,7:1); la que se mira (puntero o flechas), en una pastilla masa con
-   filete horno aclarado (4,97:1), que no depende solo del tono. */
+/* "Ordenar por" (OrdenarPor.jsx): el boton es solo texto con una linea fina
+   debajo (horno aclarado), sin relleno ni caja; dice el orden elegido y lleva
+   la flecha. Al abrirlo, una lista plana en masa opaca (cae sobre la primera
+   fila de fichas), sin filete ni sombra, con las cuatro opciones en Fraunces
+   cursiva. La elegida, en la pastilla horno con texto papel como en "Filtrar
+   por" (13,7:1); la que se mira (puntero o flechas), en una pastilla papel con
+   filete horno aclarado (4,97:1) que no depende solo del tono. */
 .orden { position: relative; }
-.orden-boton { display: inline-flex; min-height: 34px; align-items: center; gap: .6rem; padding: .4rem .6rem .4rem .7rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: 2px; color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); user-select: none; transition: border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.orden-boton { display: inline-flex; min-height: 34px; align-items: center; gap: .6rem; padding: .4rem .2rem .3rem; background: transparent; border: 0; border-bottom: 1px solid var(--horno-claro); border-radius: 0; color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); user-select: none; transition: border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 .orden-boton > span { flex: 1; white-space: nowrap; }
 .orden-flecha { width: 14px; height: 14px; flex: none; transition: transform var(--dur-fast) var(--ease-ui); }
 .orden.is-open .orden-flecha { transform: rotate(180deg); }
@@ -350,7 +351,7 @@
 /* Cerrado, invisible y fuera del arbol de accesibilidad (visibility); al
    abrir, visible al instante para que aria-activedescendant apunte a algo
    que existe. Entra mas despacio de lo que sale. */
-.orden-lista { position: absolute; top: calc(100% + .4rem); left: 0; z-index: 6; display: flex; visibility: hidden; min-width: 100%; flex-direction: column; gap: .15rem; margin: 0; padding: .4rem; list-style: none; background: var(--masa); border: 1px solid var(--horno-claro); opacity: 0; pointer-events: none; transform: scale(.96); transform-origin: top left; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility 0s linear var(--dur-micro); }
+.orden-lista { position: absolute; top: calc(100% + .4rem); left: 0; z-index: 6; display: flex; visibility: hidden; min-width: 100%; flex-direction: column; gap: .15rem; margin: 0; padding: .4rem; list-style: none; background: var(--masa); opacity: 0; pointer-events: none; transform: scale(.96); transform-origin: top left; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility 0s linear var(--dur-micro); }
 .orden.is-open .orden-lista { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), visibility 0s; }
 .orden-opcion { position: relative; isolation: isolate; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: italic 400 1.05rem/1.25 var(--letra-titulo); white-space: nowrap; transition: color var(--dur-fast) var(--ease-ui); }
 /* Las pastillas viajan (Motion): la elegida en horno y la que se mira en papel
@@ -363,21 +364,17 @@
 /* La elegida que ademas se mira: sin papel encima, un aro corteza por fuera. */
 .orden-mirada.sobre-elegida { background: transparent; box-shadow: 0 0 0 2px var(--masa), 0 0 0 4px var(--corteza); }
 
-/* "Mostrar": el interruptor "Solo disponibles". Apagado, una pastilla papel
-   con filete y la marca vacia; encendido, horno con el texto papel y la ✓
-   (no depende solo del color). */
-.interruptor { display: inline-flex; min-height: 34px; align-items: center; gap: .5rem; padding: .35rem .85rem .35rem .45rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
-.interruptor-marca { display: grid; width: 20px; height: 20px; flex: none; place-items: center; border: 1px solid var(--horno-claro); border-radius: 50%; color: transparent; font: 700 .8rem/1 var(--letra-texto); transition: border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-accent); }
-.interruptor[aria-pressed="true"] { background: var(--horno); border-color: var(--horno); color: var(--papel); }
-.interruptor[aria-pressed="true"] .interruptor-marca { border-color: var(--papel); color: var(--papel); animation: marca-entra var(--dur-fast) var(--ease-accent); }
-@keyframes marca-entra { from { transform: scale(.6); } to { transform: none; } }
-.interruptor:active { transform: scale(.97); }
+/* "Mostrar": dos radios como las categorias de "Filtrar por" (mismas clases
+   .chip y .chip-pastilla), sin caja alrededor; la pastilla se desliza de uno
+   a otro en su propio LayoutGroup. */
+.mostrar-opciones { display: inline-flex; flex-wrap: wrap; align-items: center; gap: .3rem .2rem; }
+.chip-mostrar { font-size: 1.1rem; }
 .vista-buscar { position: relative; }
 .vista-buscar svg { position: absolute; left: .7rem; width: 15px; height: 15px; color: var(--horno-suave); pointer-events: none; }
 .vista-buscar input { width: 15rem; max-width: 100%; padding: .45rem .8rem .45rem 2rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: 2px; color: var(--horno); font: .85rem var(--letra-texto); transition: border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .orden-boton:hover, .con-puntero .interruptor[aria-pressed="false"]:hover, .con-puntero .vista-buscar input:hover { border-color: var(--corteza); }
+.con-puntero .orden-boton:hover, .con-puntero .vista-buscar input:hover { border-color: var(--corteza); }
 /* El anillo de los campos: horno con el halo ambar (WCAG 1.4.11). */
-.orden-boton:focus-visible, .interruptor:focus-visible, .vista-buscar input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+.orden-boton:focus-visible, .vista-buscar input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 /* "Mostrando X de Y productos", en versalitas corteza oscura bajo la fila. */
 .vista-cuenta { align-self: flex-end; margin: .7rem 0 0; font-variant-numeric: tabular-nums; }
 .vista-cuenta:empty { display: none; }
@@ -393,11 +390,10 @@
 @media (prefers-reduced-motion: reduce) {
   .vista-barra, .vista-cuenta, .vista-barra .linea-doble { animation: none; }
   .con-puntero .chip:hover .letras span, .con-puntero .chip:hover .ico { animation: none; }
-  .chip:active, .orden-boton:active, .interruptor:active { transform: none; }
-  /* El panel solo aparece, la flecha no gira y la marca no rebota. */
+  .chip:active, .orden-boton:active { transform: none; }
+  /* El panel solo aparece y la flecha no gira. */
   .orden-lista, .orden.is-open .orden-lista { transform: none; transition: none; }
   .orden-flecha { transition: none; }
-  .interruptor[aria-pressed="true"] .interruptor-marca { animation: none; }
 }
 
 /* Cuando los mandos ya no caben en una fila con sus lineas, las lineas van
@@ -762,11 +758,9 @@ body.is-vista .franja-pie { display: block; }
   .chip-input:checked + .chip .ico { color: HighlightText; }
   /* El anillo horno no se ve en colores forzados: el del sistema. */
   .chip-input:focus-visible + .chip { outline-color: CanvasText; box-shadow: none; }
-  /* "Ordenar por" y el interruptor, igual que la categoria puesta. */
+  /* "Ordenar por", igual que la categoria puesta. */
   .orden-opcion[aria-selected="true"] { forced-color-adjust: none; color: HighlightText; }
-  .interruptor[aria-pressed="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
-  .interruptor[aria-pressed="true"] .interruptor-marca { border-color: HighlightText; color: HighlightText; }
   .orden-mirada { box-shadow: none; outline: 2px solid CanvasText; outline-offset: -2px; }
   .orden-mirada.sobre-elegida { box-shadow: none; }
-  .orden-boton:focus-visible, .interruptor:focus-visible { outline-color: CanvasText; box-shadow: none; }
+  .orden-boton:focus-visible { outline-color: CanvasText; box-shadow: none; }
 }

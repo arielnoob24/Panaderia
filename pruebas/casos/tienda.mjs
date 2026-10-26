@@ -10,7 +10,7 @@
 //   cursiva, el icono de cada categoria (Todas sin), estrellas de adorno,
 //   la elegida en pastilla horno con texto papel, las flechas cambian de
 //   categoria y el foco se ve en la etiqueta; en el telefono no se sale;
-// - los mandos entre lineas dobles, campos papel, rotulos en versalitas y
+// - los mandos entre lineas dobles, buscador papel, Ordenar por solo texto con linea, rotulos en versalitas y
 //   "Mostrando X de Y" en versalitas corteza oscura; el aviso del catalogo
 //   sigue;
 // - la escena entra al llegar y no se repite al cambiar de categoria; con
@@ -63,9 +63,10 @@ const mirar = (p) => p.evaluate(() => {
       derecha: e.getBoundingClientRect().right,
     })),
     estrellas: [...grupo.querySelectorAll('.chip-estrella')].map((e) => e.getAttribute('aria-hidden')),
-    elegida: elegida && [getComputedStyle(elegida.querySelector(':scope > .chip-pastilla') || elegida).backgroundColor, getComputedStyle(elegida).color, document.querySelectorAll('.chip-pastilla').length],
+    elegida: elegida && [getComputedStyle(elegida.querySelector(':scope > .chip-pastilla') || elegida).backgroundColor, getComputedStyle(elegida).color, document.querySelectorAll('.vista-chips .chip-pastilla').length],
     lineas: barra.querySelectorAll('.linea-doble').length,
-    campos: [...document.querySelectorAll('.orden-boton, .interruptor, .vista-buscar input')].map((c) => getComputedStyle(c).backgroundColor),
+    campos: [...document.querySelectorAll('.vista-buscar input')].map((c) => getComputedStyle(c).backgroundColor),
+    ordenBoton: (() => { const s = getComputedStyle(document.querySelector('.orden-boton')); return [s.backgroundColor, s.borderTopWidth, s.borderBottomWidth, s.borderBottomColor]; })(),
     mando: [getComputedStyle(mando).textTransform, getComputedStyle(mando).color],
     cuenta: [cuenta.textContent, getComputedStyle(cuenta).textTransform, getComputedStyle(cuenta).color],
     aviso: q('.catalog-status')?.getAttribute('aria-live'),
@@ -103,7 +104,8 @@ export default async function tienda(t) {
     t.ok(m.etiquetas.every((e) => ES_FRAUNCES.test(e.letra) && e.cursiva === 'italic' && e.ola === 'true' && e.alto >= 24), `[${nombre}] las categorias no van en Fraunces cursiva con la ola, o miden menos de 24 px (${JSON.stringify(m.etiquetas)})`);
     t.ok(m.estrellas.length === 3 && m.estrellas.every((a) => a === 'true'), `[${nombre}] las estrellas no son adorno (${m.estrellas})`);
     t.ok(m.elegida?.[0] === HORNO && m.elegida?.[1] === PAPEL && m.elegida?.[2] === 1, `[${nombre}] la elegida no va en la pastilla horno (una sola, la que viaja) con texto papel (${m.elegida})`);
-    t.ok(m.lineas === 2 && m.campos.length === 3 && m.campos.every((c) => c === PAPEL), `[${nombre}] los mandos no van entre lineas dobles o los campos no son papel (${m.lineas}, ${m.campos})`);
+    t.ok(m.lineas === 2 && m.campos.length === 1 && m.campos.every((c) => c === PAPEL), `[${nombre}] los mandos no van entre lineas dobles o el buscador no es papel (${m.lineas}, ${m.campos})`);
+    t.ok(m.ordenBoton[0] === 'rgba(0, 0, 0, 0)' && m.ordenBoton[1] === '0px' && m.ordenBoton[2] === '1px', `[${nombre}] el boton de Ordenar por no es texto con una linea fina debajo, sin relleno ni caja (${m.ordenBoton})`);
     t.ok(m.mando[0] === 'uppercase' && m.cuenta[0].startsWith('Mostrando 17 de 17') && m.cuenta[1] === 'uppercase' && m.cuenta[2] === CORTEZA_OSCURA, `[${nombre}] los rotulos o la cuenta no van en versalitas (${JSON.stringify([m.mando, m.cuenta])})`);
     t.ok(m.aviso === 'polite', `[${nombre}] el aviso del catalogo cambio (${m.aviso})`);
     t.ok(m.anchoPagina <= m.ancho && m.etiquetas.every((e) => e.derecha <= m.ancho), `[${nombre}] "Filtrar por" se sale de la pantalla (${JSON.stringify(m.etiquetas.map((e) => Math.round(e.derecha)))})`);

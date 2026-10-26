@@ -9,8 +9,13 @@
 //   recuerda en sessionStorage como antes. La elegida, en la pastilla horno
 //   con el texto papel; el panel entra con fundido y scale desde el boton,
 //   y con menos movimiento solo aparece.
-// - "Mostrar" es un interruptor "Solo disponibles" con aria-pressed: un clic
-//   o Espacio lo cambian, esconde los agotados y se recuerda como antes.
+// - "Mostrar" son dos radios, Todos y Solo disponibles, en un radiogroup
+//   llamado "Mostrar", sin caja y en Fraunces cursiva; la elegida en pastilla
+//   horno con texto papel. Una flecha o un toque los cambian, Solo
+//   disponibles esconde los agotados y se recuerda al recargar.
+// - "Ordenar por": el boton es texto con una linea fina debajo (sin relleno
+//   ni caja) y el panel es una lista plana en masa opaca, sin filete ni
+//   sombra, con sus opciones legibles.
 // - Las fichas: 5 por fila con la tienda de 1080 px o mas, 4 desde unos 860,
 //   3 en la tableta y 2 en el telefono; la letra no baja de 11 px y el - y
 //   el + no bajan de 24 x 24. Con 5 y con 4 (1440, 1280 y 1024 px), con el
@@ -20,7 +25,7 @@
 //   simple, sin flecha ni desplegable.
 import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
 
-export const descripcion = 'Tienda: Ordenar por como combobox del APG (teclado, letras, Esc, Tab, clic fuera), Mostrar como interruptor aria-pressed, fichas 5/4/3/2 por fila con letra >= 11 px, - + >= 24 px y precio y - n + en una linea, sin Volver al inicio ni desplegable en el menu';
+export const descripcion = 'Tienda: Ordenar por como combobox del APG (teclado, letras, Esc, Tab, clic fuera), Mostrar como dos radios Todos / Solo disponibles, fichas 5/4/3/2 por fila con letra >= 11 px, - + >= 24 px y precio y - n + en una linea, sin Volver al inicio ni desplegable en el menu';
 export const limite = 150;
 
 const HORNO = 'rgb(58, 40, 34)';
@@ -103,6 +108,22 @@ export default async function tiendaMandos(t) {
         return { origen: getComputedStyle(l).transformOrigin, anima: l.getAnimations().length };
       });
       t.ok(entra.anima > 0 && entra.origen.startsWith('0px'), `[teclado] el panel no entra animado desde el boton (${JSON.stringify(entra)})`);
+      // El panel es una lista plana: masa opaca, sin filete ni sombra, y el
+      // texto de la elegida y de la mirada se lee (contraste >= 4.5).
+      await espera(400);
+      const plano = await p.evaluate(() => {
+        const l = getComputedStyle(document.querySelector('.orden-lista'));
+        const lum = (c) => { const v = c.match(/\d+/g).slice(0, 3).map((x) => { const n = x / 255; return n <= .03928 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4; }); return .2126 * v[0] + .7152 * v[1] + .0722 * v[2]; };
+        const razon = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + .05) / (y + .05); };
+        const op = [...document.querySelectorAll('.orden-opcion')];
+        return {
+          fondo: l.backgroundColor, borde: l.borderTopWidth + l.borderLeftWidth, sombra: l.boxShadow, opacidad: l.opacity,
+          // Elegida sobre horno; la mirada (aqui la misma) y las demas sobre la masa del panel.
+          elegida: razon(getComputedStyle(op.find((o) => o.getAttribute('aria-selected') === 'true')).color, 'rgb(58, 40, 34)'),
+          resto: Math.min(...op.filter((o) => o.getAttribute('aria-selected') !== 'true').map((o) => razon(getComputedStyle(o).color, l.backgroundColor))),
+        };
+      });
+      t.ok(plano.fondo === 'rgb(247, 241, 231)' && plano.borde === '0px0px' && plano.sombra === 'none' && plano.opacidad === '1' && plano.elegida >= 4.5 && plano.resto >= 4.5, `[teclado] el panel no es una lista plana opaca sin filete ni sombra, o el texto no se lee (${JSON.stringify(plano)})`);
       // Abajo, Fin, Inicio recorren sin dar la vuelta.
       await p.keyboard.press('ArrowDown');
       t.ok((await combo(p)).activa === 'Precio: de menor a mayor', '[teclado] Abajo no pasa a la siguiente');
@@ -150,7 +171,7 @@ export default async function tiendaMandos(t) {
       await p.keyboard.press('Tab');
       c = await combo(p);
       const foco = await p.evaluate(() => document.activeElement.className);
-      t.ok(c.expandido === 'false' && c.texto === 'Nombre: de la A a la Z' && !c.foco && foco.includes('interruptor'), `[teclado] Tab no cierra sin cambiar o no pasa al interruptor (${JSON.stringify(c)}, foco en ${foco})`);
+      t.ok(c.expandido === 'false' && c.texto === 'Nombre: de la A a la Z' && !c.foco && foco.includes('chip-input'), `[teclado] Tab no cierra sin cambiar o no pasa a los radios de Mostrar (${JSON.stringify(c)}, foco en ${foco})`);
       // El foco del combobox se ve.
       await p.keyboard.press('Shift+Tab');
       const anillo = await p.evaluate(() => { const s = getComputedStyle(document.activeElement); return [s.outlineStyle, s.outlineWidth]; });
@@ -196,40 +217,55 @@ export default async function tiendaMandos(t) {
     }
 
     // ---- "Mostrar" --------------------------------------------------------
-    const inter = () => p.evaluate(() => {
-      const b = document.querySelector('.interruptor');
-      const r = b.getBoundingClientRect();
+    const mostrar = () => p.evaluate(() => {
+      const g = document.querySelector('[role="radiogroup"][aria-labelledby="vista-mostrar-rotulo"]');
+      const radios = [...g.querySelectorAll('input[type="radio"]')];
+      const et = radios.map((r) => document.querySelector(`label[for="${r.id}"]`));
+      const marcada = radios.findIndex((r) => r.checked);
+      const e = et[marcada];
+      const caja = getComputedStyle(g);
       return {
-        tag: b.tagName, pulsado: b.getAttribute('aria-pressed'), nombre: b.textContent.replace('✓', '').trim(),
-        fondo: getComputedStyle(b).backgroundColor, color: getComputedStyle(b).color, alto: r.height,
-        visibles: document.querySelectorAll('.product-card:not([hidden])').length,
+        nombre: document.getElementById('vista-mostrar-rotulo')?.textContent,
+        rotulo: getComputedStyle(document.getElementById('vista-mostrar-rotulo')).textTransform,
+        textos: et.map((x) => x.textContent.trim()),
+        marcada,
+        fondoPastilla: e.querySelector('.chip-pastilla') && getComputedStyle(e.querySelector('.chip-pastilla')).backgroundColor,
+        pastillas: g.querySelectorAll('.chip-pastilla').length,
+        color: getComputedStyle(e).color,
+        letra: getComputedStyle(e).fontFamily + '|' + getComputedStyle(e).fontStyle,
+        sinCaja: caja.backgroundColor === 'rgba(0, 0, 0, 0)' && caja.borderTopWidth === '0px',
+        alto: Math.min(...et.map((x) => x.getBoundingClientRect().height)),
+        derecha: Math.max(...et.map((x) => x.getBoundingClientRect().right)),
+        ancho: innerWidth,
         agotados: document.querySelectorAll('.product-card:not([hidden])[data-available="false"]').length,
         recordado: JSON.parse(sessionStorage.getItem('eltradicional-vista') || '{}').soloDisponibles,
       };
     });
-    let m = await inter();
-    t.ok(m.tag === 'BUTTON' && m.pulsado === 'false' && m.nombre === 'Solo disponibles' && m.fondo === PAPEL && m.agotados > 0 && m.alto >= 24, `[${nombre}] "Mostrar" no es un interruptor apagado en papel (${JSON.stringify(m)})`);
-    t.ok((await p.getByRole('button', { name: 'Solo disponibles', pressed: false }).count()) === 1, `[${nombre}] el interruptor no se llama "Solo disponibles"`);
+    let m = await mostrar();
+    t.ok(m.nombre === 'Mostrar' && m.rotulo === 'uppercase' && m.textos.join() === 'Todos,Solo disponibles' && m.marcada === 0 && m.agotados > 0 && m.alto >= 24 && m.derecha <= m.ancho, `[${nombre}] "Mostrar" no son dos radios Todos / Solo disponibles con su rotulo en versalitas (${JSON.stringify(m)})`);
+    t.ok(m.sinCaja && /Fraunces/.test(m.letra) && m.letra.endsWith('italic') && m.fondoPastilla === HORNO && m.color === PAPEL && m.pastillas === 1, `[${nombre}] "Mostrar" no va sin caja, en Fraunces cursiva y con la pastilla horno en la elegida (${JSON.stringify(m)})`);
+    t.ok((await p.getByRole('radiogroup', { name: 'Mostrar' }).count()) === 1 && (await p.getByRole('radio', { name: 'Solo disponibles', exact: true }).count()) === 1 && (await p.getByRole('radio', { name: 'Todos', exact: true }).count()) === 1, `[${nombre}] el grupo no se llama "Mostrar" o faltan sus radios`);
     if (nombre === 'escritorio') {
-      await p.focus('.interruptor');
-      await p.keyboard.press('Space');
+      // Tab entra una vez (en el puesto) y la flecha cambia.
+      await p.focus('#vista-mostrar-todos');
+      await p.keyboard.press('ArrowRight');
     } else {
-      await p.tap('.interruptor');
+      await p.tap('label[for="vista-mostrar-solo"]');
     }
-    await espera(300);
-    m = await inter();
-    t.ok(m.pulsado === 'true' && m.fondo === HORNO && m.color === PAPEL && m.agotados === 0 && m.recordado === true, `[${nombre}] encender "Solo disponibles" no esconde los agotados o no va en horno (${JSON.stringify(m)})`);
-    // Se recuerda al recargar, como antes.
-    await p.reload();
-    await p.waitForSelector('.interruptor');
     await espera(400);
-    m = await inter();
-    t.ok(m.pulsado === 'true' && m.agotados === 0, `[${nombre}] al recargar no se recuerda "Solo disponibles" (${JSON.stringify(m)})`);
-    if (nombre === 'escritorio') await p.click('.interruptor');
-    else await p.tap('.interruptor');
+    m = await mostrar();
+    t.ok(m.marcada === 1 && m.fondoPastilla === HORNO && m.color === PAPEL && m.pastillas === 1 && m.agotados === 0 && m.recordado === true, `[${nombre}] elegir "Solo disponibles" no esconde los agotados, no mueve la pastilla horno o no se recuerda (${JSON.stringify(m)})`);
+    // Se recuerda al recargar: sigue puesto y sigue filtrando.
+    await p.reload();
+    await p.waitForSelector('#vista-mostrar-solo');
+    await espera(400);
+    m = await mostrar();
+    t.ok(m.marcada === 1 && m.agotados === 0 && m.recordado === true, `[${nombre}] al recargar no se recuerda "Solo disponibles" (${JSON.stringify(m)})`);
+    if (nombre === 'escritorio') await p.click('label[for="vista-mostrar-todos"]');
+    else await p.tap('label[for="vista-mostrar-todos"]');
     await espera(300);
-    m = await inter();
-    t.ok(m.pulsado === 'false' && m.agotados > 0, `[${nombre}] apagarlo no vuelve a ensenar los agotados (${JSON.stringify(m)})`);
+    m = await mostrar();
+    t.ok(m.marcada === 0 && m.agotados > 0 && m.recordado === false, `[${nombre}] volver a "Todos" no ensena los agotados (${JSON.stringify(m)})`);
     await ctx.close();
   }
 

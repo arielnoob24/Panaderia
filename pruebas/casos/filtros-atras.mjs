@@ -16,7 +16,7 @@ export default async function filtrosAtras(t) {
     const estado = () => p.evaluate(() => ({
       hash: location.hash,
       orden: document.querySelector('.orden-boton')?.textContent.trim(),
-      mostrar: document.querySelector('.interruptor')?.getAttribute('aria-pressed'),
+      mostrar: String(document.querySelector('#vista-mostrar-solo')?.checked),
       busca: document.querySelector('.vista-buscar input')?.value,
     }));
     const irA = async (hash) => { await p.evaluate((h) => { location.hash = h; }, hash); await espera(700); };
@@ -24,10 +24,10 @@ export default async function filtrosAtras(t) {
     await irA('#/tienda-panes');
     await irA('#/tienda-dulces');
     // En dulces: orden por nombre, solo disponibles y busqueda.
-    t.ok((await p.locator('.orden-boton[role="combobox"]').count()) === 1 && (await p.locator('.interruptor[aria-pressed]').count()) === 1, `[${nv}] la tienda no tiene el desplegable de Ordenar y el interruptor de Mostrar`);
+    t.ok((await p.locator('.orden-boton[role="combobox"]').count()) === 1 && (await p.getByRole('radiogroup', { name: 'Mostrar' }).getByRole('radio').count()) === 2, `[${nv}] la tienda no tiene el desplegable de Ordenar y los dos radios de Mostrar`);
     await ir('.orden-boton'); await espera(250);
     await ir('.orden-opcion:last-child'); await espera(200);
-    await ir('.interruptor'); await espera(200);
+    await ir('label[for="vista-mostrar-solo"]'); await espera(200);
     await p.fill('.vista-buscar input', 'tor'); await espera(400);
     const puesto = await estado();
     await p.goBack(); await espera(900);

@@ -189,9 +189,12 @@ panes", con la cinta o con el menú.
 - **"Ordenar por" es un desplegable propio** (25 de octubre de 2026; el
   `<select>` del navegador se veía genérico): un botón en `--papel` con
   filete fino que dice el orden elegido y una flecha, y al abrirlo un
-  panel **en `--masa`, sin sombra dura, solo con filete fino
-  `--horno-claro`** (26 de octubre de 2026: en `--papel` se veía como una
-  tarjeta blanca suelta), con las cuatro
+  panel **en `--masa`, sin sombra dura ni filete** (26 de octubre de
+  2026: en `--papel` se veía como una tarjeta blanca suelta, y el usuario
+  no quiere recuadro de fondo; es una **lista plana**: solo las opciones
+  en texto. Tiene que seguir siendo opaco porque cae sobre la primera
+  fila de fichas; el botón pasa a texto con una línea fina debajo
+  `--horno-claro`, sin relleno papel), con las cuatro
   opciones en Fraunces cursiva; la elegida en la **pastilla `--horno` con
   texto `--papel`** como en "Filtrar por", y la que tiene el puntero o las
   flechas en una pastilla `--papel` (sobre la masa sí se distingue) con filete `--horno-claro`
@@ -210,11 +213,15 @@ panes", con la cinta o con el menú.
   en el APG, además ↑, Inicio y Fin también abren y Alt+↑ elige y cierra.
   Clic fuera cierra (`catalogo/OrdenarPor.jsx`). Al elegir, el foco vuelve al botón y el
   orden se anuncia como antes.
-- **"Mostrar" es un interruptor**: una pastilla "Solo disponibles" con su
-  rótulo "Mostrar" en versalitas; `aria-pressed`, apagada en `--papel`
-  con filete y un círculo vacío, encendida en `--horno` con texto
-  `--papel` y la ✓ en el círculo. Un clic
-  o Espacio la cambia. Se recuerda en `sessionStorage` como antes.
+- **"Mostrar" son dos opciones a la vista** (26 de octubre de 2026; el
+  interruptor "Solo disponibles" no convencía y el usuario no quiere
+  recuadro de fondo): `Todos` y `Solo disponibles`, con su rótulo
+  "Mostrar" en versalitas, en Fraunces cursiva como las categorías de
+  "Filtrar por" y **sin caja alrededor**. La elegida, en la pastilla
+  `--horno` con texto `--papel`, que se desliza de una a otra (`layoutId`,
+  mismo resorte que las otras; con menos movimiento salta). Por dentro
+  son dos radios (Tab entra una vez, las flechas cambian) con el nombre
+  del grupo "Mostrar". Se recuerda en `sessionStorage` como antes.
 - "Mostrando X de Y productos" en una sola región `aria-live`
   (`.catalog-status`): mientras se escribe en el buscador calla y habla una
   vez, 400 ms después de la última tecla; sin resultados junta la cuenta y el
@@ -954,8 +961,8 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       y probar con `probar-bd`).
 
 ### Accesibilidad y UX
-- [ ] "Solo disponibles": cambiar su aspecto (la pastilla actual no convence;
-      el usuario no quiere un recuadro de fondo). Opciones en conversación.
+- [x] "Solo disponibles" como `Todos | Solo disponibles` a la vista y
+      "Ordenar por" como lista plana sin caja (26 de octubre de 2026).
 - [x] Tienda sin desplegable en el menú, sin "Volver al inicio", fichas 4
       por fila, "Ordenar por" desplegable propio y "Mostrar" interruptor
       (secciones 3, 4 y 10, 25 de octubre de 2026). Lo prueba
