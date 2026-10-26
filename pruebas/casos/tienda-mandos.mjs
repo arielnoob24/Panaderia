@@ -6,8 +6,8 @@
 //   y Abajo abren; Arriba/Abajo, Inicio y Fin recorren; una letra salta;
 //   Enter o Espacio eligen y cierran; Esc y Tab cierran sin cambiar. Clic
 //   fuera cierra. El foco no sale del boton, el orden se anuncia y se
-//   recuerda en sessionStorage como antes. La elegida, en la pastilla horno
-//   con el texto papel; el panel entra con fundido y scale desde el boton,
+//   recuerda en sessionStorage como antes. La elegida, en ámbar
+//   con el texto horno; el panel entra con fundido y scale desde el boton,
 //   y con menos movimiento solo aparece.
 // - "Mostrar" son dos radios, Todos y Solo disponibles, en un radiogroup
 //   llamado "Mostrar", sin caja y en Fraunces cursiva; la elegida en pastilla
@@ -108,7 +108,7 @@ export default async function tiendaMandos(t) {
         return { origen: getComputedStyle(l).transformOrigin, anima: l.getAnimations().length };
       });
       t.ok(entra.anima > 0 && entra.origen.startsWith('0px'), `[teclado] el panel no entra animado desde el boton (${JSON.stringify(entra)})`);
-      // El panel es un cuadro: masa opaca, filete fino horno aclarado, 12 px de radio, sin sombra, y el
+      // El panel es como el menu de Tu cuenta: horno opaco, filete claro, 18 px de radio, con sombra, y el
       // texto de la elegida y de la mirada se lee (contraste >= 4.5).
       await espera(400);
       const plano = await p.evaluate(() => {
@@ -117,13 +117,13 @@ export default async function tiendaMandos(t) {
         const razon = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + .05) / (y + .05); };
         const op = [...document.querySelectorAll('.orden-opcion')];
         return {
-          fondo: l.backgroundColor, borde: l.borderTopWidth + l.borderLeftWidth + l.borderTopColor, radio: l.borderTopLeftRadius, radioOpcion: getComputedStyle(op[0]).borderTopLeftRadius, radioFondo: getComputedStyle(document.querySelector('.orden-pastilla')).borderTopLeftRadius, sombra: l.boxShadow, opacidad: l.opacity,
-          // Elegida sobre horno; la mirada (aqui la misma) y las demas sobre la masa del panel.
-          elegida: razon(getComputedStyle(op.find((o) => o.getAttribute('aria-selected') === 'true')).color, 'rgb(58, 40, 34)'),
+          fondo: l.backgroundColor, borde: l.borderTopWidth + l.borderLeftWidth + l.borderTopColor, radio: l.borderTopLeftRadius, radioOpcion: getComputedStyle(op[0]).borderTopLeftRadius, sombra: l.boxShadow, opacidad: l.opacity,
+          // Elegida en ambar (texto horno); las demas sobre el horno del panel.
+          elegida: razon(getComputedStyle(op.find((o) => o.getAttribute('aria-selected') === 'true')).color, getComputedStyle(op.find((o) => o.getAttribute('aria-selected') === 'true')).backgroundColor),
           resto: Math.min(...op.filter((o) => o.getAttribute('aria-selected') !== 'true').map((o) => razon(getComputedStyle(o).color, l.backgroundColor))),
         };
       });
-      t.ok(plano.fondo === 'rgb(247, 241, 231)' && plano.borde === '1px1pxrgb(122, 108, 101)' && plano.radio === '12px' && plano.radioOpcion === '8px' && plano.radioFondo === '8px' && plano.sombra === 'none' && plano.opacidad === '1' && plano.elegida >= 4.5 && plano.resto >= 4.5, `[teclado] el panel no es un cuadro opaco con filete, 12 px y subcuadros de 8 px, sin sombra, o el texto no se lee (${JSON.stringify(plano)})`);
+      t.ok(plano.fondo === HORNO && plano.borde === '1px1pxrgba(255, 255, 255, 0.3)' && plano.radio === '18px' && plano.radioOpcion === '8px' && plano.sombra !== 'none' && plano.opacidad === '1' && plano.elegida >= 4.5 && plano.resto >= 4.5, `[teclado] el panel no es un cuadro como el de Tu cuenta, 18 px y opciones de 8 px, con sombra, o el texto no se lee (${JSON.stringify(plano)})`);
       // Abajo, Fin, Inicio recorren sin dar la vuelta.
       await p.keyboard.press('ArrowDown');
       t.ok((await combo(p)).activa === 'Precio: de menor a mayor', '[teclado] Abajo no pasa a la siguiente');
@@ -152,9 +152,9 @@ export default async function tiendaMandos(t) {
       t.ok(c.expandido === 'false' && c.texto === 'Precio: de menor a mayor' && c.elegida === 'Precio: de menor a mayor' && c.foco && c.recordado === 'precio-asc', `[teclado] Enter no elige (${JSON.stringify(c)})`);
       t.ok((await aviso(p)).includes('Ordenado por precio, de menor a mayor.'), `[teclado] el orden no se anuncia (${await aviso(p)})`);
       t.ok((await primero(p)) === 'Pan redondo', `[teclado] de menor a mayor no empieza por el mas barato (${await primero(p)})`);
-      // La elegida, en la pastilla horno con el texto papel.
-      const pastilla = await p.evaluate(() => { const e = document.querySelector('.orden-opcion[aria-selected="true"]'); return [getComputedStyle(e.querySelector('.orden-pastilla')).backgroundColor, getComputedStyle(e).color, document.querySelectorAll('.orden-pastilla').length]; });
-      t.ok(pastilla[0] === HORNO && pastilla[1] === PAPEL && pastilla[2] === 1, `[teclado] la elegida no va en horno con texto papel (${pastilla})`);
+      // La elegida, en ambar con el texto horno, sin fondo que viaje.
+      const pastilla = await p.evaluate(() => { const e = document.querySelector('.orden-opcion[aria-selected="true"]'); return [getComputedStyle(e).backgroundColor, getComputedStyle(e).color, e.children.length]; });
+      t.ok(pastilla[0] === 'rgb(215, 155, 74)' && pastilla[1] === HORNO && pastilla[2] === 0, `[teclado] la elegida no va en ambar con texto horno (${pastilla})`);
       // Espacio y Alt+Abajo abren; Espacio elige.
       await p.keyboard.press('Space');
       t.ok((await combo(p)).expandido === 'true', '[teclado] Espacio no abre');

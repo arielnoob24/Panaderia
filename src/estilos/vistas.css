@@ -336,17 +336,15 @@
 .vista-mandos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem 1.4rem; }
 .vista-mando { display: inline-flex; align-items: center; gap: .55rem; }
 .vista-mando > span:not(.sr-only) { color: var(--corteza-oscura); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .18em; text-transform: uppercase; }
-/* "Ordenar por" (OrdenarPor.jsx): el boton es solo texto con una linea fina
-   debajo (horno aclarado), sin relleno ni caja; dice el orden elegido y lleva
-   la flecha. Al abrirlo, un cuadro de esquinas redondeadas (12 px, --r-btn) en
-   masa opaca (cae sobre la primera fila de fichas) con filete fino horno
-   aclarado y sin sombra, y un margen interior para que se vea el marco. Las
-   cuatro opciones, en Fraunces cursiva, son subcuadros de 8 px (--r-chip), no
-   pastillas. La elegida, en horno con texto papel (13,7:1); la que se mira
-   (puntero o flechas), en papel con filete horno aclarado (4,97:1) que no
-   depende solo del tono. */
+/* "Ordenar por" (OrdenarPor.jsx): el boton es un cuadrado de esquinas
+   redondeadas (--r-btn) con filete horno aclarado; dice el orden elegido y
+   lleva la flecha. Al abrirlo, el panel es el mismo cuadro que el menu de "Tu
+   cuenta" (styles.css): horno con filete claro, esquinas --r-card y sombra
+   flotante. Las opciones son filas como las de ese menu (Arial 700, esquinas
+   --r-chip), no pastillas: la elegida en ambar con texto horno, la que se mira
+   (puntero o flechas) con velo claro y texto ambar claro; solo se sombrean. */
 .orden { position: relative; }
-.orden-boton { display: inline-flex; min-height: 34px; align-items: center; gap: .6rem; padding: .4rem .2rem .3rem; background: transparent; border: 0; border-bottom: 1px solid var(--horno-claro); border-radius: 0; color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); user-select: none; transition: border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.orden-boton { display: inline-flex; min-height: 34px; align-items: center; gap: .6rem; padding: .4rem .8rem; background: transparent; border: 1px solid var(--horno-claro); border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); user-select: none; transition: border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 .orden-boton > span { flex: 1; white-space: nowrap; }
 .orden-flecha { width: 14px; height: 14px; flex: none; transition: transform var(--dur-fast) var(--ease-ui); }
 .orden.is-open .orden-flecha { transform: rotate(180deg); }
@@ -354,19 +352,15 @@
 /* Cerrado, invisible y fuera del arbol de accesibilidad (visibility); al
    abrir, visible al instante para que aria-activedescendant apunte a algo
    que existe. Entra mas despacio de lo que sale. */
-.orden-lista { position: absolute; top: calc(100% + .4rem); left: 0; z-index: 6; display: flex; visibility: hidden; min-width: 100%; flex-direction: column; gap: .15rem; margin: 0; padding: .4rem; list-style: none; background: var(--masa); border: 1px solid var(--horno-claro); border-radius: var(--r-btn); opacity: 0; pointer-events: none; transform: scale(.96); transform-origin: top left; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility 0s linear var(--dur-micro); }
+.orden-lista { position: absolute; top: calc(100% + .4rem); left: 0; z-index: 6; display: flex; visibility: hidden; min-width: 100%; flex-direction: column; gap: .1rem; margin: 0; padding: .45rem; list-style: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); color: var(--sobre-horno); opacity: 0; pointer-events: none; transform: scale(.96); transform-origin: top left; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility 0s linear var(--dur-micro); }
 .orden.is-open .orden-lista { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), visibility 0s; }
-.orden-opcion { position: relative; isolation: isolate; padding: .4rem .85rem; border-radius: var(--r-chip); color: var(--horno); cursor: pointer; font: italic 400 1.05rem/1.25 var(--letra-titulo); white-space: nowrap; transition: color var(--dur-fast) var(--ease-ui); }
-/* Los fondos viajan (Motion): el de la elegida en horno y el de la que se mira
-   en papel con filete horno aclarado, sobre la masa del panel. Todas las
-   opciones miden lo mismo, asi que el viaje no deforma nada; el radio (8 px)
-   tambien va en style desde el JSX para que Motion lo corrija al viajar. */
-.orden-pastilla, .orden-mirada { position: absolute; inset: 0; z-index: -1; display: block; border-radius: var(--r-chip); pointer-events: none; }
-.orden-pastilla { background: var(--horno); }
-.orden-mirada { background: var(--papel); box-shadow: inset 0 0 0 1px var(--horno-claro); }
-.orden-opcion[aria-selected="true"] { color: var(--papel); transition-delay: 90ms; }
-/* La elegida que ademas se mira: sin papel encima, un aro corteza por fuera. */
-.orden-mirada.sobre-elegida { background: transparent; box-shadow: 0 0 0 2px var(--masa), 0 0 0 4px var(--corteza); }
+.orden-opcion { position: relative; isolation: isolate; min-height: 44px; display: flex; align-items: center; padding: .6rem .75rem; border-radius: var(--r-chip); color: inherit; cursor: pointer; font: 700 .9rem Arial, sans-serif; white-space: nowrap; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+/* Como en el menu de "Tu cuenta", el fondo solo se sombrea al pasar: la
+   elegida en ambar, la que se mira con velo claro (ambar claro si es la
+   elegida). */
+.orden-opcion[aria-selected="true"] { background: var(--ambar); color: var(--horno); }
+.orden-opcion.is-activa:not([aria-selected="true"]) { background: rgba(255, 255, 255, .1); color: var(--ambar-claro); }
+.orden-opcion.is-activa[aria-selected="true"] { background: var(--ambar-claro); }
 
 /* "Mostrar": dos radios como las categorias de "Filtrar por" (mismas clases
    .chip y .chip-pastilla), sin caja alrededor; la pastilla se desliza de uno
@@ -758,13 +752,12 @@ body.is-vista .franja-pie { display: block; }
    styles.css; esta regla pesa mas que aquella y le pisaria el horno. */
 @media (forced-colors: active) {
   .chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { forced-color-adjust: none; color: HighlightText; }
-  .chip-pastilla, .orden-pastilla { forced-color-adjust: none; background: Highlight; }
+  .chip-pastilla { forced-color-adjust: none; background: Highlight; }
   .chip-input:checked + .chip .ico { color: HighlightText; }
   /* El anillo horno no se ve en colores forzados: el del sistema. */
   .chip-input:focus-visible + .chip { outline-color: CanvasText; box-shadow: none; }
   /* "Ordenar por", igual que la categoria puesta. */
-  .orden-opcion[aria-selected="true"] { forced-color-adjust: none; color: HighlightText; }
-  .orden-mirada { box-shadow: none; outline: 2px solid CanvasText; outline-offset: -2px; }
-  .orden-mirada.sobre-elegida { box-shadow: none; }
+  .orden-opcion[aria-selected="true"] { forced-color-adjust: none; background: Highlight; color: HighlightText; }
+  .orden-opcion.is-activa { outline: 2px solid CanvasText; outline-offset: -2px; }
   .orden-boton:focus-visible { outline-color: CanvasText; box-shadow: none; }
 }

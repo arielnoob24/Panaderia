@@ -187,22 +187,18 @@ panes", con la cinta o con el menú.
 - Controles: Filtrar por (radios: Todas + 3 categorías, como la cinta), buscador (sin tildes ni
   mayúsculas), Ordenar por, Mostrar (solo disponibles).
 - **"Ordenar por" es un desplegable propio** (25 de octubre de 2026; el
-  `<select>` del navegador se veía genérico): un botón en `--papel` con
-  filete fino que dice el orden elegido y una flecha, y al abrirlo un
-  **cuadro de esquinas redondeadas (~12 px) en `--masa`, con filete fino
-  `--horno-claro` y sin sombra dura** (26 de octubre de 2026: en `--papel`
-  se veía como una tarjeta blanca suelta; la lista plana sin caja se
-  probó y se veía rara con opciones en pastilla, así que **las opciones
-  son subcuadros de esquinas redondeadas (~8 px), no pastillas**). Opaco,
-  porque cae sobre la primera fila de fichas. El botón es texto con una
-  línea fina debajo `--horno-claro`, sin relleno papel), con las cuatro
-  opciones en Fraunces cursiva; la elegida en la **pastilla `--horno` con
-  texto `--papel`** como en "Filtrar por", y la que tiene el puntero o las
-  flechas en una pastilla `--papel` (sobre la masa sí se distingue) con filete `--horno-claro`
-  para no depender solo del tono. **Las dos pastillas se deslizan**: la de
-  la elegida y la de la que se mira son un solo elemento cada una
-  (`layoutId` de Motion) que viaja de una opción a otra con un resorte
-  corto (~250 ms); con menos movimiento salta sin viajar. El panel entra con fundido y `scale(.96)` → 1
+  `<select>` del navegador se veía genérico): un botón **en `--papel` con
+  filete fino `--horno-claro` y esquinas redondeadas `--r-btn`: un
+  cuadrado, no una línea** (26 de octubre de 2026: sin caja no gustó), que dice el orden
+  elegido y una flecha, y al abrirlo un **panel como el del botón de
+  usuario** (`.cuenta-menu`): `--horno`, esquinas `--r-card`, filete
+  `rgba(255,255,255,.3)`, `--shadow-float`, con las cuatro opciones en
+  **subcuadros de esquinas redondeadas** (`--r-chip`, no pastillas) y la
+  letra de ese menú (Arial 700). La que tiene el puntero o las flechas en
+  `rgba(255,255,255,.1)` con texto `--ambar-claro`; la elegida en
+  `--ambar` con texto `--horno`. **Solo se sombrean**, como en el menú de
+  "Tu cuenta" (27 de octubre de 2026): ningún fondo viaja de una opción a
+  otra, el color cambia con `--dur-fast`. El panel entra con fundido y `scale(.96)` → 1
   desde el botón (respuesta rápida, `--dur-fast`), la flecha gira; con
   menos movimiento solo aparece. Patrón APG de **combobox de solo
   selección**: botón `role="combobox"` con `aria-expanded`,
