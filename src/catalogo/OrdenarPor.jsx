@@ -17,8 +17,8 @@
 // solo si cambia, como hacia el onChange del <select>.
 //
 // El panel entra con fundido y scale(.96) desde el boton (CSS, vistas.css,
-// --dur-fast) y la flecha gira; con menos movimiento solo aparece. Las dos
-// pastillas (la de la elegida y la de la que se mira) son un elemento cada una
+// --dur-fast) y la flecha gira; con menos movimiento solo aparece. Los dos
+// fondos (el de la elegida y el de la que se mira) son un elemento cada una
 // (layoutId de Motion) y viajan de una opcion a otra con un resorte corto; con
 // menos movimiento saltan.
 import { useEffect, useId, useRef, useState } from 'react';
@@ -28,6 +28,9 @@ import { RESORTE } from '../comun/movimiento.js';
 // Lo que se ha escrito seguido para saltar a una opcion. Pasado este rato
 // sin teclear, se empieza de cero (como en un <select>).
 const PAUSA_LETRAS = 500;
+// Radio de los subcuadros (--r-chip). Va como valor en style de los elementos
+// con layout: Motion corrige asi la escala y no se deforman al viajar.
+const RADIO_OPCION = 8;
 
 function OrdenarPor({ opciones, valor, onCambio, rotuloId }) {
   const base = useId();
@@ -158,12 +161,13 @@ function OrdenarPor({ opciones, valor, onCambio, rotuloId }) {
             onClick={() => elegir(i)}
           >
             {i === elegida && (
-              <m.span className="orden-pastilla" layoutId={`${base}-elegida`} transition={viaje} aria-hidden="true" />
+              <m.span className="orden-pastilla" layoutId={`${base}-elegida`} style={{ borderRadius: RADIO_OPCION }} transition={viaje} aria-hidden="true" />
             )}
             {abierto && i === activa && (
               <m.span
                 className={i === elegida ? 'orden-mirada sobre-elegida' : 'orden-mirada'}
                 layoutId={`${base}-mirada`}
+                style={{ borderRadius: RADIO_OPCION }}
                 transition={viaje}
                 aria-hidden="true"
               />

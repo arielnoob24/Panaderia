@@ -189,12 +189,13 @@ panes", con la cinta o con el menú.
 - **"Ordenar por" es un desplegable propio** (25 de octubre de 2026; el
   `<select>` del navegador se veía genérico): un botón en `--papel` con
   filete fino que dice el orden elegido y una flecha, y al abrirlo un
-  panel **en `--masa`, sin sombra dura ni filete** (26 de octubre de
-  2026: en `--papel` se veía como una tarjeta blanca suelta, y el usuario
-  no quiere recuadro de fondo; es una **lista plana**: solo las opciones
-  en texto. Tiene que seguir siendo opaco porque cae sobre la primera
-  fila de fichas; el botón pasa a texto con una línea fina debajo
-  `--horno-claro`, sin relleno papel), con las cuatro
+  **cuadro de esquinas redondeadas (~12 px) en `--masa`, con filete fino
+  `--horno-claro` y sin sombra dura** (26 de octubre de 2026: en `--papel`
+  se veía como una tarjeta blanca suelta; la lista plana sin caja se
+  probó y se veía rara con opciones en pastilla, así que **las opciones
+  son subcuadros de esquinas redondeadas (~8 px), no pastillas**). Opaco,
+  porque cae sobre la primera fila de fichas. El botón es texto con una
+  línea fina debajo `--horno-claro`, sin relleno papel), con las cuatro
   opciones en Fraunces cursiva; la elegida en la **pastilla `--horno` con
   texto `--papel`** como en "Filtrar por", y la que tiene el puntero o las
   flechas en una pastilla `--papel` (sobre la masa sí se distingue) con filete `--horno-claro`

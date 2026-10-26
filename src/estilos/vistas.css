@@ -330,18 +330,21 @@
 /* Los mandos en una fila entre lineas dobles, como los titulos de Nosotros
    y Contacto: campos en papel con filete fino (horno aclarado, 4,97:1) y
    rotulos en versalitas. */
-.vista-barra { display: flex; align-items: center; gap: 1.2rem; margin-top: clamp(1.4rem, 3.5vw, 2.4rem); }
+/* position + z-index: el panel de Ordenar por (dentro de la barra) tiene que quedar sobre "Mostrando X de Y", que va despues y tambien anima. */
+.vista-barra { position: relative; z-index: 2; display: flex; align-items: center; gap: 1.2rem; margin-top: clamp(1.4rem, 3.5vw, 2.4rem); }
 .vista-barra .linea-doble { min-width: 24px; }
 .vista-mandos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem 1.4rem; }
 .vista-mando { display: inline-flex; align-items: center; gap: .55rem; }
 .vista-mando > span:not(.sr-only) { color: var(--corteza-oscura); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .18em; text-transform: uppercase; }
 /* "Ordenar por" (OrdenarPor.jsx): el boton es solo texto con una linea fina
    debajo (horno aclarado), sin relleno ni caja; dice el orden elegido y lleva
-   la flecha. Al abrirlo, una lista plana en masa opaca (cae sobre la primera
-   fila de fichas), sin filete ni sombra, con las cuatro opciones en Fraunces
-   cursiva. La elegida, en la pastilla horno con texto papel como en "Filtrar
-   por" (13,7:1); la que se mira (puntero o flechas), en una pastilla papel con
-   filete horno aclarado (4,97:1) que no depende solo del tono. */
+   la flecha. Al abrirlo, un cuadro de esquinas redondeadas (12 px, --r-btn) en
+   masa opaca (cae sobre la primera fila de fichas) con filete fino horno
+   aclarado y sin sombra, y un margen interior para que se vea el marco. Las
+   cuatro opciones, en Fraunces cursiva, son subcuadros de 8 px (--r-chip), no
+   pastillas. La elegida, en horno con texto papel (13,7:1); la que se mira
+   (puntero o flechas), en papel con filete horno aclarado (4,97:1) que no
+   depende solo del tono. */
 .orden { position: relative; }
 .orden-boton { display: inline-flex; min-height: 34px; align-items: center; gap: .6rem; padding: .4rem .2rem .3rem; background: transparent; border: 0; border-bottom: 1px solid var(--horno-claro); border-radius: 0; color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); user-select: none; transition: border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 .orden-boton > span { flex: 1; white-space: nowrap; }
@@ -351,13 +354,14 @@
 /* Cerrado, invisible y fuera del arbol de accesibilidad (visibility); al
    abrir, visible al instante para que aria-activedescendant apunte a algo
    que existe. Entra mas despacio de lo que sale. */
-.orden-lista { position: absolute; top: calc(100% + .4rem); left: 0; z-index: 6; display: flex; visibility: hidden; min-width: 100%; flex-direction: column; gap: .15rem; margin: 0; padding: .4rem; list-style: none; background: var(--masa); opacity: 0; pointer-events: none; transform: scale(.96); transform-origin: top left; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility 0s linear var(--dur-micro); }
+.orden-lista { position: absolute; top: calc(100% + .4rem); left: 0; z-index: 6; display: flex; visibility: hidden; min-width: 100%; flex-direction: column; gap: .15rem; margin: 0; padding: .4rem; list-style: none; background: var(--masa); border: 1px solid var(--horno-claro); border-radius: var(--r-btn); opacity: 0; pointer-events: none; transform: scale(.96); transform-origin: top left; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility 0s linear var(--dur-micro); }
 .orden.is-open .orden-lista { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), visibility 0s; }
-.orden-opcion { position: relative; isolation: isolate; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: italic 400 1.05rem/1.25 var(--letra-titulo); white-space: nowrap; transition: color var(--dur-fast) var(--ease-ui); }
-/* Las pastillas viajan (Motion): la elegida en horno y la que se mira en papel
-   con filete horno aclarado, sobre la masa del panel. Todas las opciones miden
-   lo mismo, asi que el viaje no deforma nada. */
-.orden-pastilla, .orden-mirada { position: absolute; inset: 0; z-index: -1; display: block; border-radius: var(--r-pill); pointer-events: none; }
+.orden-opcion { position: relative; isolation: isolate; padding: .4rem .85rem; border-radius: var(--r-chip); color: var(--horno); cursor: pointer; font: italic 400 1.05rem/1.25 var(--letra-titulo); white-space: nowrap; transition: color var(--dur-fast) var(--ease-ui); }
+/* Los fondos viajan (Motion): el de la elegida en horno y el de la que se mira
+   en papel con filete horno aclarado, sobre la masa del panel. Todas las
+   opciones miden lo mismo, asi que el viaje no deforma nada; el radio (8 px)
+   tambien va en style desde el JSX para que Motion lo corrija al viajar. */
+.orden-pastilla, .orden-mirada { position: absolute; inset: 0; z-index: -1; display: block; border-radius: var(--r-chip); pointer-events: none; }
 .orden-pastilla { background: var(--horno); }
 .orden-mirada { background: var(--papel); box-shadow: inset 0 0 0 1px var(--horno-claro); }
 .orden-opcion[aria-selected="true"] { color: var(--papel); transition-delay: 90ms; }

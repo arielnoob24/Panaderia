@@ -108,7 +108,7 @@ export default async function tiendaMandos(t) {
         return { origen: getComputedStyle(l).transformOrigin, anima: l.getAnimations().length };
       });
       t.ok(entra.anima > 0 && entra.origen.startsWith('0px'), `[teclado] el panel no entra animado desde el boton (${JSON.stringify(entra)})`);
-      // El panel es una lista plana: masa opaca, sin filete ni sombra, y el
+      // El panel es un cuadro: masa opaca, filete fino horno aclarado, 12 px de radio, sin sombra, y el
       // texto de la elegida y de la mirada se lee (contraste >= 4.5).
       await espera(400);
       const plano = await p.evaluate(() => {
@@ -117,13 +117,13 @@ export default async function tiendaMandos(t) {
         const razon = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + .05) / (y + .05); };
         const op = [...document.querySelectorAll('.orden-opcion')];
         return {
-          fondo: l.backgroundColor, borde: l.borderTopWidth + l.borderLeftWidth, sombra: l.boxShadow, opacidad: l.opacity,
+          fondo: l.backgroundColor, borde: l.borderTopWidth + l.borderLeftWidth + l.borderTopColor, radio: l.borderTopLeftRadius, radioOpcion: getComputedStyle(op[0]).borderTopLeftRadius, radioFondo: getComputedStyle(document.querySelector('.orden-pastilla')).borderTopLeftRadius, sombra: l.boxShadow, opacidad: l.opacity,
           // Elegida sobre horno; la mirada (aqui la misma) y las demas sobre la masa del panel.
           elegida: razon(getComputedStyle(op.find((o) => o.getAttribute('aria-selected') === 'true')).color, 'rgb(58, 40, 34)'),
           resto: Math.min(...op.filter((o) => o.getAttribute('aria-selected') !== 'true').map((o) => razon(getComputedStyle(o).color, l.backgroundColor))),
         };
       });
-      t.ok(plano.fondo === 'rgb(247, 241, 231)' && plano.borde === '0px0px' && plano.sombra === 'none' && plano.opacidad === '1' && plano.elegida >= 4.5 && plano.resto >= 4.5, `[teclado] el panel no es una lista plana opaca sin filete ni sombra, o el texto no se lee (${JSON.stringify(plano)})`);
+      t.ok(plano.fondo === 'rgb(247, 241, 231)' && plano.borde === '1px1pxrgb(122, 108, 101)' && plano.radio === '12px' && plano.radioOpcion === '8px' && plano.radioFondo === '8px' && plano.sombra === 'none' && plano.opacidad === '1' && plano.elegida >= 4.5 && plano.resto >= 4.5, `[teclado] el panel no es un cuadro opaco con filete, 12 px y subcuadros de 8 px, sin sombra, o el texto no se lee (${JSON.stringify(plano)})`);
       // Abajo, Fin, Inicio recorren sin dar la vuelta.
       await p.keyboard.press('ArrowDown');
       t.ok((await combo(p)).activa === 'Precio: de menor a mayor', '[teclado] Abajo no pasa a la siguiente');
