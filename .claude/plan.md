@@ -831,6 +831,8 @@ entrada), no copiadas.
   (Fraunces en cursiva, filete fino, su icono ámbar y la ola de letras;
   desde el 26 de octubre de 2026 van **dentro de una banda `--horno`**, con
   el texto y el filete en `--papel`;
+  desde el 27 de octubre de 2026 van **rellenos de `--ambar`** con texto e icono
+  `--horno` (el filete fino se perdía sobre el horno);
   es el mismo `EnlaceLlegar`, que con `href` se abre en otra pestaña y lo
   dice en el nombre), uno al lado del otro con el rótulo de cada uno
   encima, y la nota de que son de ejemplo, que **se ve siempre**:
@@ -864,9 +866,16 @@ Como Nosotros y Contacto, sin muestra y con las mismas piezas comunes.
 Cambia la cabecera de la vista; las fichas siguen editoriales (más
 pequeñas desde el 25 de octubre, sección 4).
 
-- **Banda de horno** (26 de octubre de 2026, "Tres colores, 60-30-10"): la cabecera es una banda `--horno` de esquinas `--r-card` (rótulo, título, filtro, mandos y cuenta, dentro de ella) con el grano de antes ya solo en la masa de alrededor y
-  su `FondoDibujo` en ámbar tenue. Dentro, texto `--papel` / `--sobre-horno`; la categoría elegida es una pastilla `--papel` con texto `--horno`; el buscador, "Ordenar por" y la casilla van en `--papel`; el foco es un anillo `--papel` con halo ámbar. El `--horno` además queda en la barra, el borde de
-  las fichas y la categoría elegida.
+- **Barra clara de mandos** (27 de octubre de 2026; sustituye a la banda de
+  horno del 26): la cabecera vuelve a ir sobre la masa, con el grano. El
+  buscador, "Ordenar por" y "Mostrar" van en **una barra `--papel`** de
+  esquinas `--r-card` y filete `--masa-linea`, sin las líneas dobles: buscar
+  a la izquierda, "Ordenar por" y "Mostrar" a la derecha (apilados en el
+  teléfono). El buscador y el botón de orden van en `--masa`. "Filtrar por"
+  vuelve a ser texto `--horno` con la pastilla `--horno` y texto `--papel`.
+  Las opciones de orden por precio y por nombre llevan una **flecha** (↑
+  de menor a mayor y de la A a la Z, ↓ de mayor a menor), en el botón y en
+  la lista; es adorno, el texto ya dice el sentido.
 - **El texto**, alineado a la izquierda como la portada (sin "Volver al
   inicio" desde el 25 de octubre): el rótulo con la espiga **"Nuestra vitrina"**; el
   `h1` con el nombre de la vista en Fraunces grande; y debajo una **frase
@@ -1008,6 +1017,13 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       solo al ir a pagar se le avise, que es como ya funciona (sección 5).
       Sin invitado y sin aviso previo (22 de octubre de 2026).
 - [ ] axe (menor): la barra de deshacer fuera de un punto de referencia (`region`).
+- [x] Pulido de vistas (27 de octubre de 2026): Nosotros con "Conoce nuestro
+      local" relleno de ámbar y los principios en una banda `--horno`;
+      Tienda con barra clara y flechas de sentido en "Ordenar por"; Contacto
+      con los botones de "Escríbenos" rellenos de ámbar; en la portada,
+      "Cómo llegar" con la altura (44 px) y el filete (1,5 px) de "Nuestros
+      panes". Inicio sigue siendo **una sola pantalla sin desplazamiento**
+      (se probó añadir destacados y pasos de pedido y se descartó).
 - [~] Tres colores 60-30-10 con ámbar #e8a87c (sección 10, 26 de octubre de
       2026): hecho el ámbar melocotón y las bandas (cinta y franja más altas,
       banda en Tienda, "Escríbenos" en Contacto, losa y franja en la cuenta).

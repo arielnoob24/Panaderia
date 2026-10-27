@@ -55,6 +55,7 @@
 .periodico .status-dot { margin-top: 0; }
 
 .portada-rejilla { display: grid; grid-template-columns: 1.2fr .8fr; gap: 3rem; align-items: center; padding-block: 2rem 2.6rem; }
+.portada-llegar { min-height: 44px; border-width: 1.5px; }
 .portada-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 1.6rem; margin-top: 2rem; }
 .portada-foto { width: min(100%, 460px); margin-left: auto; }
 /* La foto de la portada es cuadrada, y el sello cae abajo a la izquierda,
@@ -215,6 +216,12 @@
 /* El parrafo de la madrugada es texto corrido: Arial, no la Georgia de body. */
 .nosotros-madrugada { max-width: 62ch; margin: 0; color: var(--horno-suave); font: 1.05rem/1.6 var(--letra-texto); }
 .nosotros-llegar { margin-top: clamp(.6rem, 2.4svh, 1.8rem); }
+/* El boton de la vista, relleno de ambar (el acento): con el filete fino
+   se perdia entre el texto. */
+.enlace-llegar.nosotros-llegar { background: var(--ambar); border-color: var(--horno); box-shadow: 3px 3px 0 var(--horno); }
+.enlace-llegar.nosotros-llegar .ico { color: var(--horno); }
+.enlace-llegar.nosotros-llegar:hover { background: var(--ambar-claro); }
+.enlace-llegar.nosotros-llegar:active { box-shadow: 0 0 0 var(--horno); transform: translate(3px, 3px); }
 /* La foto con peso: el arco (4:5) y su pie ocupan casi todo el alto que
    dejan la barra (86 px), la franja con su curva (86) y el aire: unos
    520 px de ancho a 1440x900 y 420 a 1366x768, sin pasar de 540 ni del
@@ -345,6 +352,9 @@
 .orden { position: relative; }
 .orden-boton { display: inline-flex; min-height: 34px; align-items: center; gap: .6rem; padding: .4rem .8rem; background: transparent; border: 1px solid var(--horno-claro); border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); user-select: none; transition: border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 .orden-boton > span { flex: 1; white-space: nowrap; }
+.orden-sentido { width: 15px; height: 15px; flex: none; color: var(--horno-suave); }
+.orden-sentido-desc { transform: rotate(180deg); }
+.orden-opcion .orden-sentido { margin-right: .5rem; color: currentColor; }
 .orden-flecha { width: 14px; height: 14px; flex: none; transition: transform var(--dur-fast) var(--ease-ui); }
 .orden.is-open .orden-flecha { transform: rotate(180deg); }
 .orden-boton:active { transform: scale(.97); }
@@ -387,26 +397,18 @@
 .vista-cabeza:not(.es-catalogo) .solo-catalogo { display: none; }
 .vista-vacio { width: 100%; margin: 1.5rem 0 0; color: var(--horno-suave); font: 1rem var(--letra-titulo); text-align: center; }
 
-/* La cabeza de la tienda es una banda de horno (seccion 10 del plan, "Tres
-   colores, 60-30-10"): suma al 30 % de horno de la vista, como la banda de
-   la cuenta. Dentro, todo lo que iba en horno pasa a claro y lo que iba en
-   claro (la pastilla de la categoria, los campos) se queda claro: papel
-   sobre horno, 13,7:1. El ambar sobre horno (7:1) sirve para iconos y para
-   el halo del foco. */
-.vista-cabeza.es-catalogo { padding: clamp(1.4rem, 3.4vw, 2.6rem) clamp(1.2rem, 3.4vw, 2.6rem) clamp(1.1rem, 2.4vw, 1.8rem); background: var(--horno); border-radius: var(--r-card); color: var(--sobre-horno); }
-.vista-cabeza.es-catalogo .fondo-dibujo { border-radius: var(--r-card); opacity: .12; }
-.vista-cabeza.es-catalogo :is(.rotulo, .vista-mando > span:not(.sr-only), .vista-cuenta, .casilla) { color: var(--sobre-horno); }
-.vista-cabeza.es-catalogo .titular, .vista-cabeza.es-catalogo .titular em { color: var(--papel); }
-.vista-cabeza.es-catalogo .frase { color: var(--sobre-horno-tenue); }
-.vista-cabeza.es-catalogo .vista-vacio { color: var(--sobre-horno-tenue); }
-.vista-cabeza.es-catalogo .linea-doble { border-color: var(--sobre-horno-tenue); }
-.vista-cabeza.es-catalogo .chip { color: var(--papel); }
-.vista-cabeza.es-catalogo .chip-pastilla { background: var(--papel); }
-.vista-cabeza.es-catalogo .chip-input:checked + .chip, .con-puntero .vista-cabeza.es-catalogo .chip-input:checked + .chip:hover, .con-puntero .vista-cabeza.es-catalogo .chip:hover { color: var(--horno); }
-.vista-cabeza.es-catalogo .chip-input:checked + .chip .ico, .con-puntero .vista-cabeza.es-catalogo .chip:hover .ico { color: var(--horno); }
-.vista-cabeza.es-catalogo .orden-boton { background: var(--papel); }
-/* Sobre el horno el anillo es papel con el halo ambar. */
-.vista-cabeza.es-catalogo :is(.chip-input:focus-visible + .chip, .orden-boton:focus-visible, .vista-buscar input:focus-visible, .casilla-input:focus-visible + .casilla-caja) { outline-color: var(--papel); }
+/* Los mandos de la tienda van en una barra clara (papel sobre masa, con
+   filete fino): ya no hay banda horno. Buscar a la izquierda; Ordenar por y
+   Mostrar a la derecha. Las lineas dobles sobran con la barra. */
+.vista-cabeza.es-catalogo .vista-barra .linea-doble { display: none; }
+.vista-cabeza.es-catalogo .vista-barra { padding: .7rem 1rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-card); }
+.vista-cabeza.es-catalogo .vista-mandos { width: 100%; justify-content: space-between; }
+.vista-cabeza.es-catalogo .vista-mando:last-child { margin-left: auto; }
+.vista-cabeza.es-catalogo .vista-buscar { flex: 1 1 14rem; max-width: 24rem; }
+@media (max-width: 1080px) { .vista-cabeza.es-catalogo .vista-buscar { flex: none; max-width: none; } }
+.vista-cabeza.es-catalogo .vista-buscar input { width: 100%; background: var(--masa); border-color: var(--masa-linea); }
+.vista-cabeza.es-catalogo .orden-boton { background: var(--masa); }
+.vista-cabeza.es-catalogo .vista-cuenta { margin-top: .9rem; }
 body.is-vista .catalog { padding-top: 108px; }
 @media (max-width: 680px) {
   body.is-vista .catalog { padding-top: 88px; }
@@ -526,7 +528,11 @@ body.is-vista .catalog { padding-top: 108px; }
 .contacto-escribir { padding: clamp(.4rem, 1.3svh, 1.4rem) clamp(1rem, 2.4vw, 1.8rem); background: var(--horno); border-radius: var(--r-card); color: var(--sobre-horno); }
 .contacto-escribir :is(.contacto-subtitulo, .rotulo) { color: var(--sobre-horno); }
 .contacto-escribir .linea-doble { border-color: var(--sobre-horno-tenue); }
-.contacto-escribir .enlace-llegar, .contacto-escribir .enlace-llegar:hover { border-color: var(--papel); color: var(--papel); }
+/* Rellenos de ambar con texto horno (el acento): sobre el horno el filete
+   fino no bastaba y los botones se perdian. */
+.contacto-escribir .enlace-llegar { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
+.contacto-escribir .enlace-llegar .ico { color: var(--horno); }
+.contacto-escribir .enlace-llegar:hover { background: var(--ambar-claro); border-color: var(--ambar-claro); color: var(--horno); }
 .contacto-escribir .enlace-llegar:focus-visible { outline-color: var(--papel); }
 .contacto-escribir .contacto-nota { color: var(--sobre-horno-tenue); }
 
@@ -632,18 +638,18 @@ body.is-vista .catalog { padding-top: 108px; }
      a 6 px (a 10 se comia el borde de la pantalla); el margen de 7 px es
      para que el marco no se salga de su caja. */
   .nosotros-foto { width: auto; margin: 7px; }
-  .nosotros-arco { height: clamp(150px, 100svh - 551px, 300px); aspect-ratio: auto; box-shadow: 0 0 0 6px var(--masa), 0 0 0 7px var(--horno); }
+  .nosotros-arco { height: clamp(150px, 100svh - 580px, 300px); aspect-ratio: auto; box-shadow: 0 0 0 6px var(--masa), 0 0 0 7px var(--horno); }
   .nosotros-foto figcaption, .nosotros-foto .sello { display: none; }
   /* Los principios siguen en una fila de tres, con su numero, el icono y
      el nombre; sin la frase. Si un nombre no cabe (texto espaciado, WCAG
      1.4.12), la palabra se parte antes que salirse. */
-  .nosotros-principios { --icono: clamp(28px, 4.6svh, 36px); --icono-aire: clamp(.25rem, 1svh, .6rem); }
+  .nosotros-principios { --icono: clamp(28px, 4.6svh, 36px); --icono-aire: clamp(.25rem, 1svh, .6rem); padding: .5rem .6rem; }
   .principios-cabeza, .contacto-cabeza { gap: .7rem; }
   .principios-titulo, .contacto-subtitulo { font-size: .72rem; letter-spacing: .14em; }
   .principios { --hueco: 1rem; margin-top: clamp(.5rem, 1.4svh, 1.2rem); }
   .principio + .principio::before { font-size: .9rem; }
   .principio-numero { letter-spacing: .14em; }
-  .principio h3 { margin: 0; font-size: clamp(.8rem, 3.8vw, 1.05rem); overflow-wrap: anywhere; hyphens: auto; }
+  .principio h3 { margin: 0; font-size: clamp(.78rem, 3.3vw, 1.05rem); overflow-wrap: anywhere; hyphens: auto; }
   .principio p { display: none; }
   /* Contacto en el telefono (seccion 10 del plan): una columna, con el
      mapa bajo (150 a 200 px segun el alto) y todos los textos. */
@@ -791,3 +797,10 @@ body.is-vista .catalog { padding-top: 108px; }
   .orden-opcion.is-activa { outline: 2px solid CanvasText; outline-offset: -2px; }
   .orden-boton:focus-visible { outline-color: CanvasText; box-shadow: none; }
 }
+
+/* ---- Nosotros: los principios sobre una banda horno (el 30 %) ----------- */
+.nosotros-principios { padding: clamp(.8rem, 2.4svh, 1.6rem) clamp(1rem, 2vw, 1.6rem); background: var(--horno); border-radius: var(--r-card); color: var(--sobre-horno); }
+.nosotros-principios :is(.principios-titulo, .principio-numero) { color: var(--sobre-horno); }
+.nosotros-principios .principio h3 { color: var(--papel); }
+.nosotros-principios .principio p { color: var(--sobre-horno-tenue); }
+.nosotros-principios .linea-doble { border-color: var(--sobre-horno-tenue); }

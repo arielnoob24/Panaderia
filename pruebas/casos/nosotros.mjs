@@ -71,6 +71,7 @@ const mirar = (p) => p.evaluate(() => {
     titulo: caja('.nosotros-texto h1'),
     rotuloCaja: caja('.nosotros-texto .rotulo-espiga'),
     cabeza: caja('.principios-cabeza'),
+    tarjeta: caja('.nosotros-principios'),
     h2: caja('.principios-titulo'),
     listaCaja: caja('ol.principios'),
     // Los principios van dentro de la historia (una sola composicion), con
@@ -160,7 +161,7 @@ export default async function nosotros(t) {
     t.ok(m.selloTexto?.startsWith('Masa madre · Hecho despacio') && m.selloOculto === 'true' && m.aroEnSuSello, `[${nombre}] el sello no dice lo suyo o su texto sigue otro aro (${JSON.stringify([m.selloTexto, m.selloOculto, m.aroEnSuSello])})`);
     t.ok(m.dentro, `[${nombre}] los principios no van dentro de la historia`);
     t.ok(m.lineas.length === 1 && m.lineas[0] >= m.h2.right, `[${nombre}] el h2 de los principios no lleva una sola linea doble a su derecha (${JSON.stringify(m.lineas)})`);
-    t.ok(m.alineados && Math.abs(m.cabeza.left - m.rotuloCaja.left) <= 1 && Math.abs(m.listaCaja.left - m.rotuloCaja.left) <= 1, `[${nombre}] los principios no empiezan en el borde del texto (${Math.round(m.cabeza.left)}, ${Math.round(m.listaCaja.left)} y el rotulo en ${Math.round(m.rotuloCaja.left)})`);
+    t.ok(m.alineados && Math.abs(m.tarjeta.left - m.rotuloCaja.left) <= 1 && m.cabeza.left >= m.tarjeta.left && Math.abs(m.cabeza.left - m.listaCaja.left) <= 1, `[${nombre}] la banda de los principios no empieza en el borde del texto (${Math.round(m.tarjeta.left)}, ${Math.round(m.cabeza.left)}, ${Math.round(m.listaCaja.left)} y el rotulo en ${Math.round(m.rotuloCaja.left)})`);
     if (nombre === 'escritorio') {
       t.ok(m.foto.right <= m.texto.left, `[${nombre}] la foto no va a la izquierda del texto (${Math.round(m.foto.right)} > ${Math.round(m.texto.left)})`);
       // La foto ocupa el alto de las dos filas: del texto a los principios.
@@ -178,7 +179,7 @@ export default async function nosotros(t) {
     t.ok(m.oscuras === 0, `[${nombre}] Nosotros todavia lleva banda oscura o el fondo de los principios`);
     t.ok(m.rol === 'list', `[${nombre}] la lista de principios no lleva role="list" (${m.rol})`);
     t.ok(m.numeros.join() === 'N.º 1,N.º 2,N.º 3' && m.numerosOcultos, `[${nombre}] los numeros de los principios son ${JSON.stringify(m.numeros)}`);
-    t.ok(m.numeroColor === 'rgb(58, 40, 34)', `[${nombre}] el numero no va en horno (${m.numeroColor})`);
+    t.ok(m.numeroColor === 'rgb(238, 228, 216)', `[${nombre}] el numero no va en claro sobre la banda horno (${m.numeroColor})`);
     t.ok(m.iconos === 3 && m.h3.every((f) => ES_FRAUNCES.test(f)), `[${nombre}] a los principios les falta el icono o el nombre en Fraunces`);
     t.ok(m.columnas === 3, `[${nombre}] los principios van en ${m.columnas} columnas`);
     t.ok(m.estrella.includes('✦'), `[${nombre}] no hay estrella entre los principios (${m.estrella})`);

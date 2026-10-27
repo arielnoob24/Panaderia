@@ -28,9 +28,9 @@ const OPCIONES = [['todas', 'Todas'], ...CATEGORIAS.map((c) => [c.id, c.nombre])
 // Los cuatro ordenes, con lo que dice el boton de "Ordenar por".
 const ORDENES = [
   ['recomendados', 'Recomendados'],
-  ['precio-asc', 'Precio: de menor a mayor'],
-  ['precio-desc', 'Precio: de mayor a menor'],
-  ['nombre', 'Nombre: de la A a la Z'],
+  ['precio-asc', 'Precio: de menor a mayor', 'asc'],
+  ['precio-desc', 'Precio: de mayor a menor', 'desc'],
+  ['nombre', 'Nombre: de la A a la Z', 'asc'],
 ];
 
 function VistaCabeza({

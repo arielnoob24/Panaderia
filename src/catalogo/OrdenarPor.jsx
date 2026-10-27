@@ -26,6 +26,12 @@ import { useEffect, useId, useRef, useState } from 'react';
 // sin teclear, se empieza de cero (como en un <select>).
 const PAUSA_LETRAS = 500;
 
+// La flecha dice el sentido: hacia arriba, de menor a mayor (o de la A a la
+// Z); hacia abajo, de mayor a menor. Es adorno: el texto ya lo dice.
+const FlechaSentido = ({ sentido }) => (sentido ? (
+  <svg className={`orden-sentido orden-sentido-${sentido}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M12 19V5" /><path d="M6 11l6-6 6 6" /></svg>
+) : null);
+
 function OrdenarPor({ opciones, valor, onCambio, rotuloId }) {
   const base = useId();
   const [abierto, setAbierto] = useState(false);
@@ -129,6 +135,7 @@ function OrdenarPor({ opciones, valor, onCambio, rotuloId }) {
         onKeyDown={alTeclear}
         onBlur={cerrar}
       >
+        <FlechaSentido sentido={opciones[elegida][2]} />
         <span>{opciones[elegida][1]}</span>
         <svg className="orden-flecha" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M6 9.5l6 5.5 6-5.5" /></svg>
       </div>
@@ -142,7 +149,7 @@ function OrdenarPor({ opciones, valor, onCambio, rotuloId }) {
         tabIndex={-1}
         onPointerDown={(e) => e.preventDefault()}
       >
-        {opciones.map(([v, texto], i) => (
+        {opciones.map(([v, texto, sentido], i) => (
           <li
             key={v}
             id={idDe(i)}
@@ -152,6 +159,7 @@ function OrdenarPor({ opciones, valor, onCambio, rotuloId }) {
             onPointerMove={(e) => { if (e.pointerType === 'mouse' || e.pointerType === 'pen') setActiva(i); }}
             onClick={() => elegir(i)}
           >
+            <FlechaSentido sentido={sentido} />
             {texto}
           </li>
         ))}
