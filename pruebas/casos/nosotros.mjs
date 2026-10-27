@@ -31,7 +31,7 @@ export const descripcion = 'Nosotros en una pantalla sin scroll, arco de pie: fo
 export const limite = 150;
 
 const ES_FRAUNCES = /^"?Fraunces Variable/;
-const CORTEZA = 'rgb(168, 95, 69)';
+const CORTEZA = 'rgb(123, 45, 45)';
 
 // Lo que se ve de la historia y de los principios, en una sola lectura.
 const mirar = (p) => p.evaluate(() => {
@@ -182,7 +182,7 @@ export default async function nosotros(t) {
     t.ok(/\bfranja-pie\b/.test(m.ultimo), `[${nombre}] Nosotros no termina en la franja (${m.ultimo})`);
     t.ok(m.rol === 'list', `[${nombre}] la lista de principios no lleva role="list" (${m.rol})`);
     t.ok(m.numeros.join() === 'N.º 1,N.º 2,N.º 3' && m.numerosOcultos, `[${nombre}] los numeros de los principios son ${JSON.stringify(m.numeros)}`);
-    t.ok(m.numeroColor === 'rgb(122, 64, 48)', `[${nombre}] el numero no va en corteza oscura (${m.numeroColor})`);
+    t.ok(m.numeroColor === 'rgb(94, 34, 34)', `[${nombre}] el numero no va en corteza oscura (${m.numeroColor})`);
     t.ok(m.iconos === 3 && m.h3.every((f) => ES_FRAUNCES.test(f)), `[${nombre}] a los principios les falta el icono o el nombre en Fraunces`);
     t.ok(m.columnas === 3, `[${nombre}] los principios van en ${m.columnas} columnas`);
     t.ok(m.estrella.includes('✦'), `[${nombre}] no hay estrella entre los principios (${m.estrella})`);

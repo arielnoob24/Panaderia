@@ -34,11 +34,11 @@ export const descripcion = 'botones en ticket (mascara, sombra, foco fuera de la
 export const limite = 180;
 
 const HORNO = 'rgb(58, 40, 34)';
-const AMBAR = 'rgb(232, 168, 124)';
-const AMBAR_CLARO = 'rgb(243, 196, 160)';
+const AMBAR = 'rgb(201, 134, 66)';
+const AMBAR_CLARO = 'rgb(219, 160, 98)';
 const PAPEL = 'rgb(255, 253, 248)';
 const MASA = 'rgb(247, 241, 231)';
-const CORTEZA = 'rgb(168, 95, 69)';
+const CORTEZA = 'rgb(123, 45, 45)';
 const CORRIDA = 'matrix(1, 0, 0, 1, 4, 4)';
 
 // El contraste WCAG entre dos colores rgb(...).
@@ -158,14 +158,14 @@ export default async function botones(t) {
       await p.mouse.move(10, 400);
       await p.mouse.move(14, 404);
       await p.hover('.portada-llegar');
-      await esperaQue(() => p.locator('.portada-llegar').evaluate((a) => getComputedStyle(a).color === 'rgb(122, 64, 48)'));
+      await esperaQue(() => p.locator('.portada-llegar').evaluate((a) => getComputedStyle(a).color === 'rgb(94, 34, 34)'));
       const encima = await p.locator('.portada-llegar').evaluate((a) => ({
         color: getComputedStyle(a).color,
         pin: getComputedStyle(a.querySelector('svg')).transform,
         ola: [...a.querySelectorAll('.letras span')].map((s) => getComputedStyle(s).animationName),
         turnos: [...a.querySelectorAll('.letras span')].map((s) => getComputedStyle(s).animationDelay),
       }));
-      t.ok(encima.color === 'rgb(122, 64, 48)' && encima.pin !== 'none', `[${nombre}] con el raton "Como llegar" no cambia a corteza oscura o el pin no salta (${JSON.stringify(encima)})`);
+      t.ok(encima.color === 'rgb(94, 34, 34)' && encima.pin !== 'none', `[${nombre}] con el raton "Como llegar" no cambia a corteza oscura o el pin no salta (${JSON.stringify(encima)})`);
       t.ok(encima.ola.length === 11 && encima.ola.every((n) => n === 'salta') && encima.turnos[0] !== encima.turnos[10], `[${nombre}] con el raton las letras de "Como llegar" no saltan en ola (${JSON.stringify(encima)})`);
 
       // Con el foco del teclado: el anillo de 3 px es el outline del boton
@@ -264,13 +264,13 @@ async function llegarQuieto(t) {
   await p.mouse.move(10, 400);
   await p.mouse.move(14, 404);
   await p.hover('.portada-llegar');
-  await esperaQue(() => p.locator('.portada-llegar').evaluate((a) => getComputedStyle(a).color === 'rgb(122, 64, 48)'));
+  await esperaQue(() => p.locator('.portada-llegar').evaluate((a) => getComputedStyle(a).color === 'rgb(94, 34, 34)'));
   const quieto = await p.locator('.portada-llegar').evaluate((a) => ({
     color: getComputedStyle(a).color,
     pin: getComputedStyle(a.querySelector('svg')).transform,
     ola: [...new Set([...a.querySelectorAll('.letras span')].map((s) => getComputedStyle(s).animationName))],
   }));
-  t.ok(quieto.color === 'rgb(122, 64, 48)' && quieto.pin === 'none' && quieto.ola.join() === 'none', `[menos movimiento] "Como llegar" se mueve con el raton (${JSON.stringify(quieto)})`);
+  t.ok(quieto.color === 'rgb(94, 34, 34)' && quieto.pin === 'none' && quieto.ola.join() === 'none', `[menos movimiento] "Como llegar" se mueve con el raton (${JSON.stringify(quieto)})`);
   await ctx.close();
 }
 

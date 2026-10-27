@@ -25,7 +25,7 @@ export const limite = 150;
 const ES_FRAUNCES = /^"?Fraunces Variable/;
 const HORNO = 'rgb(58, 40, 34)';
 const PAPEL = 'rgb(255, 253, 248)';
-const CORTEZA_OSCURA = 'rgb(122, 64, 48)';
+const CORTEZA_OSCURA = 'rgb(94, 34, 34)';
 const VISTAS = [
   ['tienda-catalogo', 'todas', 'Todo el catálogo', 'Panes, dulces y bebidas de la casa.'],
   ['tienda-panes', 'panes', 'Panes', 'Lo que sale del horno cada mañana.'],

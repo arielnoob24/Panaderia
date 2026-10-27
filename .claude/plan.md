@@ -524,13 +524,17 @@ pedido sigue valiendo.
 - `assets/css/styles.css` es la base, con variables en `:root` (colores
   `--masa`, `--horno`, `--ambar`, `--corteza`, `--papel`; sombras, radios,
   duraciones y curvas). Lo propio de las vistas va en `src/estilos/`.
-- **El acento ya no es mostaza sino melocotón** (26 de octubre de 2026; la
-  mostaza no gustaba): `--ambar` pasa de `#d79b4a` a `#e8a87c` y
-  `--ambar-claro` (hover) de `#f2ca68` a `#f3c4a0`. El nombre de la
-  variable no cambia. Mismo tono que el café y el ladrillo, solo más claro:
-  sobre `--horno` da 6,9:1 (hover 8,8:1). Sobre `--masa` casi no se lee
-  (1,8:1): va con texto `--horno` encima o sobre fondo oscuro, nunca como
-  texto suelto. El café, el blanco y el ladrillo no cambian.
+- **Paleta cobre y vino** (26 de octubre de 2026; la mostaza no gustaba y
+  el melocotón se probó antes): el café y el blanco no cambian. `--ambar`
+  (acento) pasa de `#d79b4a` a cobre `#c98642` y `--ambar-claro` (hover) de
+  `#f2ca68` a `#dba062`. `--corteza` (el ladrillo) pasa de `#a85f45` a vino
+  `#7b2d2d`, `--corteza-oscura` de `#7a4030` a `#5e2222` y
+  `--aviso-cerrado` a `#dab4b0`. Los nombres de las variables no cambian.
+  El cobre se aclaró desde `#b87333` (3,7:1 con el café) para llegar a
+  4,6:1 con `--horno` en los dos sentidos (texto café sobre el botón y
+  acento sobre la barra); el hover da más. Papel sobre vino da 9,2:1.
+  Sobre `--masa` el cobre casi no se lee (3,3:1): va con texto `--horno`
+  encima o sobre fondo oscuro, nunca como texto suelto.
 - **Regla 60-30-10** en cada vista: 60 % `--masa`/`--papel`, 30 % `--horno`,
   10 % `--ambar`/`--corteza`.
 - **Fondos**: dibujos de línea de trigo, maíz y pan en SVG propio
@@ -646,7 +650,7 @@ ritmo del movimiento y la accesibilidad no cambian.
     ticket en **`--corteza` con texto `--papel` y sombra `--horno`** (K1 de
     `muestra-colores.html`, 23 de octubre de 2026; el `--horno` de antes
     era demasiado oscuro), a todo lo ancho de la canasta. Así no se
-    confunde con el `+` ámbar de agregar. Papel sobre corteza da 4,7:1:
+    confunde con el `+` ámbar de agregar. Papel sobre corteza (vino desde el 26 de octubre de 2026) da 9,2:1 (antes 4,7:1):
     el texto no puede ir más fino ni más pequeño que hoy.
   - **Secundario** (`.button-otro`: "Ya tengo cuenta…", "No tengo
     cuenta…", "Cerrar sesión"): ticket hueco, solo el borde de 1,5 px

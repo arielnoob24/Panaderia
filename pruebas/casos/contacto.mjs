@@ -28,9 +28,9 @@ export const descripcion = 'Contacto como la portada: rotulo, titular y direccio
 export const limite = 150;
 
 const ES_FRAUNCES = /^"?Fraunces Variable/;
-const CORTEZA = 'rgb(168, 95, 69)';
+const CORTEZA = 'rgb(123, 45, 45)';
 const HORNO = 'rgb(58, 40, 34)';
-const CORTEZA_OSCURA = 'rgb(122, 64, 48)';
+const CORTEZA_OSCURA = 'rgb(94, 34, 34)';
 
 const mirar = (p) => p.evaluate(() => {
   const q = (s) => document.querySelector(s);
