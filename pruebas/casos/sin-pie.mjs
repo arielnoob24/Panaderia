@@ -7,6 +7,7 @@
 //   crear, verificar, recuperar y Mis datos), lo ultimo que se lee o se
 //   pulsa no queda pegado al borde ni debajo de la canasta flotante.
 import { VENTANAS, ANA, espera, esperaQue } from '../arranque.mjs';
+import { codigoDe } from '../supabaseFalso.mjs';
 
 export const descripcion = 'sin pie: ninguna vista con <footer>, el guardado en la canasta bajo Ir a pagar, y el final de cada vista libre de la canasta flotante';
 export const limite = 120;
@@ -75,10 +76,10 @@ export default async function sinPie(t) {
     await p.fill('#cuenta-clave', ANA.clave);
     await p.fill('#cuenta-repite', ANA.clave);
     await p.click('.cuenta-crear');
-    await p.waitForSelector('.codigo-falso');
+    await p.waitForSelector('.codigo-casilla');
     await espera(400);
     await mirarFinal(t, p, nombre, '#/cuenta/verificar', '.cuenta-cambiar');
-    const codigo = (await p.textContent('.codigo-valor')).trim();
+    const codigo = codigoDe(ANA.correo);
     await p.click('.codigo-casilla >> nth=0');
     await p.keyboard.type(codigo);
     await p.waitForSelector('.cuenta-vista-datos');

@@ -1,13 +1,15 @@
-// Verificar el correo con EmailJS caido: el aviso de que el codigo esta en
-// pantalla, la espera de 45 s (que no se reinicia al salir y volver),
-// "Cambiar el correo" conserva lo escrito, reenviar limpia las casillas y el
-// codigo viejo deja de valer. Con el reloj de Playwright, sin esperar de verdad.
+// Verificar el correo con Supabase Auth (el de mentira, pruebas/supabaseFalso.mjs):
+// el estado del envio, la espera de 60 s para pedir otro (que no se reinicia
+// al salir y volver), "Cambiar el correo" conserva lo escrito, reenviar
+// limpia las casillas y el codigo viejo deja de valer, y si el reenvio falla
+// se dice. Con el reloj de Playwright, sin esperar de verdad.
 import { VENTANAS, espera } from '../arranque.mjs';
+import { codigoDe, quebrar } from '../supabaseFalso.mjs';
 
-export const descripcion = 'verificar: aviso sin correo, espera de 45 s, cambiar el correo y reenviar';
+export const descripcion = 'verificar: estado del envio, espera de 60 s, cambiar el correo, reenviar y reenvio que falla';
 export const limite = 90;
 
-const SIN_CORREO = 'No pudimos enviar el correo; el código está en pantalla.';
+const CODIGO_MAL = 'Ese código no es el que enviamos o ya caducó. Míralo otra vez o pide otro.';
 
 export default async function reenviar(t) {
   for (const [nv, ventana] of Object.entries({ escritorio: VENTANAS.escritorio, movil: VENTANAS.movil })) {
@@ -23,24 +25,18 @@ export default async function reenviar(t) {
     await p.fill('#cuenta-clave', 'Clave123');
     await p.fill('#cuenta-repite', 'Clave123');
     await p.click('.cuenta-crear');
-    await p.waitForSelector('.codigo-falso');
+    await p.waitForSelector('.codigo-casilla');
     const aviso = () => p.evaluate(() => document.querySelector('[aria-live="polite"]').textContent);
-    // Con el reloj instalado, el fallo del envio llega cuando se le deja correr.
-    const hastaAviso = async (texto) => {
-      for (let k = 0; k < 10 && (await aviso()) !== texto; k += 1) { await p.clock.runFor(100); await espera(100); }
-    };
-    await hastaAviso(SIN_CORREO);
-    ok((await aviso()) === SIN_CORREO, 'aviso al fallar el envio: ' + await aviso());
+    ok((await p.textContent('.codigo-estado')).startsWith('Código enviado.'), 'estado del envio: ' + await p.textContent('.codigo-estado'));
     const alertas = await p.evaluate(() => [...document.querySelector('.cuenta-verificar').parentElement.querySelectorAll('[role="alert"]')].map((e) => e.outerHTML));
     ok(alertas.length === 0, 'el pie de verificar aun tiene role=alert: ' + alertas.join(' '));
-    const c1 = await p.textContent('.codigo-valor');
-    ok((await p.textContent('.codigo-reenviar')) === 'Enviar otro código en 45s', await p.textContent('.codigo-reenviar'));
+    const c1 = codigoDe('ana@correo.com');
+    ok(/^\d{6}$/.test(c1), `no llego un codigo: ${c1}`);
+    ok((await p.textContent('.codigo-reenviar')) === 'Enviar otro código en 60s', await p.textContent('.codigo-reenviar'));
     await p.clock.runFor(10000);
-    ok((await p.textContent('.codigo-reenviar')) === 'Enviar otro código en 35s', 'tras 10 s: ' + await p.textContent('.codigo-reenviar'));
+    ok((await p.textContent('.codigo-reenviar')) === 'Enviar otro código en 50s', 'tras 10 s: ' + await p.textContent('.codigo-reenviar'));
     // Salir y volver no reinicia la espera. Antes, que crear acabe de irse: con
-    // el reloj quieto su salida no termina sola, y si se vuelve mientras sale,
-    // vuelve la misma hoja con la contrasena escrita (pasa tambien con el reloj
-    // de verdad si se pulsa en sus 220 ms; esta apuntado para frontend).
+    // el reloj quieto su salida no termina sola.
     for (let k = 0; k < 20 && (await p.locator('.vista-marco.is-saliendo').count()); k += 1) { await p.clock.runFor(20); await espera(50); }
     await p.click('.cuenta-cambiar');
     await p.waitForSelector('#cuenta-nombre');
@@ -48,22 +44,22 @@ export default async function reenviar(t) {
     ok((await p.inputValue('#cuenta-clave')) === '', 'la clave se conservo');
     await p.goBack();
     await p.waitForSelector('.codigo-reenviar');
-    ok((await p.textContent('.codigo-reenviar')) === 'Enviar otro código en 35s', 'volver reinicio la espera: ' + await p.textContent('.codigo-reenviar'));
-    await p.clock.runFor(36000);
-    ok(!(await p.isDisabled('.codigo-reenviar')) && (await p.textContent('.codigo-reenviar')) === 'Enviar otro código', 'tras 45 s: ' + await p.textContent('.codigo-reenviar'));
+    ok((await p.textContent('.codigo-reenviar')) === 'Enviar otro código en 50s', 'volver reinicio la espera: ' + await p.textContent('.codigo-reenviar'));
+    await p.clock.runFor(51000);
+    ok(!(await p.isDisabled('.codigo-reenviar')) && (await p.textContent('.codigo-reenviar')) === 'Enviar otro código', 'tras 60 s: ' + await p.textContent('.codigo-reenviar'));
     await p.click('.codigo-casilla >> nth=0');
     await p.keyboard.type('12');
     await p.click('.codigo-reenviar');
-    const c2 = await p.textContent('.codigo-valor');
+    await espera(300);
+    const c2 = codigoDe('ana@correo.com');
     ok((await p.evaluate(() => [...document.querySelectorAll('.codigo-casilla')].map((c) => c.value).join(''))) === '', 'reenviar no limpio las casillas');
     ok(await p.evaluate(() => document.activeElement === document.querySelector('.codigo-casilla')), 'foco tras reenviar');
-    ok(['Te enviamos un código nuevo.', SIN_CORREO].includes(await aviso()), 'aviso reenviar: ' + await aviso());
-    await hastaAviso(SIN_CORREO);
-    ok((await aviso()) === SIN_CORREO, 'aviso del fallo tras reenviar: ' + await aviso());
+    ok((await aviso()) === 'Te enviamos un código nuevo.', 'aviso reenviar: ' + await aviso());
     ok(await p.isDisabled('.codigo-reenviar'), 'reenviar no vuelve a esperar');
     // El codigo viejo ya no vale (si por azar salio el mismo, no se puede ver).
     if (c1 !== c2) {
       await p.keyboard.type(c1);
+      await espera(300);
       ok(await p.isVisible('#cuenta-codigo-error'), 'el codigo viejo valio');
       // Una sola via: el foco en la primera casilla, que lo describe, y nada en el pie.
       ok(await p.evaluate(() => document.activeElement === document.querySelector('.codigo-casilla')
@@ -71,9 +67,19 @@ export default async function reenviar(t) {
       ok((await p.$$('[role="alert"]:not([hidden])')).length === 0, 'el error salio en un role=alert');
       // Enter en la primera casilla con el mismo codigo: el foco ya esta ahi, va por avisos.
       await p.keyboard.press('Enter');
-      ok((await aviso()) === 'Ese código no es el que enviamos. Míralo otra vez.', 'Enter en la primera no lo dijo: ' + await aviso());
+      await espera(300);
+      ok((await aviso()) === CODIGO_MAL, 'Enter en la primera no lo dijo: ' + await aviso());
       await p.click('.codigo-casilla >> nth=0');
     }
+    // Si el reenvio falla en el servidor, se dice en pantalla y al lector.
+    await p.clock.runFor(61000);
+    quebrar(ctx, '/resend');
+    await p.click('.codigo-reenviar');
+    await espera(300);
+    ok((await p.textContent('.codigo-estado')).startsWith('No pudimos enviarte el correo'), 'el fallo del reenvio no se ve: ' + await p.textContent('.codigo-estado'));
+    ok((await aviso()) === 'No pudimos enviar el correo. Pide otro código en un momento.', 'el fallo del reenvio no se dice: ' + await aviso());
+    quebrar(ctx, null);
+    await p.click('.codigo-casilla >> nth=0');
     await p.keyboard.type(c2);
     for (let k = 0; k < 10 && (await p.evaluate(() => location.hash)) !== '#/cuenta'; k += 1) {
       await p.clock.runFor(200);

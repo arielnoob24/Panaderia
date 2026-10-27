@@ -1,53 +1,44 @@
 // ---- La sesion: el reductor --------------------------------------------
-// Lo que hacia el objeto 'sesion' de state.js y las funciones de account.js
-// del sitio presentado que lo cambiaban, como una funcion pura, igual que el
-// pedido (estado/pedido.js). Ni localStorage, ni huellas, ni correo, ni azar:
-// la huella y el codigo llegan ya hechos en la accion, y guardar es un efecto
-// de SesionProvider.
+// Como el pedido (estado/pedido.js), una funcion pura. Ni Supabase, ni la
+// API, ni localStorage, ni la hora: lo que cambia llega ya hecho en la
+// accion, y hablar con fuera es cosa de SesionProvider.
 //
 // Estado:
 //   cuenta     { nombre, correo, telefono, direccion, dentro, verificado,
-//              metodo }, la de leerCuentaGuardada() de servicios/cuenta.js.
-//   huella     { sal, hash } de la contrasena, o null.
-//   hayCuenta  si en este navegador hay alguna cuenta, aunque la sesion este
-//              cerrada.
-//   pendiente  la cuenta que espera el codigo, o null: { datos, huella,
-//              codigo, enviadoEn, envio }. No se guarda hasta verificarla,
-//              como en el sitio presentado: un correo sin probar no es cuenta.
-//              envio es 'enviando', 'enviado', 'fallo' o 'sin-buzon'.
+//              metodo }. Con la sesion de Supabase abierta, dentro y
+//              verificado son true (Auth no deja entrar sin el correo
+//              verificado).
+//   hayCuenta  si en este navegador ya entro alguna cuenta, aunque la sesion
+//              este cerrada.
+//   pendiente  la cuenta que espera el codigo, o null: { datos, enviadoEn,
+//              envio }. envio es 'enviado' o 'fallo'. El codigo no esta: lo
+//              genera, lo manda y lo comprueba Supabase Auth.
 //   recuperacion  el codigo para cambiar la contrasena, o null: { correo,
-//              nombre, codigo, enviadoEn, intentos, listo, enCurso }. listo
-//              es que el codigo ya se acerto y falta la contrasena nueva;
-//              enCurso, que se esta en sus casillas (con "Cambiar el correo"
-//              se vuelve al correo sin perder el codigo ni sus intentos). Solo
-//              en memoria, como la cuenta por verificar, y se borra al entrar,
-//              verificar, salir o crear otra: un codigo acertado y sin usar no
-//              puede quedarse abierto para el siguiente que use el navegador.
+//              enviadoEn, intentos, listo, enCurso }. listo es que el codigo
+//              ya se acerto y falta la contrasena nueva; enCurso, que se esta
+//              en sus casillas (con "Cambiar el correo" se vuelve al correo
+//              sin perder la hora ni los intentos). Solo en memoria.
 //   envioClave cuando salio el ultimo codigo de recuperar (0 si ninguno): la
-//              espera de 45 s vale aunque la recuperacion se borre.
-//   cambios    cuantas veces cambio algo que se guarda; lo mira el efecto de
-//              guardar, asi que lo leido al arrancar no se reescribe.
+//              espera para pedir otro vale aunque la recuperacion se borre.
+//   cambios    cuantas veces cambio la cuenta; lo mira el efecto que guarda
+//              la copia, asi que lo leido al arrancar no se reescribe.
 //
 // Acciones:
-//   { tipo: 'releer', leido }                     otra pestana la cambio
-//   { tipo: 'porVerificar', datos, huella, codigo, enviadoEn, envio }
-//   { tipo: 'codigo', codigo, enviadoEn, envio }  se pidio otro codigo
-//   { tipo: 'envio', codigo, envio }              como fue el correo
-//   { tipo: 'verificar' }                         codigo bueno: cuenta y dentro
-//   { tipo: 'entrar' }                            contrasena buena
-//   { tipo: 'editar', nombre, telefono, direccion, metodo }
+//   { tipo: 'dentro', cuenta }                    entro: datos de la API
+//   { tipo: 'porVerificar', datos, enviadoEn, envio }
+//   { tipo: 'codigo', enviadoEn, envio }          se pidio otro codigo
+//   { tipo: 'editar', cuenta }                    datos cambiados
 //   { tipo: 'salir' }                             cierra la sesion, no borra
-//   { tipo: 'recuperar', correo, nombre, codigo, enviadoEn }  salio un codigo
+//   { tipo: 'recuperar', correo, enviadoEn }      salio un codigo
 //   { tipo: 'reabrirRecuperar' }                  otra vez a sus casillas
 //   { tipo: 'fallaRecuperar' }                    un intento mal
 //   { tipo: 'aciertaRecuperar', ahora }           codigo bueno
-//   { tipo: 'nuevaClave', huella, ahora }         contrasena nueva: dentro
 //   { tipo: 'olvidarRecuperar' }                  "Cambiar el correo"
 //   { tipo: 'caducarRecuperar' }                  pasaron los 10 minutos
 
 // Los 10 minutos del codigo de recuperar, tambien aqui: aunque una vista no
-// los mirara, el reductor no acepta un acierto ni una contrasena fuera de
-// plazo. La hora llega en la accion: el reductor no la lee.
+// los mirara, el reductor no acepta un acierto fuera de plazo. La hora llega
+// en la accion: el reductor no la lee.
 import { CADUCA_RECUPERAR } from '../servicios/cuenta.js';
 
 const vigente = (r, ahora) => Boolean(r) && ahora - r.enviadoEn <= CADUCA_RECUPERAR;
@@ -56,53 +47,27 @@ const cambio = (estado, parte) => ({ ...estado, ...parte, cambios: estado.cambio
 
 function reductor(estado, accion) {
   switch (accion.tipo) {
-    case 'releer':
-      return { ...estado, ...accion.leido };
-    case 'porVerificar':
-      return {
-        ...estado,
-        recuperacion: null,
-        pendiente: {
-          datos: accion.datos, huella: accion.huella,
-          codigo: accion.codigo, enviadoEn: accion.enviadoEn, envio: accion.envio,
-        },
-      };
-    case 'codigo':
-      if (!estado.pendiente) return estado;
-      return {
-        ...estado,
-        pendiente: { ...estado.pendiente, codigo: accion.codigo, enviadoEn: accion.enviadoEn, envio: accion.envio },
-      };
-    case 'envio':
-      // Mientras el correo viajaba pudo pedirse otro codigo, y entonces esta
-      // respuesta habla de uno que ya no vale.
-      if (!estado.pendiente || estado.pendiente.codigo !== accion.codigo) return estado;
-      return { ...estado, pendiente: { ...estado.pendiente, envio: accion.envio } };
-    case 'verificar':
-      if (!estado.pendiente) return estado;
+    case 'dentro':
       return cambio(estado, {
-        cuenta: { metodo: 'efectivo', ...estado.pendiente.datos, verificado: true, dentro: true },
-        huella: estado.pendiente.huella,
+        cuenta: { ...accion.cuenta, dentro: true, verificado: true },
         hayCuenta: true,
         pendiente: null,
         recuperacion: null,
       });
-    case 'entrar':
-      return cambio(estado, { cuenta: { ...estado.cuenta, dentro: true }, pendiente: null, recuperacion: null });
+    case 'porVerificar':
+      return {
+        ...estado,
+        recuperacion: null,
+        pendiente: { datos: accion.datos, enviadoEn: accion.enviadoEn, envio: accion.envio },
+      };
+    case 'codigo':
+      if (!estado.pendiente) return estado;
+      return { ...estado, pendiente: { ...estado.pendiente, enviadoEn: accion.enviadoEn, envio: accion.envio } };
     case 'editar':
-      return cambio(estado, {
-        cuenta: {
-          ...estado.cuenta,
-          nombre: accion.nombre,
-          telefono: accion.telefono,
-          direccion: accion.direccion,
-          // Solo los dos que hay en el cobro, como leerCuentaGuardada().
-          metodo: accion.metodo === 'tarjeta' ? 'tarjeta' : 'efectivo',
-        },
-      });
+      return cambio(estado, { cuenta: { ...estado.cuenta, ...accion.cuenta } });
     case 'salir':
-      // Lo que se cierra es la sesion, no la cuenta: los datos se quedan para
-      // poder volver a entrar con el correo.
+      // Lo que se cierra es la sesion: la copia de los datos se queda para
+      // ofrecer entrar otra vez con ese correo.
       return cambio(estado, { cuenta: { ...estado.cuenta, dentro: false }, pendiente: null, recuperacion: null });
     case 'recuperar':
       // Un codigo nuevo empieza de cero: sus 10 minutos y sus 5 intentos.
@@ -110,12 +75,10 @@ function reductor(estado, accion) {
         ...estado,
         envioClave: accion.enviadoEn,
         recuperacion: {
-          correo: accion.correo, nombre: accion.nombre, codigo: accion.codigo,
-          enviadoEn: accion.enviadoEn, intentos: 0, listo: false, enCurso: true,
+          correo: accion.correo, enviadoEn: accion.enviadoEn, intentos: 0, listo: false, enCurso: true,
         },
       };
     case 'reabrirRecuperar':
-      // El mismo codigo, con los intentos que le queden.
       if (!estado.recuperacion) return estado;
       return { ...estado, recuperacion: { ...estado.recuperacion, enCurso: true } };
     case 'fallaRecuperar':
@@ -124,22 +87,9 @@ function reductor(estado, accion) {
     case 'aciertaRecuperar':
       if (!vigente(estado.recuperacion, accion.ahora)) return estado;
       return { ...estado, recuperacion: { ...estado.recuperacion, listo: true } };
-    case 'nuevaClave':
-      // La huella nueva sustituye a la vieja, que deja de valer; los datos y
-      // los pedidos son los de siempre. El codigo llego a ese correo, asi que
-      // queda probado que es suyo, igual que al verificarlo.
-      if (!estado.recuperacion?.listo || !vigente(estado.recuperacion, accion.ahora)) return estado;
-      return cambio(estado, {
-        cuenta: { ...estado.cuenta, verificado: true, dentro: true },
-        huella: accion.huella,
-        hayCuenta: true,
-        pendiente: null,
-        recuperacion: null,
-      });
     case 'olvidarRecuperar':
-      // Se vuelve al correo, pero el codigo, su hora y sus intentos se quedan:
-      // si no, cambiar el correo serviria para saltarse la espera de 45 s y
-      // los 5 intentos. Acertado o no, hay que volver a escribirlo.
+      // Se vuelve al correo, pero la hora y los intentos se quedan: si no,
+      // cambiar el correo serviria para saltarse la espera y los 5 intentos.
       if (!estado.recuperacion) return estado;
       return { ...estado, recuperacion: { ...estado.recuperacion, enCurso: false, listo: false } };
     case 'caducarRecuperar':

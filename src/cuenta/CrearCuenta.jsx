@@ -19,7 +19,7 @@ import { flushSync } from 'react-dom';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { useAvisos } from '../comun/Avisos.jsx';
-import { REGLAS, soloNueve, fallosCuenta, avisoFaltan, avisoDelCodigo, correoAMedias } from '../servicios/cuenta.js';
+import { REGLAS, soloNueve, fallosCuenta, avisoFaltan, avisoDelCodigo } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
 import MarcaRegla from './MarcaRegla.jsx';
@@ -39,7 +39,7 @@ function CrearCuenta() {
 }
 
 function FormularioCrear() {
-  const { pendiente, crear, hayCuenta, correo: correoGuardado } = useSesion();
+  const { pendiente, crear } = useSesion();
   const avisar = useAvisos();
   const navegar = useNavigate();
   const location = useLocation();
@@ -127,19 +127,10 @@ function FormularioCrear() {
       <div className="cuenta-formulario" onKeyDown={alTeclear}>
         <div className="cuenta-cuerpo">
           <p className="cuenta-maqueta">
-            <strong>Maqueta académica.</strong> Este sitio no tiene servidor: la cuenta se guarda solo
-            en este navegador, y de la contraseña solo su huella cifrada. Aun así, no escribas una
-            contraseña de verdad.
+            <strong>Maqueta académica.</strong> La cuenta se guarda en el servidor del proyecto
+            (Supabase) y te llega un código a tu correo para verificarla. Aun así, no uses una
+            contraseña que tengas en otro sitio.
           </p>
-          {/* Una cuenta por navegador: crear otra pisa la que hay, y eso se
-              dice antes de que pase. El correo a medias basta para que su
-              dueno la reconozca sin ensenarselo a cualquiera. */}
-          {hayCuenta ? (
-            <p className="cuenta-maqueta cuenta-ya-hay">
-              En este navegador ya hay una cuenta
-              {correoGuardado ? ` (${correoAMedias(correoGuardado)})` : ''}. Crear otra la reemplaza.
-            </p>
-          ) : null}
           <div className="cuenta-crear-columnas">
             <div className="cuenta-crear-datos">
               {campo('nombre', { etiqueta: 'Nombre y apellido', type: 'text', autoComplete: 'name', maxLength: 60, placeholder: 'María Pérez' })}

@@ -14,6 +14,7 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'no
 import { homedir } from 'node:os';
 import { extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { codigoDe } from './supabaseFalso.mjs';
 
 // La raiz del repo, sacada de donde esta este archivo, y lo construido.
 export const RAIZ = fileURLToPath(new URL('..', import.meta.url));
@@ -105,8 +106,8 @@ export async function llegar(p, hash) {
   await espera(250);
 }
 
-// Crea y verifica una cuenta por la interfaz de React, con el codigo del
-// recuadro (EmailJS cortado). Deja la pagina en #/cuenta.
+// Crea y verifica una cuenta por la interfaz de React, con el codigo que
+// "llego" al correo (pruebas/supabaseFalso.mjs). Deja la pagina en #/cuenta.
 export const ANA = { nombre: 'Ana María Pérez', correo: 'ana@correo.com', telefono: '991234567', clave: 'Clave123' };
 export async function crearCuenta(p, react, datos = ANA) {
   await p.goto(react + '#/cuenta/crear');
@@ -118,8 +119,8 @@ export async function crearCuenta(p, react, datos = ANA) {
   await p.fill('#cuenta-clave', datos.clave);
   await p.fill('#cuenta-repite', datos.clave);
   await p.click('.cuenta-crear');
-  await p.waitForSelector('.codigo-falso');
-  const codigo = (await p.textContent('.codigo-valor')).trim();
+  await p.waitForSelector('.codigo-casilla');
+  const codigo = codigoDe(datos.correo);
   await p.click('.codigo-casilla >> nth=0');
   await p.keyboard.type(codigo);
   await p.waitForSelector('.cuenta-vista-datos');

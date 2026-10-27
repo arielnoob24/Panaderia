@@ -91,7 +91,11 @@ function FormularioDatos() {
   };
   const alDejar = (campo) => () => setTocados((t) => (t.has(campo) ? t : new Set(t).add(campo)));
 
-  const alGuardar = () => {
+  // Guardar va a la base por la API: mientras contesta, el boton no vuelve
+  // a mandar.
+  const [ocupado, setOcupado] = useState(false);
+  const alGuardar = async () => {
+    if (ocupado) return;
     const malos = ORDEN.filter((c) => fallos[c]);
     if (malos.length) {
       flushSync(() => { setIntentado(true); setAviso(avisoFaltan(malos.length)); });
@@ -99,6 +103,10 @@ function FormularioDatos() {
       return;
     }
     const v = limpios(datos);
+    setOcupado(true);
+    const problema = await sesion.editar({ ...v, metodo });
+    setOcupado(false);
+    if (problema) { setHecho(''); setAviso(problema); return; }
     // Si la direccion del pedido era la de la cuenta, cambia con ella. Si en
     // el pedido se escribio otra, esa manda, igual que al entrar.
     if (entrega.direccion && entrega.direccion === sesion.direccion) {
@@ -106,7 +114,6 @@ function FormularioDatos() {
     } else if (!entrega.direccion && v.direccion) {
       hacer({ tipo: 'entrega', campo: 'direccion', valor: v.direccion });
     }
-    sesion.editar({ ...v, metodo });
     setDatos(v);
     setIntentado(false);
     setTocados(new Set());
@@ -166,7 +173,7 @@ function FormularioDatos() {
           <p className="cuenta-aviso" role="alert" hidden={!aviso}><TextoSuave texto={aviso} /></p>
           {/* El rotulo cambia con un fundido corto; lo que oye el lector es el
               aviso "Guardamos tus cambios." de la region de avisos. */}
-          <button className={guardado ? 'button button-yellow cuenta-guardar is-guardado' : 'button button-yellow cuenta-guardar'} type="button" onClick={alGuardar}>
+          <button className={guardado ? 'button button-yellow cuenta-guardar is-guardado' : 'button button-yellow cuenta-guardar'} type="button" onClick={alGuardar} aria-disabled={ocupado}>
             <AnimatePresence mode="wait" initial={false}>
               <m.span
                 key={guardado ? 'guardado' : 'guardar'}
@@ -185,8 +192,8 @@ function FormularioDatos() {
           </Link>
           <button className="button button-otro cuenta-salir" type="button" onClick={alSalir}>Cerrar sesión</button>
           <p className="cuenta-nota">
-            La cuenta se queda guardada en este navegador: puedes volver a entrar con tu correo y tu
-            contraseña. No hay ningún otro lugar donde estuviera guardada.
+            Tu cuenta se guarda en nuestro servidor: puedes volver a entrar con tu correo y tu
+            contraseña desde cualquier navegador o teléfono.
           </p>
         </div>
       </div>

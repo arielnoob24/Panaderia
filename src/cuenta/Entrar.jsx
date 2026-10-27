@@ -90,8 +90,8 @@ function FormularioEntrar() {
       <div className="cuenta-formulario" onKeyDown={alTeclear}>
         <div className="cuenta-cuerpo">
           <p className="cuenta-maqueta">
-            <strong>Maqueta académica.</strong> Sin servidor, solo se puede iniciar sesión con la
-            cuenta que creaste en este navegador.
+            <strong>Maqueta académica.</strong> Puedes entrar con tu cuenta desde cualquier
+            navegador o teléfono.
           </p>
           <CampoCuenta
             id="entrar-correo"

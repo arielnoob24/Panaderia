@@ -2,6 +2,7 @@
 // la cuenta abierta (y los viejos sin correo). Y el aviso de Crear cuando ya
 // hay una cuenta en el navegador, con el correo a medias.
 import { VENTANAS, crearCuenta, espera, meterPedidos } from '../arranque.mjs';
+import { codigoDe } from '../supabaseFalso.mjs';
 
 export const descripcion = 'Mis pedidos y la ficha solo con los pedidos de la cuenta; aviso de Crear con cuenta';
 export const limite = 90;
@@ -37,17 +38,17 @@ export default async function pedidosPorCuenta(t) {
     ok(deAna === 'ET-AAAA,ET-VVVV', `pedidos de Ana: ${deAna}`);
     const fichaAna = await ficha();
     ok(fichaAna === '2', `ficha de Ana: ${fichaAna}`);
-    // Salir y crear otra: el aviso, con el correo a medias.
+    // Salir y crear otra: ya no hay "una cuenta por navegador", asi que no
+    // sale el aviso de que la nueva reemplaza a la de antes.
     await p.goto(t.REACT + '#/cuenta'); await p.waitForSelector('.cuenta-salir');
     await p.click('.cuenta-salir'); await espera(500);
     await p.goto(t.REACT + '#/cuenta/crear'); await p.waitForSelector('#cuenta-nombre');
-    const aviso = (await p.textContent('.cuenta-ya-hay', { timeout: 3000 }).catch(() => '')).replace(/\s+/g, ' ').trim();
-    ok(aviso === 'En este navegador ya hay una cuenta (a…@correo.com). Crear otra la reemplaza.', `aviso crear: ${aviso}`);
+    ok(!(await p.locator('.cuenta-ya-hay').count()), 'sale el aviso de una cuenta por navegador');
     await p.fill('#cuenta-nombre', 'Luis Tapia'); await p.fill('#cuenta-correo', 'luis@correo.com');
     await p.fill('#cuenta-telefono', '998877665'); await p.fill('#cuenta-clave', 'Otra4567'); await p.fill('#cuenta-repite', 'Otra4567');
     await p.click('.cuenta-crear');
-    await p.waitForSelector('.codigo-falso');
-    const c = (await p.textContent('.codigo-valor')).trim();
+    await p.waitForSelector('.codigo-casilla');
+    const c = codigoDe('luis@correo.com');
     await p.click('.codigo-casilla >> nth=0'); await p.keyboard.type(c); await p.waitForSelector('.cuenta-vista-datos'); await espera(400);
     const deLuis = await numeros();
     ok(deLuis === 'ET-LLLL,ET-VVVV', `pedidos de Luis: ${deLuis}`);

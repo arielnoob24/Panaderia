@@ -1,7 +1,13 @@
 // El recorrido de la cuenta en React (fase 5): desvios con replace, crear con
 // sus errores, verificar con las 6 casillas, Mis datos, cerrar sesion,
-// iniciar sesion, de "Ir a pagar" a #/confirmar y Mis pedidos.
+// iniciar sesion, de "Ir a pagar" a #/confirmar y Mis pedidos. La cuenta va
+// contra el Supabase de mentira (pruebas/supabaseFalso.mjs): el codigo se lee
+// de lo que "llego" al correo.
 import { VENTANAS, espera, hashDe, llegar } from '../arranque.mjs';
+import { codigoDe } from '../supabaseFalso.mjs';
+
+// La sesion de Supabase Auth, la que guarda supabase-js.
+const TOKEN = 'sb-ugscqizansixnsuzljtu-auth-token';
 
 export const descripcion = 'crear, verificar, Mis datos, iniciar sesion, pagar y Mis pedidos';
 export const limite = 180;
@@ -86,10 +92,10 @@ async function recorrido(t, nombre, ventana) {
   ok((await p.evaluate(() => localStorage.getItem('eltradicional-cuenta'))) === null, 'la cuenta se guardo antes de verificar');
 
   // ---- Verificar ----
-  await p.waitForSelector('.codigo-falso', { timeout: 5000 }).catch(() => {});
-  ok(await p.isVisible('.codigo-falso'), 'no sale el recuadro con el codigo con EmailJS caido');
-  ok((await p.textContent('.cuenta-maqueta-codigo')).includes('No pudimos enviarte el correo en este momento.'), 'motivo del recuadro');
-  const codigo = (await p.textContent('.codigo-valor')).trim();
+  await p.waitForSelector('.codigo-casilla', { timeout: 5000 }).catch(() => {});
+  ok(!(await p.locator('.codigo-falso').count()), 'sale un recuadro con el codigo: la pagina no lo conoce');
+  ok((await p.textContent('.codigo-estado')).startsWith('Código enviado.'), `estado del envio: ${await p.textContent('.codigo-estado')}`);
+  const codigo = codigoDe('ana@correo.com');
   ok(/^\d{6}$/.test(codigo), `codigo: ${codigo}`);
   ok((await p.title()) === 'Verificar tu correo | El Tradicional', 'titulo verificar');
   ok((await p.locator('fieldset.codigo-casillas > legend').textContent()) === 'Código de 6 cifras', 'legend');
@@ -108,7 +114,7 @@ async function recorrido(t, nombre, ventana) {
   ok(!(await p.isVisible('#cuenta-codigo-error')), 'se comprobo antes de la sexta');
   await p.keyboard.type(malo[5]);
   await espera(100);
-  ok((await p.textContent('#cuenta-codigo-error')) === 'Ese código no es el que enviamos. Míralo otra vez.', 'error del codigo malo');
+  ok((await p.textContent('#cuenta-codigo-error')) === 'Ese código no es el que enviamos o ya caducó. Míralo otra vez o pide otro.', `error del codigo malo: ${await p.textContent('#cuenta-codigo-error')}`);
   // Una sola via: el error del codigo no se repite en un role="alert" del pie.
   ok((await p.$$('.cuenta-verificar >> xpath=.. >> [role="alert"]')).length === 0, 'el error del codigo sigue en un alert del pie');
   ok((await enCasilla()) === 0, 'foco no fue a la primera tras el error');
@@ -138,11 +144,13 @@ async function recorrido(t, nombre, ventana) {
   await espera(300);
   ok((await ruta(p)) === '#/cuenta', `tras verificar sin venir de pagar: ${await ruta(p)}`);
   ok((await foco()) === 'cuenta-vista-titulo', `foco en Mis datos: ${await foco()}`);
+  // La copia local lleva los datos y nada de la contrasena; la sesion es la
+  // de Supabase Auth.
   const guardada = JSON.parse(await p.evaluate(() => localStorage.getItem('eltradicional-cuenta')));
   ok(guardada && guardada.nombre === 'Ana Pérez' && guardada.correo === 'ana@correo.com' && guardada.telefono === '991234567'
-    && guardada.verificado === true && guardada.sesionAbierta === true && guardada.metodo === 'efectivo'
-    && /^[0-9a-f]{32}$/.test(guardada.clave?.sal) && /^[0-9a-f]{64}$/.test(guardada.clave?.hash) && !JSON.stringify(guardada).includes('Clave123'),
+    && guardada.metodo === 'efectivo' && !('clave' in guardada) && !JSON.stringify(guardada).includes('Clave123'),
   `formato guardado: ${JSON.stringify(guardada)}`);
+  ok(Boolean(await p.evaluate((k) => localStorage.getItem(k), TOKEN)), 'no hay sesion de Supabase tras verificar');
 
   // ---- Mis datos ----
   ok((await p.title()) === 'Mis datos | El Tradicional', 'titulo mis datos');
@@ -164,7 +172,7 @@ async function recorrido(t, nombre, ventana) {
   await espera(100);
   ok(await p.isVisible('.cuenta-hecho'), 'no sale "Guardamos tus cambios"');
   const editada = JSON.parse(await p.evaluate(() => localStorage.getItem('eltradicional-cuenta')));
-  ok(editada.nombre === 'Ana María Pérez' && editada.telefono === '987654321' && editada.direccion.startsWith('Av. 15') && editada.clave.hash === guardada.clave.hash, `editada: ${JSON.stringify(editada)}`);
+  ok(editada.nombre === 'Ana María Pérez' && editada.telefono === '987654321' && editada.direccion.startsWith('Av. 15'), `editada: ${JSON.stringify(editada)}`);
   // Con sesion, iniciar sesion y crear llevan a Mis datos; verificar sin
   // cuenta por verificar lleva a iniciar sesion, que con sesion lleva a Mis datos.
   for (const desde of ['#/cuenta/entrar', '#/cuenta/crear', '#/cuenta/verificar']) {
@@ -177,7 +185,7 @@ async function recorrido(t, nombre, ventana) {
   await espera(200);
   ok((await ruta(p)) === '#/', `cerrar sesion lleva a ${await ruta(p)}`);
   const cerrada = JSON.parse(await p.evaluate(() => localStorage.getItem('eltradicional-cuenta')));
-  ok(cerrada.sesionAbierta === false && cerrada.nombre === 'Ana María Pérez' && cerrada.clave.hash === guardada.clave.hash, 'cerrar sesion borro la cuenta o no la cerro');
+  ok(cerrada?.nombre === 'Ana María Pérez' && !(await p.evaluate((k) => localStorage.getItem(k), TOKEN)), 'cerrar sesion borro la copia o no cerro la sesion de Supabase');
   await llegar(p, '#/cuenta');
   ok((await ruta(p)) === '#/cuenta/entrar', 'mis datos tras cerrar sesion');
 
@@ -195,13 +203,15 @@ async function recorrido(t, nombre, ventana) {
   ok(!(await p.isVisible('#cuenta-entrar-clave-error')), 'el error de la clave no se va al escribir');
   await p.press('#cuenta-entrar-clave', 'Enter');
   await espera(600);
-  ok((await p.textContent('#cuenta-entrar-correo-error')).startsWith('No hay ninguna cuenta con este correo.'), 'otro correo');
-  ok((await foco()) === 'cuenta-entrar-correo', 'foco al correo sin cuenta');
+  // Supabase no dice si el correo tiene cuenta: el mismo error que con la
+  // contrasena mala, en la contrasena.
+  ok((await p.textContent('#cuenta-entrar-clave-error')).startsWith('El correo o la contraseña no son correctos.'), `otro correo: ${await p.textContent('#cuenta-entrar-clave-error')}`);
+  ok((await foco()) === 'cuenta-entrar-clave', 'foco tras correo sin cuenta');
   await p.fill('#cuenta-entrar-correo', 'ANA@correo.com');
   await p.press('#cuenta-entrar-correo', 'Enter');
   await p.press('#cuenta-entrar-clave', 'Enter');
   await espera(800);
-  ok((await p.textContent('#cuenta-entrar-clave-error')).startsWith('La contraseña no es correcta.'), 'clave mala');
+  ok((await p.textContent('#cuenta-entrar-clave-error')).startsWith('El correo o la contraseña no son correctos.'), 'clave mala');
   ok((await p.getAttribute('#cuenta-entrar-clave', 'aria-invalid')) === 'true', 'clave mala sin aria-invalid');
   ok((await p.inputValue('#cuenta-entrar-clave')) === 'Mala1234', 'la clave mala se borro');
   ok((await foco()) === 'cuenta-entrar-clave', 'foco tras clave mala');
@@ -279,8 +289,8 @@ async function recorrido(t, nombre, ventana) {
   await c3.fill('#cuenta-clave', 'Masa2026');
   await c3.fill('#cuenta-repite', 'Masa2026');
   await c3.click('.cuenta-crear');
-  await c3.waitForSelector('.codigo-falso', { timeout: 6000 }).catch(() => {});
-  const cod3 = (await c3.textContent('.codigo-valor')).trim();
+  await c3.waitForSelector('.codigo-casilla', { timeout: 6000 }).catch(() => {});
+  const cod3 = codigoDe('rosa@correo.ec');
   await c3.click('.codigo-casilla >> nth=0');
   await c3.keyboard.type(cod3);
   await c3.waitForFunction(() => location.hash === '#/confirmar', null, { timeout: 5000 }).catch(() => {});

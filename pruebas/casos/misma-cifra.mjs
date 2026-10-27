@@ -17,7 +17,7 @@ export default async function mismaCifra(t) {
     await p.fill('#cuenta-clave', 'Clave123');
     await p.fill('#cuenta-repite', 'Clave123');
     await p.click('.cuenta-crear');
-    await p.waitForSelector('.codigo-falso');
+    await p.waitForSelector('.codigo-casilla');
     await p.focus('.codigo-casilla >> nth=0');
     await p.keyboard.type('12');
     await p.focus('.codigo-casilla >> nth=0');

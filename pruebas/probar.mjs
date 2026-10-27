@@ -26,6 +26,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { DIST, RAIZ, opcionesNavegador, paqueteFuera, servir } from './arranque.mjs';
+import * as supabaseFalso from './supabaseFalso.mjs';
 
 const CASOS_DIR = join(RAIZ, 'pruebas', 'casos');
 // Primero el de humo (si eso falla, lo demas no dice nada nuevo); luego por nombre.
@@ -105,6 +106,8 @@ try {
     const fallos = []; let bien = 0;
     const abiertos = new Set();
     let cortado = false;
+    // Cada caso empieza sin cuentas en el Supabase de mentira.
+    supabaseFalso.reiniciar();
     const t = {
       REACT: react.url, RAIZ,
       ok: (condicion, que) => { if (condicion) bien += 1; else fallos.push(que); },
@@ -123,6 +126,8 @@ try {
         // Playwright mira primero la ruta registrada la ultima.
         await ctx.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, (r) => r.abort());
         await ctx.route('https://api.emailjs.com/**', correo || ((r) => r.abort()));
+        // La cuenta habla con un Supabase de mentira (pruebas/supabaseFalso.mjs).
+        await supabaseFalso.instalar(ctx);
         const pre = etiqueta ? `[${etiqueta}] ` : '';
         ctx.on('page', (p) => {
           p.on('pageerror', (e) => fallos.push(`${pre}error de pagina: ${e.message.split('\n')[0]}`));

@@ -1,8 +1,10 @@
 // Recuperar, en movimiento: la hoja que sale entre pasos (inert, detras, sin
 // ids), el foco en cada paso, nada se mueve con menos movimiento, sin
-// desplazamiento horizontal a 320 px, el aviso "ya hay una cuenta" y el
-// enlace "¿Olvidaste...?" de al menos 24 px.
+// desplazamiento horizontal a 320 px, sin el aviso de "ya hay una cuenta"
+// (la cuenta ya no es de un navegador) y el enlace "¿Olvidaste...?" de al
+// menos 24 px.
 import { VENTANAS, crearCuenta, espera } from '../arranque.mjs';
+import { codigoDe } from '../supabaseFalso.mjs';
 
 export const descripcion = 'recuperar: movimiento entre pasos, foco, menos movimiento y 320 px';
 export const limite = 120;
@@ -17,16 +19,7 @@ const PRUEBAS = {
 export default async function recuperarMovimiento(t) {
   for (const [nv, ventana] of Object.entries(PRUEBAS)) {
     const ok = (c, q) => t.ok(c, `[${nv}] ${q}`);
-    let codigo = null; let falla = true;
-    const ctx = await t.contexto(ventana, {
-      nombre: nv,
-      correo: (r) => {
-        if (falla) return r.abort();
-        const tp = JSON.parse(r.request().postData() || '{}').template_params || {};
-        codigo = (String(tp.cuerpo || '').match(/\d{6}/) || [])[0];
-        return r.fulfill({ status: 200, body: 'OK' });
-      },
-    });
+    const ctx = await t.contexto(ventana, { nombre: nv });
     ctx.setDefaultTimeout(6000);
     const p = await ctx.newPage();
     const reducido = nv === 'reducido';
@@ -57,11 +50,11 @@ export default async function recuperarMovimiento(t) {
       finSinSalida: !s[s.length - 1].sale,
     });
 
-    await crearCuenta(p, t.REACT); falla = false;
+    await crearCuenta(p, t.REACT);
     await p.click('.cuenta-salir'); await espera(600);
-    // Crear con una cuenta ya en el navegador: el aviso.
+    // Crear con una cuenta ya usada en el navegador: ningun aviso.
     await p.goto(t.REACT + '#/cuenta/crear'); await espera(700);
-    ok(await p.isVisible('.cuenta-ya-hay'), 'sin aviso de que ya hay una cuenta');
+    ok((await p.locator('.cuenta-ya-hay').count()) === 0, 'aun sale el aviso de que ya hay una cuenta');
     // Iniciar sesion: el enlace de "¿Olvidaste...?".
     await p.goto(t.REACT + '#/cuenta/entrar'); await espera(700);
     await p.fill('#cuenta-entrar-correo', 'ana@correo.com');
@@ -86,7 +79,7 @@ export default async function recuperarMovimiento(t) {
     // Otra vez al codigo y a la clave.
     await p.click('.cuenta-recuperar'); await p.waitForSelector('.recuperar-paso-codigo'); await espera(500);
     const m3 = muestrear();
-    await p.click('.codigo-casilla >> nth=0'); await p.keyboard.type(codigo || '000000');
+    await p.click('.codigo-casilla >> nth=0'); await p.keyboard.type(codigoDe('ana@correo.com', 'recovery') || '000000');
     const r3 = resumen(await m3);
     await p.waitForSelector('.recuperar-paso-clave'); await espera(500);
     ok(await p.evaluate(() => document.activeElement?.id?.includes('clave')), `foco en clave: ${await foco()}`);

@@ -339,13 +339,16 @@ panes", con la cinta o con el menú.
 
 ## 7. La cuenta
 
-Una cuenta por navegador. Cada paso es una vista propia:
+La cuenta vive en **Supabase Auth** (desde el 27 de octubre de 2026): se
+entra con el mismo correo y contraseña desde cualquier navegador o teléfono.
+Auth guarda la contraseña y verifica el correo; nombre y teléfono van en
+`USUARIOS` por la API (sección 8). Cada paso es una vista propia:
 
 | Ruta | Contenido | Si no corresponde (con `replace`) |
 |---|---|---|
 | `#/cuenta/entrar` | "Iniciar sesión": correo y contraseña; "¿Olvidaste tu contraseña?"; "¿No tienes cuenta? Créala" | Con sesión → `#/cuenta` |
-| `#/cuenta/crear` | Nombre con apellido, correo, teléfono, dirección (opcional), contraseña con sus 4 requisitos y repetirla; dos columnas en la computadora, una en el teléfono. Si ya hay una cuenta: "En este navegador ya hay una cuenta (a…@dominio). Crear otra la reemplaza." | Con sesión → `#/cuenta` |
-| `#/cuenta/verificar` | Código de 6 cifras en 6 casillas, "Reenviar" cada 45 s y el recuadro con el código si EmailJS falta o falla | Sin cuenta por verificar → `#/cuenta/entrar` |
+| `#/cuenta/crear` | Nombre con apellido, correo, teléfono, dirección (opcional), contraseña con sus 4 requisitos y repetirla; dos columnas en la computadora, una en el teléfono. | Con sesión → `#/cuenta` |
+| `#/cuenta/verificar` | Código de 6 cifras en 6 casillas (el que manda Auth), "Enviar otro código" cada 60 s; si el correo no sale, se dice y se pide otro (no hay recuadro con el código) | Sin cuenta por verificar → `#/cuenta/entrar` |
 | `#/cuenta/recuperar` | Recuperar la contraseña (abajo) | Con sesión → `#/cuenta` |
 | `#/cuenta` | **Mis datos**, editables ahí mismo: nombre, teléfono, dirección y forma de pago preferida (Efectivo o Tarjeta; "No guardamos tarjetas"); el correo se ve y no se cambia. "Guardar" (pasa a "Guardado ✓" 2 s) y "Cerrar sesión" | Sin sesión → `#/cuenta/entrar` |
 | `#/cuenta/pedidos` | Una fila por pedido de **esta cuenta** (`ET-XXXX`, fecha, total), más nuevo arriba, en `<details>` que se despliega animando la altura; los viejos sin `correo` también. Cada uno con "Pedir otra vez" | Sin sesión → `#/cuenta/entrar` |
@@ -364,31 +367,34 @@ Una cuenta por navegador. Cada paso es una vista propia:
 - **Reglas**: teléfono de 9 cifras que empieza por 9 (+593 delante; al pegar
   se quitan el 0, el +593 y los espacios; `autocomplete="tel-national"`);
   contraseña con 4 requisitos visibles (cada ✓ aparece con un rebote) y
-  "Mostrar"; la contraseña se guarda solo como huella **PBKDF2 con sal**.
-  Errores distintos para "no hay cuenta" y "contraseña incorrecta" (la única
-  cuenta es la del navegador). Enter pasa al campo siguiente; en el último,
+  "Mostrar"; la contraseña la guarda solo Supabase Auth. Al iniciar sesión,
+  un solo error para correo o contraseña mal ("El correo o la contraseña no
+  son correctos."), en el campo de la contraseña: no se dice qué correos
+  tienen cuenta. Una cuenta sin verificar que entra recibe otro código y va
+  a verificar. Enter pasa al campo siguiente; en el último,
   hace la acción. Errores con `aria-invalid` + `aria-describedby`, y fundido
   suave (sin sacudidas).
 - **Código en 6 casillas**: una cifra por casilla, el foco salta solo,
   Retroceso vuelve y borra, flechas, pegar en cualquiera lo reparte;
   `fieldset` con `legend`, "Cifra N de 6", `inputmode="numeric"`,
   `autocomplete="one-time-code"`. Al llenar la sexta se comprueba; si falla,
-  el error bajo las casillas y el foco a la primera. El código sale de
-  `crypto.getRandomValues`.
+  el error bajo las casillas y el foco a la primera. El código lo genera y
+  lo comprueba Auth (`verifyOtp`); su plantilla usa `{{ .Token }}`.
 - **Recuperar la contraseña**, por código al correo:
-  1. Se escribe el correo; si no es el de la cuenta, el mismo error que al
-     iniciar sesión. EmailJS manda un código de 6 cifras ("para cambiar tu
-     contraseña", con la misma plantilla).
-  2. El código **caduca a los 10 minutos** y admite **5 intentos**; un
-     código nuevo no sale antes de 45 s desde el último enviado. "Cambiar el
-     correo" conserva el código, su hora y sus intentos.
-  3. Con el código bien: contraseña nueva con los 4 requisitos, repetirla.
-     Sal nueva, la vieja deja de valer, la cuenta queda verificada y con la
-     sesión abierta; datos, forma de pago y pedidos se conservan.
+  1. Se escribe el correo y Auth manda un código de 6 cifras
+     (`resetPasswordForEmail`). Con un correo sin cuenta se sigue igual al
+     paso del código y no llega nada: no se dice qué correos existen (la
+     vista lo explica).
+  2. El código **caduca a los 10 minutos** y admite **5 intentos** (los
+     cuenta la página); un código nuevo no sale antes de 60 s desde el
+     último enviado. "Cambiar el correo" conserva el código, su hora y sus
+     intentos.
+  3. Con el código bien: contraseña nueva con los 4 requisitos, repetirla
+     (`updateUser`). La vieja deja de valer y la sesión queda abierta;
+     datos, forma de pago y pedidos se conservan.
   4. **Si el correo no sale, no se recupera** (sin recuadro con el código).
      La recuperación vive solo en memoria y se borra al iniciar o cerrar
      sesión; los 10 minutos se comprueban también al cambiar la contraseña.
-  5. Solo desde el mismo navegador donde se creó la cuenta (la vista lo dice).
 - **Pedir otra vez** (`pedido/pedirOtraVez.js`, acción `sumar`): mete en la
   canasta lo de ese pedido que siga disponible, con el mismo tamaño y el
   precio de hoy, sumado a lo que haya (tope de 100), abre la canasta y avisa
@@ -401,7 +407,7 @@ Una cuenta por navegador. Cada paso es una vista propia:
 
 | Dónde | Qué | Por qué |
 |---|---|---|
-| `localStorage` | Pedido a medias, entrega, factura y la cuenta (`metodo`, `clave: {sal, hash}`, `verificado`, `sesionAbierta`…). Se escribe solo cuando cambia algo, no al cargar; al aprobar un pedido se borra la canasta | Tiene que seguir mañana |
+| `localStorage` | Pedido a medias, entrega, factura, la sesión de Supabase Auth (`sb-ugscqizansixnsuzljtu-auth-token`, la lleva supabase-js) y una copia de la última cuenta (`eltradicional-cuenta`: `nombre`, `correo`, `telefono`, `direccion`, `metodo`) para cuando la API no contesta. Se escribe solo cuando cambia algo, no al cargar; al aprobar un pedido se borra la canasta | Tiene que seguir mañana |
 | `sessionStorage` | Orden y "Mostrar" del catálogo | Dura lo que la pestaña |
 | IndexedDB `eltradicional/pedidos` | Pedidos pagados, clave = número, con el `correo` de la cuenta | Registros que se acumulan |
 | Cookie `eltradicional-guardado` | Fecha del último guardado (1 mes, `SameSite=Lax`); la canasta la enseña como "Tu pedido se guardó…", solo si hay algo en ella | Corta y caduca sola |
@@ -420,9 +426,17 @@ siguen con RLS sin políticas: desde fuera solo entra la API.
 | Ruta | Qué hace | Pide sesión |
 |---|---|---|
 | `GET /productos` | El catálogo con la misma forma que `data/productos.json` (`nombre`, `categoria` = `CAT_Slug`, `precio`, `destacado`, `foto`, `alt`, `disponible`, `etiqueta`, `tamanos`); un tamaño "Único" no lleva lista. Orden de `PRO_Codigo` (el de "Recomendados"). `Cache-Control: max-age=60` | No |
+| `GET /cuenta` | Los datos de quien llama: `nombre`, `correo`, `telefono` (sin el 0), `direccion`, `metodo`. 404 si aún no tiene fila en `USUARIOS` | Sí |
+| `POST /cuenta` | Tras verificar el correo: crea su fila en `USUARIOS` (rol Cliente, nombre partido en nombres y apellidos, celular `0` + teléfono, `USU_CodigoAuth` = su id de Auth); si ya la tiene, la devuelve | Sí |
+| `PUT /cuenta` | Guarda Mis datos: nombre y teléfono en `USUARIOS` | Sí |
 
 - Dirección: `https://ugscqizansixnsuzljtu.supabase.co/functions/v1/api`.
   `verify_jwt = false` en `supabase/config.toml`: el catálogo es público.
+  Las rutas con sesión leen el token de `Authorization: Bearer`, lo
+  comprueban con Auth (`getUser`) y piden el correo verificado; si no, 401.
+  Revisan lo mismo que el formulario (nombre con apellido, teléfono `9` y 8
+  cifras, dirección hasta 200). Dirección y forma de pago no tienen columna
+  en `USUARIOS`: van en el `user_metadata` de Auth.
 - **CORS**: solo la página publicada (`https://arielnoob24.github.io`) y
   `localhost`/`127.0.0.1` en cualquier puerto.
 - Se sube con `npx supabase functions deploy api --use-api` (sin Docker).
@@ -433,12 +447,22 @@ siguen con RLS sin políticas: desde fuera solo entra la API.
   se usa **`data/productos.json` como respaldo** (va en el paquete) y la
   consola lo avisa; `catalogo.origen` dice `'api'` o `'respaldo'`.
   `index.html` abre la conexión antes con `preconnect`.
+- **La cuenta en la página**: `servicios/supabase.js` crea el cliente con
+  la clave publicable (puede ir en la página; la secreta nunca).
+  `SesionProvider` habla con Auth (`signUp`, `verifyOtp`, `resend`,
+  `signInWithPassword`, `resetPasswordForEmail`, `updateUser`, `signOut`) y
+  con la API (`/cuenta`). `main.jsx` espera a la sesión y al catálogo antes
+  de pintar. Sin red, quien ya tenía sesión entra con la copia local.
+- Los correos de Auth salen por SMTP propio (Brevo, gratis), con las
+  plantillas en español y `{{ .Token }}`. "Confirm email" está activo.
 - Las pruebas cortan internet; el caso `catalogo-api` deja pasar la API
-  y comprueba que se usa, y que con la API cortada sale el respaldo.
+  y comprueba que se usa, y que con la API cortada sale el respaldo. La
+  cuenta habla con un Supabase de mentira (`pruebas/supabaseFalso.mjs`),
+  que guarda los códigos para que la prueba los escriba y puede fallar a
+  propósito (`quebrar`).
 - Lo siguiente, en este orden: `POST /pedidos` (la API calcula precios,
-  IVA y total), la cuenta con Supabase Auth, y `GET /pedidos` para Mis
-  pedidos. Hasta entonces todo lo demás se guarda como dice la tabla de
-  arriba.
+  IVA y total) y `GET /pedidos` para Mis pedidos. Hasta entonces los
+  pedidos se guardan como dice la tabla de arriba.
 
 ### La base de datos (`bd/BD_EL_TRADICIONAL.sql`)
 
@@ -544,9 +568,9 @@ Cualquier tabla nueva o cambio en el script tiene que cumplirlas todas.
 
 ## 9. Correo (`src/servicios/mail.js`)
 
-EmailJS (gratis, unos 200 correos al mes): una sola plantilla para el código
-de verificar, el de recuperar y el comprobante (asunto y cuerpo van en
-variables). Las claves son públicas por diseño; las protege la lista de
+EmailJS (gratis, unos 200 correos al mes) manda solo el comprobante del
+pedido (asunto y cuerpo van en variables); los códigos de verificar y de
+recuperar los manda Supabase Auth (sección 8). Las claves son públicas por diseño; las protege la lista de
 dominios del panel de EmailJS. `enviarCorreo()` nunca lanza: si falla, el
 pedido sigue valiendo.
 
@@ -1194,7 +1218,8 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [ ] Cuáles alérgenos lleva cada producto (`PRODUCTOS_ALERGENOS`).
 - [x] El catálogo se lee de la base por la API, con `data/productos.json`
       de respaldo (sección 8). Lo prueba `pruebas/casos/catalogo-api.mjs`.
-- [ ] Pedidos (`POST /pedidos`), cuenta y Mis pedidos por la API.
+- [x] La cuenta por Supabase Auth y la API (`/cuenta`), 27 de octubre de 2026.
+- [ ] Pedidos (`POST /pedidos`) y Mis pedidos (`GET /pedidos`) por la API.
 
 ### SEO
 - [ ] `robots.txt` y `sitemap.xml`.

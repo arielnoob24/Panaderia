@@ -32,11 +32,12 @@ export default async function humo(t) {
   t.ok(await p.locator('.canasta-panel.is-open .canasta-linea').count() === 1, 'agregar no dejo una linea en la canasta abierta');
   await p.keyboard.press('Escape');
 
-  // Crear la cuenta con el codigo del recuadro (EmailJS cortado) lleva a #/cuenta.
+  // Crear la cuenta con el codigo que llega al correo (Supabase de mentira)
+  // lleva a #/cuenta.
   await crearCuenta(p, t.REACT);
   t.ok(await hashDe(p) === '#/cuenta', `crear y verificar la cuenta deja ${await hashDe(p)} y no #/cuenta`);
   const cuenta = JSON.parse(await p.evaluate(() => localStorage.getItem('eltradicional-cuenta')) || '{}');
-  t.ok(cuenta.verificado === true && cuenta.sesionAbierta === true, 'la cuenta no quedo verificada y con la sesion abierta');
+  t.ok(cuenta.correo === 'ana@correo.com' && Boolean(await p.evaluate(() => localStorage.getItem('sb-ugscqizansixnsuzljtu-auth-token'))), 'la cuenta no quedo con la sesion de Supabase abierta');
   t.ok(!JSON.stringify(cuenta).includes('Clave123'), 'la contrasena se guardo en claro');
   // Lo de la canasta sigue ahi despues de crear la cuenta, y esta guardado.
   t.ok((await p.textContent('.canasta-cuenta-numero')).trim() === '1', `la canasta dice ${await p.textContent('.canasta-cuenta-numero')} tras crear la cuenta`);

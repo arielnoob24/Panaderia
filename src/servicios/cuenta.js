@@ -1,22 +1,17 @@
-// ---- La cuenta de este navegador ---------------------------------------
-// Leer y guardar la cuenta, la huella de la contrasena, las reglas de cada
-// campo y el codigo que se manda por correo (secciones 7 y 15 del plan).
+// ---- La cuenta ---------------------------------------------------------
+// Las reglas de cada campo, lo que se recuerda de la cuenta en este
+// navegador y los textos del codigo (secciones 7 y 8 del plan).
 //
-// Es la unica fuente de estas reglas en React. Salen del sitio presentado,
-// tal cual: lo que se acepta de lo guardado, el telefono y el codigo al azar
-// de cuenta/guardada.js, y la huella PBKDF2, las reglas de cada campo y lo
-// que se escribe al guardar de cuenta/account.js. Misma clave y mismo
-// formato de localStorage: una cuenta creada alli sirve aqui y al reves.
+// La cuenta de verdad vive en Supabase: la contrasena y la verificacion del
+// correo en Supabase Auth, y nombre y telefono en la tabla USUARIOS, que se
+// lee y se cambia por la API. Aqui solo queda una copia de lo ultimo que se
+// vio, para pintar la pagina al momento y sin red.
 //
 // Todo lo que toca localStorage va en try/catch: en ventana privada falla, y
 // eso no puede tumbar la pagina.
-import { buzonListo, enviarCorreo } from './mail.js';
 import { pedidosGuardados } from './storage.js';
 
-// ---- Que se acepta de la cuenta guardada -------------------------------
-// Aqui no se toca localStorage: quien llama lee, con su try/catch, y pasa el
-// texto. La huella de la contrasena va aparte (huellaDe, mas abajo): para
-// pagar no hace falta.
+// ---- Que se acepta de la copia guardada -------------------------------
 const CLAVE_CUENTA = 'eltradicional-cuenta';
 
 // El telefono se guarda sin el 0 ni el +593: los nueve digitos del movil.
@@ -31,68 +26,26 @@ const soloNueve = (v) => {
   return d.replace(/^0+/, '').slice(0, 9);
 };
 
-// El codigo de 6 cifras que se manda al correo (verificar y, en React,
-// recuperar la contrasena). Sale de crypto.getRandomValues y no de
-// Math.random, que no esta hecho para que no se pueda adivinar. Se descartan
-// los valores del final del rango para que las 900000 salidas sean igual de
-// probables. getRandomValues existe tambien fuera de https (doble clic).
-const RANGO = 900000;
-const TOPE = Math.floor(2 ** 32 / RANGO) * RANGO;
-const codigoAlAzar = () => {
-  const caja = new Uint32Array(1);
-  do { window.crypto.getRandomValues(caja); } while (caja[0] >= TOPE);
-  return String(100000 + (caja[0] % RANGO));
-};
-
+// Como esta la cuenta sin sesion: lo que lee la pagina antes de entrar.
 const SIN_CUENTA = {
   nombre: '', correo: '', telefono: '', direccion: '',
   dentro: false, verificado: false, metodo: 'efectivo',
 };
 
 // Lo de localStorage lo puede tocar cualquiera a mano, asi que se revisa
-// antes de usarlo. Sin nombre o sin correo no hay cuenta: se esta fuera.
-const leerCuentaGuardada = (crudo) => {
-  if (!crudo) return { ...SIN_CUENTA };
+// antes de usarlo. Sin nombre o sin correo no hay copia.
+const leerCopia = (crudo) => {
+  if (!crudo) return null;
   let dato;
-  try { dato = JSON.parse(crudo); } catch (e) { return { ...SIN_CUENTA }; }
-  if (!dato || typeof dato !== 'object' || !dato.nombre || typeof dato.correo !== 'string') {
-    return { ...SIN_CUENTA };
-  }
+  try { dato = JSON.parse(crudo); } catch (e) { return null; }
+  if (!dato || typeof dato !== 'object' || !dato.nombre || typeof dato.correo !== 'string') return null;
   return {
-    nombre: String(dato.nombre).slice(0, 60),
-    correo: String(dato.correo).slice(0, 80),
+    nombre: String(dato.nombre).slice(0, 120),
+    correo: String(dato.correo).slice(0, 254),
     telefono: soloNueve(String(dato.telefono || '')),
     direccion: String(dato.direccion || '').slice(0, 200),
-    verificado: dato.verificado === true,
     metodo: dato.metodo === 'tarjeta' ? 'tarjeta' : 'efectivo',
-    // Una cuenta guardada antes de que existiera este dato no trae el campo, y
-    // entonces se entra como siempre: solo un cierre expreso deja fuera.
-    dentro: dato.sesionAbierta !== false,
   };
-};
-
-// Si en este navegador hay alguna cuenta, aunque la sesion este cerrada: la
-// hoja de "Entra a tu cuenta para pagar" ofrece entonces entrar y no crear.
-const correoDeCuenta = (crudo) => {
-  try { return crudo ? String(JSON.parse(crudo).correo || '') : ''; } catch (e) { return ''; }
-};
-
-// ---- La huella de la contrasena ---------------------------------------
-// La contrasena no se guarda tal cual: se guarda su huella, un hash PBKDF2
-// con sal, que sirve para comprobarla al entrar pero no para leerla.
-const VUELTAS = 100000;
-const aHex = (bytes) => [...new Uint8Array(bytes)].map((b) => b.toString(16).padStart(2, '0')).join('');
-const deHex = (hex) => new Uint8Array((hex.match(/../g) || []).map((h) => parseInt(h, 16)));
-// crypto.subtle solo existe en contexto seguro (https o localhost); en otro
-// caso no hay con que calcular la huella.
-const puedeHuella = () => Boolean(window.crypto?.subtle);
-const calcularHuella = async (clave, salHex) => {
-  const sal = salHex ? deHex(salHex) : window.crypto.getRandomValues(new Uint8Array(16));
-  const base = await window.crypto.subtle.importKey('raw', new TextEncoder().encode(clave),
-    'PBKDF2', false, ['deriveBits']);
-  const bits = await window.crypto.subtle.deriveBits(
-    { name: 'PBKDF2', salt: sal, iterations: VUELTAS, hash: 'SHA-256' }, base, 256);
-  return { sal: aHex(sal), hash: aHex(bits) };
 };
 
 // ---- Las reglas de cada campo -----------------------------------------
@@ -166,116 +119,42 @@ const telefonoBonito = (d) => (d ? `+593 ${d.slice(0, 2)} ${d.slice(2, 5)} ${d.s
 const iniciales = (nombre) => nombre.split(/\s+/).filter(Boolean).slice(0, 2)
   .map((parte) => parte[0].toUpperCase()).join('');
 
-// ---- Lo guardado ------------------------------------------------------
-const leerCrudo = () => {
-  try { return window.localStorage.getItem(CLAVE_CUENTA); } catch (e) { return null; }
-};
-// La huella guardada, o null si la cuenta es de antes de que se guardara (o
-// alguien la toco a mano y ya no tiene forma de huella).
-const huellaDe = (crudo) => {
-  try {
-    const h = JSON.parse(crudo || '{}').clave;
-    return h && typeof h.sal === 'string' && typeof h.hash === 'string' ? { sal: h.sal, hash: h.hash } : null;
-  } catch (e) { return null; }
-};
-// La cuenta ya revisada, su huella y si en este navegador hay alguna (aunque
-// la sesion este cerrada: la hoja de pagar ofrece entonces entrar).
+// ---- La copia guardada -------------------------------------------------
+// La copia de la ultima cuenta que entro en este navegador, o null. Se
+// conserva al cerrar la sesion: la hoja de "Entra a tu cuenta para pagar"
+// ofrece entonces entrar y no crear.
 const leerCuenta = () => {
-  const crudo = leerCrudo();
-  return {
-    cuenta: leerCuentaGuardada(crudo),
-    huella: huellaDe(crudo),
-    hayCuenta: Boolean(correoDeCuenta(crudo)),
-    // El correo tal cual esta escrito, aunque la cuenta no valga entera: es
-    // con el que se compara al entrar, como correoGuardado() de account.js.
-    correoGuardado: correoDeCuenta(crudo),
-  };
+  try { return leerCopia(window.localStorage.getItem(CLAVE_CUENTA)); } catch (e) { return null; }
 };
-// Lo mismo que escribe guardarCuenta() de account.js: lo que hace falta para
-// el pedido y la huella de la contrasena; la contrasena en si no entra aqui.
-const guardarCuenta = (cuenta, huella) => {
+// Sin contrasena ni token: eso lo guarda Supabase Auth.
+const guardarCuenta = (cuenta) => {
   try {
     window.localStorage.setItem(CLAVE_CUENTA, JSON.stringify({
-      nombre: cuenta.nombre, correo: cuenta.correo,
-      telefono: cuenta.telefono, direccion: cuenta.direccion,
-      verificado: cuenta.verificado, sesionAbierta: cuenta.dentro,
-      metodo: cuenta.metodo, clave: huella,
+      nombre: cuenta.nombre, correo: cuenta.correo, telefono: cuenta.telefono,
+      direccion: cuenta.direccion, metodo: cuenta.metodo,
     }));
   } catch (e) { /* en ventana privada no se puede guardar; la sesion sigue viva en memoria */ }
 };
 
-// Otra pestana (de este sitio o del actual) puede entrar o salir: el evento
-// 'storage' avisa, y quien escucha vuelve a leer. key null es que se vacio
-// todo el almacenamiento.
-const escucharCuenta = (avisar) => {
-  const alGuardarse = (e) => { if (e.key === null || e.key === CLAVE_CUENTA) avisar(); };
-  window.addEventListener('storage', alGuardarse);
-  return () => window.removeEventListener('storage', alGuardarse);
-};
-
 // ---- El codigo de verificacion ----------------------------------------
-// El codigo nace en el navegador y de ahi sale por correo. Prueba que el
-// correo escrito existe y que quien se registra lo abre, que es para lo que
-// sirve el paso; no resiste a quien quiera saltarselo leyendo la memoria de
-// su propio navegador. Para eso haria falta un servidor, y no lo hay.
-// La espera para reenviar: el plan gratuito de EmailJS da 200 correos al mes.
-const REENVIO = 45;
-// Al azar de verdad (crypto.getRandomValues), el mismo del sitio presentado.
-const nuevoCodigo = codigoAlAzar;
-
-// Manda el codigo y dice como fue: 'enviado', 'fallo' o 'sin-buzon'. Nunca
-// lanza (enviarCorreo tampoco): si no sale, el recuadro que imita el correo
-// lo ensena en pantalla y el registro no se queda tapiado.
-const mandarCodigo = async (para, nombre, codigo) => {
-  if (!buzonListo()) return 'sin-buzon';
-  const bien = await enviarCorreo(para, nombre,
-    'Tu código de El Tradicional',
-    `Tu código para verificar la cuenta es ${codigo}.\n\n`
-    + 'Caduca cuando pidas otro. No lo compartas con nadie: nadie de '
-    + 'El Tradicional te lo va a pedir.');
-  return bien ? 'enviado' : 'fallo';
-};
-// Como sale un codigo nuevo: sin buzon ya se sabe que no llegara; con buzon,
-// esta enviandose y la respuesta llega despues ('enviado' o 'fallo').
-const envioInicial = () => (buzonListo() ? 'enviando' : 'sin-buzon');
-// Por que se ve el codigo en pantalla, con el texto del sitio presentado.
+// El codigo lo genera y lo manda Supabase Auth (plantillas "Confirm signup"
+// y "Reset password" con {{ .Token }}), y lo comprueba Auth: la pagina nunca
+// lo conoce. Supabase no deja pedir otro antes de 60 s.
+const REENVIO = 60;
+// Por que no salio el correo, y lo que oye el lector de pantalla.
 const MOTIVO_SIN_CORREO = {
-  'sin-buzon': 'El envío de correo no está configurado en esta copia del sitio.',
-  fallo: 'No pudimos enviarte el correo en este momento.',
+  fallo: 'No pudimos enviarte el correo en este momento. Espera un poco y pide otro código.',
 };
-// Lo que oye el lector de pantalla al salir un codigo: si no hay correo que
-// mandar, no se le puede decir que se envio mientras la pantalla dice que no
-// (WCAG 4.1.3). Lo mismo se dice cuando el envio falla despues.
-const AVISO_SIN_CORREO = 'No pudimos enviar el correo; el código está en pantalla.';
-const avisoDelCodigo = (enviado) => (MOTIVO_SIN_CORREO[envioInicial()] ? AVISO_SIN_CORREO : enviado);
+const AVISO_SIN_CORREO = 'No pudimos enviar el correo. Pide otro código en un momento.';
+const avisoDelCodigo = (enviado) => enviado;
 
-// ---- Recuperar la contrasena (solo React, fase 5 del plan) -------------
-// El mismo codigo de 6 cifras, con otro texto, por la misma plantilla de
-// EmailJS: asunto y cuerpo viajan como variables. Aqui no hay recuadro de
-// respaldo: con el codigo en pantalla cualquiera que abriera este navegador
-// podria cambiar la contrasena. Si el correo no sale, no se recupera.
+// ---- Recuperar la contrasena ------------------------------------------
+// El mismo codigo de 6 cifras, de la plantilla "Reset password". La pagina
+// le da 10 minutos y 5 intentos, aunque Auth lo acepte mas tiempo.
 const CADUCA_RECUPERAR = 10 * 60 * 1000;
 const INTENTOS_RECUPERAR = 5;
 const SIN_CORREO_RECUPERAR = 'No pudimos enviar el correo. Inténtalo más tarde.';
 const CADUCO_RECUPERAR = 'El código caducó: dura 10 minutos. Vuelve a pedirlo.';
-// true si salio. Nunca lanza, como enviarCorreo.
-const mandarCodigoClave = async (para, nombre, codigo) => {
-  if (!buzonListo()) return false;
-  return enviarCorreo(para, nombre,
-    'Tu código para cambiar la contraseña',
-    `Tu código para cambiar tu contraseña de El Tradicional es ${codigo}.\n\n`
-    + 'Caduca en 10 minutos. Si no lo pediste tú, no hagas nada: tu contraseña '
-    + 'sigue siendo la misma. No lo compartas con nadie: nadie de El Tradicional '
-    + 'te lo va a pedir.');
-};
-
-// El correo a medias (ana.perez@gmail.com -> a…@gmail.com): basta para que
-// su dueno lo reconozca y no se lo ensena entero a quien use el navegador.
-const correoAMedias = (correo) => {
-  const arroba = correo.indexOf('@');
-  if (arroba < 1) return '…';
-  return `${correo[0]}…${correo.slice(arroba)}`;
-};
 
 // ---- El historial -----------------------------------------------------
 // Todos los pedidos pagados en este navegador, el mas nuevo primero. Si la
@@ -289,12 +168,11 @@ const deLaCuenta = (pedidos, correo) => {
 };
 
 export {
-  soloNueve, puedeHuella, calcularHuella,
+  soloNueve, SIN_CUENTA,
   REGLAS, fallaCorreo, fallaNombre, fallaTelefono, fallosCuenta, fallosEditar, avisoFaltan,
   telefonoBonito, iniciales,
-  leerCuenta, guardarCuenta, escucharCuenta,
-  REENVIO, nuevoCodigo, buzonListo, envioInicial, mandarCodigo, MOTIVO_SIN_CORREO,
-  AVISO_SIN_CORREO, avisoDelCodigo,
-  CADUCA_RECUPERAR, INTENTOS_RECUPERAR, SIN_CORREO_RECUPERAR, CADUCO_RECUPERAR, mandarCodigoClave, correoAMedias,
+  leerCuenta, guardarCuenta,
+  REENVIO, MOTIVO_SIN_CORREO, AVISO_SIN_CORREO, avisoDelCodigo,
+  CADUCA_RECUPERAR, INTENTOS_RECUPERAR, SIN_CORREO_RECUPERAR, CADUCO_RECUPERAR,
   todosLosPedidos, deLaCuenta,
 };

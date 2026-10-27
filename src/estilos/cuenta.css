@@ -144,7 +144,6 @@ a.nav-cuenta { text-decoration: none; }
 /* Ya hay una cuenta en este navegador: no es la nota de la maqueta, es algo
    que va a pasar si se sigue. Va en ambar, el tono de lo que hay que mirar
    (como "Pago de prueba"), con el texto en horno. */
-.cuenta-vista .cuenta-ya-hay { background: rgba(232, 168, 124, .16); border-left-color: var(--ambar); color: var(--horno); font-weight: 700; }
 
 /* ---- Recuperar la contrasena -------------------------------------------------- */
 

@@ -1,5 +1,5 @@
 // ---- #/cuenta/verificar ---------------------------------------------------
-// El codigo de 6 cifras que se manda al correo, "Enviar otro codigo" cada 45 s
+// El codigo de 6 cifras que se manda al correo, "Enviar otro codigo" cada 60 s
 // y, si EmailJS no esta o falla, el recuadro que imita el correo con el codigo
 // dentro: asi el registro no se queda tapiado (secciones 7 y 9 del plan).
 // Sin una cuenta esperando su codigo no hay nada que verificar: a entrar.
@@ -65,9 +65,15 @@ function PasoCodigo({ pendiente }) {
     if (pendiente.envio === 'fallo') avisar(AVISO_SIN_CORREO);
   }, [pendiente.envio, avisar]);
 
-  const comprobar = (escrito) => {
+  // El codigo lo comprueba Supabase: mientras contesta no se vuelve a
+  // mandar (Enter dos veces, o la sexta cifra y Enter).
+  const [ocupado, setOcupado] = useState(false);
+  const comprobar = async (escrito) => {
+    if (ocupado) return;
     const { nombre, direccion } = pendiente;
-    const fallo = verificar(escrito);
+    setOcupado(true);
+    const fallo = await verificar(escrito);
+    setOcupado(false);
     if (fallo) {
       // El error tiene que estar escrito antes de mover el foco: lo que se
       // lee al llegar a la casilla es su aria-describedby. Si el foco ya
@@ -79,7 +85,7 @@ function PasoCodigo({ pendiente }) {
       else primera?.focus();
       return;
     }
-    terminar({ direccion }, `Correo verificado. Iniciaste sesión como ${nombre}.`);
+    terminar({ direccion }, nombre ? `Correo verificado. Iniciaste sesión como ${nombre}.` : 'Correo verificado. Iniciaste sesión.');
   };
 
   // Mientras se escribe no se riñe: el error se va al tocar una casilla y
@@ -91,7 +97,7 @@ function PasoCodigo({ pendiente }) {
   };
 
   const alReenviar = () => {
-    reenviar();
+    reenviar().then(() => setAhora(Date.now()));
     setCifras(VACIAS);
     setError('');
     setAhora(Date.now());
@@ -99,33 +105,20 @@ function PasoCodigo({ pendiente }) {
     avisar(avisoDelCodigo('Te enviamos un código nuevo.'));
   };
 
-  const sinCorreo = MOTIVO_SIN_CORREO[pendiente.envio];
-  let estadoEnvio = '';
-  if (pendiente.envio === 'enviando') estadoEnvio = 'Enviando el código a tu correo…';
-  else if (pendiente.envio === 'enviado') estadoEnvio = 'Código enviado. Si no lo ves, mira en la carpeta de spam.';
+  // Si el correo no salio, se dice; el codigo no se puede ensenar, porque
+  // la pagina no lo conoce (lo genera Supabase).
+  let estadoEnvio = 'Código enviado. Si no lo ves, mira en la carpeta de spam.';
+  if (pendiente.envio === 'fallo') estadoEnvio = MOTIVO_SIN_CORREO.fallo;
+  else if (ocupado) estadoEnvio = 'Comprobando el código…';
 
   return (
     <MarcoCuenta paso="verificar" titulo="Verificar tu correo">
       <div className="cuenta-formulario">
         <div className="cuenta-cuerpo">
-          {sinCorreo ? (
-            <p className="cuenta-maqueta cuenta-maqueta-codigo">
-              <strong>Maqueta académica.</strong> {sinCorreo} El código se muestra aquí abajo para que
-              puedas seguir.
-            </p>
-          ) : null}
           <p className="codigo-dicho">
             Escribe el código de 6 cifras que enviamos a <strong className="codigo-correo">{pendiente.correo}</strong>.
           </p>
           <p className="codigo-estado" role="status" hidden={!estadoEnvio}>{estadoEnvio}</p>
-          {sinCorreo ? (
-            <div className="codigo-falso">
-              <p className="codigo-falso-de">Correo de El Tradicional</p>
-              <p className="codigo-falso-texto">
-                Tu código es <b className="codigo-valor">{pendiente.codigo}</b>. No lo compartas con nadie.
-              </p>
-            </div>
-          ) : null}
           <CasillasCodigo
             cifras={cifras}
             onCambio={alCambiar}

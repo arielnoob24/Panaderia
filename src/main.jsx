@@ -23,6 +23,7 @@ import { PedidoProvider } from './estado/PedidoProvider.jsx';
 import { CanastaProvider } from './pedido/CanastaProvider.jsx';
 import App from './App.jsx';
 import { cargarCatalogo } from './servicios/catalogo.js';
+import { cargarSesion } from './estado/SesionProvider.jsx';
 import { cederDesplazamiento } from './comun/apertura.js';
 import { precargarEnReposo } from './comun/cargaPorPartes.js';
 import { vigilarPuntero } from './comun/puntero.js';
@@ -46,9 +47,11 @@ precargarEnReposo();
 // reducedMotion="user", quien pidio menos movimiento al sistema no ve
 // desplazamientos; lo que ademas tiene que quedarse quieto del todo lo mira
 // con useReducedMotion.
-// Se pinta cuando ya esta el catalogo (de la API o, si no contesta en 4 s, del
-// respaldo), para que la tienda no aparezca vacia y luego se llene de golpe.
-cargarCatalogo().then(() => createRoot(document.getElementById('raiz')).render(
+// Se pinta cuando ya estan el catalogo (de la API o, si no contesta en 4 s, del
+// respaldo) y la sesion (servicios/supabase.js), para que la tienda no
+// aparezca vacia y la cuenta no salga cerrada para abrirse un momento despues.
+// Las dos se piden a la vez.
+Promise.all([cargarCatalogo(), cargarSesion()]).then(() => createRoot(document.getElementById('raiz')).render(
   <StrictMode>
     <LazyMotion features={domMax}>
       <MotionConfig reducedMotion="user">

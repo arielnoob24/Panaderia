@@ -22,10 +22,10 @@ export default async function formaDePago(t) {
     ok(await p.isChecked('input[name="cuenta-metodo"][value="tarjeta"]'), 'flecha no elige tarjeta');
     ok(JSON.parse(await p.evaluate(() => localStorage.getItem('eltradicional-cuenta'))).metodo === 'efectivo', 'se guardo sin pulsar Guardar');
     await p.click('.cuenta-guardar');
-    await espera(200);
+    await p.waitForFunction(() => document.querySelector('.cuenta-guardar')?.textContent.includes('Guardado'), null, { timeout: 3000 }).catch(() => {});
     ok((await p.textContent('.cuenta-guardar')).includes('Guardado'), 'boton no dice Guardado');
     const g = JSON.parse(await p.evaluate(() => localStorage.getItem('eltradicional-cuenta')));
-    ok(g.metodo === 'tarjeta' && g.verificado && g.clave?.hash, 'formato tras guardar: ' + JSON.stringify(g));
+    ok(g.metodo === 'tarjeta' && g.correo === 'ana@correo.com', 'formato tras guardar: ' + JSON.stringify(g));
     // #/confirmar empieza con la preferida.
     await llegar(p, '#/tienda-catalogo');
     await espera(150);

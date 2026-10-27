@@ -1,8 +1,8 @@
 // ---- #/cuenta/recuperar ---------------------------------------------------
 // Cambiar la contrasena olvidada con un codigo al correo, en tres pasos en la
 // misma vista (seccion 15 del plan, fase 5, "Recuperar la contrasena"):
-//   correo  el de la cuenta de este navegador; si no, el error de iniciar sesion
-//   codigo  las 6 casillas de verificar; 10 minutos, 5 intentos, otro cada 45 s
+//   correo  el de la cuenta; si no la hay, se sigue igual y no llega nada
+//   codigo  las 6 casillas de verificar; 10 minutos, 5 intentos, otro cada 60 s
 //   clave   la nueva con sus 4 requisitos y repetirla
 // Al terminar, la sesion queda abierta y se va a #/confirmar si se venia de
 // pagar, si no a #/cuenta, con replace: Atras no vuelve al codigo.
@@ -10,10 +10,10 @@
 // Si el correo no sale no se recupera, y aqui no hay recuadro con el codigo:
 // con el en pantalla, cualquiera que abriera este navegador cambiaria la
 // contrasena. El paso en que se esta lo dice la sesion (recuperacion), asi que
-// salir de la vista y volver no pierde el codigo ni reinicia los 45 s.
+// salir de la vista y volver no pierde el codigo ni reinicia los 60 s.
 // "Cambiar el correo" vuelve al primer paso sin olvidar el codigo: con el
 // mismo correo se vuelve a sus casillas con los intentos que le queden, y no
-// sale otro correo antes de los 45 s. Entrar, verificar o salir lo borran, y
+// sale otro correo antes de los 60 s. Entrar, verificar o salir lo borran, y
 // un codigo de mas de 10 minutos no abre el paso de la clave.
 //
 // Los errores de cada campo van debajo de el, unidos con aria-describedby, y
@@ -24,7 +24,7 @@
 // Clases para frontend: recuperar-paso y recuperar-paso-<correo|codigo|clave>
 // en la hoja de cada paso (cuenta-formulario), con la clave del paso para
 // animar el cambio; recuperar-dicho (lo que se pide en ese paso),
-// recuperar-limite (que se recupera desde este navegador), cuenta-recuperar
+// recuperar-limite (que con un correo sin cuenta no llega nada), cuenta-recuperar
 // (el boton principal de cada paso).
 import { useEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -149,8 +149,8 @@ function PasoCorreo({ enfocar, avisoAntes, alLeerAviso }) {
     <div className="cuenta-formulario recuperar-paso recuperar-paso-correo" onKeyDown={alTeclear}>
       <div className="cuenta-cuerpo">
         <p className="cuenta-maqueta recuperar-limite">
-          <strong>Maqueta académica.</strong> La cuenta vive en este navegador: solo se puede
-          recuperar desde el mismo navegador donde la creaste.
+          <strong>Maqueta académica.</strong> Si hay una cuenta con ese correo, te llega el
+          código; si no, no llega nada (así nadie puede averiguar qué correos tienen cuenta).
         </p>
         <p className="recuperar-dicho">
           Escribe el correo de tu cuenta y te enviaremos un código para cambiar tu contraseña.
@@ -211,8 +211,11 @@ function PasoCodigo({ enfocar }) {
     return () => window.clearInterval(reloj);
   }, [esperando, recuperacion.enviadoEn]);
 
-  const comprobar = (escrito) => {
-    const fallo = comprobarRecuperar(escrito);
+  const comprobar = async (escrito) => {
+    if (ocupado) return;
+    setOcupado(true);
+    const fallo = await comprobarRecuperar(escrito);
+    setOcupado(false);
     if (!fallo) {
       avisar('Código correcto. Escribe tu contraseña nueva.');
       return;

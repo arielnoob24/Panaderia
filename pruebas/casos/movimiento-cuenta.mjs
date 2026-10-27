@@ -3,6 +3,7 @@
 // de crear a verificar de lado, las casillas que se llenan, "Guardado" unos
 // 2 s y Mis pedidos que anima la altura y gira la flecha.
 import { VENTANAS, espera, meterPedidos, PEDIDO_EJEMPLO } from '../arranque.mjs';
+import { codigoDe } from '../supabaseFalso.mjs';
 
 export const descripcion = 'el movimiento de la cuenta (6 puntos), con y sin menos movimiento';
 export const limite = 120;
@@ -82,7 +83,7 @@ async function movimiento(t, nombre, ventana, reducido) {
   ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth), 'desplazamiento horizontal tras la transicion');
 
   // 3. Las casillas: se llenan y dan su saltito.
-  await p.waitForSelector('.codigo-falso');
+  await p.waitForSelector('.codigo-casilla');
   await p.focus('.codigo-casilla >> nth=0');
   await p.keyboard.type('1');
   const llena = await p.evaluate(() => { const c = document.querySelector('.codigo-casilla'); return [c.classList.contains('is-llena'), getComputedStyle(c).animationName]; });
@@ -90,7 +91,7 @@ async function movimiento(t, nombre, ventana, reducido) {
   ok(reducido ? llena[1] === 'none' : llena[1] === 'codigo-pon', `animacion de la casilla: ${llena[1]}`);
   ok((await activo()) === 'Cifra 2 de 6', 'el foco no salta a la siguiente');
   // Un codigo malo, para ver el error de las casillas con su fundido.
-  const codigo = (await p.textContent('.codigo-valor')).trim();
+  const codigo = codigoDe('ana@correo.com');
   const malo = codigo.slice(1).split('').map((d) => String((Number(d) + 1) % 10)).join('');
   await p.keyboard.type(malo);
   await espera(30);

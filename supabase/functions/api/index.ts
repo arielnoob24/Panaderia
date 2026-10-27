@@ -23,6 +23,11 @@ function cabeceras(req: Request) {
   };
 }
 
+// Una respuesta en JSON con su codigo (200 bien, 400 datos mal, 401 sin
+// sesion, 404 no existe, 500 fallo de la base).
+const responder = (h: HeadersInit, estado: number, cuerpo: unknown) =>
+  new Response(JSON.stringify(cuerpo), { status: estado, headers: h });
+
 // Una fila de la base pasa a un producto como los de data/productos.json.
 // Un producto de un solo tamano ("Único") no lleva lista de tamanos: su
 // precio es ese. Con varios, el precio que se ve es el del primero.
@@ -44,6 +49,54 @@ function aProducto(f: any) {
     ...(unico ? {} : { tamanos }),
   };
 }
+
+// ---- La cuenta ---------------------------------------------------------
+// Quien llama: la pagina manda el token de su sesion de Supabase Auth en
+// "Authorization: Bearer ...". Se le pregunta a Auth de quien es; si no vale
+// (caduco, inventado), no hay usuario. Solo cuentas con el correo verificado.
+async function quienLlama(req: Request) {
+  const token = (req.headers.get("Authorization") ?? "").replace(/^Bearer\s+/i, "");
+  if (!token) return null;
+  const { data, error } = await base.auth.getUser(token);
+  if (error || !data.user?.email_confirmed_at) return null;
+  return data.user;
+}
+
+// Las mismas reglas que la pagina (servicios/cuenta.js): la API no se fia de
+// lo que le llega. El telefono llega con los 9 digitos tras el +593.
+// deno-lint-ignore no-explicit-any
+function fallosCuenta(d: any) {
+  const nombre = String(d?.nombre ?? "").trim().replace(/\s+/g, " ");
+  const telefono = String(d?.telefono ?? "");
+  const direccion = String(d?.direccion ?? "").trim();
+  const metodo = d?.metodo === "tarjeta" ? "tarjeta" : "efectivo";
+  if (nombre.length < 3 || nombre.length > 120 || !nombre.includes(" ")) return { error: "El nombre lleva nombre y apellido." };
+  if (!/^9\d{8}$/.test(telefono)) return { error: "El teléfono son 9 números después del +593, empezando por 9." };
+  if (direccion.length > 200) return { error: "La dirección es demasiado larga." };
+  return { nombre, telefono, direccion, metodo };
+}
+
+// "Ana María Pérez López" -> nombres "Ana María", apellidos "Pérez López":
+// la primera mitad de las palabras (redondeando hacia arriba) son nombres.
+function partirNombre(nombre: string) {
+  const p = nombre.split(" ");
+  const n = Math.ceil(p.length / 2);
+  return { nombres: p.slice(0, n).join(" "), apellidos: p.slice(n).join(" ") };
+}
+
+// Lo que la pagina ve de la cuenta. Nombre y telefono son de USUARIOS; la
+// direccion de entrega y la forma de pago preferidas, de la cuenta de Auth
+// (no son parte del modelo: DIRECCIONES pide canton y calles por separado).
+// deno-lint-ignore no-explicit-any
+const aCuenta = (fila: any, usuario: any) => ({
+  nombre: `${fila.usu_nombres} ${fila.usu_apellidos}`,
+  correo: fila.usu_correo,
+  telefono: String(fila.usu_celular).slice(1),
+  direccion: usuario.user_metadata?.direccion ?? "",
+  metodo: usuario.user_metadata?.metodo === "tarjeta" ? "tarjeta" : "efectivo",
+});
+
+const COLUMNAS = "usu_codigo, usu_nombres, usu_apellidos, usu_correo, usu_celular";
 
 // 3. La API: cada peticion entra por aqui.
 Deno.serve(async (req) => {
@@ -69,9 +122,7 @@ Deno.serve(async (req) => {
       // El codigo sigue el orden en que se cargaron: es el de "Recomendados".
       .order("pro_codigo");
 
-    if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 500, headers: h });
-    }
+    if (error) return responder(h, 500, { error: error.message });
 
     // Se responde con la misma forma que data/productos.json, para que la
     // pagina no tenga que saber como se llaman las columnas de la base.
@@ -83,6 +134,60 @@ Deno.serve(async (req) => {
     });
   }
 
+  // RUTAS de /cuenta: todas piden sesion.
+  if (ruta === "/cuenta") {
+    const usuario = await quienLlama(req);
+    if (!usuario) return responder(h, 401, { error: "Inicia sesión otra vez." });
+    const { data: fila, error } = await base.from("usuarios")
+      .select(COLUMNAS).eq("usu_codigoauth", usuario.id).maybeSingle();
+    if (error) return responder(h, 500, { error: error.message });
+
+    // GET /cuenta -> los datos de quien llama (404 si aun no tiene fila).
+    if (req.method === "GET") {
+      if (!fila) return responder(h, 404, { error: "Esta cuenta todavía no tiene datos." });
+      return responder(h, 200, aCuenta(fila, usuario));
+    }
+
+    const datos = fallosCuenta(await req.json().catch(() => null));
+    if ("error" in datos) return responder(h, 400, datos);
+    const { nombres, apellidos } = partirNombre(datos.nombre);
+    const celular = `0${datos.telefono}`;
+
+    // Direccion y forma de pago, en la cuenta de Auth.
+    const { data: auth, error: fallaAuth } = await base.auth.admin.updateUserById(usuario.id, {
+      user_metadata: { ...usuario.user_metadata, direccion: datos.direccion, metodo: datos.metodo },
+    });
+    if (fallaAuth) return responder(h, 500, { error: fallaAuth.message });
+
+    // POST /cuenta -> la fila en USUARIOS, al verificar el correo. Si ya
+    // existe (se verifico en otra pestana), se devuelve la que hay.
+    if (req.method === "POST") {
+      if (fila) return responder(h, 200, aCuenta(fila, auth.user));
+      const { data: rol } = await base.from("roles").select("rol_codigo").eq("rol_nombre", "Cliente").single();
+      const { data: nueva, error: fallaAlta } = await base.from("usuarios").insert({
+        rol_codigo: rol!.rol_codigo,
+        usu_nombres: nombres,
+        usu_apellidos: apellidos,
+        usu_correo: usuario.email!.toLowerCase(),
+        usu_celular: celular,
+        usu_codigoauth: usuario.id,
+      }).select(COLUMNAS).single();
+      if (fallaAlta) return responder(h, 500, { error: fallaAlta.message });
+      return responder(h, 201, aCuenta(nueva, auth.user));
+    }
+
+    // PUT /cuenta -> cambiar nombre, telefono, direccion y forma de pago.
+    // El correo no se cambia aqui.
+    if (req.method === "PUT") {
+      if (!fila) return responder(h, 404, { error: "Esta cuenta todavía no tiene datos." });
+      const { data: cambiada, error: fallaCambio } = await base.from("usuarios")
+        .update({ usu_nombres: nombres, usu_apellidos: apellidos, usu_celular: celular })
+        .eq("usu_codigo", fila.usu_codigo).select(COLUMNAS).single();
+      if (fallaCambio) return responder(h, 500, { error: fallaCambio.message });
+      return responder(h, 200, aCuenta(cambiada, auth.user));
+    }
+  }
+
   // Cualquier otra ruta: no existe
-  return new Response(JSON.stringify({ error: "Ruta no encontrada" }), { status: 404, headers: h });
+  return responder(h, 404, { error: "Ruta no encontrada" });
 });
