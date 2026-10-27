@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muestra de interruptores</title>
+<!-- Solo para elegir. Pulsa cada interruptor para encenderlo y apagarlo. Colores del sitio con el melocoton. -->
+<style>
+:root { --masa: #f7f1e7; --horno: #3a2822; --acento: #e8a87c; --corteza: #a85f45; --papel: #fffdf8; --claro: #7a6c65; --linea: #ded2c2; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 2rem 16px 4rem; background: var(--masa); color: var(--horno); font: 16px/1.5 Arial, sans-serif; }
+h1 { max-width: 1000px; margin: 0 auto .3rem; font: 500 2rem/1.15 Georgia, serif; }
+.intro { max-width: 1000px; margin: 0 auto 1.6rem; color: #5e514a; }
+.rejilla { display: grid; max-width: 1000px; margin: 0 auto; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.opcion { padding: 1.2rem; background: var(--papel); border: 1px solid var(--linea); }
+.opcion h2 { margin: 0 0 .2rem; font: 700 1rem/1.3 Arial, sans-serif; }
+.opcion p { margin: 0 0 1rem; color: #5e514a; font-size: .85rem; }
+.fila { display: flex; align-items: center; gap: .9rem; }
+.rotulo { color: #7a4030; font: 600 .7rem/1.3 Arial, sans-serif; letter-spacing: .18em; text-transform: uppercase; }
+.sw { position: relative; display: inline-flex; align-items: center; gap: .6rem; cursor: pointer; font: 700 .85rem Arial, sans-serif; user-select: none; }
+.sw input { position: absolute; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.sw input:focus-visible + .pista { outline: 3px solid var(--horno); outline-offset: 2px; }
+.pista { position: relative; flex: none; transition: background-color .2s, border-color .2s; }
+.bola { position: absolute; border-radius: 50%; transition: transform .22s cubic-bezier(.23,1,.32,1), background-color .2s; }
+
+/* 1. La de ahora, en melocoton al encender */
+.s1 .pista { width: 46px; height: 26px; background: var(--papel); border: 1px solid var(--claro); border-radius: 999px; }
+.s1 .bola { top: 2px; left: 2px; width: 20px; height: 20px; background: var(--claro); }
+.s1 input:checked + .pista { background: var(--acento); border-color: var(--acento); }
+.s1 input:checked + .pista .bola { background: var(--horno); transform: translateX(20px); }
+
+/* 2. Grande, tipo telefono: bola blanca con sombra */
+.s2 .pista { width: 58px; height: 34px; background: #c9bdb3; border-radius: 999px; }
+.s2 .bola { top: 3px; left: 3px; width: 28px; height: 28px; background: #fff; box-shadow: 0 2px 5px rgba(58,40,34,.35); }
+.s2 input:checked + .pista { background: var(--acento); }
+.s2 input:checked + .pista .bola { transform: translateX(24px); }
+
+/* 3. Con palomita y x dentro (no depende solo del color) */
+.s3 .pista { width: 60px; height: 32px; background: #b3a69c; border-radius: 999px; }
+.s3 .pista::before, .s3 .pista::after { position: absolute; top: 50%; transform: translateY(-50%); font: 700 .85rem/1 Arial, sans-serif; }
+.s3 .pista::before { content: "\2713"; left: 10px; color: var(--horno); opacity: 0; transition: opacity .2s; }
+.s3 .pista::after { content: "\2715"; right: 10px; color: #fff; transition: opacity .2s; }
+.s3 .bola { top: 3px; left: 3px; width: 26px; height: 26px; background: #fff; box-shadow: 0 1px 4px rgba(58,40,34,.3); }
+.s3 input:checked + .pista { background: var(--acento); }
+.s3 input:checked + .pista::before { opacity: 1; }
+.s3 input:checked + .pista::after { opacity: 0; }
+.s3 input:checked + .pista .bola { transform: translateX(28px); }
+
+/* 4. Con SI / NO escrito */
+.s4 .pista { width: 72px; height: 34px; background: var(--horno); border-radius: 999px; }
+.s4 .pista::before { content: "NO"; position: absolute; top: 50%; right: 12px; transform: translateY(-50%); color: #eee4d8; font: 700 .72rem/1 Arial, sans-serif; letter-spacing: .08em; }
+.s4 .bola { top: 3px; left: 3px; width: 28px; height: 28px; background: var(--papel); }
+.s4 input:checked + .pista { background: var(--acento); }
+.s4 input:checked + .pista::before { content: "SI"; right: auto; left: 14px; color: var(--horno); }
+.s4 input:checked + .pista .bola { transform: translateX(38px); }
+
+/* 5. Capsula con dos mitades: Todos | Solo disponibles */
+.s5 .pista { display: inline-flex; width: auto; height: auto; padding: 3px; background: transparent; border: 1px solid var(--claro); border-radius: 999px; }
+.s5 .mitad { position: relative; z-index: 1; padding: .4rem .9rem; border-radius: 999px; font: 700 .8rem/1 Arial, sans-serif; transition: color .2s; }
+.s5 .mitad:first-child { color: var(--papel); }
+.s5 .mitad:last-child { color: var(--horno); }
+.s5 .desliza { position: absolute; top: 3px; bottom: 3px; left: 3px; width: 5.1rem; background: var(--horno); border-radius: 999px; transition: transform .22s cubic-bezier(.23,1,.32,1), width .22s; }
+.s5 input:checked + .pista .desliza { width: 9.2rem; transform: translateX(5.2rem); background: var(--acento); }
+.s5 input:checked + .pista .mitad:first-child { color: var(--horno); }
+
+/* 6. Pista de ladrillo al encender, con la bola blanca */
+.s6 .pista { width: 50px; height: 28px; background: transparent; border: 2px solid var(--corteza); border-radius: 999px; }
+.s6 .bola { top: 3px; left: 3px; width: 18px; height: 18px; background: var(--corteza); }
+.s6 input:checked + .pista { background: var(--corteza); }
+.s6 input:checked + .pista .bola { background: var(--papel); transform: translateX(22px); }
+
+/* 7. Cuadrada de esquinas redondeadas, como los botones del sitio */
+.s7 .pista { width: 52px; height: 30px; background: var(--papel); border: 1px solid var(--claro); border-radius: 8px; }
+.s7 .bola { top: 3px; left: 3px; width: 22px; height: 22px; background: var(--claro); border-radius: 5px; }
+.s7 input:checked + .pista { background: var(--horno); border-color: var(--horno); }
+.s7 input:checked + .pista .bola { background: var(--acento); transform: translateX(22px); }
+
+/* 8. Fondo cafe oscuro siempre, bola melocoton */
+.s8 .pista { width: 54px; height: 30px; background: var(--horno); border-radius: 999px; }
+.s8 .bola { top: 4px; left: 4px; width: 22px; height: 22px; background: #7a6c65; }
+.s8 input:checked + .pista .bola { background: var(--acento); transform: translateX(24px); }
+@media (prefers-reduced-motion: reduce) { .pista, .bola, .desliza { transition: none; } }
+</style>
+</head>
+<body>
+<h1>Interruptores de "Mostrar solo disponibles"</h1>
+<p class="intro">Pulsa cada uno para encenderlo y apagarlo. Todos usan el cafe, el blanco, el ladrillo y el melocoton; el 3 y el 4 dicen su estado tambien con simbolo o texto, no solo con color.</p>
+<div class="rejilla">
+  <div class="opcion"><h2>1. Pista fina, melocoton al encender</h2><p>La de ahora, con el color nuevo.</p><div class="fila"><span class="rotulo">Mostrar</span><label class="sw s1"><input type="checkbox" role="switch"><span class="pista"><span class="bola"></span></span>Solo disponibles</label></div></div>
+  <div class="opcion"><h2>2. Grande, tipo telefono</h2><p>Bola blanca con sombra, mas facil de tocar.</p><div class="fila"><span class="rotulo">Mostrar</span><label class="sw s2"><input type="checkbox" role="switch"><span class="pista"><span class="bola"></span></span>Solo disponibles</label></div></div>
+  <div class="opcion"><h2>3. Con palomita y x</h2><p>Se entiende el estado sin fijarse en el color.</p><div class="fila"><span class="rotulo">Mostrar</span><label class="sw s3"><input type="checkbox" role="switch"><span class="pista"><span class="bola"></span></span>Solo disponibles</label></div></div>
+  <div class="opcion"><h2>4. Con SI / NO</h2><p>Lo mas claro: lo dice con letras.</p><div class="fila"><span class="rotulo">Mostrar</span><label class="sw s4"><input type="checkbox" role="switch"><span class="pista"><span class="bola"></span></span>Solo disponibles</label></div></div>
+  <div class="opcion"><h2>5. Capsula Todos | Solo disponibles</h2><p>Dos mitades con un deslizador; se ven las dos opciones.</p><div class="fila"><span class="rotulo">Mostrar</span><label class="sw s5"><input type="checkbox" role="switch" aria-label="Solo disponibles"><span class="pista"><span class="desliza"></span><span class="mitad">Todos</span><span class="mitad">Solo disponibles</span></span></label></div></div>
+  <div class="opcion"><h2>6. Contorno de ladrillo</h2><p>Hueco al apagar, lleno de ladrillo al encender.</p><div class="fila"><span class="rotulo">Mostrar</span><label class="sw s6"><input type="checkbox" role="switch"><span class="pista"><span class="bola"></span></span>Solo disponibles</label></div></div>
+  <div class="opcion"><h2>7. Cuadrado redondeado</h2><p>Igual que los botones y el desplegable del sitio.</p><div class="fila"><span class="rotulo">Mostrar</span><label class="sw s7"><input type="checkbox" role="switch"><span class="pista"><span class="bola"></span></span>Solo disponibles</label></div></div>
+  <div class="opcion"><h2>8. Cafe oscuro con bola melocoton</h2><p>Siempre oscuro; solo la bola cambia y se mueve.</p><div class="fila"><span class="rotulo">Mostrar</span><label class="sw s8"><input type="checkbox" role="switch"><span class="pista"><span class="bola"></span></span>Solo disponibles</label></div></div>
+</div>
+</body>
+</html>

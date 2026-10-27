@@ -98,7 +98,7 @@ a.nav-cuenta { text-decoration: none; }
 .codigo-casilla:nth-child(3) { margin-right: clamp(.25rem, 1.4vw, .6rem); }
 /* Con su cifra puesta, la casilla se llena de un ambar tenue: se ve de un
    vistazo cuantas faltan. Al llenarse da un saltito corto. */
-.codigo-casilla.is-llena { background: rgba(215, 155, 74, .13); border-color: var(--ambar); animation: codigo-pon var(--dur-base) var(--ease-accent); }
+.codigo-casilla.is-llena { background: rgba(232, 168, 124, .13); border-color: var(--ambar); animation: codigo-pon var(--dur-base) var(--ease-accent); }
 /* El anillo de los campos: horno con el halo ambar (solo ambar, 2,38:1). */
 .codigo-casilla:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .codigo-casilla.is-mal { border-color: var(--corteza); border-bottom-color: var(--corteza); background: rgba(168, 95, 69, .07); }
@@ -137,7 +137,7 @@ a.nav-cuenta { text-decoration: none; }
 /* Ya hay una cuenta en este navegador: no es la nota de la maqueta, es algo
    que va a pasar si se sigue. Va en ambar, el tono de lo que hay que mirar
    (como "Pago de prueba"), con el texto en horno. */
-.cuenta-vista .cuenta-ya-hay { background: rgba(215, 155, 74, .16); border-left-color: var(--ambar); color: var(--horno); font-weight: 700; }
+.cuenta-vista .cuenta-ya-hay { background: rgba(232, 168, 124, .16); border-left-color: var(--ambar); color: var(--horno); font-weight: 700; }
 
 /* ---- Recuperar la contrasena -------------------------------------------------- */
 

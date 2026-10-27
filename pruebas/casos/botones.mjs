@@ -34,8 +34,8 @@ export const descripcion = 'botones en ticket (mascara, sombra, foco fuera de la
 export const limite = 180;
 
 const HORNO = 'rgb(58, 40, 34)';
-const AMBAR = 'rgb(215, 155, 74)';
-const AMBAR_CLARO = 'rgb(242, 202, 104)';
+const AMBAR = 'rgb(232, 168, 124)';
+const AMBAR_CLARO = 'rgb(243, 196, 160)';
 const PAPEL = 'rgb(255, 253, 248)';
 const MASA = 'rgb(247, 241, 231)';
 const CORTEZA = 'rgb(168, 95, 69)';

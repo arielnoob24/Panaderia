@@ -154,7 +154,7 @@ export default async function tiendaMandos(t) {
       t.ok((await primero(p)) === 'Pan redondo', `[teclado] de menor a mayor no empieza por el mas barato (${await primero(p)})`);
       // La elegida, en ambar con el texto horno, sin fondo que viaje.
       const pastilla = await p.evaluate(() => { const e = document.querySelector('.orden-opcion[aria-selected="true"]'); return [getComputedStyle(e).backgroundColor, getComputedStyle(e).color, e.children.length]; });
-      t.ok(pastilla[0] === 'rgb(215, 155, 74)' && pastilla[1] === HORNO && pastilla[2] === 0, `[teclado] la elegida no va en ambar con texto horno (${pastilla})`);
+      t.ok(pastilla[0] === 'rgb(232, 168, 124)' && pastilla[1] === HORNO && pastilla[2] === 0, `[teclado] la elegida no va en ambar con texto horno (${pastilla})`);
       // Espacio y Alt+Abajo abren; Espacio elige.
       await p.keyboard.press('Space');
       t.ok((await combo(p)).expandido === 'true', '[teclado] Espacio no abre');

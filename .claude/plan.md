@@ -522,6 +522,13 @@ pedido sigue valiendo.
 - `assets/css/styles.css` es la base, con variables en `:root` (colores
   `--masa`, `--horno`, `--ambar`, `--corteza`, `--papel`; sombras, radios,
   duraciones y curvas). Lo propio de las vistas va en `src/estilos/`.
+- **El acento ya no es mostaza sino melocotón** (26 de octubre de 2026; la
+  mostaza no gustaba): `--ambar` pasa de `#d79b4a` a `#e8a87c` y
+  `--ambar-claro` (hover) de `#f2ca68` a `#f3c4a0`. El nombre de la
+  variable no cambia. Mismo tono que el café y el ladrillo, solo más claro:
+  sobre `--horno` da 6,9:1 (hover 8,8:1). Sobre `--masa` casi no se lee
+  (1,8:1): va con texto `--horno` encima o sobre fondo oscuro, nunca como
+  texto suelto. El café, el blanco y el ladrillo no cambian.
 - **Regla 60-30-10** en cada vista: 60 % `--masa`/`--papel`, 30 % `--horno`,
   10 % `--ambar`/`--corteza`.
 - **Fondos**: dibujos de línea de trigo, maíz y pan en SVG propio

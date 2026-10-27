@@ -22,7 +22,7 @@ export const descripcion = 'barra horno opaca, portada sin carrusel, fichas, h1 
 export const limite = 150;
 
 const HORNO = 'rgb(58, 40, 34)';
-const AMBAR = 'rgb(215, 155, 74)';
+const AMBAR = 'rgb(232, 168, 124)';
 const PAPEL = 'rgb(255, 253, 248)';
 
 export default async function aspecto(t) {

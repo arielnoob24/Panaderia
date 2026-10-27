@@ -105,7 +105,7 @@ export default async function tienda(t) {
     t.ok(m.estrellas.length === 3 && m.estrellas.every((a) => a === 'true'), `[${nombre}] las estrellas no son adorno (${m.estrellas})`);
     t.ok(m.elegida?.[0] === HORNO && m.elegida?.[1] === PAPEL && m.elegida?.[2] === 1, `[${nombre}] la elegida no va en la pastilla horno (una sola, la que viaja) con texto papel (${m.elegida})`);
     t.ok(m.lineas === 2 && m.campos.length === 1 && m.campos.every((c) => c === PAPEL), `[${nombre}] los mandos no van entre lineas dobles o el buscador no es papel (${m.lineas}, ${m.campos})`);
-    t.ok(m.ordenBoton[0] === 'rgba(0, 0, 0, 0)' && m.ordenBoton[1] === '0px' && m.ordenBoton[2] === '1px', `[${nombre}] el boton de Ordenar por no es texto con una linea fina debajo, sin relleno ni caja (${m.ordenBoton})`);
+    t.ok(m.ordenBoton[0] === 'rgba(0, 0, 0, 0)' && m.ordenBoton[1] === '1px' && m.ordenBoton[2] === '1px', `[${nombre}] el boton de Ordenar por no es un cuadro con filete fino y sin relleno (${m.ordenBoton})`);
     t.ok(m.mando[0] === 'uppercase' && m.cuenta[0].startsWith('Mostrando 17 de 17') && m.cuenta[1] === 'uppercase' && m.cuenta[2] === CORTEZA_OSCURA, `[${nombre}] los rotulos o la cuenta no van en versalitas (${JSON.stringify([m.mando, m.cuenta])})`);
     t.ok(m.aviso === 'polite', `[${nombre}] el aviso del catalogo cambio (${m.aviso})`);
     t.ok(m.anchoPagina <= m.ancho && m.etiquetas.every((e) => e.derecha <= m.ancho), `[${nombre}] "Filtrar por" se sale de la pantalla (${JSON.stringify(m.etiquetas.map((e) => Math.round(e.derecha)))})`);
