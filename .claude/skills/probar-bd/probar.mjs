@@ -164,16 +164,16 @@ titulo('Un pedido de principio a fin');
 const unValor = async (s, p) => Object.values((await q(s, p))[0])[0];
 const rolCliente = await unValor(`SELECT rol_codigo FROM roles WHERE rol_nombre = 'Cliente'`);
 const nuevoUsuario = (correo, celular) => unValor(
-  `INSERT INTO usuarios (rol_codigo, usu_nombres, usu_apellidos, usu_correo, usu_celular, usu_huellaclave, usu_sal)
-   VALUES ($1, 'Ana', 'Pérez', $2, $3, decode(repeat('ab', 32), 'hex'), decode(repeat('cd', 16), 'hex'))
+  `INSERT INTO usuarios (rol_codigo, usu_nombres, usu_apellidos, usu_correo, usu_celular, usu_codigoauth)
+   VALUES ($1, 'Ana', 'Pérez', $2, $3, gen_random_uuid())
    RETURNING usu_codigo`, [rolCliente, correo, celular]);
 const ana = await nuevoUsuario('ana@correo.ec', '0991234567');
 const luis = await nuevoUsuario('luis@correo.ec', '0997654321');
 ok(/^USU[0-9]{7}$/.test(ana), `Codigo con prefijo: ${ana}`);
-await debeFallar(`INSERT INTO usuarios (rol_codigo, usu_nombres, usu_apellidos, usu_correo, usu_celular, usu_huellaclave, usu_sal)
-  VALUES ('${rolCliente}', 'X', 'Y', 'Ana@correo.ec', '0991234567', decode(repeat('ab', 32), 'hex'), decode(repeat('cd', 16), 'hex'))`, 'Correo con mayusculas');
-await debeFallar(`INSERT INTO usuarios (rol_codigo, usu_nombres, usu_apellidos, usu_correo, usu_celular, usu_huellaclave, usu_sal)
-  VALUES ('${rolCliente}', 'X', 'Y', 'x@correo.ec', '991234567', decode(repeat('ab', 32), 'hex'), decode(repeat('cd', 16), 'hex'))`, 'Celular de 9 cifras');
+await debeFallar(`INSERT INTO usuarios (rol_codigo, usu_nombres, usu_apellidos, usu_correo, usu_celular, usu_codigoauth)
+  VALUES ('${rolCliente}', 'X', 'Y', 'Ana@correo.ec', '0991234567', gen_random_uuid())`, 'Correo con mayusculas');
+await debeFallar(`INSERT INTO usuarios (rol_codigo, usu_nombres, usu_apellidos, usu_correo, usu_celular, usu_codigoauth)
+  VALUES ('${rolCliente}', 'X', 'Y', 'x@correo.ec', '991234567', gen_random_uuid())`, 'Celular de 9 cifras');
 
 await q(`INSERT INTO verificaciones (usu_codigo, ver_clave) VALUES ($1, '123456')`, [ana]);
 const verificado = async () => (await q(`SELECT usu_correoverificado v FROM vw_usuarios WHERE usu_codigo = $1`, [ana]))[0].v;
@@ -414,8 +414,8 @@ await q(`UPDATE productos_tamanos SET pta_precio = pta_precio WHERE pro_codigo =
 ok(await unValor(`SELECT count(*)::int FROM auditorias`) === antes, 'Un UPDATE que no cambia nada no se anota');
 await q(`UPDATE usuarios SET usu_celular = '0990000000' WHERE usu_codigo = $1`, [luis]);
 const filaUsu = (await q(`SELECT aud_antes, aud_despues FROM auditorias WHERE aud_tabla = 'USUARIOS' ORDER BY aud_codigo DESC LIMIT 1`))[0];
-ok(!('usu_huellaclave' in filaUsu.aud_antes) && !('usu_sal' in filaUsu.aud_despues) && filaUsu.aud_despues.usu_celular === '0990000000',
-  'La auditoria de usuarios no copia la huella ni la sal');
+ok(filaUsu.aud_antes.usu_celular === '0997654321' && filaUsu.aud_despues.usu_celular === '0990000000',
+  'La auditoria de usuarios anota el antes y el despues');
 await debeFallar(`UPDATE auditorias SET usu_codigo = NULL`, 'Cambiar la auditoria');
 await q(`SELECT set_config('app.usuario', '', false)`);
 

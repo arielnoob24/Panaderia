@@ -9,7 +9,7 @@
 > `.claude/CLAUDE.md`. Las secciones 1 a 14 describen el sitio **como está
 > hoy** (React); la 15 es la historia corta de cómo se llegó aquí.
 
-Última actualización: 25 de octubre de 2026.
+Última actualización: 27 de octubre de 2026.
 
 ---
 
@@ -409,10 +409,41 @@ Una cuenta por navegador. Cada paso es una vista propia:
 Son las mismas claves y formatos que el sitio presentado. Todo va en
 `try/catch`: en ventana privada no puede tumbar la página.
 
-### La base de datos (`bd/BD_EL_TRADICIONAL.sql`, todavía sin conectar)
+### La API (`supabase/functions/api/index.ts`), el intermediario
 
-El sitio sigue guardando como dice la tabla de arriba. El script crea la base
-relacional que va a reemplazar ese guardado cuando se conecte. Motor:
+Desde el 27 de octubre de 2026 el sitio lee **el catálogo** de la base. La
+página nunca habla con las tablas: le pide las cosas a una **Edge Function
+de Supabase** llamada `api` (gratis, sin tarjeta), y la API, con la clave
+secreta que solo existe en el servidor de Supabase, lee la base. Las tablas
+siguen con RLS sin políticas: desde fuera solo entra la API.
+
+| Ruta | Qué hace | Pide sesión |
+|---|---|---|
+| `GET /productos` | El catálogo con la misma forma que `data/productos.json` (`nombre`, `categoria` = `CAT_Slug`, `precio`, `destacado`, `foto`, `alt`, `disponible`, `etiqueta`, `tamanos`); un tamaño "Único" no lleva lista. Orden de `PRO_Codigo` (el de "Recomendados"). `Cache-Control: max-age=60` | No |
+
+- Dirección: `https://ugscqizansixnsuzljtu.supabase.co/functions/v1/api`.
+  `verify_jwt = false` en `supabase/config.toml`: el catálogo es público.
+- **CORS**: solo la página publicada (`https://arielnoob24.github.io`) y
+  `localhost`/`127.0.0.1` en cualquier puerto.
+- Se sube con `npx supabase functions deploy api --use-api` (sin Docker).
+- En la página, `src/servicios/api.js` es la única pieza que sabe la
+  dirección (`pedirApi`, deja de esperar a los **4 s**).
+  `servicios/catalogo.js` la pide en cuanto se importa y `main.jsx` pinta
+  cuando ya llegó. Si la API no contesta o lo que trae no pasa `revisar()`,
+  se usa **`data/productos.json` como respaldo** (va en el paquete) y la
+  consola lo avisa; `catalogo.origen` dice `'api'` o `'respaldo'`.
+  `index.html` abre la conexión antes con `preconnect`.
+- Las pruebas cortan internet; el caso `catalogo-api` deja pasar la API
+  y comprueba que se usa, y que con la API cortada sale el respaldo.
+- Lo siguiente, en este orden: `POST /pedidos` (la API calcula precios,
+  IVA y total), la cuenta con Supabase Auth, y `GET /pedidos` para Mis
+  pedidos. Hasta entonces todo lo demás se guarda como dice la tabla de
+  arriba.
+
+### La base de datos (`bd/BD_EL_TRADICIONAL.sql`)
+
+El script crea la base relacional; el catálogo ya se lee de ella por la
+API, y lo demás la usará cuando se conecte. Motor:
 **PostgreSQL** (Supabase usa el mismo y tiene plan gratis sin tarjeta).
 
 #### Reglas del modelo (las pusieron el usuario y el profesor; no se rompen)
@@ -1149,14 +1180,21 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       (por la API no entra nadie), las vistas usan `security_invoker` y las
       funciones fijan su `search_path`; está al final del script y
       `probar-bd` lo comprueba.
-- [ ] Antes de conectar el sitio: escribir las políticas de RLS de lo que
-      el sitio necesite (por ejemplo, leer el catálogo) y decidir cómo entra
-      el usuario (Supabase Auth o la cuenta actual). Con eso se decide
-      también cómo se llena `app.usuario` para que la auditoría sepa quién.
+- [x] Cómo se conecta: con una API propia (Edge Function `api`) como
+      intermediario, sin políticas de RLS (sección 8, 27 de octubre de 2026).
+- [x] La cuenta va con **Supabase Auth** (27 de octubre de 2026): la
+      contraseña y la verificación del correo las guarda Auth. `USUARIOS`
+      pierde `USU_HuellaClave`, `USU_Sal` e `USU_Iteraciones` y gana
+      `USU_CodigoAuth` (UUID único; su FK a `auth.users`, `RESTRICT`, se
+      crea al final del script solo si existe `auth.users`). Aplicado en
+      Supabase; `VERIFICACIONES` queda en el modelo pero el sitio no la usa.
+- [ ] La API llena `app.usuario` para que la auditoría sepa quién.
 - [ ] El IVA de cada producto es una suposición (pan 0%, dulces y bebidas
       15%): confirmarlo con el contador.
 - [ ] Cuáles alérgenos lleva cada producto (`PRODUCTOS_ALERGENOS`).
-- [ ] Conectar el sitio a la base (servicio gratis, sin tarjeta).
+- [x] El catálogo se lee de la base por la API, con `data/productos.json`
+      de respaldo (sección 8). Lo prueba `pruebas/casos/catalogo-api.mjs`.
+- [ ] Pedidos (`POST /pedidos`), cuenta y Mis pedidos por la API.
 
 ### SEO
 - [ ] `robots.txt` y `sitemap.xml`.

@@ -244,8 +244,9 @@ CREATE TABLE ROLES_PERMISOS (
 );
 CREATE INDEX IX_ROLES_PERMISOS_Permiso ON ROLES_PERMISOS (PER_Codigo);
 
--- La contraseña nunca se guarda: solo su huella PBKDF2-SHA256 (32 bytes), la
--- sal (16 bytes) y las iteraciones con que se calculó, como hace el sitio.
+-- La contraseña no está en esta base: la guarda Supabase Auth (auth.users),
+-- que también verifica el correo. USU_CodigoAuth es el id de la cuenta allí;
+-- su llave foránea se crea al final, solo si la base es la de Supabase.
 -- EMP_Codigo dice de qué empleado es la cuenta (vacío si es de un cliente).
 -- Un empleado puede tener varias: la de trabajo, una personal, o una nueva si
 -- la vieja se desactiva. Su llave foránea se crea después de EMPLEADOS.
@@ -258,13 +259,12 @@ CREATE TABLE USUARIOS (
     USU_Apellidos      VARCHAR(60)  NOT NULL,
     USU_Correo         VARCHAR(254) NOT NULL,
     USU_Celular        CHAR(10)     NOT NULL,   -- formato nacional: 09XXXXXXXX
-    USU_HuellaClave    BYTEA        NOT NULL,
-    USU_Sal            BYTEA        NOT NULL,
-    USU_Iteraciones    INTEGER      NOT NULL DEFAULT 210000,
+    USU_CodigoAuth     UUID         NOT NULL,   -- el id en Supabase Auth
     USU_Activo         BOOLEAN      NOT NULL DEFAULT TRUE,
     USU_FechaRegistro  TIMESTAMPTZ  NOT NULL DEFAULT now(),
     CONSTRAINT PK_USUARIOS PRIMARY KEY (USU_Codigo),
     CONSTRAINT UQ_USUARIOS_Correo UNIQUE (USU_Correo),
+    CONSTRAINT UQ_USUARIOS_CodigoAuth UNIQUE (USU_CodigoAuth),
     CONSTRAINT FK_USUARIOS_ROLES FOREIGN KEY (ROL_Codigo)
         REFERENCES ROLES (ROL_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT CK_USUARIOS_Codigo CHECK (USU_Codigo ~ '^USU[0-9]{7}$'),
@@ -274,10 +274,7 @@ CREATE TABLE USUARIOS (
     CONSTRAINT CK_USUARIOS_Correo CHECK (
         USU_Correo = lower(USU_Correo)
         AND USU_Correo ~ '^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$'),
-    CONSTRAINT CK_USUARIOS_Celular CHECK (USU_Celular ~ '^09[0-9]{8}$'),
-    CONSTRAINT CK_USUARIOS_HuellaClave CHECK (octet_length(USU_HuellaClave) = 32),
-    CONSTRAINT CK_USUARIOS_Sal CHECK (octet_length(USU_Sal) = 16),
-    CONSTRAINT CK_USUARIOS_Iteraciones CHECK (USU_Iteraciones >= 100000)
+    CONSTRAINT CK_USUARIOS_Celular CHECK (USU_Celular ~ '^09[0-9]{8}$')
 );
 ALTER SEQUENCE SEQ_USUARIOS OWNED BY USUARIOS.USU_Codigo;
 CREATE INDEX IX_USUARIOS_Rol ON USUARIOS (ROL_Codigo);
@@ -2045,7 +2042,7 @@ CREATE TRIGGER TG_AUDITORIAS_FIJO BEFORE UPDATE OR DELETE ON AUDITORIAS
 FOR EACH ROW EXECUTE FUNCTION FN_REGISTRO_FIJO();
 
 -- Anota en AUDITORIAS un cambio de la tabla que lo llama. TG_ARGV son las
--- columnas de su llave. La huella y la sal de la clave no se copian.
+-- columnas de su llave.
 CREATE FUNCTION FN_AUDITORIAS_REGISTRAR()
 RETURNS TRIGGER
 LANGUAGE plpgsql AS $$
@@ -2055,10 +2052,10 @@ DECLARE
     v_clave   TEXT;
 BEGIN
     IF TG_OP <> 'INSERT' THEN
-        v_antes := to_jsonb(OLD) - 'usu_huellaclave' - 'usu_sal';
+        v_antes := to_jsonb(OLD);
     END IF;
     IF TG_OP <> 'DELETE' THEN
-        v_despues := to_jsonb(NEW) - 'usu_huellaclave' - 'usu_sal';
+        v_despues := to_jsonb(NEW);
     END IF;
     IF TG_OP = 'UPDATE' AND to_jsonb(OLD) = to_jsonb(NEW) THEN
         RETURN NULL;
@@ -2882,6 +2879,18 @@ SELECT c.CUE_Codigo, v.numero, v.nombre, v.tipo
    (postgres, el editor SQL) RLS no le aplica. Las políticas se escriben
    cuando el sitio se conecte.
    ========================================================================== */
+
+-- USUARIOS enlazada a Supabase Auth: cada fila apunta a su cuenta en
+-- auth.users. Solo existe en Supabase; en otra base (PGlite, las pruebas) se
+-- salta. RESTRICT: no se borra una cuenta de Auth que tenga pedidos.
+DO $$
+BEGIN
+    IF to_regclass('auth.users') IS NOT NULL THEN
+        ALTER TABLE USUARIOS ADD CONSTRAINT FK_USUARIOS_AUTH FOREIGN KEY (USU_CodigoAuth)
+            REFERENCES auth.users (id) ON UPDATE CASCADE ON DELETE RESTRICT;
+    END IF;
+END;
+$$;
 
 DO $$
 DECLARE
