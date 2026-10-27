@@ -671,7 +671,8 @@ body.is-vista .catalog { padding-top: 108px; }
   .contacto-nota { font-size: .75rem; }
   /* La canasta flota abajo a la derecha: lo ultimo de cada vista no se
      queda debajo de ella al llegar al final. */
-  #raiz > main, #raiz > main:has(.vista-nosotros, .vista-contacto) { padding-bottom: 92px; }
+  #raiz > main { padding-bottom: 92px; }
+  #raiz > main:has(.vista-nosotros, .vista-contacto) { padding-bottom: 92px; }
   #raiz > main:has(.vista-inicio) { padding-bottom: 0; }
 }
 

@@ -140,7 +140,7 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
   cabecera de periódico de la portada y Contacto. La ayuda constante (WCAG
   3.2.6) es "Contáctanos" en el menú, en el mismo sitio en todas las vistas.
   Nosotros, Contacto, la tienda y la cuenta ya no llevan franja de espigas
-  (26 de octubre de 2026: no aportaba nada) y terminan en su contenido; la portada deja aire bajo la cinta (más en el
+  (26 de octubre de 2026: no aportaba nada) y terminan en su contenido (en escritorio y tableta caben en una pantalla; en el teléfono pueden desplazarse un poco, porque la canasta flotante pide 92 px libres abajo); la portada deja aire bajo la cinta (más en el
   teléfono, para que la canasta flotante no tape el último enlace). En el
   teléfono cada vista deja 92 px abajo por la canasta flotante, salvo las
   que ocupan la pantalla entera.
