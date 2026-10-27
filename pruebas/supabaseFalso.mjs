@@ -5,7 +5,8 @@
 //     resend, recover, user (leer y cambiar) y logout, con las mismas formas
 //     de respuesta y de error que GoTrue;
 //   - la API (/functions/v1/api/cuenta): GET, POST y PUT, con las mismas
-//     reglas que supabase/functions/api/index.ts.
+//     reglas que supabase/functions/api/index.ts, y /pedidos (GET y POST)
+//     con las de FN_PEDIDOS_REGISTRAR.
 // El codigo de 6 cifras que "se manda" queda apuntado: codigoDe() se lo da a
 // la prueba, que lo escribe como lo haria quien lo lee en su correo.
 // Cada ventana de prueba (contexto) tiene su propio servidor, vacio: un caso
@@ -13,6 +14,8 @@
 // cuenta dos veces sin chocar.
 // /functions/v1/api/productos no se toca: sigue cortado y la tienda usa su
 // respaldo (eso lo prueba catalogo-api.mjs).
+
+import { readFileSync } from 'node:fs';
 
 const PROYECTO = 'https://ugscqizansixnsuzljtu.supabase.co';
 
@@ -187,6 +190,63 @@ async function api(sv, route) {
   return contestar(route, 200, aCuenta(c));
 }
 
+// ---- Los pedidos (/functions/v1/api/pedidos) -------------------------------
+// Las reglas de FN_PEDIDOS_REGISTRAR (bd/BD_EL_TRADICIONAL.sql) con el
+// catalogo de data/productos.json: el precio lo pone el servidor, lo
+// agotado no entra y la respuesta es el registro que ensena el sitio.
+const CATALOGO = JSON.parse(readFileSync(new URL('../data/productos.json', import.meta.url), 'utf8')).productos;
+const OFERTA = new Map(CATALOGO.filter((p) => p.disponible !== false).flatMap((p) => (p.tamanos?.length
+  ? p.tamanos.map((t) => [`${p.nombre} ${t.valor}`.toLowerCase(), { nombre: `${p.nombre} ${t.valor}`, precio: t.precio }])
+  : [[p.nombre.toLowerCase(), { nombre: p.nombre, precio: p.precio }]])));
+const LETRAS = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+const numeroNuevo = () => 'ET-' + Array.from({ length: 4 }, () => LETRAS[Math.floor(Math.random() * LETRAS.length)]).join('');
+const centavos = (n) => Math.round(n * 100) / 100;
+
+const registrar = (c, d) => {
+  if (!Array.isArray(d.lineas) || !d.lineas.length) return 'Tu canasta está vacía.';
+  const domicilio = d.modo === 'domicilio';
+  if (domicilio && !String(d.direccion || '').trim()) return 'Escribe la dirección para poder llevarlo.';
+  if (d.metodo === 'tarjeta' && !/^\d{4}$/.test(d.ultimos || '')) return 'Faltan los números de la tarjeta.';
+  const lineas = [];
+  for (const l of d.lineas) {
+    const hoy = OFERTA.get(String(l.nombre || '').trim().toLowerCase());
+    if (!hoy) return `Ya no tenemos ${l.nombre}. Quítalo de la canasta para seguir.`;
+    if (!(l.cantidad >= 1 && l.cantidad <= 100)) return `De ${l.nombre} se pueden pedir de 1 a 100.`;
+    lineas.push({ nombre: hoy.nombre, precio: hoy.precio, cantidad: l.cantidad });
+  }
+  const subtotal = centavos(lineas.reduce((s, l) => s + l.precio * l.cantidad, 0));
+  const envio = domicilio ? 1.5 : 0;
+  const pedido = {
+    numero: numeroNuevo(), fecha: new Date().toISOString(),
+    estado: d.metodo === 'tarjeta' ? 'Pagado' : 'Pendiente de pago',
+    modo: domicilio ? 'domicilio' : 'retiro',
+    direccion: domicilio ? [d.direccion, d.piso, d.referencia].map((x) => String(x || '').trim()).filter(Boolean).join(' · ') : '',
+    metodo: d.metodo === 'tarjeta' ? `Tarjeta terminada en ${d.ultimos}` : domicilio ? 'Efectivo al recibir' : 'Efectivo al retirar',
+    subtotal, envio, total: centavos(subtotal + envio), lineas,
+  };
+  c.pedidos = [pedido, ...(c.pedidos || [])];
+  return pedido;
+};
+
+async function pedidos(sv, route) {
+  const { quiebra } = sv;
+  const req = route.request();
+  if (req.method() === 'OPTIONS') return contestar(route, 200, {});
+  if (quiebra && '/pedidos'.startsWith(quiebra.ruta)) return contestar(route, quiebra.estado, { error: 'falla a proposito' });
+  const c = quienPorToken(sv, req);
+  if (!c || !c.confirmada) return contestar(route, 401, { error: 'Inicia sesión otra vez.' });
+  if (req.method() === 'GET') return contestar(route, 200, { pedidos: c.pedidos || [] });
+  const r = registrar(c, req.postDataJSON?.() || {});
+  return typeof r === 'string' ? contestar(route, 400, { error: r }) : contestar(route, 201, r);
+}
+
+// Los pedidos que la base tiene de ese correo (para que un caso los mire).
+const pedidosDe = (correo) => {
+  const c = String(correo).toLowerCase();
+  const sv = [...servidores].reverse().find((x) => x.cuentas.has(c));
+  return sv?.cuentas.get(c).pedidos || [];
+};
+
 // Se instala en cada ventana (probar.mjs, despues del corte de internet:
 // Playwright mira primero la ruta registrada la ultima).
 const instalar = async (ctx) => {
@@ -195,6 +255,7 @@ const instalar = async (ctx) => {
   ctx.supabaseFalso = sv;
   await ctx.route(`${PROYECTO}/auth/v1/**`, (r) => auth(sv, r));
   await ctx.route(`${PROYECTO}/functions/v1/api/cuenta`, (r) => api(sv, r));
+  await ctx.route(`${PROYECTO}/functions/v1/api/pedidos`, (r) => pedidos(sv, r));
 };
 
-export { instalar, reiniciar, codigoDe, claveDe, quebrar };
+export { instalar, reiniciar, codigoDe, claveDe, pedidosDe, quebrar };

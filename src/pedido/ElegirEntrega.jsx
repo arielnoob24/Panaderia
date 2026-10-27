@@ -52,7 +52,7 @@ function ElegirEntrega({ entrega, onModo, onCampo, avisoDir, onDirSalir, refs })
           aria-describedby="canasta-dir-error"
           aria-invalid={avisoDir}
           defaultValue={entrega.direccion}
-          onChange={al('direccion', 200)}
+          maxLength={80} onChange={al('direccion', 80)}
           onBlur={onDirSalir}
         />
         <p className="canasta-aviso" id="canasta-dir-error" role="alert" hidden={!avisoDir}>
@@ -62,15 +62,15 @@ function ElegirEntrega({ entrega, onModo, onCampo, avisoDir, onDirSalir, refs })
         <div className="dir-detalle">
           <div>
             <label htmlFor="canasta-piso">Piso, departamento u oficina</label>
-            <input ref={refs.piso} id="canasta-piso" type="text" autoComplete="address-line2" placeholder="Torre B, piso 3, dpto. 302" defaultValue={entrega.piso} onChange={al('piso', 120)} />
+            <input ref={refs.piso} id="canasta-piso" type="text" autoComplete="address-line2" placeholder="Torre B, piso 3, dpto. 302" defaultValue={entrega.piso} maxLength={60} onChange={al('piso', 60)} />
           </div>
           <div>
             <label htmlFor="canasta-ref">Una referencia para encontrarlo</label>
-            <input ref={refs.referencia} id="canasta-ref" type="text" placeholder="Portón verde, frente a la cancha" defaultValue={entrega.referencia} onChange={al('referencia', 200)} />
+            <input ref={refs.referencia} id="canasta-ref" type="text" placeholder="Portón verde, frente a la cancha" defaultValue={entrega.referencia} maxLength={80} onChange={al('referencia', 80)} />
           </div>
         </div>
         <label htmlFor="canasta-notas">Indicaciones para quien entrega <small>(opcional)</small></label>
-        <textarea ref={refs.notas} id="canasta-notas" rows="2" maxLength={300} placeholder="Timbre dañado, llamar al llegar. Hay perro." defaultValue={entrega.notas} onChange={al('notas', 300)}></textarea>
+        <textarea ref={refs.notas} id="canasta-notas" rows="2" maxLength={250} placeholder="Timbre dañado, llamar al llegar. Hay perro." defaultValue={entrega.notas} onChange={al('notas', 250)}></textarea>
       </div>
     </fieldset>
   );

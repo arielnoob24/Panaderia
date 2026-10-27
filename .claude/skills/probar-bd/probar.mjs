@@ -431,5 +431,59 @@ const quien = await unValor(`SELECT e.emp_primernombre FROM auditorias a JOIN us
 ok(quien === 'Carlos', `La auditoria llega al empleado que hizo el cambio por su cuenta (${quien})`);
 await q(`SELECT set_config('app.usuario', '', false)`);
 
+titulo('Pedidos del sitio (FN_PEDIDOS_REGISTRAR, lo que llama la API)');
+const authAna = await unValor(`SELECT usu_codigoauth::text FROM usuarios WHERE usu_codigo = $1`, [ana]);
+const registrar = async (pedido, auth = authAna) => (await q(`SELECT FN_PEDIDOS_REGISTRAR($1::uuid, $2::jsonb) r`, [auth, JSON.stringify(pedido)]))[0].r;
+const facturasAntes = await unValor(`SELECT count(*)::int FROM facturas`);
+const web = await registrar({
+  lineas: [{ nombre: 'Pan redondo', cantidad: 10 }, { nombre: 'coca-cola 1 L', cantidad: 2 }],
+  modo: 'domicilio', direccion: 'Av. 15 de Noviembre y Tarqui', piso: 'Piso 2', referencia: 'Frente al parque', notas: 'Llamar al llegar',
+  metodo: 'tarjeta', ultimos: '4242', factura: { aOtro: true, nombre: 'Ana Pérez', ident: '1710034065', correo: 'ANA@correo.ec' },
+});
+ok(/^ET-[2-9A-HJ-NP-Z]{4}$/.test(web.numero) && web.modo === 'domicilio' && web.estado === 'Pagado',
+  `Pedido con tarjeta a domicilio: ${web.numero}, ${web.estado}`);
+// El de hoy: la auditoria de arriba le subio 5 centavos al pan.
+const deHoy = Number(await unValor(`SELECT sum(c * pta_precio)::text FROM (VALUES ('Pan redondo', 'Único', 10), ('Coca-Cola', '1 L', 2)) v (n, t, c)
+  JOIN productos p ON p.pro_nombre = v.n JOIN tamanos ta ON ta.tam_descripcion = v.t
+  JOIN productos_tamanos pt ON pt.pro_codigo = p.pro_codigo AND pt.tam_codigo = ta.tam_codigo`));
+ok(Number(web.subtotal) === deHoy && Number(web.envio) === 1.5 && Number(web.total) === deHoy + 1.5 && web.lineas.length === 2,
+  `La base pone los precios de hoy y el total (${web.subtotal} + ${web.envio} = ${web.total})`);
+ok(web.direccion === 'Av. 15 de Noviembre y Tarqui · Piso 2 · Frente al parque' && web.metodo === 'Tarjeta terminada en 4242',
+  `Direccion y metodo como los ensena el sitio (${web.direccion}; ${web.metodo})`);
+const pedWeb = await unValor(`SELECT ped_codigo FROM pedidos WHERE ped_numero = $1`, [web.numero]);
+ok(await unValor(`SELECT count(*)::int FROM facturas WHERE ped_codigo = $1`, [pedWeb]) === 1
+  && await unValor(`SELECT c.cli_identificacion FROM facturas f JOIN clientes c USING (cli_codigo) WHERE f.ped_codigo = $1`, [pedWeb]) === '1710034065',
+  'La factura sale a nombre del cliente que ya existia (por su cedula)');
+ok(await unValor(`SELECT pag_aprobado::text FROM pagos WHERE ped_codigo = $1`, [pedWeb]) === 'true', 'El pago con tarjeta queda aprobado');
+ok(await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'ASIENTOS' AND usu_codigo = $1`, [ana]) >= 1,
+  'El asiento de la venta queda auditado con quien hizo el pedido');
+const efectivo = await registrar({ lineas: [{ nombre: 'Galletas', cantidad: 1 }], modo: 'retiro', metodo: 'efectivo', factura: { aOtro: false } });
+ok(efectivo.estado === 'Pendiente de pago' && efectivo.metodo === 'Efectivo al retirar' && Number(efectivo.envio) === 0,
+  `En efectivo y para retirar: ${efectivo.estado}, ${efectivo.metodo}`);
+ok(await unValor(`SELECT c.tid_codigo FROM facturas f JOIN clientes c USING (cli_codigo) JOIN pedidos p USING (ped_codigo) WHERE p.ped_numero = $1`, [efectivo.numero]) === '07',
+  'Sin otra persona, la factura va a consumidor final');
+const dirs = await unValor(`SELECT count(*)::int FROM direcciones WHERE usu_codigo = $1`, [ana]);
+await registrar({ lineas: [{ nombre: 'Pan redondo', cantidad: 1 }], modo: 'domicilio', direccion: 'Av. 15 de Noviembre y Tarqui', piso: 'Piso 2', referencia: 'Frente al parque', metodo: 'efectivo' });
+ok(await unValor(`SELECT count(*)::int FROM direcciones WHERE usu_codigo = $1`, [ana]) === dirs, 'La misma direccion se reusa');
+const pedidosAntes = await unValor(`SELECT count(*)::int FROM pedidos`);
+const fallaWeb = async (pedido, texto, msg, auth) => {
+  try { await registrar(pedido, auth); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await fallaWeb({ lineas: [{ nombre: 'Palanqueta', cantidad: 1 }], modo: 'retiro', metodo: 'efectivo' }, 'Ya no tenemos Palanqueta', 'Producto agotado');
+await fallaWeb({ lineas: [{ nombre: 'Pan redondo', cantidad: 1 }, { nombre: 'Pan de nada', cantidad: 1 }], modo: 'retiro', metodo: 'efectivo' }, 'Ya no tenemos Pan de nada', 'Producto que no existe, tras uno bueno');
+await fallaWeb({ lineas: [{ nombre: 'Pan redondo', cantidad: 101 }], modo: 'retiro', metodo: 'efectivo' }, 'de 1 a 100', 'Cantidad 101');
+await fallaWeb({ lineas: [], modo: 'retiro', metodo: 'efectivo' }, 'vacía', 'Canasta vacia');
+await fallaWeb({ lineas: [{ nombre: 'Pan redondo', cantidad: 1 }], modo: 'domicilio', direccion: ' ', metodo: 'efectivo' }, 'dirección', 'A domicilio sin direccion');
+await fallaWeb({ lineas: [{ nombre: 'Pan redondo', cantidad: 1 }], modo: 'retiro', metodo: 'tarjeta' }, 'tarjeta', 'Tarjeta sin sus numeros');
+await fallaWeb({ lineas: [{ nombre: 'Pan redondo', cantidad: 1 }], modo: 'retiro', metodo: 'efectivo', factura: { aOtro: true, nombre: 'X', ident: '1710034066' } }, 'no es válido', 'Factura con cedula invalida');
+await fallaWeb({ lineas: [{ nombre: 'Pan redondo', cantidad: 1 }], modo: 'retiro', metodo: 'efectivo' }, 'no tiene datos', 'Cuenta de Auth sin fila en USUARIOS', '00000000-0000-0000-0000-000000000000');
+ok(await unValor(`SELECT count(*)::int FROM pedidos`) === pedidosAntes, 'Un pedido que falla no deja nada a medias');
+ok(await unValor(`SELECT count(*)::int FROM facturas`) === facturasAntes + 3, 'Tres pedidos, tres facturas');
+const deAna = (await q(`SELECT FN_PEDIDOS_DE($1::uuid) r`, [authAna]))[0].r;
+const authLuis = await unValor(`SELECT usu_codigoauth::text FROM usuarios WHERE usu_codigo = $1`, [luis]);
+const deLuis = (await q(`SELECT FN_PEDIDOS_DE($1::uuid) r`, [authLuis]))[0].r;
+ok(deAna.length === 4 && deAna.some((x) => x.numero === web.numero) && deLuis.length === 0,
+  `Cada cuenta ve solo sus pedidos (Ana ${deAna.length}, Luis ${deLuis.length})`);
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

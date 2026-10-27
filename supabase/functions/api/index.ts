@@ -188,6 +188,32 @@ Deno.serve(async (req) => {
     }
   }
 
+  // RUTAS de /pedidos: tambien piden sesion. Todo lo hace la base en una
+  // sola transaccion (FN_PEDIDOS_REGISTRAR y FN_PEDIDOS_DE, en
+  // bd/BD_EL_TRADICIONAL.sql): precios, IVA, total, pago y factura. La API
+  // solo dice quien llama; lo que mande la pagina sobre precios no cuenta.
+  if (ruta === "/pedidos") {
+    const usuario = await quienLlama(req);
+    if (!usuario) return responder(h, 401, { error: "Inicia sesión otra vez." });
+
+    // GET /pedidos -> los pedidos de quien llama, el mas nuevo primero.
+    if (req.method === "GET") {
+      const { data, error } = await base.rpc("fn_pedidos_de", { p_auth: usuario.id });
+      if (error) return responder(h, 500, { error: error.message });
+      return responder(h, 200, { pedidos: data });
+    }
+
+    // POST /pedidos -> registrar uno. 22023 es un error para el cliente
+    // ("Ya no tenemos Palanqueta"); cualquier otro, un fallo de la base.
+    if (req.method === "POST") {
+      const pedido = await req.json().catch(() => null);
+      if (!pedido || typeof pedido !== "object") return responder(h, 400, { error: "El pedido no llegó bien." });
+      const { data, error } = await base.rpc("fn_pedidos_registrar", { p_auth: usuario.id, p_pedido: pedido });
+      if (error) return responder(h, error.code === "22023" ? 400 : 500, { error: error.message });
+      return responder(h, 201, data);
+    }
+  }
+
   // Cualquier otra ruta: no existe
   return responder(h, 404, { error: "Ruta no encontrada" });
 });

@@ -8,19 +8,24 @@
 // direccion, factura y tarjeta; el foco va al primer campo que falla. Los
 // errores salen al dejar el campo o al intentar confirmar.
 //
-// El cobro se simula: 1,5 s "procesando" y se aprueba. La tarjeta vive solo
-// en el estado de este componente: no se guarda, no se envia y desaparece al
-// salir de la vista. Del recibo solo salen sus cuatro ultimos digitos.
+// El cobro se simula: 1,5 s "procesando" y se aprueba. Entonces el pedido
+// se registra en la base por la API (servicios/pedidos.js), que pone el
+// numero, los precios y el total; si no se puede registrar, no hay pedido:
+// se dice por que junto al boton y la canasta queda como estaba. La tarjeta
+// vive solo en el estado de este componente: no se guarda y desaparece al
+// salir de la vista. A la base y al recibo solo van sus cuatro ultimos digitos.
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { guardarPedido } from '../servicios/storage.js';
+import { registrarPedido } from '../servicios/pedidos.js';
+import { idDe } from '../servicios/state.js';
 import { buzonListo, enviarCorreo } from '../servicios/mail.js';
 import {
   sumasDe, CAMPOS_FACTURA, fallosFactura, avisoFactura,
   CAMPOS_TARJETA, fallosTarjeta, avisoTarjeta,
   reformatear, grupos4, mmaa, tresCifras, textoBotonPagar,
-  numeroDePedido, armarRecibo, reciboParaGuardar, asuntoComprobante, cuerpoComprobante,
+  armarRecibo, reciboParaGuardar, asuntoComprobante, cuerpoComprobante,
   avisoAprobado,
 } from '../servicios/cobro.js';
 import { usePedido } from '../estado/PedidoProvider.jsx';
@@ -139,16 +144,28 @@ function FormularioPedido() {
   const reloj = useRef(0);
   useEffect(() => () => window.clearTimeout(reloj.current), []);
 
-  const aprobar = () => {
+  const aprobar = async () => {
     const ahora = ultimo.current;
     if (!ahora.lineas.length) { setProcesando(false); return; }
-    const numero = numeroDePedido();
-    const recibo = armarRecibo({
-      lineas: ahora.lineas, entrega: ahora.entrega, factura: ahora.factura, sesion: ahora.sesion,
-      metodo: ahora.metodo, numeroTarjeta: ahora.tarjeta.numero, numero,
+    const { pedido, error } = await registrarPedido({
+      lineas: ahora.lineas, entrega: ahora.entrega, factura: ahora.factura,
+      metodo: ahora.metodo, numeroTarjeta: ahora.tarjeta.numero,
     });
-    // Al historial antes de vaciar nada: es lo unico que queda del pedido si
-    // el correo no sale. guardarPedido no lanza.
+    if (error) {
+      flushSync(() => { setProcesando(false); setErrorPago(error); });
+      refs.pagar.current?.focus();
+      avisar(error);
+      return;
+    }
+    // El recibo con lo que dijo la base: su numero, su fecha y sus precios.
+    const { numero } = pedido;
+    const recibo = armarRecibo({
+      lineas: pedido.lineas.map((l) => [idDe(l.nombre), l]),
+      entrega: ahora.entrega, factura: ahora.factura, sesion: ahora.sesion,
+      metodo: ahora.metodo, numeroTarjeta: ahora.tarjeta.numero, numero, fecha: new Date(pedido.fecha),
+    });
+    // Tambien en este navegador, antes de vaciar nada: Mis pedidos lo
+    // ensena aunque luego la API no conteste. guardarPedido no lanza.
     guardarPedido(reciboParaGuardar(recibo));
     const conCorreo = buzonListo();
     cumplir({ ...recibo, envioCorreo: conCorreo ? 'enviando' : 'simulado' });

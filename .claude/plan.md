@@ -330,12 +330,20 @@ panes", con la cinta o con el menú.
   `src/servicios/cobro.js`.
 - La tarjeta lleva `autocomplete="off"` a propósito: es de prueba y el
   navegador no debe guardarla.
-- Al aprobar (simula 1,5 s): número `ET-XXXX` sin letras confundibles,
-  comprobante, correo, guardado en IndexedDB (con el `correo` de la cuenta),
-  se vacía la canasta y se limpian tarjeta y factura. El comprobante dice "Tu
+- Al aprobar (simula 1,5 s) el pedido **se registra en la base** por la API
+  (`POST /pedidos`, sección 8): la base pone el número `ET-XXXX` sin letras
+  confundibles, los precios de hoy y el total, y el comprobante enseña lo
+  que dijo la base. Luego correo, copia en IndexedDB (con el `correo` de la
+  cuenta), se vacía la canasta y se limpian tarjeta y factura. **Si no se
+  puede registrar** (sin red, sesión caducada, algo agotado), no hay pedido:
+  el motivo sale junto al botón ("…No se cobró nada; inténtalo otra vez."),
+  el foco vuelve al botón y la canasta queda igual.
+- Límites de la entrega, los de `DIRECCIONES` y `PEDIDOS`: dirección 80,
+  piso 60, referencia 80 (piso y referencia van juntos en
+  `DIR_Referencia`), indicaciones 250. El comprobante dice "Tu
   canasta ya está vacía. El pedido queda en Mis pedidos."
-- **El cobro no existe**: la tarjeta no se guarda ni se envía (en IndexedDB
-  solo "Tarjeta terminada en XXXX").
+- **El cobro no existe**: la tarjeta no se guarda ni se envía; a la base y a
+  IndexedDB solo van sus 4 últimos dígitos ("Tarjeta terminada en XXXX").
 
 ## 7. La cuenta
 
@@ -351,7 +359,7 @@ Auth guarda la contraseña y verifica el correo; nombre y teléfono van en
 | `#/cuenta/verificar` | Código de 6 cifras en 6 casillas (el que manda Auth), "Enviar otro código" cada 60 s; si el correo no sale, se dice y se pide otro (no hay recuadro con el código) | Sin cuenta por verificar → `#/cuenta/entrar` |
 | `#/cuenta/recuperar` | Recuperar la contraseña (abajo) | Con sesión → `#/cuenta` |
 | `#/cuenta` | **Mis datos**, editables ahí mismo: nombre, teléfono, dirección y forma de pago preferida (Efectivo o Tarjeta; "No guardamos tarjetas"); el correo se ve y no se cambia. "Guardar" (pasa a "Guardado ✓" 2 s) y "Cerrar sesión" | Sin sesión → `#/cuenta/entrar` |
-| `#/cuenta/pedidos` | Una fila por pedido de **esta cuenta** (`ET-XXXX`, fecha, total), más nuevo arriba, en `<details>` que se despliega animando la altura; los viejos sin `correo` también. Cada uno con "Pedir otra vez" | Sin sesión → `#/cuenta/entrar` |
+| `#/cuenta/pedidos` | Una fila por pedido de **esta cuenta** (`ET-XXXX`, fecha, total), más nuevo arriba, en `<details>` que se despliega animando la altura. Salen de la base (`GET /pedidos`, se ven desde cualquier navegador) más los que solo estén en este navegador (los de antes, también los sin `correo`); sin API, solo estos. Cada uno con "Pedir otra vez" | Sin sesión → `#/cuenta/entrar` |
 
 - **Cabecera**: sin sesión, la silueta ("Iniciar sesión / Registrarse") lleva
   a `#/cuenta/entrar`; con sesión, las iniciales abren una ficha con "Mis
@@ -429,6 +437,8 @@ siguen con RLS sin políticas: desde fuera solo entra la API.
 | `GET /cuenta` | Los datos de quien llama: `nombre`, `correo`, `telefono` (sin el 0), `direccion`, `metodo`. 404 si aún no tiene fila en `USUARIOS` | Sí |
 | `POST /cuenta` | Tras verificar el correo: crea su fila en `USUARIOS` (rol Cliente, nombre partido en nombres y apellidos, celular `0` + teléfono, `USU_CodigoAuth` = su id de Auth); si ya la tiene, la devuelve | Sí |
 | `PUT /cuenta` | Guarda Mis datos: nombre y teléfono en `USUARIOS` | Sí |
+| `POST /pedidos` | Registra un pedido con `FN_PEDIDOS_REGISTRAR` (abajo) y devuelve el registro (201); un error para el cliente (agotado, canasta vacía, cédula mal) es 400 con su texto | Sí |
+| `GET /pedidos` | Los pedidos de quien llama, el más nuevo primero (`FN_PEDIDOS_DE`): `numero`, `fecha`, `estado`, `modo`, `direccion`, `metodo`, `subtotal`, `envio`, `total`, `lineas` | Sí |
 
 - Dirección: `https://ugscqizansixnsuzljtu.supabase.co/functions/v1/api`.
   `verify_jwt = false` en `supabase/config.toml`: el catálogo es público.
@@ -460,9 +470,26 @@ siguen con RLS sin políticas: desde fuera solo entra la API.
   cuenta habla con un Supabase de mentira (`pruebas/supabaseFalso.mjs`),
   que guarda los códigos para que la prueba los escriba y puede fallar a
   propósito (`quebrar`).
-- Lo siguiente, en este orden: `POST /pedidos` (la API calcula precios,
-  IVA y total) y `GET /pedidos` para Mis pedidos. Hasta entonces los
-  pedidos se guardan como dice la tabla de arriba.
+- **Los pedidos** (desde el 27 de octubre de 2026) los registra la base en
+  una sola transacción, `FN_PEDIDOS_REGISTRAR(auth, pedido)`: si una parte
+  falla no queda nada a medias. La página manda solo lo elegido (líneas por
+  nombre con el tamaño y su cantidad, entrega, forma de pago, los 4 últimos
+  de la tarjeta y la factura); los precios, el IVA y el total los pone la
+  base. Escribe:
+  - `DIRECCIONES`, si es a domicilio: la misma calle y referencia se
+    reusan; si no, una nueva en Tena (`1501`) con alias "Entrega N";
+  - `PEDIDOS`: con tarjeta "Pagado", en efectivo "Pendiente de pago";
+  - `DETALLES_PEDIDO`: lo agotado o que ya no existe no entra ("Ya no
+    tenemos X");
+  - `PAGOS`: con tarjeta aprobado ("Tarjeta de crédito", autorización
+    `SIMULADO`); en efectivo, por cobrar;
+  - `CLIENTES` y `FACTURAS`: "a otra persona" se guarda o se pone al día
+    por su cédula o RUC; "a mi nombre" va a consumidor final. La factura
+    hace su asiento con su trigger.
+  Fija `app.usuario`, así que la auditoría sabe quién fue. Las tres
+  funciones (`FN_PEDIDOS_REGISTRAR`, `FN_PEDIDOS_DE`, `FN_PEDIDOS_JSON`)
+  solo las puede ejecutar `service_role`. Lo prueba `probar-bd`, y en el
+  navegador `pruebas/casos/pedidos-api.mjs`.
 
 ### La base de datos (`bd/BD_EL_TRADICIONAL.sql`)
 
@@ -1212,14 +1239,19 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       `USU_CodigoAuth` (UUID único; su FK a `auth.users`, `RESTRICT`, se
       crea al final del script solo si existe `auth.users`). Aplicado en
       Supabase; `VERIFICACIONES` queda en el modelo pero el sitio no la usa.
-- [ ] La API llena `app.usuario` para que la auditoría sepa quién.
+- [x] La API llena `app.usuario` para que la auditoría sepa quién (en los
+      pedidos, `FN_PEDIDOS_REGISTRAR`; los cambios de `/cuenta` aún no).
 - [ ] El IVA de cada producto es una suposición (pan 0%, dulces y bebidas
       15%): confirmarlo con el contador.
 - [ ] Cuáles alérgenos lleva cada producto (`PRODUCTOS_ALERGENOS`).
 - [x] El catálogo se lee de la base por la API, con `data/productos.json`
       de respaldo (sección 8). Lo prueba `pruebas/casos/catalogo-api.mjs`.
 - [x] La cuenta por Supabase Auth y la API (`/cuenta`), 27 de octubre de 2026.
-- [ ] Pedidos (`POST /pedidos`) y Mis pedidos (`GET /pedidos`) por la API.
+- [x] Pedidos (`POST /pedidos`) y Mis pedidos (`GET /pedidos`) por la API,
+      27 de octubre de 2026 (sección 8).
+- [ ] La dirección de la cuenta admite 200 caracteres y la del pedido 80
+      (`DIR_CallePrincipal`): una de más de 80 pasa al pedido y la base la
+      rechaza con "La dirección es demasiado larga". Igualarlas.
 
 ### SEO
 - [ ] `robots.txt` y `sitemap.xml`.

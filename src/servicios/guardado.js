@@ -48,10 +48,10 @@ const leerPedidoGuardado = (crudo) => {
   if (Array.isArray(dato)) return { ...vacio, lineas };
   const entrega = { ...ENTREGA_VACIA };
   if (dato.modo === 'domicilio') entrega.modo = 'domicilio';
-  if (typeof dato.direccion === 'string') entrega.direccion = dato.direccion.slice(0, 200);
-  if (typeof dato.piso === 'string') entrega.piso = dato.piso.slice(0, 120);
-  if (typeof dato.referencia === 'string') entrega.referencia = dato.referencia.slice(0, 200);
-  if (typeof dato.notas === 'string') entrega.notas = dato.notas.slice(0, 300);
+  if (typeof dato.direccion === 'string') entrega.direccion = dato.direccion.slice(0, 80);
+  if (typeof dato.piso === 'string') entrega.piso = dato.piso.slice(0, 60);
+  if (typeof dato.referencia === 'string') entrega.referencia = dato.referencia.slice(0, 80);
+  if (typeof dato.notas === 'string') entrega.notas = dato.notas.slice(0, 250);
   // A nombre de quien va la factura tambien sobrevive a recargar: quien pide
   // para una oficina lo hace siempre a nombre de la misma.
   const factura = { ...FACTURA_VACIA };
