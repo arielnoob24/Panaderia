@@ -522,21 +522,36 @@ pedido sigue valiendo.
 ## 10. Aspecto y adaptación
 
 - `assets/css/styles.css` es la base, con variables en `:root` (colores
-  `--masa`, `--horno`, `--ambar`, `--corteza`, `--papel`; sombras, radios,
+  `--masa`, `--horno`, `--ambar`, `--papel`; sombras, radios,
   duraciones y curvas). Lo propio de las vistas va en `src/estilos/`.
-- **Paleta cobre y vino** (26 de octubre de 2026; la mostaza no gustaba y
-  el melocotón se probó antes): el café y el blanco no cambian. `--ambar`
-  (acento) pasa de `#d79b4a` a cobre `#c98642` y `--ambar-claro` (hover) de
-  `#f2ca68` a `#dba062`. `--corteza` (el ladrillo) pasa de `#a85f45` a vino
-  `#7b2d2d`, `--corteza-oscura` de `#7a4030` a `#5e2222` y
-  `--aviso-cerrado` a `#dab4b0`. Los nombres de las variables no cambian.
-  El cobre se aclaró desde `#b87333` (3,7:1 con el café) para llegar a
-  4,6:1 con `--horno` en los dos sentidos (texto café sobre el botón y
-  acento sobre la barra); el hover da más. Papel sobre vino da 9,2:1.
-  Sobre `--masa` el cobre casi no se lee (3,3:1): va con texto `--horno`
-  encima o sobre fondo oscuro, nunca como texto suelto.
-- **Regla 60-30-10** en cada vista: 60 % `--masa`/`--papel`, 30 % `--horno`,
-  10 % `--ambar`/`--corteza`.
+- **Tres colores, 60-30-10** (26 de octubre de 2026; el vino de la paleta
+  anterior rompía el reparto: la cinta de Inicio era un bloque vino de ancho
+  completo y el vino sumaba al cobre como segundo acento). Ahora el sitio
+  tiene tres colores y nada más:
+  - **60 %** `--masa` / `--papel`: fondos y fichas.
+  - **30 %** `--horno`: texto, barra, cinta, franja de las espigas y bandas
+    oscuras (todo bloque grande oscuro es horno).
+  - **10 %** `--ambar` (cobre `#c98642`, hover `--ambar-claro` `#dba062`),
+    el **único acento**: botones, estados activos, iconos, filetes, bordes
+    de hover y dibujos del fondo.
+  - Desaparecen `--corteza`, `--corteza-oscura` y `--aviso-cerrado`. Los
+    textos pequeños que iban en corteza oscura van en `--horno` (o
+    `--horno-suave` si son secundarios). Los rellenos que iban en corteza
+    (cinta, `sign-band`, botón de pagar, etiquetas, "sí, quitar") van en
+    `--horno`. Iconos, filetes y bordes que iban en corteza van en `--ambar`.
+  - El cobre sobre `--masa` da **2,7:1** (2,96:1 sobre `--papel`; medido el 26
+    de octubre de 2026, el 3,3:1 que decía esto era un error): sirve para
+    iconos y filetes decorativos, no llega a los 3:1 de un borde que
+    identifique un control, y **nunca vale para texto** (ahí va `--horno`).
+    Los campos con error llevan por eso borde `--horno` de 2 px. Sobre
+    `--horno` da 4,6:1 y sirve también como texto.
+  - Sin rojo, "cerrado" y los errores no se distinguen por color: llevan
+    siempre texto además del tono, como pide WCAG 1.4.1: los errores de
+    campo, un "!" delante, el texto en negrita y el borde horno de 2 px;
+    "cerrado", la palabra y el punto horno (el abierto es cobre).
+- **Regla 60-30-10** en cada vista, **medida con capturas** (1440 y 390 px,
+  `revision-visual`): masa/papel entre 55 y 65 %, horno entre 25 y 35 %, y el
+  acento (cobre) no pasa del 12 %.
 - **Fondos**: dibujos de línea de trigo, maíz y pan en SVG propio
   (`comun/trazos.jsx`, `FondoDibujo.jsx`), distintos en cada vista y en cada
   paso de la cuenta, quietos, `aria-hidden` y tenues (medidos: el texto de
@@ -593,7 +608,7 @@ ritmo del movimiento y la accesibilidad no cambian.
   letras de título); el texto corrido sigue en Arial.
 - **Grano de papel** muy tenue en el fondo `--masa` (SVG de ruido en CSS).
 - **Rótulos en versalitas espaciadas** (`.72rem`, `letter-spacing .22em`,
-  mayúsculas, `--corteza-oscura`): categorías y "Horneado cada mañana".
+  mayúsculas, `--horno`): categorías y "Horneado cada mañana".
 - **Cabecera de periódico** bajo la barra, solo en la portada:
   `Miércoles, 21 de octubre ═══ PANADERÍA & PASTELERÍA ═══ ● Abierto · hasta las 20:00`.
   La fecha es la de hoy (`Intl`, `es-EC`); el estado sale de `useHorario`
@@ -602,7 +617,7 @@ ritmo del movimiento y la accesibilidad no cambian.
   la fecha y el estado. Sin ciudad ni año de fundación (no hay dato real).
 - **Portada** en dos columnas: a la izquierda el rótulo con una espiga
   ("Horneado cada mañana"), el `h1` "El sabor / *de siempre*" en Fraunces
-  grande (la segunda línea en cursiva cobriza y desplazada), la frase
+  grande (la segunda línea en cursiva en horno y desplazada), la frase
   **"Pan recién horneado, todos los días."** en cursiva, el botón
   **"Nuestros panes"** con el icono de la **hogaza** y "Cómo llegar" con el
   pin. A la derecha la foto **cuadrada en arco** (unos 460 px, marco fino a
@@ -622,7 +637,7 @@ ritmo del movimiento y la accesibilidad no cambian.
     por fuera de la foto, en el margen, para no tapar el pan.
   - Al entrar: rótulo, título, frase y botones suben uno tras otro; la foto
     se descubre de abajo arriba; el sello cae girando. Una vez, escena.
-- **Cinta cobriza** (en lugar de la franja de trigo): Panes, Dulces y
+- **Cinta en horno** (en lugar de la franja de trigo): Panes, Dulces y
   pasteles, Bebidas, cada una con su icono de línea (hogaza, galleta con
   chispas, botella), separadas por ✦; cada una es un enlace a su categoría. Al pasar
   el puntero, cada icono acompaña la ola de las letras con un movimiento
@@ -647,11 +662,11 @@ ritmo del movimiento y la accesibilidad no cambian.
     acción ("Iniciar sesión", "Crear cuenta", "Verificar", "Listo, cerrar",
     "Reintentar", "Ver en el mapa"…).
   - **"Ir a pagar" y el botón final de pagar**, los protagonistas: el mismo
-    ticket en **`--corteza` con texto `--papel` y sombra `--horno`** (K1 de
-    `muestra-colores.html`, 23 de octubre de 2026; el `--horno` de antes
-    era demasiado oscuro), a todo lo ancho de la canasta. Así no se
-    confunde con el `+` ámbar de agregar. Papel sobre corteza (vino desde el 26 de octubre de 2026) da 9,2:1 (antes 4,7:1):
-    el texto no puede ir más fino ni más pequeño que hoy.
+    ticket en **`--horno` con texto `--papel` y sombra `--ambar`** (K1 de
+    `muestra-colores.html`, 23 de octubre de 2026; desde el 26 de octubre de
+    2026 en horno y con la sombra cobre, porque el vino desapareció), a todo
+    lo ancho de la canasta. Así no se confunde con el `+` ámbar de agregar.
+    Papel sobre horno da 13,7:1.
   - **Secundario** (`.button-otro`: "Ya tengo cuenta…", "No tengo
     cuenta…", "Cerrar sesión"): ticket hueco, solo el borde de 1,5 px
     `--horno` siguiendo las mordidas (dibujado, porque un `border` no las
@@ -662,12 +677,12 @@ ritmo del movimiento y la accesibilidad no cambian.
   **Recto lo que se lee**: las fichas siguen con esquinas rectas.
 - **"Cómo llegar" de la portada**: enlace, no botón (L1 de
   `muestra-colores.html`). Fraunces en cursiva de unos 1.35rem y 600, con
-  el pin en `--corteza` (24 px) y un filete fino de `--corteza`, sin relleno
+  el pin en `--ambar` (24 px) y un filete fino `--ambar`, sin relleno
   ni raya, para distinguirlo del fondo sin competir con "Nuestros panes".
   Con el puntero las letras **saltan una tras otra** (la ola: cada letra en
   un `span` `aria-hidden`, sin cambiar el nombre accesible), el texto y el
-  borde pasan a `--corteza-oscura` y el pin da un saltito. Con menos
-  movimiento solo cambia el color.
+  borde pasa a `--horno` (el texto ya lo es) y el pin da un saltito. Con
+  menos movimiento solo cambia el color.
 - **Menú de arriba: todo en blanco** (W1 y S2 de `muestra-colores.html`,
   23 de octubre de 2026; sustituye al ámbar de M2, que no gustó). Con el
   puntero, sobre el mismo enlace se enciende en su sitio un **blanco
@@ -684,7 +699,7 @@ ritmo del movimiento y la accesibilidad no cambian.
   en su sitio una pastilla `--papel` llena con el texto y el icono en
   `--horno` y las letras saltan en secuencia, como una ola; el lector de
   pantalla sigue recibiendo el nombre de cada categoría como una sola frase.
-  Con menos movimiento no hay ola. (Un blanco tenue sobre el cobrizo dejaría
+  Con menos movimiento no hay ola. (Un blanco tenue sobre la cinta dejaría
   el texto por debajo de 4,5:1.)
 - **Iconos de línea** del mismo trazo que los dibujos de trigo
   (`comun/iconos.jsx`): hogaza, rebanada, botella, espiga, pin, flecha y
@@ -702,11 +717,11 @@ clases o en piezas comunes, no copiado.
   el pie "Despacio sabe mejor"; a la derecha el rótulo con la espiga
   **"Nuestra historia"**, el `h1` "El tiempo es / *nuestro ingrediente*"
   con el tratamiento del `h1` de la portada (Fraunces grande, la segunda
-  línea en cursiva cobriza y desplazada), "No hacemos pan rápido. Hacemos
+  línea en cursiva en horno y desplazada), "No hacemos pan rápido. Hacemos
   pan que vale la espera." en cursiva como la frase de la portada, el
   párrafo de la madrugada en Arial, y **"Conoce nuestro local"** con el
   aspecto y la ola de "Cómo llegar" (pin, Fraunces en cursiva, filete
-  `--corteza`), que sigue llevando a `#/contacto`.
+  `--ambar`), que sigue llevando a `#/contacto`.
 - **Sello propio** sobre la foto: "Masa madre · Hecho despacio", el mismo
   dibujo y comportamiento que el de la portada (`aria-hidden`, cae girando
   al entrar, gira un poco con el puntero encima, nunca con el scroll).
@@ -718,7 +733,7 @@ clases o en piezas comunes, no copiado.
   las **líneas dobles** de la cabecera de periódico, que se dibujan de
   izquierda a derecha. Debajo, tres columnas separadas por ✦, cada una con
   su número editorial (**"N.º 1"**, "N.º 2", "N.º 3", en versalitas
-  `--corteza-oscura`), el icono de línea, el nombre en Fraunces y su
+  `--horno`), el icono de línea, el nombre en Fraunces y su
   frase. Con el puntero encima, el icono de cada principio hace un
   movimiento breve propio, como los de la cinta.
 - **Todo en una sola pantalla, sin scroll** (pedido el 24 de octubre de
@@ -795,7 +810,7 @@ entrada), no copiadas.
   columna en ese orden.
 - **El texto**: el rótulo con la espiga **"Dónde estamos"**, el `h1`
   "Visítanos / *en Tena*" con el tratamiento del de la portada (la segunda
-  línea en cursiva cobriza y desplazada), la dirección, dentro de su
+  línea en cursiva en horno y desplazada), la dirección, dentro de su
   `<address>`, en cursiva como la frase de la portada, y "Ver en el mapa".
   En el teléfono la dirección va al lado del título, abajo, y el botón
   debajo de los dos.
@@ -815,10 +830,11 @@ entrada), no copiadas.
   los puntos son el borde punteado de un `::after` del `dt`, sin texto.
   Si la fila no cabe, la hora baja a la línea siguiente. "En feriados
   nacionales cerramos." debajo, en cursiva. El estado va en una pastilla
-  papel con el texto en horno (abierto) o corteza oscura (cerrado): el
+  papel con el texto en horno, con la palabra "Abierto" o "Cerrado" y un punto cobre
+  (abierto) u horno (cerrado): el
   ámbar de antes era para el fondo oscuro.
 - **Escríbenos**: WhatsApp e Instagram con el aspecto de "Cómo llegar"
-  (Fraunces en cursiva, filete `--corteza`, su icono y la ola de letras;
+  (Fraunces en cursiva, filete `--ambar`, su icono y la ola de letras;
   es el mismo `EnlaceLlegar`, que con `href` se abre en otra pestaña y lo
   dice en el nombre), uno al lado del otro con el rótulo de cada uno
   encima, y la nota de que son de ejemplo, que **se ve siempre**:
@@ -880,7 +896,7 @@ pequeñas desde el 25 de octubre, sección 4).
 - **Los mandos** (buscador, "Ordenar por", "Mostrar") en una fila entre
   **líneas dobles**, como los títulos de Nosotros y Contacto: campos en
   `--papel` con filete fino, rótulos en versalitas. "Mostrando X de Y
-  productos" en versalitas `--corteza-oscura`, bajo la fila a la derecha.
+  productos" en versalitas `--horno`, bajo la fila a la derecha.
   Cuando los mandos no caben en una fila (1080 px o menos) las líneas van
   encima y debajo, a todo lo ancho; en el teléfono los mandos se apilan
   como antes.
@@ -921,8 +937,8 @@ pequeñas desde el 25 de octubre, sección 4).
   trazos del fondo (mismo método, de 320 a 1440 px): `h1 em` 3,87:1,
   rótulos 5,16:1, dirección 5,07:1, nota de ejemplo 6,17:1, días del
   horario 6,17:1. El estado abierto/cerrado va en su pastilla papel:
-  abierto, horno sobre papel, 13,71:1; cerrado, corteza oscura sobre
-  papel, 7,93:1. WhatsApp e Instagram llevan su rótulo escondido delante
+  abierto, horno sobre papel, 13,71:1; cerrado, también horno sobre
+  papel (13,71:1; lo dice la palabra y el punto). WhatsApp e Instagram llevan su rótulo escondido delante
   en el nombre ("WhatsApp: +593…"). En todos los botones principales
   (ticket) la sombra dura sustituye al halo ámbar; el anillo de 3 px se queda. Un
   `.button` con `aria-disabled` se ve apagado (opacidad .45, `GrayText` con
@@ -996,7 +1012,14 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       solo al ir a pagar se le avise, que es como ya funciona (sección 5).
       Sin invitado y sin aviso previo (22 de octubre de 2026).
 - [ ] axe (menor): la barra de deshacer fuera de un punto de referencia (`region`).
-- [ ] 60-30-10 medido con capturas en cada vista (se ajustó a ojo).
+- [ ] Tres colores 60-30-10 (sección 10, 26 de octubre de 2026): quitar
+      `--corteza*` y `--aviso-cerrado`, cinta y franja en horno, acento
+      único cobre; medir 60-30-10 con capturas en cada vista.
+      Hecho el 26 de octubre de 2026 en el código y las pruebas, pero **sigue
+      abierta**: lo medido en 1440 y 390 px es masa/papel 55-84 % y horno
+      solo 8-20 % (la barra y la cinta no llegan al 25 %); el cobre cumple
+      (1-5 %). Falta decidir cómo subir el horno (bloques oscuros más
+      grandes) o relajar el objetivo.
 - [ ] Tras recargar, la tienda no recuerda el desplazamiento de las entradas
       de antes (Atrás entre categorías da arriba); se arreglaría con
       `sessionStorage`. No urge.
@@ -1093,7 +1116,7 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       tabula a una ficha, el salto no se cancela (`useFila.js`, escuchar
       también `keydown` y `focusin`).
 - [x] El buscador y "Ordenar por" de la tienda se quedan con el borde
-      corteza al pasar el ratón (el usuario lo aprobó).
+      cobre al pasar el ratón (el usuario lo aprobó).
 
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).

@@ -8,7 +8,7 @@
    Reparto 60-30-10 en cada vista:
      60  masa y papel: el fondo y las fichas
      30  horno: el texto, la barra y una banda oscura por vista
-     10  ambar y corteza: botones, precios, la franja y los dibujos del fondo */
+     10  ambar (cobre): botones, iconos, filetes y los dibujos del fondo */
 
 /* ---- Lo comun --------------------------------------------------------- */
 
@@ -69,25 +69,25 @@
 
 /* El rotulo con la espiga: "Horneado cada mañana", "Nuestra historia". */
 .rotulo-espiga { display: flex; align-items: center; gap: .4rem; }
-.rotulo-espiga .ico { width: 14px; height: 14px; color: var(--corteza); }
+.rotulo-espiga .ico { width: 14px; height: 14px; color: var(--ambar); }
 /* El titular grande, con los ejes de Fraunces: optico de cartel, curvas
    suaves y las letras "raras" (WONK) que le dan el aire de antes. La
-   segunda linea, cursiva cobriza y corrida: corteza sobre masa da 4,26:1
-   (3,87:1 con el grano), que vale por ser letra grande (pide 3:1). */
+   segunda linea, cursiva y corrida: horno, se distingue por la cursiva
+   y por el cuerpo ligero (300). */
 .titular { margin: .9rem 0 1.1rem; font: 400 clamp(3.6rem, 8.4vw, 8.4rem)/.88 var(--letra-titulo); font-variation-settings: "opsz" 144, "SOFT" 60, "WONK" 1; letter-spacing: -.02em; }
-.titular em { display: block; padding-left: .9em; color: var(--corteza); font-weight: 300; font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; }
+.titular em { display: block; padding-left: .9em; color: var(--horno); font-weight: 300; font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1; }
 /* La frase en cursiva bajo el titular. */
 .frase { max-width: 30rem; margin: 0; color: var(--horno-suave); font: italic 400 1.6rem/1.4 var(--letra-titulo); font-variation-settings: "opsz" 24; }
 /* "Como llegar" y "Conoce nuestro local" son enlaces y no botones (L1,
    seccion 10 del plan; EnlaceLlegar.jsx): Fraunces en cursiva, grande y
-   gruesa para que se vea junto al ticket, con el pin en corteza y un
+   gruesa para que se vea junto al ticket, con el pin en cobre y un
    filete fino, sin relleno. Con el puntero las letras saltan una tras otra
    (la ola: cada una es un span de TextoOla.jsx con su turno en --i), el
-   texto pasa a corteza oscura (7,18:1 sobre la masa) y el pin da un
+   filete pasa a horno (el texto ya es horno, 13,9:1 sobre la masa) y el pin da un
    saltito. Mide mas de 30 px de alto: pasa los 24. Relativa por el nombre
    escondido (sr-only) que lleva dentro. */
-.enlace-llegar { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding: .42rem .9rem; border: 1px solid var(--corteza); border-radius: var(--r-btn); color: var(--horno); font: italic 600 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
-.enlace-llegar .ico { width: 24px; height: 24px; color: var(--corteza); stroke-width: 1.8; transition: transform var(--dur-base) var(--ease-soft); }
+.enlace-llegar { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding: .42rem .9rem; border: 1px solid var(--ambar); border-radius: var(--r-btn); color: var(--horno); font: italic 600 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.enlace-llegar .ico { width: 24px; height: 24px; color: var(--ambar); stroke-width: 1.8; transition: transform var(--dur-base) var(--ease-soft); }
 .enlace-llegar .letras span { display: inline-block; white-space: pre; }
 /* Las letras de la ola (TextoOla.jsx) van cada una en su caja, y entre dos
    cajas el navegador puede partir la linea: "pastel / es". La palabra no se
@@ -95,7 +95,7 @@
    y es donde se parte si no cabe. */
 .letras { white-space: nowrap; }
 :is(.enlace-llegar, .cinta-enlace, .chip) .letras .ola-espacio { display: inline; white-space: normal; }
-.enlace-llegar:hover { border-color: var(--corteza-oscura); color: var(--corteza-oscura); }
+.enlace-llegar:hover { border-color: var(--horno); color: var(--horno); }
 .enlace-llegar:active { transform: scale(.97); }
 .con-puntero .enlace-llegar:hover .ico { transform: translateY(-3px); }
 .con-puntero .enlace-llegar:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
@@ -114,7 +114,7 @@
 /* El sello (Sello.jsx): el texto da la vuelta al aro. Cae girando al entrar
    y solo se mueve con el puntero encima; el desplazamiento no lo gira.
    Donde cae lo dice cada vista (.portada-sello, .nosotros-sello). */
-.sello { position: absolute; width: 124px; height: 124px; color: var(--corteza-oscura); background: var(--masa) var(--grano); border-radius: 50%; transform: rotate(-12deg); animation: sella var(--dur-scene) var(--ease-soft) 800ms both; }
+.sello { position: absolute; width: 124px; height: 124px; color: var(--horno); background: var(--masa) var(--grano); border-radius: 50%; transform: rotate(-12deg); animation: sella var(--dur-scene) var(--ease-soft) 800ms both; }
 .sello svg { display: block; width: 100%; height: 100%; transition: transform var(--dur-editorial) var(--ease-soft); }
 .con-puntero .sello:hover svg { transform: rotate(40deg); }
 .sello-aro { font: 700 11.5px var(--letra-texto); letter-spacing: .26em; text-transform: uppercase; fill: currentColor; }
@@ -133,15 +133,15 @@
 @keyframes descubre { from { clip-path: inset(100% 0 0 0); } to { clip-path: inset(0); } }
 @keyframes sella { from { opacity: 0; transform: rotate(-60deg) scale(.8); } to { opacity: 1; transform: rotate(-12deg); } }
 
-/* ---- #/ : la cinta cobriza con las categorias (Cinta.jsx) --------------- */
+/* ---- #/ : la cinta de categorias con las categorias (Cinta.jsx) --------------- */
 
-/* Papel sobre corteza: 4,7:1. Los enlaces van en cursiva de titulo y se
+/* Papel sobre horno: 13,9:1. Los enlaces van en cursiva de titulo y se
    encienden en su sitio como el menu de arriba (las dos son navegacion),
-   sin ambar: con el raton aparece una pastilla papel llena que crece un
+   con el raton aparece una pastilla papel llena que crece un
    poco, y el texto y el icono pasan a horno (13,9:1). Las letras saltan en
    secuencia, sin cambiar el nombre accesible. Un blanco tenue, como el del
-   menu, dejaria el texto claro sobre el cobrizo por debajo de 4,5:1. */
-.cinta { background: var(--corteza); color: var(--papel); border-block: 6px double var(--masa); }
+   menu, dejaria el texto claro sobre la pastilla por debajo de 4,5:1. */
+.cinta { background: var(--horno); color: var(--papel); border-block: 6px double var(--masa); }
 .cinta-dentro { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 2rem; padding-block: .7rem; }
 .cinta-enlace { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--papel); font: italic 400 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 .cinta-enlace .ico { width: 1.35em; height: 1.35em; color: var(--masa); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
@@ -157,7 +157,7 @@
 @keyframes salta-hogaza { 40% { transform: translateY(-4px) rotate(-7deg); } }
 @keyframes salta-galleta { 40% { transform: translateY(-4px) rotate(7deg); } }
 @keyframes baila-botella { 25%, 65% { transform: rotate(-8deg); } 45%, 85% { transform: rotate(8deg); } }
-/* Sobre la corteza el anillo horno no llega a 3:1: aqui es papel. */
+/* Sobre el horno el anillo horno no se ve: aqui es papel. */
 .cinta a:focus-visible { outline-color: var(--papel); }
 .cinta-estrella { color: var(--ambar); }
 /* La cinta es lo ultimo de #/ (sin carrusel ni pie debajo): un respiro de
@@ -234,7 +234,7 @@
 /* Los principios, sobre la masa y alineados con el texto: el h2 en
    versalitas con una linea doble de la cabecera de periodico a su derecha,
    y una fila de tres columnas separadas por una estrella. El numero, en
-   versalitas corteza oscura (.rotulo, 6,52:1 sobre el grano). */
+   versalitas horno (.rotulo, sobre el grano). */
 .nosotros-principios { --icono: clamp(32px, 5svh, 44px); --icono-aire: clamp(.3rem, 1.2svh, .9rem); grid-area: principios; align-self: start; }
 .principios-cabeza, .contacto-cabeza { display: flex; align-items: center; gap: 1.4rem; }
 .principios-titulo, .contacto-subtitulo { flex: 0 1 auto; margin: 0; color: var(--horno); font: 700 .95rem/1.4 var(--letra-texto); letter-spacing: .22em; text-align: center; text-transform: uppercase; }
@@ -245,9 +245,9 @@
 /* La estrella entre dos columnas, en medio del hueco y a la altura del
    icono (bajo el numero, que mide .94rem). Es adorno: sin texto para el
    lector (alt vacio). */
-.principio + .principio::before { position: absolute; top: calc(.94rem + var(--icono-aire) + var(--icono) / 2); left: calc(var(--hueco) / -2); color: var(--corteza); content: "✦"; content: "✦" / ""; font-size: 1.1rem; line-height: 1; transform: translate(-50%, -50%); }
+.principio + .principio::before { position: absolute; top: calc(.94rem + var(--icono-aire) + var(--icono) / 2); left: calc(var(--hueco) / -2); color: var(--ambar); content: "✦"; content: "✦" / ""; font-size: 1.1rem; line-height: 1; transform: translate(-50%, -50%); }
 .principio-numero { display: block; }
-.principio-icono { display: block; width: var(--icono); height: var(--icono); margin: var(--icono-aire) 0 clamp(.3rem, 1.1svh, .8rem); color: var(--corteza); transform-origin: center 80%; }
+.principio-icono { display: block; width: var(--icono); height: var(--icono); margin: var(--icono-aire) 0 clamp(.3rem, 1.1svh, .8rem); color: var(--ambar); transform-origin: center 80%; }
 .principio h3 { margin: 0 0 .4rem; font: 500 clamp(1.1rem, 2.6svh, 1.35rem)/1.2 var(--letra-titulo); }
 .principio p { max-width: 26ch; margin: 0; color: var(--horno-suave); font: .95rem/1.45 var(--letra-texto); }
 /* Con el puntero encima, el icono de cada principio hace su movimiento
@@ -310,9 +310,9 @@
 .chip { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .4rem; padding: .35rem .9rem; border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: italic 400 1.3rem/1.2 var(--letra-titulo); transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 /* Se toca en 44 px de alto aunque se vea mas bajo. */
 .chip::before { position: absolute; inset: min(0px, calc((100% - 44px) / 2)) -2px; content: ""; }
-.chip .ico { width: 1.2em; height: 1.2em; flex: none; color: var(--corteza); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
+.chip .ico { width: 1.2em; height: 1.2em; flex: none; color: var(--ambar); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
 .chip .letras span { display: inline-block; white-space: pre; }
-.chip-estrella { color: var(--corteza); font-size: .95rem; line-height: 1; }
+.chip-estrella { color: var(--ambar); font-size: .95rem; line-height: 1; }
 .con-puntero .chip:hover { background: var(--papel); }
 .con-puntero .chip:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
 .con-puntero .chip-panes:hover .ico { animation: salta-hogaza var(--dur-slow) var(--ease-soft) both; }
@@ -335,7 +335,7 @@
 .vista-barra .linea-doble { min-width: 24px; }
 .vista-mandos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem 1.4rem; }
 .vista-mando { display: inline-flex; align-items: center; gap: .55rem; }
-.vista-mando > span:not(.sr-only) { color: var(--corteza-oscura); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .18em; text-transform: uppercase; }
+.vista-mando > span:not(.sr-only) { color: var(--horno); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .18em; text-transform: uppercase; }
 /* "Ordenar por" (OrdenarPor.jsx): el boton es un cuadrado de esquinas
    redondeadas (--r-btn) con filete horno aclarado; dice el orden elegido y
    lleva la flecha. Al abrirlo, el panel es el mismo cuadro que el menu de "Tu
@@ -374,15 +374,15 @@
 .casilla-input:checked + .casilla-caja { background: var(--ambar); border-color: var(--horno); }
 .casilla-input:checked + .casilla-caja path { stroke-dashoffset: 0; }
 .casilla-input:focus-visible + .casilla-caja { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
-.con-puntero .casilla:hover .casilla-caja { border-color: var(--corteza); }
+.con-puntero .casilla:hover .casilla-caja { border-color: var(--ambar); }
 .con-puntero .casilla-input:checked:hover + .casilla-caja { border-color: var(--horno); }
 .vista-buscar { position: relative; }
 .vista-buscar svg { position: absolute; left: .7rem; width: 15px; height: 15px; color: var(--horno-suave); pointer-events: none; }
 .vista-buscar input { width: 15rem; max-width: 100%; padding: .45rem .8rem .45rem 2rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: 2px; color: var(--horno); font: .85rem var(--letra-texto); transition: border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .orden-boton:hover, .con-puntero .vista-buscar input:hover { border-color: var(--corteza); }
+.con-puntero .orden-boton:hover, .con-puntero .vista-buscar input:hover { border-color: var(--ambar); }
 /* El anillo de los campos: horno con el halo ambar (WCAG 1.4.11). */
 .orden-boton:focus-visible, .vista-buscar input:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
-/* "Mostrando X de Y productos", en versalitas corteza oscura bajo la fila. */
+/* "Mostrando X de Y productos", en versalitas horno bajo la fila. */
 .vista-cuenta { align-self: flex-end; margin: .7rem 0 0; font-variant-numeric: tabular-nums; }
 .vista-cuenta:empty { display: none; }
 .vista-cabeza:not(.es-catalogo) .solo-catalogo { display: none; }
@@ -503,9 +503,9 @@
   .contacto-mapa-marco iframe, .contacto-horario, .contacto-escribir, .contacto-cabeza .linea-doble { animation: none; }
 }
 
-/* En la tienda los precios van en corteza, como pide el reparto (el 10 %
-   son botones, precios y acentos). Corteza oscura sobre papel: 7,9:1. */
-.product-bottom strong { color: var(--corteza-oscura); }
+/* En la tienda los precios van en horno, como pide el reparto (el 10 %
+   son botones, precios y acentos). Horno sobre papel: 13,9:1. */
+.product-bottom strong { color: var(--horno); }
 
 /* ---- Cortes ------------------------------------------------------------- */
 
@@ -681,7 +681,7 @@
 /* Detras del contenido y delante del fondo de su seccion: isolation hace que
    el z-index negativo no se vaya detras de la pagina entera. */
 .con-fondo { position: relative; isolation: isolate; }
-.fondo-dibujo { position: absolute; inset: 0; z-index: -1; overflow: hidden; color: var(--corteza); opacity: .22; pointer-events: none; }
+.fondo-dibujo { position: absolute; inset: 0; z-index: -1; overflow: hidden; color: var(--ambar); opacity: .22; pointer-events: none; }
 /* Sobre el horno, la linea es ambar y mas tenue: clara sobre oscuro se ve
    mas que oscura sobre claro con la misma opacidad. Medido donde un trazo
    pasa justo por debajo de una letra: con .22 sobre la masa el texto mas

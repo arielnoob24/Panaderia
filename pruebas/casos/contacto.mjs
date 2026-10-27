@@ -1,14 +1,14 @@
 // #/contacto con el estilo de la portada (seccion 10 del plan, "Contacto con
 // el estilo de la portada"), en escritorio y en el telefono (390 px, tactil):
 // - el texto: rotulo "Dónde estamos" con la espiga, el h1 "Visítanos / en
-//   Tena" con la segunda linea en cursiva corteza, la direccion en su
+//   Tena" con la segunda linea en cursiva horno, la direccion en su
 //   <address> en cursiva, y "Ver en el mapa", el ticket ambar, que se abre en
 //   otra pestana;
 // - el mapa en un marco fino recto, con su sello "Eloy Alfaro · Gabriel
 //   Espinosa" (aria-hidden, su texto en su aro) arriba a la derecha, lejos
 //   de los creditos de abajo, y que deja pasar el puntero al mapa;
 // - el horario sin la tarjeta oscura: el h2 entre lineas dobles, el estado
-//   debajo (en tinta de horno o corteza, no ambar, sobre la masa) y un <dl>
+//   debajo (en tinta de horno, no ambar, sobre la masa) y un <dl>
 //   como una carta, con puntos guia que no son texto y la pastilla "hoy";
 // - Escribenos: el h2 entre lineas dobles, WhatsApp e Instagram con el
 //   aspecto y la ola de "Cómo llegar" y su rotulo encima, que se abren en
@@ -28,9 +28,9 @@ export const descripcion = 'Contacto como la portada: rotulo, titular y direccio
 export const limite = 150;
 
 const ES_FRAUNCES = /^"?Fraunces Variable/;
-const CORTEZA = 'rgb(123, 45, 45)';
+const CORTEZA = 'rgb(58, 40, 34)'; // horno: la cursiva de em ya no lleva otro color
 const HORNO = 'rgb(58, 40, 34)';
-const CORTEZA_OSCURA = 'rgb(94, 34, 34)';
+const CORTEZA_OSCURA = 'rgb(58, 40, 34)'; // horno
 
 const mirar = (p) => p.evaluate(() => {
   const q = (s) => document.querySelector(s);
@@ -154,7 +154,7 @@ export default async function contacto(t) {
     const m = await mirar(p);
     t.ok(m.rotulo === 'Dónde estamos' && m.espiga, `[${nombre}] falta el rotulo con la espiga ("${m.rotulo}")`);
     t.ok(m.h1 === 'Visítanos en Tena' && /\btitular\b/.test(m.h1Clase) && ES_FRAUNCES.test(m.h1Letra), `[${nombre}] el h1 no es el de la portada ("${m.h1}", ${m.h1Clase}, ${m.h1Letra})`);
-    t.ok(m.emColor === CORTEZA && m.emCursiva === 'italic', `[${nombre}] "en Tena" no va en cursiva corteza (${m.emColor}, ${m.emCursiva})`);
+    t.ok(m.emColor === CORTEZA && m.emCursiva === 'italic', `[${nombre}] "en Tena" no va en cursiva horno (${m.emColor}, ${m.emCursiva})`);
     t.ok(m.direccion === 'Esquina de Eloy Alfaro y Gabriel Espinosa, Tena' && m.direccionCursiva === 'italic', `[${nombre}] la direccion no va en su address en cursiva ("${m.direccion}", ${m.direccionCursiva})`);
     t.ok(/\bbutton-yellow\b/.test(m.mapaClases) && m.mapaFuera, `[${nombre}] "Ver en el mapa" no es el ticket ambar que abre otra pestana (${m.mapaClases})`);
     // El filete horno a 10 px de la masa (a 6 en el telefono), sin radio.

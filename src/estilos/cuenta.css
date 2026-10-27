@@ -53,7 +53,7 @@ a.nav-cuenta { text-decoration: none; }
 .cuenta-vista .cuenta-campo { margin-bottom: .9rem; }
 
 .cuenta-otro-paso { margin: .9rem 0 0; color: var(--horno-suave); font: .85rem/1.4 Arial, sans-serif; text-align: center; }
-.cuenta-otro-enlace { color: var(--corteza-oscura); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.cuenta-otro-enlace { color: var(--horno); font-weight: 700; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .cuenta-otro-enlace:hover { color: var(--horno); }
 /* "¿Olvidaste tu contrasena?", bajo la contrasena de Iniciar sesion (lo
    minimo para que se vea en su sitio; el ajuste fino es de frontend). */
@@ -101,7 +101,7 @@ a.nav-cuenta { text-decoration: none; }
 .codigo-casilla.is-llena { background: rgba(201, 134, 66, .13); border-color: var(--ambar); animation: codigo-pon var(--dur-base) var(--ease-accent); }
 /* El anillo de los campos: horno con el halo ambar (solo ambar, 2,38:1). */
 .codigo-casilla:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
-.codigo-casilla.is-mal { border-color: var(--corteza); border-bottom-color: var(--corteza); background: rgba(123, 45, 45, .07); }
+.codigo-casilla.is-mal { border-color: var(--horno); border-bottom-color: var(--horno); box-shadow: inset 0 0 0 1px var(--horno); background: rgba(201, 134, 66, .1); }
 .codigo-error { margin-bottom: .4rem; }
 @keyframes codigo-pon { 0% { transform: none; } 45% { transform: scale(1.07); } 100% { transform: none; } }
 
@@ -119,7 +119,7 @@ a.nav-cuenta { text-decoration: none; }
 /* "Pedir otra vez" (logica-datos): lo minimo para que se vea como boton y
    se pueda tocar (44 px); el aspecto lo pule frontend. */
 .cuenta-pedido-acciones { margin: .9rem 0 .2rem; }
-.cuenta-pedido-otra { min-height: 44px; padding: .5rem 1rem; border: 1px solid var(--corteza-oscura); border-radius: var(--r-chip); background: var(--papel); color: var(--horno); font: 700 .9rem Arial, sans-serif; cursor: pointer; }
+.cuenta-pedido-otra { min-height: 44px; padding: .5rem 1rem; border: 1px solid var(--ambar); border-radius: var(--r-chip); background: var(--papel); color: var(--horno); font: 700 .9rem Arial, sans-serif; cursor: pointer; }
 .con-puntero .cuenta-pedido-otra:hover { background: var(--ambar-claro); }
 .cuenta-pedido-nota { margin: .2rem 0 .4rem; font: .88rem/1.45 Arial, sans-serif; color: var(--horno); }
 

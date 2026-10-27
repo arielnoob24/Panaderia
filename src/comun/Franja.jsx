@@ -1,5 +1,5 @@
-// La franja de las espigas, en corteza, al final de Nosotros, Contacto y la
-// tienda (className "franja-pie"): es la parte de acento del 60-30-10
+// La franja de las espigas, en horno, al final de Nosotros, Contacto y la
+// tienda (className "franja-pie"): es parte del 30 % horno del 60-30-10
 // de esas vistas. En #/ la sustituye la cinta de categorias (Cinta.jsx,
 // seccion 10 del plan); las demas vistas cambian en la segunda vuelta del
 // estilo. Es adorno: el lector de pantalla se la salta.

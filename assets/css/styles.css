@@ -1,16 +1,14 @@
 :root {
-  /* Cinco colores: tres principales y dos secundarios.
+  /* Tres colores (60-30-10) y sus derivados.
      Reparto 60-30-10: masa el fondo, horno el texto y los bloques oscuros,
-     ambar el color de marca y toda accion primaria. */
+     ambar (cobre) el unico acento: botones, iconos, filetes y bordes. */
   --masa: #f7f1e7;
   --horno: #3a2822;
   --ambar: #c98642;
-  --corteza: #7b2d2d;
   --papel: #fffdf8;
 
   /* Tonos derivados de los cinco de arriba. No son colores nuevos:
      cada uno es el mismo matiz con otra luminosidad. */
-  --corteza-oscura: #5e2222;   /* corteza para texto pequeno sobre fondo claro */
   --ambar-claro: #dba062;      /* acento en hover */
   --horno-suave: #5e514a;      /* texto secundario sobre fondo claro */
   --horno-claro: #7a6c65;      /* horno aclarado con masa, para el puntero en los filtros */
@@ -19,7 +17,6 @@
   --masa-carga: #ded5c8;       /* fondo de imagen cargando */
   --sobre-horno: #eee4d8;      /* texto principal sobre fondo oscuro */
   --sobre-horno-tenue: #d8cabe; /* texto secundario sobre fondo oscuro */
-  --aviso-cerrado: #dab4b0;    /* estado cerrado, tinte de corteza */
   /* El blanco tenue del menu con el raton (W1, seccion 10 del plan): papel
      al 16 % sobre la barra horno. Papel encima: 8,2:1. */
   --papel-tenue: color-mix(in srgb, var(--papel) 16%, transparent);
@@ -143,7 +140,7 @@ section[id] { scroll-margin-top: -12px; }
    desde la izquierda, que hacia la barra mas de menu de escritorio que de
    panaderia. */
 .main-nav > a { transition: color var(--dur-fast) var(--ease-ui); }
-.main-nav > a:hover { color: var(--corteza-oscura); }
+.main-nav > a:hover { color: var(--horno); }
 /* El menu se enciende en su sitio, todo en blanco (W1 y S2, seccion 10 del
    plan). Cada opcion lleva detras dos capas en forma de pastilla: ::before,
    el blanco tenue (papel al 16 %) que aparece y crece un poco con el raton
@@ -194,7 +191,7 @@ section[id] { scroll-margin-top: -12px; }
 
 /* La entrada de las fichas del catalogo al filtrar (catalog-enter). */
 @keyframes rise { from { opacity: 0; transform: translateY(var(--rise, 8px)); } to { opacity: 1; transform: none; } }
-.eyebrow { margin: 0 0 1rem; color: var(--corteza-oscura); font: 700 .7rem/1.4 Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
+.eyebrow { margin: 0 0 1rem; color: var(--horno); font: 700 .7rem/1.4 Arial, sans-serif; letter-spacing: .16em; text-transform: uppercase; }
 /* El coral sobre el marrón oscuro da 1.73:1. Cualquier eyebrow en sección oscura usa ámbar. */
 .story .eyebrow { color: var(--ambar); }
 h2 em { color: var(--ambar); font-weight: 500; }
@@ -212,7 +209,7 @@ h2 em { color: var(--ambar); font-weight: 500; }
    de giro, y el icono se inclina; al pulsar se hunde contra ella.
    Levantarse es escena (--dur-base); hundirse, respuesta (--dur-micro).
    - button-yellow: ambar con sombra horno (las acciones).
-   - button-pagar: corteza con texto papel y sombra horno, a todo lo ancho
+   - button-pagar: horno con texto papel y sombra ambar, a todo lo ancho
      ("Ir a pagar" y el boton final de pagar, K1), para no confundirse con
      el + ambar.
    - button-otro: hueco, solo el filete horno siguiendo las mordidas; se
@@ -226,9 +223,9 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .button > svg, .button > span[aria-hidden] { display: inline-block; flex: 0 0 auto; transition: transform var(--dur-base) var(--ease-soft); }
 .button .ico { width: 24px; height: 24px; stroke-width: 1.5; }
 .button-yellow { --fondo-boton: var(--ambar); }
-/* Papel sobre corteza: 4,7:1, justo por encima del 4,5: el texto no puede ir
-   mas fino ni mas pequeno que este. */
-.button-pagar { --fondo-boton: var(--corteza); --sombra-boton: var(--horno); width: 100%; color: var(--papel); }
+/* Papel sobre horno: 13,9:1. Aun asi el texto no va mas fino ni mas
+   pequeno que este. */
+.button-pagar { --fondo-boton: var(--horno); --sombra-boton: var(--ambar); width: 100%; color: var(--papel); }
 .con-puntero :is(.button-yellow, .button-pagar):hover { transform: translate(-2px, -2px) rotate(-1deg); }
 .con-puntero :is(.button-yellow, .button-pagar):hover::after { transform: translate(6px, 6px); }
 .con-puntero .button-yellow:hover > svg, .con-puntero .button-yellow:hover > span[aria-hidden] { transform: rotate(-14deg) scale(1.15); }
@@ -263,17 +260,17 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .con-puntero .button[aria-disabled="true"]:hover > svg, .con-puntero .button[aria-disabled="true"]:hover > span[aria-hidden] { transform: none; }
 .checkout.is-procesando .button[aria-disabled="true"], .vista-fallo .button[aria-disabled="true"], .cuenta-vista .button[aria-disabled="true"] { cursor: progress; }
 /* Mientras se paga, el boton no esta apagado sino trabajando: se queda
-   entero, para que se lean "Procesando el pago" y su giro papel sobre la
-   corteza (desvaido, el giro casi no se veia). Sigue sin levantarse. */
+   entero, para que se lean "Procesando el pago" y su giro papel sobre el
+   horno (desvaido, el giro casi no se veia). Sigue sin levantarse. */
 .checkout.is-procesando .button-pagar[aria-disabled="true"] { opacity: 1; }
-/* Sobre lo oscuro la sombra es corteza y el filete ambar: la horno no se
+/* Sobre lo oscuro la sombra y el filete son ambar: la horno no se
    veria sobre la horno. */
-.banda-oscura .button, .story .button { --sombra-boton: var(--corteza); --filete-boton: var(--ambar); }
+.banda-oscura .button, .story .button { --sombra-boton: var(--ambar); --filete-boton: var(--ambar); }
 .banda-oscura .button-otro, .story .button-otro { color: var(--sobre-horno); }
 .text-link { display: inline-flex; gap: .65rem; align-items: center; padding-bottom: .3rem; border-bottom: 1px solid currentColor; border-radius: 4px 4px 0 0; color: var(--horno); font: 700 .9rem Arial, sans-serif; }
-.text-link:hover { color: var(--corteza-oscura); }
+.text-link:hover { color: var(--horno); }
 .status-dot { display: inline-block; width: 8px; height: 8px; margin-top: .38rem; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 0 4px rgba(201, 134, 66, .2); }
-.status-dot.is-closed { background: var(--corteza-oscura); box-shadow: 0 0 0 4px rgba(123, 45, 45, .22); }
+.status-dot.is-closed { background: var(--horno); box-shadow: 0 0 0 4px rgba(58, 40, 34, .22); }
 
 /* ---- Piezas del estilo editorial (seccion 10 del plan, "Estilo") -------
    Salen de la muestra que aprobo el usuario (.claude/referencias/
@@ -281,13 +278,13 @@ h2 em { color: var(--ambar); font-weight: 500; }
    del sitio, en la segunda vuelta. */
 
 /* Rotulos en versalitas espaciadas, como en los empaques de antes.
-   Corteza oscura sobre masa: 7,18:1 (6,52:1 con el grano; 7,9:1 sobre papel). */
-.rotulo { margin: 0; color: var(--corteza-oscura); font: 600 .72rem/1.3 var(--letra-texto); letter-spacing: .22em; text-transform: uppercase; }
+   Horno sobre masa: mas de 13:1. */
+.rotulo { margin: 0; color: var(--horno); font: 600 .72rem/1.3 var(--letra-texto); letter-spacing: .22em; text-transform: uppercase; }
 /* Los iconos de linea (comun/iconos.jsx): miden lo que la letra de al lado. */
 .ico { width: 1.15em; height: 1.15em; flex: 0 0 auto; }
 
-.sign-band { position: relative; background: var(--corteza); color: white; }
-.sign-band::after { position: absolute; right: 0; bottom: -26px; left: 0; height: 26px; content: ""; background: var(--corteza); border-radius: 0 0 50% 50% / 0 0 26px 26px; pointer-events: none; }
+.sign-band { position: relative; background: var(--horno); color: var(--papel); }
+.sign-band::after { position: absolute; right: 0; bottom: -26px; left: 0; height: 26px; content: ""; background: var(--horno); border-radius: 0 0 50% 50% / 0 0 26px 26px; pointer-events: none; }
 .sign-band-inner { display: flex; align-items: center; justify-content: space-between; min-height: 84px; }
 /* Dos espigas tumbadas, una en cada punta, mirando al centro. Van a medio
    tono: enmarcan el hueco sin pedir que se las mire. */
@@ -301,7 +298,7 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .section-heading { margin-bottom: 3.5rem; }
 .heading-row { display: flex; justify-content: space-between; align-items: end; gap: 3rem; }
 .section-heading h2, .story-copy h2 { margin: 0; font: 500 clamp(2.8rem, 5.4vw, 4.25rem)/.94 var(--letra-titulo); }
-.section-heading h2 em, .story-copy h2 em { color: var(--corteza-oscura); }
+.section-heading h2 em, .story-copy h2 em { color: var(--horno); }
 .section-intro { max-width: 330px; margin: 0 0 .5rem; color: var(--horno-suave); }
 /* El fondo entra creciendo desde el centro en vez de encenderse de golpe. */
 /* El puntero muestra el tono claro; lo seleccionado, el oscuro. */
@@ -334,13 +331,13 @@ h2 em { color: var(--ambar); font-weight: 500; }
    texto) y versalitas. 11 px de letra como poco (antes 9, no se leia), y el
    circulo lo justo para dos renglones cortos. Con el puntero encima de la
    ficha gira un poco (mas abajo). */
-.product-tag { position: absolute; top: 10px; left: 10px; display: grid; width: 76px; height: 76px; padding: 10px; place-items: center; background: var(--corteza-oscura); color: var(--papel); border-radius: 50%; box-shadow: inset 0 0 0 3px var(--corteza-oscura), inset 0 0 0 4px var(--sobre-horno); font: 700 .6875rem/1.15 var(--letra-texto); letter-spacing: .06em; text-align: center; text-transform: uppercase; transform: rotate(-10deg); transition: transform var(--dur-slow) var(--ease-soft); }
+.product-tag { position: absolute; top: 10px; left: 10px; display: grid; width: 76px; height: 76px; padding: 10px; place-items: center; background: var(--horno); color: var(--papel); border-radius: 50%; box-shadow: inset 0 0 0 3px var(--horno), inset 0 0 0 4px var(--sobre-horno); font: 700 .6875rem/1.15 var(--letra-texto); letter-spacing: .06em; text-align: center; text-transform: uppercase; transform: rotate(-10deg); transition: transform var(--dur-slow) var(--ease-soft); }
 .product-tag.yellow { background: var(--ambar); color: var(--horno); box-shadow: inset 0 0 0 3px var(--ambar), inset 0 0 0 4px var(--horno); }
 .product-tag.green { background: var(--horno); box-shadow: inset 0 0 0 3px var(--horno), inset 0 0 0 4px var(--sobre-horno); }
 .product-info { display: flex; flex: 1; flex-direction: column; padding: 1rem .5rem .3rem; }
 /* La categoria encima del nombre, en versalitas como los rotulos: pequena,
    para que se lea pero no le quite el sitio al nombre. */
-.product-categoria { margin-bottom: .4rem; color: var(--corteza-oscura); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .2em; text-transform: uppercase; }
+.product-categoria { margin-bottom: .4rem; color: var(--horno); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .2em; text-transform: uppercase; }
 /* El nombre en Fraunces, como en la canasta: es el mismo producto y se
    reconoce por la letra. */
 .product-info h3 { margin: 0 0 .5rem; font: 500 1.35rem/1.15 var(--letra-titulo); font-variation-settings: "opsz" 36, "SOFT" 50; }
@@ -390,12 +387,12 @@ h2 em { color: var(--ambar); font-weight: 500; }
 /* Los "+1" y "−1" de cada toque (comun/golpes.js): salen de encima del +,
    suben y se desvanecen. No se tocan ni se leen (aria-hidden). */
 .card-golpes { position: absolute; right: 4px; bottom: 100%; width: 0; height: 0; pointer-events: none; }
-.card-golpe { position: absolute; bottom: 0; color: var(--corteza-oscura); font: 700 1.35rem/1 var(--letra-titulo); text-shadow: 0 1px 0 var(--papel), 0 0 6px var(--papel); white-space: nowrap; }
+.card-golpe { position: absolute; bottom: 0; color: var(--horno); font: 700 1.35rem/1 var(--letra-titulo); text-shadow: 0 1px 0 var(--papel), 0 0 6px var(--papel); white-space: nowrap; }
 .card-cantidad button { position: relative; display: grid; width: 34px; height: 34px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 700 1.2rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
 /* Igual que los chips: 44 px de alto para el dedo, y a lo ancho lo que mide,
    porque el menos, el numero y el mas van pegados. */
 .card-cantidad button::before { position: absolute; inset: calc((100% - 44px) / 2) 0; content: ""; }
-/* El ambar solo no se separa del papel de la ficha: un aro de corteza lo marca. */
+/* El ambar solo no se separa del papel de la ficha: un aro de horno lo marca. */
 .card-cantidad .card-mas { background: var(--ambar); box-shadow: inset 0 0 0 1px var(--horno); }
 .con-puntero .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
 /* Ya dentro del grupo el mas no se levanta: sentado en la pastilla solo cambia de tono. */
@@ -405,7 +402,7 @@ h2 em { color: var(--ambar); font-weight: 500; }
    levantarse. */
 .card-cantidad .card-mas[aria-disabled="true"], .con-puntero .card-cantidad .card-mas[aria-disabled="true"]:hover, .card-cantidad .card-mas[aria-disabled="true"]:focus-visible,
 .canasta-cantidad [data-mas][aria-disabled="true"], .con-puntero .canasta-cantidad [data-mas][aria-disabled="true"]:hover, .canasta-cantidad [data-mas][aria-disabled="true"]:focus-visible { background: var(--masa); box-shadow: inset 0 0 0 1px var(--masa-linea); color: var(--horno-claro); cursor: not-allowed; transform: none; }
-.card-cantidad .card-menos { color: var(--corteza-oscura); }
+.card-cantidad .card-menos { color: var(--horno); }
 .con-puntero .card-cantidad .card-menos:hover, .card-cantidad .card-menos:focus-visible { background: var(--masa); }
 .card-cantidad .card-icono { width: 17px; height: 17px; }
 /* El numero es un campo, pero no tiene que parecerlo mientras no se use: sin
@@ -429,7 +426,7 @@ h2 em { color: var(--ambar); font-weight: 500; }
    del mismo gris. Hasta el 35 % el fondo baja solo hasta un horno con un
    20 % de papel (el texto claro sigue en 5,9:1) y el −, el numero y el
    anillo del + se quedan en claro; ahi todo salta a la vez, el fondo a un
-   papel con un 20 % de horno (corteza 5,4:1, horno 9,3:1) y el texto a su
+   papel con un 20 % de horno (horno 9,3:1) y el texto a su
    color, y el fondo acaba de fundirse al papel. El anillo del + es papel
    mientras el fondo es oscuro, con un filo horno por fuera que lo separa
    del papel de la ficha (seccion 11). */
@@ -461,8 +458,8 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .product-card[data-available="false"] .product-image::after { position: absolute; inset: 0; content: ""; background: rgba(247, 241, 231, .4); pointer-events: none; }
 /* Dos etiquetas en la misma esquina se pisan: manda la que dice que no hay. */
 .product-card[data-available="false"] .product-tag:not(.agotado) { display: none; }
-/* Corteza oscura: el mismo tono con que el sitio dice "cerrado" en el hero y en el pie. */
-.product-tag.agotado { z-index: 1; background: var(--corteza-oscura); color: white; }
+/* Horno: el mismo tono con que el sitio dice "cerrado" (el punto del horario). */
+.product-tag.agotado { z-index: 1; background: var(--horno); color: white; }
 /* Sin sombra la ficha se hunde un poco en el fondo, y no se levanta al pasar
    por encima: no hay nada que tocar. */
 .product-card[data-available="false"] { box-shadow: none; }
@@ -472,7 +469,7 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .product-card[data-available="false"]:active, .con-puntero .product-card[data-available="false"]:hover:active { transform: none; }
 .product-card[data-available="false"] h3, .product-card[data-available="false"] .product-bottom strong { color: var(--horno-suave); }
 /* Mide lo que el mas con su marco, para que el filete del pie no quede mas abajo que en las fichas de al lado. */
-.card-agotado { display: inline-flex; min-height: 36px; align-items: center; margin-left: auto; color: var(--corteza-oscura); font: 700 .78rem Arial, sans-serif; }
+.card-agotado { display: inline-flex; min-height: 36px; align-items: center; margin-left: auto; color: var(--horno); font: 700 .78rem Arial, sans-serif; }
 
 /* Banda cerrada por las cuatro esquinas: sin la seccion clara que habia debajo, la historia
    necesita su propio final en curva y una franja de masa que la separe del pie. */
@@ -513,10 +510,10 @@ h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 .image-unavailable::before { content: "Imagen no disponible"; padding: 1rem; color: var(--horno-suave); font: .8rem Arial, sans-serif; text-align: center; }
 .image-unavailable img { display: none; }
 /* La insignia de abierto/cerrado, en el horario de #/contacto, sobre la
-   masa: el texto en horno (abierto) o corteza oscura (cerrado), que pasan
-   de 4,5:1 sobre el grano, y el punto ambar o corteza al lado. */
+   masa: el texto en horno, con la palabra Abierto o Cerrado (nunca solo el color), que pasa
+   de 4,5:1 sobre el grano, y el punto ambar (abierto) u horno (cerrado) al lado. */
 .open-label { display: inline-flex; gap: .5rem; align-items: center; padding: .3rem .75rem .3rem .6rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); font: 700 .74rem/1.3 var(--letra-texto); }
-.open-label.is-closed { color: var(--corteza-oscura); }
+.open-label.is-closed { color: var(--horno); }
 /* El margen superior del punto es del aviso del hero; dentro de la insignia va centrado. */
 .open-label .status-dot { margin-top: 0; }
 /* El dia de hoy en el horario: la pastilla ambar con el texto horno (6,1:1). */
@@ -535,7 +532,7 @@ h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 body .floating-whatsapp.is-canasta.is-latido { animation: canasta-salta 520ms var(--ease-accent); }
 .floating-whatsapp.is-latido .canasta-cuenta { animation: cuenta-infla 520ms var(--ease-accent); }
 @keyframes canasta-salta { 0% { transform: none; } 30% { transform: scale(1.22) rotate(-8deg); } 60% { transform: scale(.94) rotate(4deg); } 100% { transform: none; } }
-@keyframes cuenta-infla { 0%, 20% { transform: none; } 55% { transform: scale(1.5); background: var(--corteza); } 100% { transform: none; } }
+@keyframes cuenta-infla { 0%, 20% { transform: none; } 55% { transform: scale(1.5); background: var(--horno-suave); } 100% { transform: none; } }
 /* Ya convertido en canasta, el boton es solo el dibujo: circulo y cuenta en la
    esquina. Sin JS no lleva esta clase y sigue siendo la pastilla de WhatsApp. */
 .floating-whatsapp.is-canasta { width: 56px; height: 56px; padding: 0; justify-content: center; }
@@ -687,7 +684,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 .con-puntero .resumen-editar:hover { border-color: var(--ambar); color: var(--horno); }
 .resumen-editar:focus-visible { outline: 2px solid var(--horno); outline-offset: 2px; }
 /* Hasta que hora se puede pasar a retirar, sacado del horario de verdad. */
-.canasta-local-hora { margin: .3rem 0 0; color: var(--corteza-oscura); font: 700 .78rem/1.45 Arial, sans-serif; }
+.canasta-local-hora { margin: .3rem 0 0; color: var(--horno); font: 700 .78rem/1.45 Arial, sans-serif; }
 .canasta-local-hora:empty { display: none; }
 
 /* ---- La vista de confirmar el pedido ----
@@ -705,7 +702,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    vuelta. */
 .checkout-cabeza { display: flex; flex-direction: column; align-items: flex-start; gap: .9rem; margin-bottom: 1.6rem; }
 .checkout-volver { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem .5rem .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .checkout-volver:hover { background: var(--masa); border-color: var(--corteza); }
+.con-puntero .checkout-volver:hover { background: var(--masa); border-color: var(--ambar); }
 .checkout-volver svg { width: 16px; height: 16px; }
 .checkout-titulo { align-self: stretch; margin: 0; font: 500 clamp(2.4rem, 5vw, 3.6rem)/1 var(--letra-titulo); text-align: center; }
 .checkout-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); align-items: start; gap: 1.6rem 2.4rem; }
@@ -742,7 +739,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 
 /* Cada opcion lleva debajo lo que cuesta, que es la mitad de la decision. */
 .canasta-opciones span small { display: block; margin-top: .2rem; color: var(--horno-suave); font: 400 .72rem Arial, sans-serif; }
-.canasta-opciones input:checked + span small { color: var(--corteza-oscura); }
+.canasta-opciones input:checked + span small { color: var(--horno); }
 /* Si se pasa a retirar, lo util es saber donde esta el local. */
 .canasta-local { margin-top: .9rem; padding: .7rem .85rem; background: var(--masa); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; }
 .canasta-local[hidden] { display: none; }
@@ -777,7 +774,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-menu-numero[hidden] { display: none; }
 .cuenta-menu-raya { margin: .3rem .5rem; border: 0; border-top: 1px solid rgba(255, 255, 255, .14); }
 /* Salir va en el tono de "cerrado" del pie: se distingue sin gritar. */
-.cuenta-menu .is-salir, .cuenta-menu .is-salir .cuenta-icono { color: var(--aviso-cerrado); }
+.cuenta-menu .is-salir, .cuenta-menu .is-salir .cuenta-icono { color: var(--ambar-claro); }
 .con-puntero .cuenta-menu .is-salir:hover, .con-puntero .cuenta-menu .is-salir:hover .cuenta-icono { color: var(--papel); }
 /* Fuera de sesion, las dos puertas: entrar es la que mas se usa y va llena. */
 .cuenta-menu .cuenta-menu-principal, .cuenta-menu .cuenta-menu-secundario { margin: 0 .3rem; padding: .75rem; border-radius: var(--r-btn); text-align: center; }
@@ -806,7 +803,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 }
 
 /* El enlace para llegar al local, que abre la aplicacion de mapas con la ruta. */
-.mapa-ruta { display: inline-flex; align-items: center; gap: .4rem; min-height: 24px; margin-top: .6rem; color: var(--corteza-oscura); font: 700 .8rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.mapa-ruta { display: inline-flex; align-items: center; gap: .4rem; min-height: 24px; margin-top: .6rem; color: var(--horno); font: 700 .8rem/1.3 Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .mapa-ruta:hover { color: var(--horno); }
 .mapa-ruta svg { width: 15px; height: 15px; flex: 0 0 auto; }
 
@@ -822,9 +819,9 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-paso { display: flex; min-height: 0; flex-direction: column; }
 
 /* El aviso de que esto es una maqueta va primero y no se puede confundir con un
-   campo: mismo tono de corteza que los demas avisos de simulacion del sitio. */
-.cuenta-maqueta { margin: 0 0 1.1rem; padding: .7rem .85rem; background: rgba(123, 45, 45, .1); border-left: 3px solid var(--corteza); border-radius: 0 var(--r-chip) var(--r-chip) 0; color: var(--horno-suave); font: .76rem/1.5 Arial, sans-serif; }
-.cuenta-maqueta strong { color: var(--corteza-oscura); }
+   campo: mismo tono cobre que los demas avisos de simulacion del sitio. */
+.cuenta-maqueta { margin: 0 0 1.1rem; padding: .7rem .85rem; background: rgba(201, 134, 66, .12); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; color: var(--horno-suave); font: .76rem/1.5 Arial, sans-serif; }
+.cuenta-maqueta strong { color: var(--horno); }
 .cuenta-campo-opcional { color: var(--horno-claro); font-weight: 400; }
 
 /* El +593 no se escribe: va fijo delante del campo, pegado a el, y los dos se
@@ -836,7 +833,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-campo .cuenta-conprefijo input { min-width: 0; flex: 1; border-radius: 0 var(--r-btn) var(--r-btn) 0; }
 /* El borde del prefijo acompana al del campo, para que la caja siga siendo
    una. Con el foco, el anillo rodea a los dos (vease .pago-campo input). */
-.cuenta-conprefijo:has(input.is-mal) .cuenta-prefijo { border-color: var(--corteza); }
+.cuenta-conprefijo:has(input.is-mal) .cuenta-prefijo { border-color: var(--horno); }
 
 /* Lo que debe cumplir la contrasena, debajo del campo y contestando en cada
    tecla: es la unica parte del formulario que habla mientras escribes. Cada
@@ -849,7 +846,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-reglas li.is-hecha::before { content: "\2713"; background: var(--ambar); border-color: var(--ambar); }
 
 /* Cambiar de crear a entrar no es la accion principal: es un enlace, no un boton. */
-.cuenta-cambiar { display: block; width: 100%; margin: .8rem 0 0; padding: .3rem; background: none; border: 0; color: var(--corteza-oscura); cursor: pointer; font: .8rem/1.4 Arial, sans-serif; text-align: center; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.cuenta-cambiar { display: block; width: 100%; margin: .8rem 0 0; padding: .3rem; background: none; border: 0; color: var(--horno); cursor: pointer; font: .8rem/1.4 Arial, sans-serif; text-align: center; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .cuenta-cambiar:hover { color: var(--horno); }
 
 /* Dentro de la cuenta: las iniciales hacen de retrato y los datos se leen como
@@ -867,7 +864,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* Editar los datos: debajo de ellos, del ancho de su texto. Es lo segundo que
    se hace en la ficha, despues de mirarla. */
 .cuenta-editar { display: inline-flex; min-height: 44px; align-items: center; margin-top: 1rem; padding: .5rem 1rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .85rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .cuenta-editar:hover { background: var(--masa); border-color: var(--corteza); }
+.con-puntero .cuenta-editar:hover { background: var(--masa); border-color: var(--ambar); }
 .cuenta-hecho { margin: 1rem 0 0; padding: .6rem .8rem; background: var(--masa); border-left: 3px solid var(--ambar); border-radius: var(--r-chip); color: var(--horno); font: 700 .82rem/1.4 Arial, sans-serif; }
 .cuenta-hecho[hidden] { display: none; }
 /* Metodos de pago: cada forma es una tarjeta que se elige entera, con el
@@ -883,10 +880,10 @@ body.is-checkout .floating-whatsapp { display: none; }
    acompana: sobre el papel se quedaba en 2,1:1. */
 .cuenta-metodo-caja::after { width: 20px; height: 20px; flex: 0 0 auto; border: 2px solid var(--horno-claro); border-radius: 50%; content: ""; transition: border var(--dur-fast) var(--ease-ui); }
 .cuenta-metodo-caja > span { flex: 1; }
-.cuenta-metodo-caja .cuenta-icono { width: 28px; height: 28px; flex: 0 0 auto; color: var(--corteza-oscura); }
+.cuenta-metodo-caja .cuenta-icono { width: 28px; height: 28px; flex: 0 0 auto; color: var(--horno); }
 .cuenta-metodo-caja strong { display: block; color: var(--horno); font: 700 .95rem/1.3 Arial, sans-serif; }
 .cuenta-metodo-caja small { display: block; margin-top: .15rem; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
-.con-puntero .cuenta-metodo:hover .cuenta-metodo-caja { border-color: var(--corteza); }
+.con-puntero .cuenta-metodo:hover .cuenta-metodo-caja { border-color: var(--ambar); }
 .cuenta-metodo input:checked + .cuenta-metodo-caja { background: rgba(201, 134, 66, .14); border-color: var(--ambar); }
 .cuenta-metodo input:checked + .cuenta-metodo-caja::after { border: 6px solid var(--horno); }
 .cuenta-metodo input:focus-visible + .cuenta-metodo-caja { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
@@ -896,7 +893,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    deja sitio a la derecha para que lo escrito no pase por debajo. */
 .cuenta-conclave { position: relative; }
 .cuenta-conclave input { padding-right: 5.6rem; }
-.ver-clave { position: absolute; top: 50%; right: .2rem; min-width: 44px; min-height: 36px; padding: 0 .7rem; background: none; border: 0; border-radius: var(--r-btn); color: var(--corteza-oscura); cursor: pointer; font: 700 .8rem Arial, sans-serif; transform: translateY(-50%); }
+.ver-clave { position: absolute; top: 50%; right: .2rem; min-width: 44px; min-height: 36px; padding: 0 .7rem; background: none; border: 0; border-radius: var(--r-btn); color: var(--horno); cursor: pointer; font: 700 .8rem Arial, sans-serif; transform: translateY(-50%); }
 .con-puntero .ver-clave:hover { background: var(--masa); color: var(--horno); }
 
 /* La entrada a la cuenta vive en la navegacion, sobre el horno. Es solo el
@@ -994,7 +991,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    que agarrara la vista; asi cada producto es una pieza que se reconoce. */
 .canasta-panel .canasta-cabecera { padding: 1.1rem 1.3rem .95rem; }
 .canasta-cabecera-titulo { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem; }
-.canasta-cabecera-cuenta { padding: .25rem .65rem; background: rgba(201, 134, 66, .2); border-radius: var(--r-pill); color: var(--corteza-oscura); font: 700 .76rem/1.2 Arial, sans-serif; }
+.canasta-cabecera-cuenta { padding: .25rem .65rem; background: rgba(201, 134, 66, .2); border-radius: var(--r-pill); color: var(--horno); font: 700 .76rem/1.2 Arial, sans-serif; }
 .canasta-cabecera-cuenta[hidden] { display: none; }
 .canasta-panel .canasta-cuerpo { padding: 1rem 1.1rem 1.2rem; background: var(--masa); }
 .canasta-lista { display: grid; gap: .65rem; margin: 0; padding: 0; list-style: none; }
@@ -1010,9 +1007,9 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* La X va en gris y sin fondo, en la esquina: es una salida a mano, no algo
    que deba llamar la atencion por encima del + y el -. */
 .canasta-quitar { display: grid; width: 32px; height: 32px; flex: 0 0 auto; margin: -.3rem -.35rem 0 0; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno-suave); cursor: pointer; font: 1.35rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.con-puntero .canasta-quitar:hover, .canasta-quitar:focus-visible { background: var(--masa); color: var(--corteza-oscura); }
+.con-puntero .canasta-quitar:hover, .canasta-quitar:focus-visible { background: var(--masa); color: var(--horno); }
 /* El mismo control que en la ficha del catalogo, al detalle: el "mas" en ambar
-   relleno, el basurero en corteza y la pastilla con su pizca de aire. Es el
+   relleno, el basurero en horno y la pastilla con su pizca de aire. Es el
    mismo gesto sobre el mismo producto, y cambiarle el aspecto segun desde donde
    se toque obliga a reconocerlo dos veces. */
 /* Relativa: de su esquina salen los "+1" y "−1" (.card-golpes, como en la ficha). */
@@ -1020,7 +1017,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-cantidad button { display: grid; width: 32px; height: 32px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 700 1.2rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
 .canasta-cantidad [data-mas] { background: var(--ambar); }
 .con-puntero .canasta-cantidad [data-mas]:hover, .canasta-cantidad [data-mas]:focus-visible { background: var(--ambar-claro); }
-.canasta-cantidad [data-menos] { color: var(--corteza-oscura); }
+.canasta-cantidad [data-menos] { color: var(--horno); }
 .con-puntero .canasta-cantidad [data-menos]:hover, .canasta-cantidad [data-menos]:focus-visible { background: var(--masa); }
 .canasta-cantidad output { width: 2.6ch; min-width: 24px; font: 700 .95rem/1 Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; }
 /* El basurero de la ultima unidad, al mismo tamanio que en la ficha. */
@@ -1031,31 +1028,31 @@ body.is-checkout .floating-whatsapp { display: none; }
    producto: preguntar en una ventana aparte obligaria a mirar a otro lado para
    contestar por algo que esta aqui. El nombre se queda arriba, asi que la
    pregunta no tiene que repetirlo y puede ser corta. */
-.canasta-confirma-dicho { margin: .15rem 0 0; color: var(--corteza-oscura); font: 700 .85rem/1.4 Arial, sans-serif; }
+.canasta-confirma-dicho { margin: .15rem 0 0; color: var(--horno); font: 700 .85rem/1.4 Arial, sans-serif; }
 .canasta-confirma { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
 .canasta-confirma button { padding: .4rem .8rem; border-radius: var(--r-pill); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-/* El que borra lleva el color de la corteza y no el ambar de los demas botones:
+/* El que borra lleva el horno y no el ambar de los demas botones:
    es el unico de la canasta que deshace algo, y conviene que no se pulse por
    inercia creyendo que es el de siempre. */
-.canasta-confirma-si { background: var(--corteza-oscura); border: 0; color: var(--sobre-horno); }
-.con-puntero .canasta-confirma-si:hover { background: var(--corteza); }
+.canasta-confirma-si { background: var(--horno); border: 0; color: var(--sobre-horno); }
+.con-puntero .canasta-confirma-si:hover { background: var(--horno-suave); }
 .canasta-confirma-no { background: none; border: 1px solid var(--masa-linea); color: var(--horno); }
 .con-puntero .canasta-confirma-no:hover { background: var(--masa); }
 /* Vaciar va debajo de la lista, a la derecha y discreto: es una salida, no lo
    que se viene a hacer a la canasta. */
 .canasta-vaciar-zona { margin-top: .6rem; text-align: right; }
 .canasta-vaciar-zona[hidden], .canasta-vaciar[hidden], .canasta-vaciar-pregunta[hidden] { display: none; }
-.canasta-vaciar { min-height: 44px; padding: .4rem .2rem; background: none; border: 0; color: var(--corteza-oscura); cursor: pointer; font: 700 .8rem Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.canasta-vaciar { min-height: 44px; padding: .4rem .2rem; background: none; border: 0; color: var(--horno); cursor: pointer; font: 700 .8rem Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .canasta-vaciar:hover { color: var(--horno); }
 .canasta-vaciar-pregunta { padding: .8rem .9rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); text-align: left; }
 .canasta-vacio { display: grid; justify-items: center; gap: .35rem; margin: 3rem 0 1rem; text-align: center; }
 .canasta-vacio[hidden] { display: none; }
-/* La misma canasta del boton de la cabecera, en grande y en corteza. */
-.canasta-vacio-dibujo { width: 84px; height: 84px; margin-bottom: .6rem; background: var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237b2d2d' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7.6 9.4a4.4 4.4 0 0 1 8.8 0'/%3E%3Cpath d='M3.6 9.4h16.8l-1.5 8.2a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z'/%3E%3Cpath d='M9.7 12.7l.6 3.5'/%3E%3Cpath d='M14.3 12.7l-.6 3.5'/%3E%3C/svg%3E") center / 44px no-repeat; border-radius: 50%; box-shadow: var(--shadow-contact); }
+/* La misma canasta del boton de la cabecera, en grande y en cobre. */
+.canasta-vacio-dibujo { width: 84px; height: 84px; margin-bottom: .6rem; background: var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c98642' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7.6 9.4a4.4 4.4 0 0 1 8.8 0'/%3E%3Cpath d='M3.6 9.4h16.8l-1.5 8.2a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z'/%3E%3Cpath d='M9.7 12.7l.6 3.5'/%3E%3Cpath d='M14.3 12.7l-.6 3.5'/%3E%3C/svg%3E") center / 44px no-repeat; border-radius: 50%; box-shadow: var(--shadow-contact); }
 .canasta-vacio-titulo { margin: 0; color: var(--horno); font: 500 1.35rem/1.2 var(--letra-titulo); }
 .canasta-vacio-dicho { margin: 0; color: var(--horno-suave); font: .9rem/1.5 Arial, sans-serif; }
 .canasta-vacio-ir { min-height: 44px; margin-top: .9rem; padding: .65rem 1.4rem; background: var(--horno); border: 0; border-radius: var(--r-pill); color: var(--papel); cursor: pointer; font: 700 .88rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .canasta-vacio-ir:hover { background: var(--corteza-oscura); }
+.con-puntero .canasta-vacio-ir:hover { background: var(--horno-suave); }
 .canasta-pie, .cuenta-pie { padding: 1.2rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--masa-linea); }
 .canasta-total { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1rem; font: .95rem/1.3 Arial, sans-serif; }
 .canasta-total strong { font-size: 1.3rem; font-variant-numeric: tabular-nums; }
@@ -1093,7 +1090,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-direccion label small { color: var(--horno-suave); font-weight: 400; }
 .canasta-direccion > label:not(:first-child) { margin-top: .7rem; }
 
-.canasta-aviso, .cuenta-aviso { margin: .4rem 0 0; color: var(--corteza-oscura); font: .78rem/1.4 Arial, sans-serif; }
+.canasta-aviso, .cuenta-aviso { margin: .4rem 0 0; color: var(--horno); font: .78rem/1.4 Arial, sans-serif; }
 .canasta-aviso[hidden], .cuenta-aviso[hidden] { display: none; }
 /* Los pedidos ya pagados que quedan en IndexedDB. Cada uno en dos renglones:
    arriba el numero y el total, que es lo que se busca, y debajo cuando fue y
@@ -1135,7 +1132,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    Los tres pasos (canasta, pago, comprobante) viven dentro del mismo panel:
    cada uno es una columna con su cuerpo desplazable y su pie fijo, y solo
    uno esta visible. Nada de colores nuevos: el ambar marca lo elegido y lo
-   aprobado, la corteza marca lo que esta mal. */
+   aprobado, el cobre y el texto marcan lo que esta mal. */
 .canasta-pasos { display: flex; flex: 1; min-height: 0; flex-direction: column; }
 .canasta-paso { display: flex; flex: 1; min-height: 0; flex-direction: column; animation: paso-entra var(--dur-base) var(--ease-out) both; }
 .canasta-paso[hidden] { display: none; }
@@ -1173,8 +1170,12 @@ body.is-checkout .floating-whatsapp { display: none; }
   .cuenta-campo .cuenta-conprefijo input:focus-visible { outline: none; box-shadow: none; }
   .cuenta-conprefijo:has(input:focus-visible) { border-radius: var(--r-btn); outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 }
-.pago-campo input.is-mal, .cuenta-campo input.is-mal { border-color: var(--corteza); }
-.pago-campo-error, .cuenta-campo-error { margin: .3rem 0 0; color: var(--corteza-oscura); font: .74rem/1.4 Arial, sans-serif; }
+/* Sin rojo, el error no se dice solo con el color (WCAG 1.4.1): borde horno de
+   2 px (el filete mas un aro interior), el texto del error con su "!" delante
+   y aria-invalid. El cobre solo no llega a 3:1 sobre la masa. */
+.pago-campo input.is-mal, .cuenta-campo input.is-mal { border-color: var(--horno); box-shadow: inset 0 0 0 1px var(--horno); }
+.pago-campo-error, .cuenta-campo-error { margin: .3rem 0 0; color: var(--horno); font: 700 .74rem/1.4 Arial, sans-serif; }
+.pago-campo-error::before, .cuenta-campo-error::before { content: "! " / ""; }
 .pago-campo-error[hidden], .cuenta-campo-error[hidden] { display: none; }
 .pago-fila { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
 .recibo-datos div { display: flex; justify-content: space-between; gap: 1rem; padding-bottom: .4rem; border-bottom: 1px solid var(--masa-linea); }
@@ -1197,7 +1198,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 #factura-ident { font-variant-numeric: tabular-nums; letter-spacing: .04em; }
 .pago-error { margin: 0 0 .7rem; text-align: center; }
 .pago-girando { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(58, 40, 34, .25); border-top-color: var(--horno); border-radius: 50%; vertical-align: -2px; animation: girar 700ms linear infinite; }
-/* Sobre el ticket corteza de pagar, el giro va en papel. */
+/* Sobre el ticket horno de pagar, el giro va en papel. */
 .button-pagar .pago-girando { border-color: color-mix(in srgb, var(--papel) 30%, transparent); border-top-color: var(--papel); }
 @keyframes girar { to { transform: rotate(360deg); } }
 .recibo-sello { display: flex; align-items: center; gap: .55rem; margin: 0 0 .8rem; font: 500 1.3rem/1.2 var(--letra-titulo); }
@@ -1232,7 +1233,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    un codigo ya escrito. Va con el selector largo para ganarle en especificidad
    a la regla de los ejemplos de arriba, que si no lo aclararia de menos. */
 .cuenta-campo input.campo-codigo::placeholder { color: var(--horno); letter-spacing: .4em; opacity: .35; }
-.codigo-reenviar { margin-top: .2rem; padding: .35rem 0; background: none; border: 0; color: var(--corteza-oscura); cursor: pointer; font: 700 .82rem Arial, sans-serif; text-decoration: underline; text-underline-offset: 3px; }
+.codigo-reenviar { margin-top: .2rem; padding: .35rem 0; background: none; border: 0; color: var(--horno); cursor: pointer; font: 700 .82rem Arial, sans-serif; text-decoration: underline; text-underline-offset: 3px; }
 .codigo-reenviar:disabled { color: var(--horno-claro); cursor: default; text-decoration: none; }
 
 /* ---- "Para pagar hace falta cuenta" --------------------------------------
@@ -1278,7 +1279,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .recibo-envio-estado.is-bien { padding: 0; background: none; border-left: 0; color: var(--horno-suave); font-size: .78rem; }
 .recibo-datos dd { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; }
 .recibo-copiar { padding: .2rem .55rem; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .72rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.con-puntero .recibo-copiar:hover { background: var(--papel); border-color: var(--corteza); }
+.con-puntero .recibo-copiar:hover { background: var(--papel); border-color: var(--ambar); }
 .recibo-copiado { margin: 0 0 .5rem; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
 .recibo-copiado[hidden] { display: none; }
 

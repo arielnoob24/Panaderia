@@ -11,7 +11,7 @@
 //   la elegida en pastilla horno con texto papel, las flechas cambian de
 //   categoria y el foco se ve en la etiqueta; en el telefono no se sale;
 // - los mandos entre lineas dobles, buscador papel, Ordenar por solo texto con linea, rotulos en versalitas y
-//   "Mostrando X de Y" en versalitas corteza oscura; el aviso del catalogo
+//   "Mostrando X de Y" en versalitas horno; el aviso del catalogo
 //   sigue;
 // - la escena entra al llegar y no se repite al cambiar de categoria; con
 //   menos movimiento todo quieto;
@@ -25,7 +25,7 @@ export const limite = 150;
 const ES_FRAUNCES = /^"?Fraunces Variable/;
 const HORNO = 'rgb(58, 40, 34)';
 const PAPEL = 'rgb(255, 253, 248)';
-const CORTEZA_OSCURA = 'rgb(94, 34, 34)';
+const CORTEZA_OSCURA = 'rgb(58, 40, 34)'; // horno
 const VISTAS = [
   ['tienda-catalogo', 'todas', 'Todo el catálogo', 'Panes, dulces y bebidas de la casa.'],
   ['tienda-panes', 'panes', 'Panes', 'Lo que sale del horno cada mañana.'],

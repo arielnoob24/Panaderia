@@ -1,7 +1,7 @@
 // #/nosotros con el estilo de la portada (seccion 10 del plan, "Nosotros con
 // el estilo de la portada"), en escritorio y en el telefono (390 px, tactil):
 // - la historia: rotulo con la espiga, h1 en Fraunces con la segunda linea
-//   en cursiva corteza, la frase y "Conoce nuestro local" con el aspecto y
+//   en cursiva horno, la frase y "Conoce nuestro local" con el aspecto y
 //   la ola de "Cómo llegar", que lleva a #/contacto;
 // - "arco de pie": en escritorio, la foto en arco a la izquierda, de alto
 //   entero (unos 520 px de ancho a 1440x900, 420 a 1366x768), con su pie,
@@ -31,7 +31,7 @@ export const descripcion = 'Nosotros en una pantalla sin scroll, arco de pie: fo
 export const limite = 150;
 
 const ES_FRAUNCES = /^"?Fraunces Variable/;
-const CORTEZA = 'rgb(123, 45, 45)';
+const CORTEZA = 'rgb(58, 40, 34)'; // horno
 
 // Lo que se ve de la historia y de los principios, en una sola lectura.
 const mirar = (p) => p.evaluate(() => {
@@ -157,7 +157,7 @@ export default async function nosotros(t) {
     t.ok(m.marcas === 0, `[${nombre}] queda una marca data-aparece del observador`);
     t.ok(m.rotulo === 'Nuestra historia' && m.espiga, `[${nombre}] falta el rotulo con la espiga ("${m.rotulo}")`);
     t.ok(m.h1 === 'El tiempo es nuestro ingrediente' && ES_FRAUNCES.test(m.h1Letra), `[${nombre}] el h1 no es el de la portada ("${m.h1}", ${m.h1Letra})`);
-    t.ok(m.emColor === CORTEZA && m.emCursiva === 'italic', `[${nombre}] la segunda linea del h1 no va en cursiva corteza (${m.emColor}, ${m.emCursiva})`);
+    t.ok(m.emColor === CORTEZA && m.emCursiva === 'italic', `[${nombre}] la segunda linea del h1 no va en cursiva horno (${m.emColor}, ${m.emCursiva})`);
     t.ok(m.frase === 'italic', `[${nombre}] la frase no va en cursiva`);
     t.ok(/\benlace-llegar\b/.test(m.enlaceClases) && m.enlaceHref === '#/contacto' && m.enlaceNombre === 'Conoce nuestro local' && m.enlaceLetras === 'true' && ES_FRAUNCES.test(m.enlaceLetra), `[${nombre}] "Conoce nuestro local" no es como "Cómo llegar" (${JSON.stringify([m.enlaceClases, m.enlaceHref, m.enlaceNombre, m.enlaceLetras, m.enlaceLetra])})`);
     t.ok(m.selloTexto?.startsWith('Masa madre · Hecho despacio') && m.selloOculto === 'true' && m.aroEnSuSello, `[${nombre}] el sello no dice lo suyo o su texto sigue otro aro (${JSON.stringify([m.selloTexto, m.selloOculto, m.aroEnSuSello])})`);
@@ -182,7 +182,7 @@ export default async function nosotros(t) {
     t.ok(/\bfranja-pie\b/.test(m.ultimo), `[${nombre}] Nosotros no termina en la franja (${m.ultimo})`);
     t.ok(m.rol === 'list', `[${nombre}] la lista de principios no lleva role="list" (${m.rol})`);
     t.ok(m.numeros.join() === 'N.º 1,N.º 2,N.º 3' && m.numerosOcultos, `[${nombre}] los numeros de los principios son ${JSON.stringify(m.numeros)}`);
-    t.ok(m.numeroColor === 'rgb(94, 34, 34)', `[${nombre}] el numero no va en corteza oscura (${m.numeroColor})`);
+    t.ok(m.numeroColor === 'rgb(58, 40, 34)', `[${nombre}] el numero no va en horno (${m.numeroColor})`);
     t.ok(m.iconos === 3 && m.h3.every((f) => ES_FRAUNCES.test(f)), `[${nombre}] a los principios les falta el icono o el nombre en Fraunces`);
     t.ok(m.columnas === 3, `[${nombre}] los principios van en ${m.columnas} columnas`);
     t.ok(m.estrella.includes('✦'), `[${nombre}] no hay estrella entre los principios (${m.estrella})`);
