@@ -362,19 +362,20 @@
 .orden-opcion.is-activa:not([aria-selected="true"]) { background: rgba(255, 255, 255, .1); color: var(--ambar-claro); }
 .orden-opcion.is-activa[aria-selected="true"] { background: var(--ambar-claro); }
 
-/* "Mostrar solo disponibles": interruptor como el de Wifi o Bluetooth. Pista
-   de 46 x 26 px (filete horno aclarado, vacia) que al encender se llena de
-   horno, y un boton redondo papel que se desliza (--dur-fast). El checkbox
-   real esta encima, invisible, y recibe el foco. */
-.interruptor { position: relative; display: inline-flex; min-height: 34px; align-items: center; gap: .6rem; color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); user-select: none; }
-.interruptor-input { position: absolute; width: 46px; height: 26px; margin: 0; opacity: 0; cursor: pointer; }
-.interruptor-pista { position: relative; flex: none; width: 46px; height: 26px; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: 999px; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
-.interruptor-bola { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: var(--horno-claro); border-radius: 50%; transition: transform var(--dur-fast) var(--ease-out), background-color var(--dur-fast) var(--ease-ui); }
-.interruptor-input:checked + .interruptor-pista { background: var(--horno); border-color: var(--horno); }
-.interruptor-input:checked + .interruptor-pista .interruptor-bola { background: var(--papel); transform: translateX(20px); }
-.interruptor-input:focus-visible + .interruptor-pista { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
-.con-puntero .interruptor:hover .interruptor-pista { border-color: var(--corteza); }
-.con-puntero .interruptor-input:checked:hover + .interruptor-pista { border-color: var(--horno); }
+/* "Mostrar solo disponibles": un cuadrito de esquinas redondeadas (22 px, 8 px
+   de radio) con filete horno aclarado. Marcado, se llena de melocoton y la
+   palomita (horno, 6,9:1) se dibuja en --dur-fast. El checkbox real esta
+   encima, invisible, y recibe el foco. */
+.casilla { position: relative; display: inline-flex; min-height: 34px; align-items: center; gap: .6rem; color: var(--horno); cursor: pointer; font: 700 .82rem var(--letra-texto); user-select: none; }
+.casilla-input { position: absolute; width: 22px; height: 22px; margin: 0; opacity: 0; cursor: pointer; }
+.casilla-caja { display: grid; flex: none; width: 22px; height: 22px; place-items: center; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: var(--r-chip); color: var(--horno); transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
+.casilla-caja svg { width: 16px; height: 16px; }
+.casilla-caja path { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset var(--dur-fast) var(--ease-out); }
+.casilla-input:checked + .casilla-caja { background: var(--ambar); border-color: var(--horno); }
+.casilla-input:checked + .casilla-caja path { stroke-dashoffset: 0; }
+.casilla-input:focus-visible + .casilla-caja { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+.con-puntero .casilla:hover .casilla-caja { border-color: var(--corteza); }
+.con-puntero .casilla-input:checked:hover + .casilla-caja { border-color: var(--horno); }
 .vista-buscar { position: relative; }
 .vista-buscar svg { position: absolute; left: .7rem; width: 15px; height: 15px; color: var(--horno-suave); pointer-events: none; }
 .vista-buscar input { width: 15rem; max-width: 100%; padding: .45rem .8rem .45rem 2rem; background: var(--papel); border: 1px solid var(--horno-claro); border-radius: 2px; color: var(--horno); font: .85rem var(--letra-texto); transition: border-color var(--dur-fast) var(--ease-ui); }
@@ -399,7 +400,7 @@
   .chip:active, .orden-boton:active { transform: none; }
   /* El panel solo aparece y la flecha no gira. */
   .orden-lista, .orden.is-open .orden-lista { transform: none; transition: none; }
-  .orden-flecha, .interruptor-pista, .interruptor-bola { transition: none; }
+  .orden-flecha, .casilla-caja, .casilla-caja path { transition: none; }
 }
 
 /* Cuando los mandos ya no caben en una fila con sus lineas, las lineas van

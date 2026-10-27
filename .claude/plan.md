@@ -210,17 +210,19 @@ panes", con la cinta o con el menú.
   en el APG, además ↑, Inicio y Fin también abren y Alt+↑ elige y cierra.
   Clic fuera cierra (`catalogo/OrdenarPor.jsx`). Al elegir, el foco vuelve al botón y el
   orden se anuncia como antes.
-- **"Mostrar" es un interruptor "Solo disponibles" como los de Wifi o
-  Bluetooth** (26 de octubre de 2026; antes fue un interruptor distinto y
-  luego dos opciones `Todos | Solo disponibles`; el usuario quiere este
-  aspecto): rótulo "Mostrar" en versalitas, una pista redondeada de
-  46 × 26 px y el texto "Solo disponibles". Apagado, la pista va en
-  `--papel` con filete `--horno-claro` y el botón redondo a la izquierda;
-  encendido, la pista se llena de `--horno` y el botón (`--papel`) se
-  desliza a la derecha (CSS, `--dur-fast`; con menos movimiento salta). Por
-  dentro es un `<input type="checkbox" role="switch">` (Espacio o un toque
-  lo cambian) llamado "Mostrar Solo disponibles". Encendido esconde los
+- **"Mostrar" es una casilla "Solo disponibles"** (26 de octubre de 2026;
+  el interruptor tipo Wifi no convenció: es un filtro, no un ajuste, y la
+  casilla con palomita dice su estado sin depender del color): rótulo
+  "Mostrar" en versalitas y un cuadrito de 22 px con esquinas `--r-chip` y
+  filete `--horno-claro`, con el texto "Solo disponibles" al lado. Marcada,
+  se llena de `--ambar` (melocotón), el borde pasa a `--horno` y la
+  palomita `--horno` se dibuja en `--dur-fast` (con menos movimiento
+  aparece). Por dentro es un `<input type="checkbox">` real (Espacio o un
+  toque lo cambian) llamado "Mostrar Solo disponibles". Marcada esconde los
   agotados. Se recuerda en `sessionStorage` como antes.
+- **Sin mascota en la cabecera** (26 de octubre de 2026): junto al logo ya
+  no va el panadero; la marca es solo el logo. El archivo
+  `assets/img/mascota.png` se queda en el repositorio sin usar.
 - "Mostrando X de Y productos" en una sola región `aria-live`
   (`.catalog-status`): mientras se escribe en el buscador calla y habla una
   vez, 400 ms después de la última tecla; sin resultados junta la cuenta y el
@@ -970,7 +972,7 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [x] "Solo disponibles" como `Todos | Solo disponibles` a la vista y
       "Ordenar por" como lista plana sin caja (26 de octubre de 2026).
 - [x] Tienda sin desplegable en el menú, sin "Volver al inicio", fichas 4
-      por fila, "Ordenar por" desplegable propio y "Mostrar" interruptor
+      por fila, "Ordenar por" desplegable propio y "Mostrar" casilla
       (secciones 3, 4 y 10, 25 de octubre de 2026). Lo prueba
       `pruebas/casos/tienda-mandos.mjs`.
 - [x] Fichas 5 por fila con la tienda de 1080 px o más y 4 desde unos 860

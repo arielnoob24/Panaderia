@@ -9,7 +9,6 @@
 // aria-current="page", que NavLink pone solo.
 import { useEffect, useRef, useState } from 'react';
 import { LayoutGroup, useReducedMotion } from 'motion/react';
-import mascota from '/assets/img/mascota.png';
 import logo from '/assets/img/logo.png';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import IndicadorNav from './IndicadorNav.jsx';
@@ -106,7 +105,6 @@ function Cabecera() {
     <header ref={cabeceraRef} className={claseCabecera}>
       <div className="container nav-wrap">
         <Link to="/" state={{ entrar: true }} className="brand" aria-label="El Tradicional, panadería y pastelería. Ir al inicio" onClick={cerrarMenu}>
-          <span className="mascot-slot mascot-brand"><img src={mascota} alt="" width="224" height="210" /></span>
           <img className="brand-logo" src={logo} alt="" width="420" height="184" />
         </Link>
         <nav ref={navRef} id="main-nav" className={menuAbierto ? 'main-nav is-open' : 'main-nav'} aria-label="Navegación principal">

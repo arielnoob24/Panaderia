@@ -9,10 +9,9 @@
 //   recuerda en sessionStorage como antes. La elegida, en ámbar
 //   con el texto horno; el panel entra con fundido y scale desde el boton,
 //   y con menos movimiento solo aparece.
-// - "Mostrar" es un interruptor (checkbox con role="switch") "Solo disponibles"
-//   como los de Wifi o Bluetooth: pista redondeada, boton a la izquierda
-//   apagado y a la derecha encendido sobre horno. Espacio o un toque lo
-//   cambian, esconde los agotados y se recuerda al recargar.
+// - "Mostrar" es una casilla (checkbox) "Solo disponibles": cuadro redondeado
+//   que marcada se llena de melocoton con una palomita horno. Espacio o un
+//   toque la cambian, esconde los agotados y se recuerda al recargar.
 // - "Ordenar por": el boton es texto con una linea fina debajo (sin relleno
 //   ni caja) y el panel es una lista plana en masa opaca, sin filete ni
 //   sombra, con sus opciones legibles.
@@ -25,7 +24,7 @@
 //   simple, sin flecha ni desplegable.
 import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
 
-export const descripcion = 'Tienda: Ordenar por como combobox del APG (teclado, letras, Esc, Tab, clic fuera), Mostrar como interruptor Solo disponibles, fichas 5/4/3/2 por fila con letra >= 11 px, - + >= 24 px y precio y - n + en una linea, sin Volver al inicio ni desplegable en el menu';
+export const descripcion = 'Tienda: Ordenar por como combobox del APG (teclado, letras, Esc, Tab, clic fuera), Mostrar como casilla Solo disponibles, fichas 5/4/3/2 por fila con letra >= 11 px, - + >= 24 px y precio y - n + en una linea, sin Volver al inicio ni desplegable en el menu';
 export const limite = 150;
 
 const HORNO = 'rgb(58, 40, 34)';
@@ -171,7 +170,7 @@ export default async function tiendaMandos(t) {
       await p.keyboard.press('Tab');
       c = await combo(p);
       const foco = await p.evaluate(() => document.activeElement.className);
-      t.ok(c.expandido === 'false' && c.texto === 'Nombre: de la A a la Z' && !c.foco && foco.includes('interruptor-input'), `[teclado] Tab no cierra sin cambiar o no pasa al interruptor de Mostrar (${JSON.stringify(c)}, foco en ${foco})`);
+      t.ok(c.expandido === 'false' && c.texto === 'Nombre: de la A a la Z' && !c.foco && foco.includes('casilla-input'), `[teclado] Tab no cierra sin cambiar o no pasa a la casilla de Mostrar (${JSON.stringify(c)}, foco en ${foco})`);
       // El foco del combobox se ve.
       await p.keyboard.press('Shift+Tab');
       const anillo = await p.evaluate(() => { const s = getComputedStyle(document.activeElement); return [s.outlineStyle, s.outlineWidth]; });
@@ -219,21 +218,19 @@ export default async function tiendaMandos(t) {
     // ---- "Mostrar" --------------------------------------------------------
     const mostrar = () => p.evaluate(() => {
       const i = document.querySelector('#vista-mostrar-solo');
-      const pista = i.nextElementSibling;
-      const bola = pista.firstElementChild;
+      const caja = i.nextElementSibling;
       const et = i.closest('label');
-      const pr = getComputedStyle(pista);
+      const cr = getComputedStyle(caja);
       return {
         nombre: document.getElementById('vista-mostrar-rotulo')?.textContent,
         rotulo: getComputedStyle(document.getElementById('vista-mostrar-rotulo')).textTransform,
         texto: et.textContent.trim(),
-        rol: i.getAttribute('role'),
+        tipo: i.type,
         puesto: i.checked,
-        pista: pr.backgroundColor,
-        radio: pr.borderTopLeftRadius,
-        ancho: pista.getBoundingClientRect().width,
-        alto: pista.getBoundingClientRect().height,
-        bola: bola.getBoundingClientRect().left - pista.getBoundingClientRect().left,
+        fondo: cr.backgroundColor,
+        radio: cr.borderTopLeftRadius,
+        ancho: caja.getBoundingClientRect().width,
+        trazo: getComputedStyle(caja.querySelector('path')).strokeDashoffset,
         altoEt: et.getBoundingClientRect().height,
         derecha: et.getBoundingClientRect().right,
         pantalla: innerWidth,
@@ -242,30 +239,30 @@ export default async function tiendaMandos(t) {
       };
     });
     let m = await mostrar();
-    t.ok(m.nombre === 'Mostrar' && m.rotulo === 'uppercase' && m.texto === 'Solo disponibles' && m.rol === 'switch' && m.puesto === false && m.agotados > 0 && m.altoEt >= 24 && m.derecha <= m.pantalla, `[${nombre}] "Mostrar" no es un interruptor "Solo disponibles" apagado con su rotulo en versalitas (${JSON.stringify(m)})`);
-    t.ok(m.alto >= 24 && m.ancho > m.alto && m.radio !== '0px' && m.bola < 4, `[${nombre}] el interruptor apagado no es una pista redondeada con el boton a la izquierda (${JSON.stringify(m)})`);
-    t.ok((await p.getByRole('switch', { name: 'Mostrar Solo disponibles' }).count()) === 1, `[${nombre}] el interruptor no se llama "Mostrar Solo disponibles"`);
+    t.ok(m.nombre === 'Mostrar' && m.rotulo === 'uppercase' && m.texto === 'Solo disponibles' && m.tipo === 'checkbox' && m.puesto === false && m.agotados > 0 && m.altoEt >= 24 && m.derecha <= m.pantalla, `[${nombre}] "Mostrar" no es una casilla "Solo disponibles" sin marcar con su rotulo en versalitas (${JSON.stringify(m)})`);
+    t.ok(m.ancho >= 22 && m.radio === '8px' && m.trazo !== '0px' && m.trazo !== '0', `[${nombre}] la casilla sin marcar no es un cuadro redondeado con la palomita escondida (${JSON.stringify(m)})`);
+    t.ok((await p.getByRole('checkbox', { name: 'Mostrar Solo disponibles' }).count()) === 1, `[${nombre}] la casilla no se llama "Mostrar Solo disponibles"`);
     if (nombre === 'escritorio') {
-      // Espacio lo enciende.
+      // Espacio la marca.
       await p.focus('#vista-mostrar-solo');
       await p.keyboard.press('Space');
     } else {
-      await p.tap('.interruptor');
+      await p.tap('.casilla');
     }
     await espera(400);
     m = await mostrar();
-    t.ok(m.puesto === true && m.pista === HORNO && m.bola > 15 && m.agotados === 0 && m.recordado === true, `[${nombre}] encender el interruptor no esconde los agotados, no llena la pista de horno con el boton a la derecha o no se recuerda (${JSON.stringify(m)})`);
-    // Se recuerda al recargar: sigue puesto y sigue filtrando.
+    t.ok(m.puesto === true && m.fondo === 'rgb(232, 168, 124)' && m.trazo === '0px' && m.agotados === 0 && m.recordado === true, `[${nombre}] marcar la casilla no esconde los agotados, no la llena de melocoton con la palomita o no se recuerda (${JSON.stringify(m)})`);
+    // Se recuerda al recargar: sigue marcada y sigue filtrando.
     await p.reload();
     await p.waitForSelector('#vista-mostrar-solo');
     await espera(400);
     m = await mostrar();
     t.ok(m.puesto === true && m.agotados === 0 && m.recordado === true, `[${nombre}] al recargar no se recuerda "Solo disponibles" (${JSON.stringify(m)})`);
-    if (nombre === 'escritorio') await p.click('.interruptor');
-    else await p.tap('.interruptor');
+    if (nombre === 'escritorio') await p.click('.casilla');
+    else await p.tap('.casilla');
     await espera(300);
     m = await mostrar();
-    t.ok(m.puesto === false && m.agotados > 0 && m.recordado === false, `[${nombre}] apagar el interruptor no ensena los agotados (${JSON.stringify(m)})`);
+    t.ok(m.puesto === false && m.agotados > 0 && m.recordado === false, `[${nombre}] desmarcar la casilla no ensena los agotados (${JSON.stringify(m)})`);
     await ctx.close();
   }
 

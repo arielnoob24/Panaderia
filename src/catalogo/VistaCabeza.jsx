@@ -2,7 +2,7 @@
 // Con el estilo de la portada (seccion 10 del plan, "La tienda con el estilo
 // de la portada"), sobre la masa: el rotulo con la espiga, el titulo y la
 // frase de la vista, "Filtrar por" como la cinta de #/, y los mandos
-// (buscador, Ordenar por y el interruptor de Mostrar) entre lineas dobles.
+// (buscador, Ordenar por y la casilla de Mostrar) entre lineas dobles.
 // Sin "Volver al inicio" (seccion 4 del plan): a la portada se vuelve con el
 // logo o con Inicio. No decide nada, solo pinta lo que le da el
 // catalogo y le cuenta lo que se toca.
@@ -108,22 +108,23 @@ function VistaCabeza({
             <span id="vista-orden-rotulo">Ordenar por</span>
             <OrdenarPor opciones={ORDENES} valor={orden} onCambio={onOrden} rotuloId="vista-orden-rotulo" />
           </div>
-          {/* "Mostrar solo disponibles" es un interruptor como los de Wifi o
-              Bluetooth (seccion 4 del plan): un checkbox con role="switch",
-              la pista y el boton redondo son CSS. */}
+          {/* "Mostrar solo disponibles" es un cuadrito con palomita (seccion 4
+              del plan): un checkbox de verdad, con la caja y la palomita en
+              CSS y SVG. */}
           <div className="vista-mando">
             <span id="vista-mostrar-rotulo">Mostrar</span>
-            <label className="interruptor">
+            <label className="casilla">
               <input
                 id="vista-mostrar-solo"
-                className="interruptor-input"
+                className="casilla-input"
                 type="checkbox"
-                role="switch"
                 aria-labelledby="vista-mostrar-rotulo vista-mostrar-texto"
                 checked={soloDisponibles}
                 onChange={(e) => onSolo(e.target.checked)}
               />
-              <span className="interruptor-pista" aria-hidden="true"><span className="interruptor-bola"></span></span>
+              <span className="casilla-caja" aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5" pathLength="1" /></svg>
+              </span>
               <span id="vista-mostrar-texto">Solo disponibles</span>
             </label>
           </div>

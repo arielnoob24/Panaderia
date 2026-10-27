@@ -115,9 +115,6 @@ section[id] { scroll-margin-top: -12px; }
 /* Sobre las bandas oscuras, que son del mismo horno, no se invierte: una
    linea ambar fina abajo marca donde acaba la barra. */
 .site-header.is-sobre-oscuro { box-shadow: inset 0 -1px 0 var(--ambar), 0 6px 22px rgba(0, 0, 0, .3); }
-/* El panadero no se invierte: es ilustracion a color y se arruinaria. Su halo
-   es ambar para que se vea sobre el horno. */
-.site-header .mascot-brand { background: radial-gradient(circle, rgba(232, 168, 124, .22) 62%, transparent 63%); }
 /* Con el puntero el texto sigue claro (W1, seccion 10 del plan): lo que se
    enciende es el blanco tenue de detras. La pagina actual no cambia. */
 .site-header .main-nav > a:not([aria-current]):hover { color: var(--papel); }
@@ -137,8 +134,7 @@ section[id] { scroll-margin-top: -12px; }
 .main-nav { grid-column: 2; }
 .nav-acciones { position: relative; display: flex; grid-column: 3; align-items: center; gap: .55rem; justify-self: end; }
 .brand { display: inline-flex; align-items: center; gap: .65rem; font: 600 1.15rem var(--letra-titulo); }
-/* El logo trae el nombre y la bajada dibujados, asi que en la cabecera sustituye
-   a la mascota con el texto al lado. Manda el alto: en una barra de 86px el logo
+/* El logo trae el nombre y la bajada dibujados, asi que en la cabecera es la marca de la cabecera. Manda el alto: en una barra de 86px el logo
    tiene que caber con aire, y el ancho sale solo de su proporcion. */
 .brand-logo { display: block; width: auto; height: 64px; }
 .brand small { display: block; margin-top: .15rem; font: 400 .58rem Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
@@ -334,9 +330,6 @@ h2 em { color: var(--ambar); font-weight: 500; }
 @keyframes latir-carga { 0%, 100% { background-color: var(--masa-carga); } 50% { background-color: var(--masa); } }
 .product-image img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-editorial) var(--ease-out); }
 .product-image img.is-loaded { opacity: 1; }
-.mascot-slot.is-loading img { opacity: 0; }
-.mascot-slot img { transition: opacity var(--dur-base) var(--ease-out); }
-.mascot-slot img.is-loaded { opacity: 1; }
 /* El sello, como un sello de tinta: doble aro (el de dentro, del color del
    texto) y versalitas. 11 px de letra como poco (antes 9, no se leia), y el
    circulo lo justo para dos renglones cortos. Con el puntero encima de la
@@ -519,13 +512,6 @@ h1[tabindex="-1"]:focus, h1[tabindex="-1"]:focus-visible { outline: none; }
 .image-unavailable { display: grid; place-items: center; background: var(--masa-honda); }
 .image-unavailable::before { content: "Imagen no disponible"; padding: 1rem; color: var(--horno-suave); font: .8rem Arial, sans-serif; text-align: center; }
 .image-unavailable img { display: none; }
-.mascot-slot { display: inline-flex; align-items: center; justify-content: center; overflow: hidden; border: 0; border-radius: 50%; color: var(--ambar); }
-.mascot-slot img { width: 100%; height: 100%; object-fit: contain; }
-/* Por debajo de 40px la ilustracion de la mascota deja de leerse, asi que el
-   circulo de fondo le da forma reconocible en los tamanos pequenos. */
-/* En la cabecera el panadero acompana al logo, asi que va mas pequeno que
-   cuando vivia en el hero: manda el logo, el es la compania. */
-.mascot-brand { width: 50px; height: 50px; flex: 0 0 auto; background: radial-gradient(circle, rgba(168, 95, 69, .16) 62%, transparent 63%); }
 /* La insignia de abierto/cerrado, en el horario de #/contacto, sobre la
    masa: el texto en horno (abierto) o corteza oscura (cerrado), que pasan
    de 4,5:1 sobre el grano, y el punto ambar o corteza al lado. */
