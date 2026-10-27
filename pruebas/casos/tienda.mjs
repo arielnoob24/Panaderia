@@ -1,8 +1,9 @@
 // La cabeza de la tienda con el estilo de la portada (seccion 10 del plan,
 // "La tienda con el estilo de la portada"), en escritorio y en el telefono
 // (390 px, tactil):
-// - sin la tarjeta oscura: sobre la masa, y la barra de arriba no gana la
-//   linea ambar al pasar por encima;
+// - la cabeza es una banda de horno (seccion 10, "Tres colores, 60-30-10"),
+//   sin la clase banda-oscura: la barra de arriba no gana la linea ambar al
+//   pasar por encima;
 // - sin "Volver al inicio" (quitado el 25 de octubre de 2026; lo mira
 //   tienda-mandos.mjs); el rotulo "Nuestra vitrina" con la espiga; el h1 en
 //   Fraunces a la izquierda y la frase en cursiva de cada vista;
@@ -25,7 +26,7 @@ export const limite = 150;
 const ES_FRAUNCES = /^"?Fraunces Variable/;
 const HORNO = 'rgb(58, 40, 34)';
 const PAPEL = 'rgb(255, 253, 248)';
-const CORTEZA_OSCURA = 'rgb(58, 40, 34)'; // horno
+const SOBRE_HORNO = 'rgb(238, 228, 216)'; // el texto sobre la banda de horno
 const VISTAS = [
   ['tienda-catalogo', 'todas', 'Todo el catálogo', 'Panes, dulces y bebidas de la casa.'],
   ['tienda-panes', 'panes', 'Panes', 'Lo que sale del horno cada mañana.'],
@@ -92,7 +93,7 @@ export default async function tienda(t) {
     t.ok((await animando(p)) === 0, `[${nombre}] la escena no acaba`);
 
     const m = await mirar(p);
-    t.ok(m.oscuras === 0 && m.fondo === 'rgba(0, 0, 0, 0)', `[${nombre}] la cabeza sigue en la tarjeta oscura (${m.oscuras}, ${m.fondo})`);
+    t.ok(m.oscuras === 0 && m.fondo === HORNO, `[${nombre}] la cabeza no es una banda de horno (${m.oscuras}, ${m.fondo})`);
     t.ok(m.rotulo[0] === 'Nuestra vitrina' && m.rotulo[1], `[${nombre}] falta el rotulo con la espiga (${m.rotulo})`);
     t.ok(m.h1 === 'Todo el catálogo' && ES_FRAUNCES.test(m.h1Letra) && m.h1Izquierda, `[${nombre}] el h1 no va en Fraunces a la izquierda ("${m.h1}", ${m.h1Letra})`);
     t.ok(m.rol === 'radiogroup' && m.rotuloFiltro[0] === 'Filtrar por' && m.rotuloFiltro[1] === 'uppercase', `[${nombre}] "Filtrar por" cambio (${m.rol}, ${m.rotuloFiltro})`);
@@ -103,10 +104,11 @@ export default async function tienda(t) {
     t.ok(m.etiquetas.map((e) => e.icono).join() === 'false,true,true,true', `[${nombre}] los iconos de las categorias no son los de la cinta (${JSON.stringify(m.etiquetas)})`);
     t.ok(m.etiquetas.every((e) => ES_FRAUNCES.test(e.letra) && e.cursiva === 'italic' && e.ola === 'true' && e.alto >= 24), `[${nombre}] las categorias no van en Fraunces cursiva con la ola, o miden menos de 24 px (${JSON.stringify(m.etiquetas)})`);
     t.ok(m.estrellas.length === 3 && m.estrellas.every((a) => a === 'true'), `[${nombre}] las estrellas no son adorno (${m.estrellas})`);
-    t.ok(m.elegida?.[0] === HORNO && m.elegida?.[1] === PAPEL && m.elegida?.[2] === 1, `[${nombre}] la elegida no va en la pastilla horno (una sola, la que viaja) con texto papel (${m.elegida})`);
+    // Sobre la banda de horno, la pastilla es papel con texto horno.
+    t.ok(m.elegida?.[0] === PAPEL && m.elegida?.[1] === HORNO && m.elegida?.[2] === 1, `[${nombre}] la elegida no va en la pastilla papel (una sola, la que viaja) con texto horno (${m.elegida})`);
     t.ok(m.lineas === 2 && m.campos.length === 1 && m.campos.every((c) => c === PAPEL), `[${nombre}] los mandos no van entre lineas dobles o el buscador no es papel (${m.lineas}, ${m.campos})`);
-    t.ok(m.ordenBoton[0] === 'rgba(0, 0, 0, 0)' && m.ordenBoton[1] === '1px' && m.ordenBoton[2] === '1px', `[${nombre}] el boton de Ordenar por no es un cuadro con filete fino y sin relleno (${m.ordenBoton})`);
-    t.ok(m.mando[0] === 'uppercase' && m.cuenta[0].startsWith('Mostrando 17 de 17') && m.cuenta[1] === 'uppercase' && m.cuenta[2] === CORTEZA_OSCURA, `[${nombre}] los rotulos o la cuenta no van en versalitas (${JSON.stringify([m.mando, m.cuenta])})`);
+    t.ok(m.ordenBoton[0] === PAPEL && m.ordenBoton[1] === '1px' && m.ordenBoton[2] === '1px', `[${nombre}] el boton de Ordenar por no es un cuadro papel con filete fino (${m.ordenBoton})`);
+    t.ok(m.mando[0] === 'uppercase' && m.cuenta[0].startsWith('Mostrando 17 de 17') && m.cuenta[1] === 'uppercase' && m.cuenta[2] === SOBRE_HORNO, `[${nombre}] los rotulos o la cuenta no van en versalitas (${JSON.stringify([m.mando, m.cuenta])})`);
     t.ok(m.aviso === 'polite', `[${nombre}] el aviso del catalogo cambio (${m.aviso})`);
     t.ok(m.anchoPagina <= m.ancho && m.etiquetas.every((e) => e.derecha <= m.ancho), `[${nombre}] "Filtrar por" se sale de la pantalla (${JSON.stringify(m.etiquetas.map((e) => Math.round(e.derecha)))})`);
 

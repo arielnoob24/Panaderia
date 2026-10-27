@@ -2,7 +2,7 @@
 // "Cómo llegar" de la portada y "Conoce nuestro local" de #/nosotros, que
 // llevan a #/contacto, y WhatsApp e Instagram de #/contacto, que salen del
 // sitio: un enlace y no un boton, en Fraunces cursiva con su icono y un
-// filete cobre. Con el puntero las letras saltan una tras otra (TextoOla)
+// filete horno. Con el puntero las letras saltan una tras otra (TextoOla)
 // sin cambiar el nombre accesible.
 //
 // Sin href va a #/contacto, y entrar con el es llegar a la vista de cero

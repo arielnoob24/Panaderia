@@ -11,6 +11,7 @@
 import { useRef } from 'react';
 import { useVista } from '../comun/useVista.js';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
+import Franja from '../comun/Franja.jsx';
 import '../estilos/cuenta.css';
 
 function MarcoCuenta({ paso, titulo, pestana, children }) {
@@ -25,6 +26,7 @@ function MarcoCuenta({ paso, titulo, pestana, children }) {
         </div>
         {children}
       </section>
+      <Franja className="franja-pie" />
     </div>
   );
 }

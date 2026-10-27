@@ -8,7 +8,7 @@
    Reparto 60-30-10 en cada vista:
      60  masa y papel: el fondo y las fichas
      30  horno: el texto, la barra y una banda oscura por vista
-     10  ambar (cobre): botones, iconos, filetes y los dibujos del fondo */
+     10  ambar (melocoton): botones, iconos, filetes y los dibujos del fondo */
 
 /* ---- Lo comun --------------------------------------------------------- */
 
@@ -80,13 +80,13 @@
 .frase { max-width: 30rem; margin: 0; color: var(--horno-suave); font: italic 400 1.6rem/1.4 var(--letra-titulo); font-variation-settings: "opsz" 24; }
 /* "Como llegar" y "Conoce nuestro local" son enlaces y no botones (L1,
    seccion 10 del plan; EnlaceLlegar.jsx): Fraunces en cursiva, grande y
-   gruesa para que se vea junto al ticket, con el pin en cobre y un
+   gruesa para que se vea junto al ticket, con el pin en ambar y un
    filete fino, sin relleno. Con el puntero las letras saltan una tras otra
    (la ola: cada una es un span de TextoOla.jsx con su turno en --i), el
    filete pasa a horno (el texto ya es horno, 13,9:1 sobre la masa) y el pin da un
    saltito. Mide mas de 30 px de alto: pasa los 24. Relativa por el nombre
    escondido (sr-only) que lleva dentro. */
-.enlace-llegar { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding: .42rem .9rem; border: 1px solid var(--ambar); border-radius: var(--r-btn); color: var(--horno); font: italic 600 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.enlace-llegar { position: relative; display: inline-flex; align-items: center; gap: .5rem; padding: .42rem .9rem; border: 1px solid var(--horno); border-radius: var(--r-btn); color: var(--horno); font: italic 600 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 .enlace-llegar .ico { width: 24px; height: 24px; color: var(--ambar); stroke-width: 1.8; transition: transform var(--dur-base) var(--ease-soft); }
 .enlace-llegar .letras span { display: inline-block; white-space: pre; }
 /* Las letras de la ola (TextoOla.jsx) van cada una en su caja, y entre dos
@@ -142,7 +142,7 @@
    secuencia, sin cambiar el nombre accesible. Un blanco tenue, como el del
    menu, dejaria el texto claro sobre la pastilla por debajo de 4,5:1. */
 .cinta { background: var(--horno); color: var(--papel); border-block: 6px double var(--masa); }
-.cinta-dentro { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 2rem; padding-block: .7rem; }
+.cinta-dentro { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 2rem; padding-block: 2.3rem; }
 .cinta-enlace { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--papel); font: italic 400 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 .cinta-enlace .ico { width: 1.35em; height: 1.35em; color: var(--masa); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
 .cinta-enlace .letras span { display: inline-block; white-space: pre; }
@@ -388,6 +388,31 @@
 .vista-cabeza:not(.es-catalogo) .solo-catalogo { display: none; }
 .vista-vacio { width: 100%; margin: 1.5rem 0 0; color: var(--horno-suave); font: 1rem var(--letra-titulo); text-align: center; }
 
+/* La cabeza de la tienda es una banda de horno (seccion 10 del plan, "Tres
+   colores, 60-30-10"): suma al 30 % de horno de la vista, como la banda de
+   la cuenta. Dentro, todo lo que iba en horno pasa a claro y lo que iba en
+   claro (la pastilla de la categoria, los campos) se queda claro: papel
+   sobre horno, 13,7:1. El ambar sobre horno (7:1) sirve para iconos y para
+   el halo del foco. */
+.vista-cabeza.es-catalogo { padding: clamp(1.4rem, 3.4vw, 2.6rem) clamp(1.2rem, 3.4vw, 2.6rem) clamp(1.1rem, 2.4vw, 1.8rem); background: var(--horno); border-radius: var(--r-card); color: var(--sobre-horno); }
+.vista-cabeza.es-catalogo .fondo-dibujo { border-radius: var(--r-card); opacity: .12; }
+.vista-cabeza.es-catalogo :is(.rotulo, .vista-mando > span:not(.sr-only), .vista-cuenta, .casilla) { color: var(--sobre-horno); }
+.vista-cabeza.es-catalogo .titular, .vista-cabeza.es-catalogo .titular em { color: var(--papel); }
+.vista-cabeza.es-catalogo .frase { color: var(--sobre-horno-tenue); }
+.vista-cabeza.es-catalogo .vista-vacio { color: var(--sobre-horno-tenue); }
+.vista-cabeza.es-catalogo .linea-doble { border-color: var(--sobre-horno-tenue); }
+.vista-cabeza.es-catalogo .chip { color: var(--papel); }
+.vista-cabeza.es-catalogo .chip-pastilla { background: var(--papel); }
+.vista-cabeza.es-catalogo .chip-input:checked + .chip, .con-puntero .vista-cabeza.es-catalogo .chip-input:checked + .chip:hover, .con-puntero .vista-cabeza.es-catalogo .chip:hover { color: var(--horno); }
+.vista-cabeza.es-catalogo .chip-input:checked + .chip .ico, .con-puntero .vista-cabeza.es-catalogo .chip:hover .ico { color: var(--horno); }
+.vista-cabeza.es-catalogo .orden-boton { background: var(--papel); }
+/* Sobre el horno el anillo es papel con el halo ambar. */
+.vista-cabeza.es-catalogo :is(.chip-input:focus-visible + .chip, .orden-boton:focus-visible, .vista-buscar input:focus-visible, .casilla-input:focus-visible + .casilla-caja) { outline-color: var(--papel); }
+body.is-vista .catalog { padding-top: 108px; }
+@media (max-width: 680px) {
+  body.is-vista .catalog { padding-top: 88px; }
+}
+
 /* La entrada: el texto sube en orden (.sube-en-orden) y despues llegan los
    mandos y se dibujan sus lineas. Es de montaje: al cambiar de categoria
    la vista no se vuelve a montar y no se repite. */
@@ -497,6 +522,15 @@
 /* WhatsApp e Instagram, uno al lado del otro, con su rotulo encima. */
 .contacto-lista { display: flex; flex-wrap: wrap; gap: .8rem 2.2rem; }
 .contacto-nota { max-width: 52ch; margin: clamp(.5rem, 1.8svh, 1.1rem) 0 0; color: var(--horno-suave); font: .85rem/1.5 var(--letra-texto); }
+/* "Escribenos" es una banda de horno (seccion 10 del plan, "Tres colores,
+   60-30-10"): con la barra, la franja y esta banda, Contacto llega al 30 %
+   de horno. Dentro, texto papel (13,7:1) y el pin ambar (7:1). */
+.contacto-escribir { padding: clamp(.4rem, 1.3svh, 1.4rem) clamp(1rem, 2.4vw, 1.8rem); background: var(--horno); border-radius: var(--r-card); color: var(--sobre-horno); }
+.contacto-escribir :is(.contacto-subtitulo, .rotulo) { color: var(--sobre-horno); }
+.contacto-escribir .linea-doble { border-color: var(--sobre-horno-tenue); }
+.contacto-escribir .enlace-llegar, .contacto-escribir .enlace-llegar:hover { border-color: var(--papel); color: var(--papel); }
+.contacto-escribir .enlace-llegar:focus-visible { outline-color: var(--papel); }
+.contacto-escribir .contacto-nota { color: var(--sobre-horno-tenue); }
 
 /* Con menos movimiento, todo quieto y a la vista desde el principio. */
 @media (prefers-reduced-motion: reduce) {
@@ -566,7 +600,7 @@
   .vista-inicio .portada-acciones { gap: .45rem .7rem; margin-top: .65rem; }
   .vista-inicio .portada-llegar { min-height: 36px; padding: .25rem .55rem; font-size: clamp(.95rem, 4vw, 1.12rem); }
   .vista-inicio .cinta { flex: 0 0 auto; }
-  .vista-inicio .cinta-dentro { flex-wrap: nowrap; gap: 0; padding: .3rem 52px .3rem .25rem; }
+  .vista-inicio .cinta-dentro { flex-wrap: nowrap; gap: 0; padding: 2.7rem 52px 2.7rem .25rem; }
   .vista-inicio .cinta-enlace { min-width: 0; flex: 1 1 0; justify-content: center; gap: .2rem; padding: .3rem .12rem; font-size: clamp(.75rem, 3.2vw, .9rem); }
   .vista-inicio .cinta-enlace .ico { width: 1.15em; height: 1.15em; }
   .vista-inicio .cinta-enlace .letras { min-width: 0; }
@@ -626,7 +660,7 @@
   .contacto-texto .titular em { padding-left: .45em; }
   .contacto-direccion { grid-area: direccion; font-size: clamp(.88rem, 2.2svh, 1.05rem); line-height: 1.3; }
   .contacto-mapa-enlace { grid-area: boton; justify-self: start; margin-top: clamp(.5rem, 1svh, .8rem); }
-  .contacto-mapa-marco { height: clamp(150px, 40svh - 150px, 200px); margin: 7px; box-shadow: 0 0 0 6px var(--masa), 0 0 0 7px var(--horno); }
+  .contacto-mapa-marco { height: clamp(120px, 40svh - 175px, 200px); margin: 7px; box-shadow: 0 0 0 6px var(--masa), 0 0 0 7px var(--horno); }
   .contacto-sello { top: -10px; right: -6px; width: clamp(60px, 9svh, 80px); }
   .contacto-cabeza { margin-bottom: clamp(.3rem, 1svh, .6rem); }
   .carta-horario dt, .carta-horario dd { font-size: clamp(.95rem, 2.4svh, 1.1rem); }
@@ -657,7 +691,8 @@
   .contacto-texto .titular { margin: .25rem 0 .1rem; font-size: clamp(1.6rem, 8.4vw, 2.2rem); line-height: 1.05; }
   .contacto-texto .titular em { display: inline; padding-left: 0; }
   .contacto-direccion br { display: none; }
-  .contacto-mapa-marco { height: clamp(120px, 40svh - 150px, 200px); }
+  .contacto-mapa-marco { height: clamp(90px, 40svh - 170px, 200px); }
+  .contacto-escribir { padding-block: .35rem; }
   /* Y los espacios, al minimo; el ticket sigue en 44 px de alto. */
   .contacto-vista { padding-top: .25rem; }
   .contacto-rejilla { gap: .35rem; }
@@ -736,12 +771,21 @@
    flotante puede quedar encima sin tapar nada que se lea. */
 .franja-pie { margin-top: 2rem; }
 .franja-pie::after { top: -22px; bottom: auto; height: 22px; border-radius: 50% 50% 0 0 / 22px 22px 0 0; }
-.franja-pie .sign-band-inner { min-height: 64px; }
+.franja-pie .sign-band-inner { min-height: 84px; }
 @media (max-width: 680px) {
-  .franja-pie .sign-band-inner { min-height: 52px; }
+  .franja-pie .sign-band-inner { min-height: 130px; }
   .franja-pie .sign-trigo { width: 120px; }
 }
 body.is-vista .franja-pie { display: block; }
+/* Nosotros cabe justo en una pantalla: su franja se queda baja. En Contacto,
+   en el telefono, tambien (la banda de Escribenos ya pone su horno). */
+.vista-nosotros .franja-pie .sign-band-inner { min-height: 64px; }
+.vista-contacto .franja-pie .sign-band-inner { min-height: 70px; }
+@media (max-width: 680px) {
+  .vista-nosotros .franja-pie .sign-band-inner { min-height: 52px; }
+  .vista-contacto .franja-pie .sign-band-inner { min-height: 24px; }
+  .contacto-escribir { padding: .6rem .9rem; }
+}
 
 /* ---- Las vistas que llegan en su propio archivo (comun/cargaPorPartes.js) -
    Al abrir la pagina en la cuenta o en el pago, mientras llega su archivo,

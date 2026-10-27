@@ -524,34 +524,28 @@ pedido sigue valiendo.
 - `assets/css/styles.css` es la base, con variables en `:root` (colores
   `--masa`, `--horno`, `--ambar`, `--papel`; sombras, radios,
   duraciones y curvas). Lo propio de las vistas va en `src/estilos/`.
-- **Tres colores, 60-30-10** (26 de octubre de 2026; el vino de la paleta
-  anterior rompía el reparto: la cinta de Inicio era un bloque vino de ancho
-  completo y el vino sumaba al cobre como segundo acento). Ahora el sitio
-  tiene tres colores y nada más:
-  - **60 %** `--masa` / `--papel`: fondos y fichas.
-  - **30 %** `--horno`: texto, barra, cinta, franja de las espigas y bandas
-    oscuras (todo bloque grande oscuro es horno).
-  - **10 %** `--ambar` (cobre `#c98642`, hover `--ambar-claro` `#dba062`),
-    el **único acento**: botones, estados activos, iconos, filetes, bordes
-    de hover y dibujos del fondo.
-  - Desaparecen `--corteza`, `--corteza-oscura` y `--aviso-cerrado`. Los
-    textos pequeños que iban en corteza oscura van en `--horno` (o
-    `--horno-suave` si son secundarios). Los rellenos que iban en corteza
-    (cinta, `sign-band`, botón de pagar, etiquetas, "sí, quitar") van en
-    `--horno`. Iconos, filetes y bordes que iban en corteza van en `--ambar`.
-  - El cobre sobre `--masa` da **2,7:1** (2,96:1 sobre `--papel`; medido el 26
-    de octubre de 2026, el 3,3:1 que decía esto era un error): sirve para
-    iconos y filetes decorativos, no llega a los 3:1 de un borde que
-    identifique un control, y **nunca vale para texto** (ahí va `--horno`).
-    Los campos con error llevan por eso borde `--horno` de 2 px. Sobre
-    `--horno` da 4,6:1 y sirve también como texto.
-  - Sin rojo, "cerrado" y los errores no se distinguen por color: llevan
-    siempre texto además del tono, como pide WCAG 1.4.1: los errores de
-    campo, un "!" delante, el texto en negrita y el borde horno de 2 px;
-    "cerrado", la palabra y el punto horno (el abierto es cobre).
+- **Tres colores, 60-30-10** (26 de octubre de 2026; el usuario fijó los
+  tres): el sitio tiene estos colores y nada más.
+  - **60 %** `--masa` `#f7f1e7` (+ `--papel`): fondo y fichas.
+  - **30 %** `--horno` `#3a2822`: texto y bloques oscuros (barra, cinta,
+    franja de las espigas, bandas). Debe haber bandas de horno suficientes
+    en cada vista para acercarse al 30 % (cinta y franja más altas, una
+    banda oscura en Tienda y Contacto).
+  - **10 %** `--ambar` `#e8a87c` (melocotón; hover `--ambar-claro`
+    `#f3c4a0`): marca y acciones principales. Nunca un bloque grande.
+  - Desaparecen `--corteza`, `--corteza-oscura` y `--aviso-cerrado` (el
+    ladrillo y el vino, que rompían el reparto). Los textos pequeños van en
+    `--horno` (o `--horno-suave`), los rellenos oscuros en `--horno`.
+  - Contrastes: horno sobre ámbar 7,5:1 (el texto de los botones); ámbar
+    sobre horno 7:1 (acento en la barra y las bandas). **Ámbar sobre
+    masa/papel es solo ~1,9:1**: vale como relleno con texto horno
+    encima y como adorno, **nunca como texto ni como borde de un control**
+    (bordes de control, de error y de foco van en `--horno`).
+  - "Cerrado" y los errores llevan siempre texto (y icono o subrayado)
+    además del tono, como pide WCAG 1.4.1.
 - **Regla 60-30-10** en cada vista, **medida con capturas** (1440 y 390 px,
-  `revision-visual`): masa/papel entre 55 y 65 %, horno entre 25 y 35 %, y el
-  acento (cobre) no pasa del 12 %.
+  `revision-visual`, sin contar las fotos): masa/papel entre 55 y 70 %,
+  horno entre 22 y 35 %, y el ámbar no pasa del 12 %.
 - **Fondos**: dibujos de línea de trigo, maíz y pan en SVG propio
   (`comun/trazos.jsx`, `FondoDibujo.jsx`), distintos en cada vista y en cada
   paso de la cuenta, quietos, `aria-hidden` y tenues (medidos: el texto de
@@ -664,7 +658,7 @@ ritmo del movimiento y la accesibilidad no cambian.
   - **"Ir a pagar" y el botón final de pagar**, los protagonistas: el mismo
     ticket en **`--horno` con texto `--papel` y sombra `--ambar`** (K1 de
     `muestra-colores.html`, 23 de octubre de 2026; desde el 26 de octubre de
-    2026 en horno y con la sombra cobre, porque el vino desapareció), a todo
+    2026 en horno y con la sombra ámbar, porque el vino desapareció), a todo
     lo ancho de la canasta. Así no se confunde con el `+` ámbar de agregar.
     Papel sobre horno da 13,7:1.
   - **Secundario** (`.button-otro`: "Ya tengo cuenta…", "No tengo
@@ -830,11 +824,13 @@ entrada), no copiadas.
   los puntos son el borde punteado de un `::after` del `dt`, sin texto.
   Si la fila no cabe, la hora baja a la línea siguiente. "En feriados
   nacionales cerramos." debajo, en cursiva. El estado va en una pastilla
-  papel con el texto en horno, con la palabra "Abierto" o "Cerrado" y un punto cobre
+  papel con el texto en horno, con la palabra "Abierto" o "Cerrado" y un punto ámbar
   (abierto) u horno (cerrado): el
   ámbar de antes era para el fondo oscuro.
 - **Escríbenos**: WhatsApp e Instagram con el aspecto de "Cómo llegar"
-  (Fraunces en cursiva, filete `--ambar`, su icono y la ola de letras;
+  (Fraunces en cursiva, filete fino, su icono ámbar y la ola de letras;
+  desde el 26 de octubre de 2026 van **dentro de una banda `--horno`**, con
+  el texto y el filete en `--papel`;
   es el mismo `EnlaceLlegar`, que con `href` se abre en otra pestaña y lo
   dice en el nombre), uno al lado del otro con el rótulo de cada uno
   encima, y la nota de que son de ejemplo, que **se ve siempre**:
@@ -868,8 +864,8 @@ Como Nosotros y Contacto, sin muestra y con las mismas piezas comunes.
 Cambia la cabecera de la vista; las fichas siguen editoriales (más
 pequeñas desde el 25 de octubre, sección 4).
 
-- **Sin la tarjeta oscura**: la cabecera va sobre la masa con el grano y
-  su `FondoDibujo`. El `--horno` queda en la barra, el texto, el borde de
+- **Banda de horno** (26 de octubre de 2026, "Tres colores, 60-30-10"): la cabecera es una banda `--horno` de esquinas `--r-card` (rótulo, título, filtro, mandos y cuenta, dentro de ella) con el grano de antes ya solo en la masa de alrededor y
+  su `FondoDibujo` en ámbar tenue. Dentro, texto `--papel` / `--sobre-horno`; la categoría elegida es una pastilla `--papel` con texto `--horno`; el buscador, "Ordenar por" y la casilla van en `--papel`; el foco es un anillo `--papel` con halo ámbar. El `--horno` además queda en la barra, el borde de
   las fichas y la categoría elegida.
 - **El texto**, alineado a la izquierda como la portada (sin "Volver al
   inicio" desde el 25 de octubre): el rótulo con la espiga **"Nuestra vitrina"**; el
@@ -1012,14 +1008,17 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       solo al ir a pagar se le avise, que es como ya funciona (sección 5).
       Sin invitado y sin aviso previo (22 de octubre de 2026).
 - [ ] axe (menor): la barra de deshacer fuera de un punto de referencia (`region`).
-- [ ] Tres colores 60-30-10 (sección 10, 26 de octubre de 2026): quitar
-      `--corteza*` y `--aviso-cerrado`, cinta y franja en horno, acento
-      único cobre; medir 60-30-10 con capturas en cada vista.
-      Hecho el 26 de octubre de 2026 en el código y las pruebas, pero **sigue
-      abierta**: lo medido en 1440 y 390 px es masa/papel 55-84 % y horno
-      solo 8-20 % (la barra y la cinta no llegan al 25 %); el cobre cumple
-      (1-5 %). Falta decidir cómo subir el horno (bloques oscuros más
-      grandes) o relajar el objetivo.
+- [~] Tres colores 60-30-10 con ámbar #e8a87c (sección 10, 26 de octubre de
+      2026): hecho el ámbar melocotón y las bandas (cinta y franja más altas,
+      banda en Tienda, "Escríbenos" en Contacto, losa y franja en la cuenta).
+      Medido a 1440 y 390 px (claro / horno / ámbar, sin fotos): Inicio
+      69,7 / 25,9 / 4,4 y 68,3 / 25,5 / 6,2; Tienda 69,1 / 30,1 / 0,8 y
+      74,7 / 23,8 / 1,5; Nosotros 72,0 / 26,6 / 1,4 y 72,3 / 25,0 / 2,7;
+      Contacto 69,6 / 29,1 / 1,3 y 60,7 / 34,0 / 5,2; Cuenta (entrar) 65,2 /
+      33,1 / 1,8 y 65,9 / 28,3 / 5,8. **Falta**: el claro pasa un poco de 70
+      en Nosotros (cabe justo en una pantalla y la foto no puede bajar de
+      500 px) y en la Tienda del teléfono (74,7: las fichas son papel y la
+      página es larga). Falta decidir si se acepta o se baja la foto.
 - [ ] Tras recargar, la tienda no recuerda el desplazamiento de las entradas
       de antes (Atrás entre categorías da arriba); se arreglaría con
       `sessionStorage`. No urge.
@@ -1116,7 +1115,7 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       tabula a una ficha, el salto no se cancela (`useFila.js`, escuchar
       también `keydown` y `focusin`).
 - [x] El buscador y "Ordenar por" de la tienda se quedan con el borde
-      cobre al pasar el ratón (el usuario lo aprobó).
+      ámbar al pasar el ratón (el usuario lo aprobó).
 
 ### Base de datos
 - [x] Modelo y script de creación en PostgreSQL (`bd/BD_EL_TRADICIONAL.sql`).

@@ -12,7 +12,7 @@
 //   hueco (filete en anillo) y se rellena de masa con el raton; mientras se
 //   paga, el giro se ve;
 // - "Como llegar" es un enlace en Fraunces cursiva 600 de unos 1.35rem, con
-//   el pin cobre de 24 px, un filete fino y sin raya, y se llama "Cómo llegar"
+//   el pin ambar de 24 px, un filete fino horno y sin raya, y se llama "Cómo llegar"
 //   aunque cada letra vaya en su span aria-hidden; con el raton las letras
 //   saltan (salta) y con menos movimiento no;
 // - el menu: con el raton el blanco tenue (papel al 16 %) aparece sobre el
@@ -34,11 +34,10 @@ export const descripcion = 'botones en ticket (mascara, sombra, foco fuera de la
 export const limite = 180;
 
 const HORNO = 'rgb(58, 40, 34)';
-const AMBAR = 'rgb(201, 134, 66)';
+const AMBAR = 'rgb(232, 168, 124)';
 const AMBAR_CLARO = 'rgb(219, 160, 98)';
 const PAPEL = 'rgb(255, 253, 248)';
 const MASA = 'rgb(247, 241, 231)';
-const COBRE = AMBAR;
 const CORRIDA = 'matrix(1, 0, 0, 1, 4, 4)';
 
 // El contraste WCAG entre dos colores rgb(...).
@@ -148,8 +147,8 @@ export default async function botones(t) {
     t.ok(conNombre === 1 && llegar.letrasEscondidas === 'true' && llegar.letras === 'Cómo llegar' && llegar.sueltas === 11, `[${nombre}] "Como llegar" no se llama "Cómo llegar" con sus letras sueltas escondidas (${conNombre} enlaces con ese nombre, ${JSON.stringify(llegar)})`);
     const tamanoLlegar = nombre === 'movil' ? 16 : 21.6;
     t.ok(/^"?Fraunces/.test(llegar.letra) && llegar.estilo === 'italic' && llegar.peso === '600' && Math.abs(llegar.tamano - tamanoLlegar) < 0.5, `[${nombre}] "Como llegar" no tiene el tamano responsive Fraunces cursiva 600 (${JSON.stringify(llegar)})`);
-    t.ok(llegar.pin && llegar.pinAncho === 24 && llegar.pinColor === COBRE, `[${nombre}] el pin de "Como llegar" no es cobre de 24 px (${JSON.stringify(llegar)})`);
-    t.ok(llegar.borde === 'solid' && llegar.bordeColor === COBRE && llegar.bordeAncho === '1px' && llegar.radio === '12px' && llegar.fondo === 'rgba(0, 0, 0, 0)' && llegar.raya === 'none' && llegar.rayaDespues === 'none' && llegar.alto >= 24, `[${nombre}] "Como llegar" no tiene un filete fino sin relleno, lleva raya o mide menos de 24 px (${JSON.stringify(llegar)})`);
+    t.ok(llegar.pin && llegar.pinAncho === 24 && llegar.pinColor === AMBAR, `[${nombre}] el pin de "Como llegar" no es ambar de 24 px (${JSON.stringify(llegar)})`);
+    t.ok(llegar.borde === 'solid' && llegar.bordeColor === HORNO && llegar.bordeAncho === '1px' && llegar.radio === '12px' && llegar.fondo === 'rgba(0, 0, 0, 0)' && llegar.raya === 'none' && llegar.rayaDespues === 'none' && llegar.alto >= 24, `[${nombre}] "Como llegar" no tiene un filete fino sin relleno, lleva raya o mide menos de 24 px (${JSON.stringify(llegar)})`);
     t.ok(await p.locator('.h-imprenta, .h-ola, .boton-duro, .nav-pastilla').count() === 0, `[${nombre}] quedan piezas viejas (h-imprenta, h-ola, boton-duro o nav-pastilla)`);
 
     // Con el raton, "Como llegar" pasa a borde horno, el pin salta y las

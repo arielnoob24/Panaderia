@@ -1,15 +1,16 @@
 :root {
   /* Tres colores (60-30-10) y sus derivados.
      Reparto 60-30-10: masa el fondo, horno el texto y los bloques oscuros,
-     ambar (cobre) el unico acento: botones, iconos, filetes y bordes. */
+     ambar (melocoton) el unico acento: relleno de botones, iconos y adornos;
+     nunca texto ni borde de un control sobre claro (solo ~1,9:1). */
   --masa: #f7f1e7;
   --horno: #3a2822;
-  --ambar: #c98642;
+  --ambar: #e8a87c;
   --papel: #fffdf8;
 
   /* Tonos derivados de los cinco de arriba. No son colores nuevos:
      cada uno es el mismo matiz con otra luminosidad. */
-  --ambar-claro: #dba062;      /* acento en hover */
+  --ambar-claro: #f3c4a0;      /* acento en hover */
   --horno-suave: #5e514a;      /* texto secundario sobre fondo claro */
   --horno-claro: #7a6c65;      /* horno aclarado con masa, para el puntero en los filtros */
   --masa-linea: #ded2c2;       /* bordes y filetes */
@@ -269,7 +270,7 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .banda-oscura .button-otro, .story .button-otro { color: var(--sobre-horno); }
 .text-link { display: inline-flex; gap: .65rem; align-items: center; padding-bottom: .3rem; border-bottom: 1px solid currentColor; border-radius: 4px 4px 0 0; color: var(--horno); font: 700 .9rem Arial, sans-serif; }
 .text-link:hover { color: var(--horno); }
-.status-dot { display: inline-block; width: 8px; height: 8px; margin-top: .38rem; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 0 4px rgba(201, 134, 66, .2); }
+.status-dot { display: inline-block; width: 8px; height: 8px; margin-top: .38rem; border-radius: 50%; background: var(--ambar); box-shadow: 0 0 0 4px rgba(232, 168, 124, .2); }
 .status-dot.is-closed { background: var(--horno); box-shadow: 0 0 0 4px rgba(58, 40, 34, .22); }
 
 /* ---- Piezas del estilo editorial (seccion 10 del plan, "Estilo") -------
@@ -410,7 +411,7 @@ h2 em { color: var(--ambar); font-weight: 500; }
    de cantidad y no un formulario metido en la ficha. */
 .card-cantidad .card-numero { width: 2.6ch; min-width: 24px; padding: .15rem 0; background: none; border: 1px solid transparent; border-radius: var(--r-chip); color: var(--horno); font: 600 1.05rem/1 var(--letra-titulo); text-align: center; font-variant-numeric: lining-nums tabular-nums; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
 .con-puntero .card-cantidad .card-numero:hover { border-color: var(--masa-linea); }
-.card-cantidad .card-numero:focus { background: var(--papel); border-color: var(--ambar); outline: none; }
+.card-cantidad .card-numero:focus { background: var(--papel); border-color: var(--horno); outline: none; }
 .card-cantidad .card-numero:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .card-cantidad button[hidden], .card-cantidad .card-numero[hidden] { display: none; }
 .card-cantidad.is-lleno .card-menos, .card-cantidad.is-lleno .card-numero { animation: cantidad-abre var(--dur-base) var(--ease-soft) both; }
@@ -770,7 +771,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-menu .cuenta-menu-opcion { display: flex; min-height: 44px; align-items: center; gap: .75rem; }
 .cuenta-menu-opcion > span:not(.cuenta-menu-numero) { flex: 1; }
 .cuenta-menu-opcion .cuenta-icono { width: 20px; height: 20px; flex: 0 0 auto; color: var(--ambar); }
-.cuenta-menu-numero { display: grid; min-width: 24px; height: 22px; padding: 0 7px; place-items: center; background: rgba(201, 134, 66, .2); border-radius: var(--r-pill); color: var(--papel); font: 700 .74rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }
+.cuenta-menu-numero { display: grid; min-width: 24px; height: 22px; padding: 0 7px; place-items: center; background: rgba(232, 168, 124, .2); border-radius: var(--r-pill); color: var(--papel); font: 700 .74rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .cuenta-menu-numero[hidden] { display: none; }
 .cuenta-menu-raya { margin: .3rem .5rem; border: 0; border-top: 1px solid rgba(255, 255, 255, .14); }
 /* Salir va en el tono de "cerrado" del pie: se distingue sin gritar. */
@@ -819,8 +820,8 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-paso { display: flex; min-height: 0; flex-direction: column; }
 
 /* El aviso de que esto es una maqueta va primero y no se puede confundir con un
-   campo: mismo tono cobre que los demas avisos de simulacion del sitio. */
-.cuenta-maqueta { margin: 0 0 1.1rem; padding: .7rem .85rem; background: rgba(201, 134, 66, .12); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; color: var(--horno-suave); font: .76rem/1.5 Arial, sans-serif; }
+   campo: mismo tono ambar que los demas avisos de simulacion del sitio. */
+.cuenta-maqueta { margin: 0 0 1.1rem; padding: .7rem .85rem; background: rgba(232, 168, 124, .12); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; color: var(--horno-suave); font: .76rem/1.5 Arial, sans-serif; }
 .cuenta-maqueta strong { color: var(--horno); }
 .cuenta-campo-opcional { color: var(--horno-claro); font-weight: 400; }
 
@@ -884,7 +885,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .cuenta-metodo-caja strong { display: block; color: var(--horno); font: 700 .95rem/1.3 Arial, sans-serif; }
 .cuenta-metodo-caja small { display: block; margin-top: .15rem; color: var(--horno-suave); font: .78rem/1.4 Arial, sans-serif; }
 .con-puntero .cuenta-metodo:hover .cuenta-metodo-caja { border-color: var(--ambar); }
-.cuenta-metodo input:checked + .cuenta-metodo-caja { background: rgba(201, 134, 66, .14); border-color: var(--ambar); }
+.cuenta-metodo input:checked + .cuenta-metodo-caja { background: rgba(232, 168, 124, .14); border-color: var(--horno); }
 .cuenta-metodo input:checked + .cuenta-metodo-caja::after { border: 6px solid var(--horno); }
 .cuenta-metodo input:focus-visible + .cuenta-metodo-caja { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .cuenta-pagos-hecho { margin: 0 0 1rem; }
@@ -982,7 +983,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-cabecera, .cuenta-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1.4rem 1.5rem 1rem; border-bottom: 1px solid var(--masa-linea); }
 .canasta-cabecera h2, .cuenta-cabecera h2 { margin: 0; font: 500 1.6rem/1.1 var(--letra-titulo); }
 .canasta-cabecera h2:focus, .cuenta-cabecera h2:focus { outline: none; }
-.canasta-cabecera h2:focus-visible, .cuenta-cabecera h2:focus-visible { outline: 2px solid var(--ambar); outline-offset: 5px; border-radius: 3px; }
+.canasta-cabecera h2:focus-visible, .cuenta-cabecera h2:focus-visible { outline: 2px solid var(--horno); outline-offset: 5px; border-radius: 3px; }
 .canasta-cerrar, .cuenta-cerrar { display: grid; width: 40px; height: 40px; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno); cursor: pointer; font: 1.5rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
 .con-puntero .canasta-cerrar:hover, .con-puntero .cuenta-cerrar:hover { background: var(--masa); }
 .canasta-cuerpo, .cuenta-cuerpo { flex: 1; overflow-y: auto; padding: 1.2rem 1.5rem; }
@@ -991,7 +992,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    que agarrara la vista; asi cada producto es una pieza que se reconoce. */
 .canasta-panel .canasta-cabecera { padding: 1.1rem 1.3rem .95rem; }
 .canasta-cabecera-titulo { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem; }
-.canasta-cabecera-cuenta { padding: .25rem .65rem; background: rgba(201, 134, 66, .2); border-radius: var(--r-pill); color: var(--horno); font: 700 .76rem/1.2 Arial, sans-serif; }
+.canasta-cabecera-cuenta { padding: .25rem .65rem; background: rgba(232, 168, 124, .2); border-radius: var(--r-pill); color: var(--horno); font: 700 .76rem/1.2 Arial, sans-serif; }
 .canasta-cabecera-cuenta[hidden] { display: none; }
 .canasta-panel .canasta-cuerpo { padding: 1rem 1.1rem 1.2rem; background: var(--masa); }
 .canasta-lista { display: grid; gap: .65rem; margin: 0; padding: 0; list-style: none; }
@@ -1047,8 +1048,8 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-vaciar-pregunta { padding: .8rem .9rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); text-align: left; }
 .canasta-vacio { display: grid; justify-items: center; gap: .35rem; margin: 3rem 0 1rem; text-align: center; }
 .canasta-vacio[hidden] { display: none; }
-/* La misma canasta del boton de la cabecera, en grande y en cobre. */
-.canasta-vacio-dibujo { width: 84px; height: 84px; margin-bottom: .6rem; background: var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c98642' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7.6 9.4a4.4 4.4 0 0 1 8.8 0'/%3E%3Cpath d='M3.6 9.4h16.8l-1.5 8.2a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z'/%3E%3Cpath d='M9.7 12.7l.6 3.5'/%3E%3Cpath d='M14.3 12.7l-.6 3.5'/%3E%3C/svg%3E") center / 44px no-repeat; border-radius: 50%; box-shadow: var(--shadow-contact); }
+/* La misma canasta del boton de la cabecera, en grande y en horno. */
+.canasta-vacio-dibujo { width: 84px; height: 84px; margin-bottom: .6rem; background: var(--papel) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233a2822' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7.6 9.4a4.4 4.4 0 0 1 8.8 0'/%3E%3Cpath d='M3.6 9.4h16.8l-1.5 8.2a2 2 0 0 1-2 1.6H7.1a2 2 0 0 1-2-1.6Z'/%3E%3Cpath d='M9.7 12.7l.6 3.5'/%3E%3Cpath d='M14.3 12.7l-.6 3.5'/%3E%3C/svg%3E") center / 44px no-repeat; border-radius: 50%; box-shadow: var(--shadow-contact); }
 .canasta-vacio-titulo { margin: 0; color: var(--horno); font: 500 1.35rem/1.2 var(--letra-titulo); }
 .canasta-vacio-dicho { margin: 0; color: var(--horno-suave); font: .9rem/1.5 Arial, sans-serif; }
 .canasta-vacio-ir { min-height: 44px; margin-top: .9rem; padding: .65rem 1.4rem; background: var(--horno); border: 0; border-radius: var(--r-pill); color: var(--papel); cursor: pointer; font: 700 .88rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
@@ -1074,7 +1075,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-opciones label { display: block; cursor: pointer; }
 .canasta-opciones input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .canasta-opciones span { display: grid; place-items: center; padding: .7rem .5rem; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); color: var(--horno-suave); font: 700 .82rem/1.2 Arial, sans-serif; text-align: center; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.canasta-opciones input:checked + span { background: rgba(201, 134, 66, .16); border-color: var(--ambar); color: var(--horno); }
+.canasta-opciones input:checked + span { background: rgba(232, 168, 124, .16); border-color: var(--horno); color: var(--horno); }
 .canasta-opciones input:focus-visible + span { outline: 2px solid var(--horno); outline-offset: 2px; }
 .canasta-direccion { margin-top: .7rem; }
 .canasta-direccion[hidden] { display: none; }
@@ -1132,12 +1133,12 @@ body.is-checkout .floating-whatsapp { display: none; }
    Los tres pasos (canasta, pago, comprobante) viven dentro del mismo panel:
    cada uno es una columna con su cuerpo desplazable y su pie fijo, y solo
    uno esta visible. Nada de colores nuevos: el ambar marca lo elegido y lo
-   aprobado, el cobre y el texto marcan lo que esta mal. */
+   aprobado, el ambar y el texto marcan lo que esta mal. */
 .canasta-pasos { display: flex; flex: 1; min-height: 0; flex-direction: column; }
 .canasta-paso { display: flex; flex: 1; min-height: 0; flex-direction: column; animation: paso-entra var(--dur-base) var(--ease-out) both; }
 .canasta-paso[hidden] { display: none; }
 @keyframes paso-entra { from { opacity: 0; transform: translateX(14px); } to { opacity: 1; transform: none; } }
-.pago-demo, .recibo-simulado { margin: 0 0 1.1rem; padding: .7rem .85rem; background: rgba(201, 134, 66, .16); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; color: var(--horno); font: .82rem/1.5 Arial, sans-serif; }
+.pago-demo, .recibo-simulado { margin: 0 0 1.1rem; padding: .7rem .85rem; background: rgba(232, 168, 124, .16); border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; color: var(--horno); font: .82rem/1.5 Arial, sans-serif; }
 .pago-demo strong { display: block; }
 .pago-metodos { margin-bottom: 1rem; }
 .pago-detalle[hidden] { display: none; }
@@ -1172,7 +1173,7 @@ body.is-checkout .floating-whatsapp { display: none; }
 }
 /* Sin rojo, el error no se dice solo con el color (WCAG 1.4.1): borde horno de
    2 px (el filete mas un aro interior), el texto del error con su "!" delante
-   y aria-invalid. El cobre solo no llega a 3:1 sobre la masa. */
+   y aria-invalid. El ambar solo no llega a 3:1 sobre la masa. */
 .pago-campo input.is-mal, .cuenta-campo input.is-mal { border-color: var(--horno); box-shadow: inset 0 0 0 1px var(--horno); }
 .pago-campo-error, .cuenta-campo-error { margin: .3rem 0 0; color: var(--horno); font: 700 .74rem/1.4 Arial, sans-serif; }
 .pago-campo-error::before, .cuenta-campo-error::before { content: "! " / ""; }
@@ -1248,7 +1249,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    gaveta y, pegada abajo, se salia por arriba con el titulo fuera. Se queda
    en el alto de la gaveta y lo que sobra se desplaza dentro de ella. */
 .pide-cuenta-hoja { max-height: 100%; overflow-y: auto; overscroll-behavior: contain; }
-.pide-cuenta-dibujo { display: grid; width: 68px; height: 68px; margin-bottom: .3rem; place-items: center; background: var(--ambar); border-radius: 50%; box-shadow: 0 0 0 8px rgba(201, 134, 66, .2); color: var(--horno); }
+.pide-cuenta-dibujo { display: grid; width: 68px; height: 68px; margin-bottom: .3rem; place-items: center; background: var(--ambar); border-radius: 50%; box-shadow: 0 0 0 8px rgba(232, 168, 124, .2); color: var(--horno); }
 .pide-cuenta-dibujo svg { width: 34px; height: 34px; }
 .pide-cuenta-hoja h3 { margin: 0; color: var(--horno); font: 500 1.5rem/1.2 var(--letra-titulo); }
 .pide-cuenta-hoja p { max-width: 32ch; margin: 0 0 .5rem; color: var(--horno-suave); font: .92rem/1.5 Arial, sans-serif; }

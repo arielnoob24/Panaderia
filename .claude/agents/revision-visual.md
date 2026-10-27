@@ -55,8 +55,9 @@ la cuenta, `logica-datos`.
 - `review-animations` para el movimiento: usa su tabla Antes / Despues / Por
   que.
 - La regla 60-30-10 del plan: mide con las capturas, no a ojo.
-  Son tres colores: masa/papel (60), horno (30) y un solo acento, el cobre
-  `--ambar` (10, tope 12). Cualquier rojo, vino o segundo acento es un fallo.
+  Son tres colores: masa/papel (60), horno (30) y un solo acento, el ambar
+  melocoton `--ambar` #e8a87c (10, tope 12). Cualquier rojo, vino, cobre u otro
+  segundo acento es un fallo.
 - El estilo elegido (seccion 10, "Estilo"): compara con las muestras que
   el usuario aprobo, `.claude/referencias/muestra-editorial.html` y, para
   los botones en ticket, `muestra-menu.html` (P2), y para el menu en
