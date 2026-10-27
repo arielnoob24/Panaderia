@@ -19,7 +19,6 @@ import Contactos from '../comun/Contactos.jsx';
 import Sello from '../comun/Sello.jsx';
 import { IconoPin, IconoTrigo } from '../comun/iconos.jsx';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
-import Franja from '../comun/Franja.jsx';
 
 // Las dos filas del horario y que dias cubre cada una (0 es domingo, como
 // getDay). Es lo que index.html dice con data-dias.
@@ -107,7 +106,6 @@ function Contacto() {
           </div>
         </div>
       </section>
-      <Franja className="franja-pie" />
     </div>
   );
 }

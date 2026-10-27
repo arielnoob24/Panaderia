@@ -119,23 +119,20 @@ const medir = (p) => p.evaluate(() => {
   const foto = r('.nosotros-foto');
   const principios = r('.nosotros-principios');
   const cabeza = r('.principios-cabeza');
-  const franja = r('.vista-nosotros .franja-pie');
   const rejilla = r('.nosotros-rejilla');
   const cabecera = r('.site-header');
   const seCruzan = (a, b) => Math.min(a.right, b.right) - Math.max(a.left, b.left) > 1 && Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top) > 1;
   return {
     // El aire: encima del conjunto, entre el texto y los principios, y
-    // entre el conjunto y la curva de la franja.
-    huecos: [rejilla.top - cabecera.bottom, cabeza.top - texto.bottom, franja.top - 22 - rejilla.bottom].map(Math.round),
+    // entre el conjunto y el borde de abajo.
+    huecos: [rejilla.top - cabecera.bottom, cabeza.top - texto.bottom, window.innerHeight - rejilla.bottom].map(Math.round),
     alto: document.documentElement.scrollHeight,
     ventana: window.innerHeight,
     anchoPagina: document.documentElement.scrollWidth,
     ancho,
-    franjaAbajo: Math.round(franja.bottom + window.scrollY),
     cortados,
-    // Ni la foto ni el texto pisan los principios, y la curva de la franja
-    // (sube 22 px) no pisa nada.
-    pisa: seCruzan(foto, principios) || seCruzan(texto, principios) || rejilla.bottom > franja.top - 22 + 1,
+    // Ni la foto ni el texto pisan los principios.
+    pisa: seCruzan(foto, principios) || seCruzan(texto, principios),
   };
 });
 
@@ -179,7 +176,6 @@ export default async function nosotros(t) {
       t.ok(m.frasesSeVen === 0, `[${nombre}] en el telefono se ven ${m.frasesSeVen} frases de los principios`);
     }
     t.ok(m.oscuras === 0, `[${nombre}] Nosotros todavia lleva banda oscura o el fondo de los principios`);
-    t.ok(/\bfranja-pie\b/.test(m.ultimo), `[${nombre}] Nosotros no termina en la franja (${m.ultimo})`);
     t.ok(m.rol === 'list', `[${nombre}] la lista de principios no lleva role="list" (${m.rol})`);
     t.ok(m.numeros.join() === 'N.º 1,N.º 2,N.º 3' && m.numerosOcultos, `[${nombre}] los numeros de los principios son ${JSON.stringify(m.numeros)}`);
     t.ok(m.numeroColor === 'rgb(58, 40, 34)', `[${nombre}] el numero no va en horno (${m.numeroColor})`);
@@ -188,7 +184,7 @@ export default async function nosotros(t) {
     t.ok(m.estrella.includes('✦'), `[${nombre}] no hay estrella entre los principios (${m.estrella})`);
 
     const d = await medir(p);
-    t.ok(d.alto <= d.ventana && d.franjaAbajo === d.ventana, `[${nombre}] Nosotros no cabe en la pantalla o la franja no llega al borde (${JSON.stringify(d)})`);
+    t.ok(d.alto <= d.ventana, `[${nombre}] Nosotros no cabe en la pantalla (${JSON.stringify(d)})`);
 
     if (nombre === 'escritorio') {
       // El icono se mueve con el raton encima.
@@ -245,9 +241,9 @@ export default async function nosotros(t) {
       await p.setViewportSize({ width: ancho, height: alto });
       await espera(150);
       const d = await medir(p);
-      t.ok(d.alto <= d.ventana && d.franjaAbajo === d.ventana, `[${ancho}x${alto}] Nosotros no cabe sin desplazarse (${d.alto} de ${d.ventana}, franja hasta ${d.franjaAbajo})`);
+      t.ok(d.alto <= d.ventana, `[${ancho}x${alto}] Nosotros no cabe sin desplazarse (${d.alto} de ${d.ventana})`);
       t.ok(d.cortados.length === 0 && !d.pisa && d.anchoPagina <= d.ancho, `[${ancho}x${alto}] algo se corta o se pisa (${JSON.stringify(d)})`);
-      // Centrado entre la barra y la franja, y el hueco entre el texto y los
+      // Centrado entre la barra y el borde de abajo, y el hueco entre el texto y los
       // principios, menor que los de arriba y abajo.
       const [encima, medio, debajo] = d.huecos;
       t.ok(Math.abs(encima - debajo) <= 4 && medio < Math.min(encima, debajo), `[${ancho}x${alto}] el conjunto no va centrado o el hueco del medio no es el menor (${d.huecos.join(', ')} px)`);

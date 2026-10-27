@@ -21,7 +21,6 @@ import { IconoTrigo } from '../comun/iconos.jsx';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
 import FotoEnArco from '../comun/FotoEnArco.jsx';
 import EnlaceLlegar from '../comun/EnlaceLlegar.jsx';
-import Franja from '../comun/Franja.jsx';
 
 const icono = {
   className: 'principio-icono', viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor',
@@ -109,7 +108,6 @@ function Nosotros() {
           </section>
         </div>
       </section>
-      <Franja className="franja-pie" />
     </div>
   );
 }

@@ -29,9 +29,6 @@ a.nav-cuenta { text-decoration: none; }
 /* Como Nosotros y Contacto, acaba en la franja de espigas pegada al borde de
    abajo (el 30 % de horno de la vista); la hoja deja aire sobre ella. */
 .cuenta-vista .cuenta-vista-caja { width: 100%; flex: 0 0 auto; margin: 0 auto 3rem; }
-.cuenta-vista .franja-pie { flex: 0 0 auto; margin-top: auto; }
-.cuenta-vista .franja-pie .sign-band-inner { min-height: 64px; }
-#raiz > main:has(.cuenta-vista) { padding-bottom: 0; }
 /* La losa de horno de la cuenta (seccion 10 del plan, "Tres colores,
    60-30-10"): de borde a borde, bajo la barra, une la barra con la banda
    del titulo en un solo bloque oscuro. */

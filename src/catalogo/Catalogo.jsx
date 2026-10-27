@@ -23,7 +23,6 @@ import { useVista } from '../comun/useVista.js';
 import { posicionTienda } from '../comun/apertura.js';
 import FichaProducto from './FichaProducto.jsx';
 import VistaCabeza from './VistaCabeza.jsx';
-import Franja from '../comun/Franja.jsx';
 import { filtroDe, fraseCategoria, nombreCategoria } from './categorias.js';
 
 const { productos } = catalogo;
@@ -301,7 +300,6 @@ function Catalogo({ categoria }) {
           </div>
         </div>
       </section>
-      <Franja className="franja-pie" />
     </>
   );
 }

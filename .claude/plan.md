@@ -139,11 +139,11 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
   (`pedido/GuardadoCanasta.jsx`); abierto/cerrado ya lo dice la
   cabecera de periódico de la portada y Contacto. La ayuda constante (WCAG
   3.2.6) es "Contáctanos" en el menú, en el mismo sitio en todas las vistas.
-  Nosotros, Contacto y la tienda terminan en la franja de espigas, pegada
-  al borde de abajo; la portada deja aire bajo la cinta (más en el
+  Nosotros, Contacto, la tienda y la cuenta ya no llevan franja de espigas
+  (26 de octubre de 2026: no aportaba nada) y terminan en su contenido; la portada deja aire bajo la cinta (más en el
   teléfono, para que la canasta flotante no tape el último enlace). En el
   teléfono cada vista deja 92 px abajo por la canasta flotante, salvo las
-  que acaban en la franja.
+  que ocupan la pantalla entera.
 - **Mapa** en `#/contacto`: `iframe` de Google Maps sin clave
   (`https://maps.google.com/maps?q=-1.004033,-77.812690&z=17&output=embed`),
   con `title` y `loading="lazy"`; "Ver en el mapa" va bajo la dirección
@@ -631,7 +631,7 @@ ritmo del movimiento y la accesibilidad no cambian.
     por fuera de la foto, en el margen, para no tapar el pan.
   - Al entrar: rótulo, título, frase y botones suben uno tras otro; la foto
     se descubre de abajo arriba; el sello cae girando. Una vez, escena.
-- **Cinta en horno** (en lugar de la franja de trigo): Panes, Dulces y
+- **Cinta en horno** baja (el relleno vertical de antes, no la versión alta del 26 de octubre) (en lugar de la franja de trigo): Panes, Dulces y
   pasteles, Bebidas, cada una con su icono de línea (hogaza, galleta con
   chispas, botella), separadas por ✦; cada una es un enlace a su categoría. Al pasar
   el puntero, cada icono acompaña la ola de las letras con un movimiento
@@ -732,7 +732,7 @@ clases o en piezas comunes, no copiado.
   movimiento breve propio, como los de la cinta.
 - **Todo en una sola pantalla, sin scroll** (pedido el 24 de octubre de
   2026), como la portada: la vista mide el alto visible (`100svh`), la
-  franja de espigas termina en el borde de abajo, y la foto, el sello, el
+  vista llena la pantalla, y la foto, el sello, el
   `h1` y los espacios se reducen según la altura (`clamp` con `svh`) sin
   desaparecer. En escritorio y tableta caben todos los textos; los
   principios van en una fila de tres.
@@ -772,7 +772,7 @@ la historia y los principios se leían como dos bloques:
   "N.º", icono, nombre y frase como antes, pero alineadas a la izquierda.
 - **El aire**: el hueco entre el texto y los principios es menor que los de
   arriba y abajo (se acaba el reparto a partes iguales); el conjunto va
-  centrado en vertical entre la barra y la franja.
+  centrado en vertical entre la barra y el borde de abajo.
 - **Tableta** (681–900 px): foto y texto arriba, principios debajo a todo
   lo ancho, como hasta ahora.
 - **En el teléfono** (sustituye al bullet de arriba): la foto en arco **a
@@ -839,7 +839,7 @@ entrada), no copiadas.
   enlaces suben uno tras otro; el mapa se descubre de abajo arriba; el
   sello cae girando; las líneas del horario se dibujan). Una vez.
 - **Todo en una sola pantalla, sin scroll**, como Nosotros: la vista mide
-  el alto visible (`min-height: 100svh`), la franja en el borde de abajo,
+  el alto visible (`min-height: 100svh`), el contenido hasta el borde de abajo,
   y el mapa, el sello, el `h1` y los espacios se reducen según la altura
   (`clamp` con `svh`). Cabe de 1440×900 a 360×640 (también 1366×768,
   1280×720, 900×1000, 768×1024, 390×844, 390×700 y 375×667). En el
@@ -1019,6 +1019,10 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       en Nosotros (cabe justo en una pantalla y la foto no puede bajar de
       500 px) y en la Tienda del teléfono (74,7: las fichas son papel y la
       página es larga). Falta decidir si se acepta o se baja la foto.
+      Después (26 de octubre de 2026) el usuario pidió quitar la franja de
+      espigas de Nosotros, Contacto, Tienda y Cuenta, y bajar la cinta de
+      Inicio a su altura de antes: el horno medido arriba baja en esas
+      vistas. Falta volver a medir y decidir si se compensa de otra forma.
 - [ ] Tras recargar, la tienda no recuerda el desplazamiento de las entradas
       de antes (Atrás entre categorías da arriba); se arreglaría con
       `sessionStorage`. No urge.

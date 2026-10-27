@@ -13,7 +13,7 @@
 // - Escribenos: el h2 entre lineas dobles, WhatsApp e Instagram con el
 //   aspecto y la ola de "Cómo llegar" y su rotulo encima, que se abren en
 //   otra pestana y lo dicen en el nombre; la nota de ejemplo, siempre;
-// - todo en una pantalla, sin desplazarse y con la franja en el borde, de
+// - todo en una pantalla, sin desplazarse y hasta el borde, de
 //   1440x900 a 360x640; en los telefonos bajos (390x700, 375x667, 360x640)
 //   el estado sube junto al rotulo (uno solo se ve y se lee), el h1 va en
 //   una linea y el mapa baja hasta 120 px; con zoom (320x256, 640x360) o a
@@ -121,20 +121,17 @@ const medir = (p) => p.evaluate(() => {
   const bloques = ['.contacto-texto', '.contacto-mapa', '.contacto-horario', '.contacto-escribir'].map(r);
   const solapan = (a, b) => Math.min(a.right, b.right) > Math.max(a.left, b.left) + 1 && Math.min(a.bottom, b.bottom) > Math.max(a.top, b.top) + 1;
   const pisa = bloques.some((a, i) => bloques.some((b, j) => i < j && solapan(a, b)));
-  const franja = r('.vista-contacto .franja-pie');
   const ultimo = Math.max(...bloques.map((b) => b.bottom));
   return {
     alto: document.documentElement.scrollHeight,
     ventana: window.innerHeight,
     anchoPagina: document.documentElement.scrollWidth,
     ancho,
-    franjaAbajo: Math.round(franja.bottom + window.scrollY),
     cortados,
     tapados,
     estados: estados.map((e) => (e.parentElement.classList.contains('contacto-texto') ? 'arriba' : 'horario')),
     lineasH1: Math.round(h1.getBoundingClientRect().height / parseFloat(getComputedStyle(h1).fontSize)),
-    // La curva de la franja sube 22 px: lo de encima tiene que acabar antes.
-    pisa: pisa || ultimo > franja.top - 22 + 1,
+    pisa,
   };
 });
 
@@ -181,10 +178,9 @@ export default async function contacto(t) {
       t.ok(n === 1, `[${nombre}] no hay un enlace llamado "${nombreEnlace}" (${n})`);
     }
     t.ok(m.notaSeVe && m.nota === 'Teléfono y redes de ejemplo (proyecto de clase).', `[${nombre}] la nota de ejemplo no se ve ("${m.nota}")`);
-    t.ok(/\bfranja-pie\b/.test(m.ultimo), `[${nombre}] Contacto no termina en la franja (${m.ultimo})`);
 
     const d = await medir(p);
-    t.ok(d.alto <= d.ventana && d.franjaAbajo === d.ventana, `[${nombre}] Contacto no cabe en la pantalla o la franja no llega al borde (${JSON.stringify(d)})`);
+    t.ok(d.alto <= d.ventana, `[${nombre}] Contacto no cabe en la pantalla (${JSON.stringify(d)})`);
     t.ok(d.cortados.length === 0 && !d.pisa && d.anchoPagina <= d.ancho, `[${nombre}] algo se corta o se pisa (${JSON.stringify(d)})`);
 
     // Objetivos de 24 px o mas, y la canasta flotante no tapa ningun enlace.
@@ -244,7 +240,7 @@ export default async function contacto(t) {
       t.ok(d.estados.join() === (bajo ? 'arriba' : 'horario'), `[${ancho}x${alto}] el estado no va donde toca o se ve dos veces (${d.estados})`);
       t.ok(bajo ? d.lineasH1 <= 1 : d.lineasH1 >= 2, `[${ancho}x${alto}] el h1 va en ${d.lineasH1} lineas`);
       t.ok(d.tapados.length === 0, `[${ancho}x${alto}] la canasta flotante tapa ${d.tapados.join(', ')}`);
-      t.ok(d.alto <= d.ventana && d.franjaAbajo === d.ventana, `[${ancho}x${alto}] Contacto no cabe sin desplazarse (${d.alto} de ${d.ventana}, franja hasta ${d.franjaAbajo})`);
+      t.ok(d.alto <= d.ventana, `[${ancho}x${alto}] Contacto no cabe sin desplazarse (${d.alto} de ${d.ventana})`);
       t.ok(d.cortados.length === 0 && !d.pisa && d.anchoPagina <= d.ancho, `[${ancho}x${alto}] algo se corta o se pisa (${JSON.stringify(d)})`);
     }
     for (const [ancho, alto] of [[320, 640], [320, 256], [640, 360]]) {
@@ -252,7 +248,6 @@ export default async function contacto(t) {
       await espera(150);
       const d = await medir(p);
       t.ok(d.cortados.length === 0 && !d.pisa && d.anchoPagina <= d.ancho, `[${ancho}x${alto}] con poca altura algo se corta o se pisa (${JSON.stringify(d)})`);
-      t.ok(d.alto <= d.ventana || d.franjaAbajo === d.alto, `[${ancho}x${alto}] la vista no crece hasta la franja (${JSON.stringify(d)})`);
     }
     // Con el espaciado de texto de WCAG 1.4.12 a 320 px, nada se corta.
     await p.setViewportSize({ width: 320, height: 640 });

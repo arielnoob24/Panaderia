@@ -142,7 +142,7 @@
    secuencia, sin cambiar el nombre accesible. Un blanco tenue, como el del
    menu, dejaria el texto claro sobre la pastilla por debajo de 4,5:1. */
 .cinta { background: var(--horno); color: var(--papel); border-block: 6px double var(--masa); }
-.cinta-dentro { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 2rem; padding-block: 2.3rem; }
+.cinta-dentro { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 2rem; padding-block: .7rem; }
 .cinta-enlace { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--papel); font: italic 400 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
 .cinta-enlace .ico { width: 1.35em; height: 1.35em; color: var(--masa); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
 .cinta-enlace .letras span { display: inline-block; white-space: pre; }
@@ -194,18 +194,17 @@
    baja de su minimo. */
 .vista-nosotros { display: flex; min-height: 100vh; min-height: 100svh; flex-direction: column; padding-top: 86px; }
 #raiz > main:has(.vista-nosotros) { padding-bottom: 0; }
-.vista-nosotros .franja-pie { flex: 0 0 auto; margin-top: 0; }
 
 /* La historia, "arco de pie" (seccion 10 del plan): la portada en espejo,
    la foto a la izquierda de alto entero, y a la derecha el texto con los
    principios debajo, en la misma columna. El texto va antes en el HTML (el
    lector llega primero al titulo) y la rejilla lo cambia de lado. El
-   conjunto va centrado en vertical entre la barra y la franja: el aire de
+   conjunto va centrado en vertical entre la barra y el borde: el aire de
    arriba y el de abajo (--aire) son iguales, y el de abajo suma los 22 px
    que sube la curva de la franja. El hueco entre el texto y los principios
    (--aire-medio) es menor, para que se lean como una sola pieza. Si la foto
    es mas alta que la columna, texto y principios se juntan en su centro. */
-.nosotros-historia { --aire: clamp(.5rem, 2.5svh, 2.5rem); --aire-medio: clamp(.4rem, 1.9svh, 1.9rem); display: flex; flex: 1 0 auto; flex-direction: column; justify-content: center; padding-block: var(--aire) calc(var(--aire) + 22px); }
+.nosotros-historia { --aire: clamp(.5rem, 2.5svh, 2.5rem); --aire-medio: clamp(.4rem, 1.9svh, 1.9rem); display: flex; flex: 1 0 auto; flex-direction: column; justify-content: center; padding-block: var(--aire); }
 .nosotros-rejilla { display: grid; grid-template-columns: auto minmax(0, 1fr); grid-template-areas: "foto texto" "foto principios"; gap: var(--aire-medio) clamp(3.5rem, 6vw, 6rem); align-content: center; }
 .nosotros-texto { grid-area: texto; align-self: end; }
 /* Mas largo que "El sabor de siempre": algo mas pequeno, para que
@@ -469,7 +468,6 @@ body.is-vista .catalog { padding-top: 108px; }
    asoma por la derecha del mapa: clip, sin desplazamiento de lado. */
 .vista-contacto { display: flex; min-height: 100vh; min-height: 100svh; flex-direction: column; padding-top: 86px; overflow-x: clip; }
 #raiz > main:has(.vista-contacto) { padding-bottom: 0; }
-.vista-contacto .franja-pie { flex: 0 0 auto; margin-top: 0; }
 .contacto-vista { flex: 0 0 auto; margin-block: auto; padding-block: clamp(.75rem, 3.5svh, 3rem) clamp(2rem, 5svh, 3rem); }
 
 /* Arriba, como la portada: el texto a la izquierda y el mapa a la derecha.
@@ -600,7 +598,7 @@ body.is-vista .catalog { padding-top: 108px; }
   .vista-inicio .portada-acciones { gap: .45rem .7rem; margin-top: .65rem; }
   .vista-inicio .portada-llegar { min-height: 36px; padding: .25rem .55rem; font-size: clamp(.95rem, 4vw, 1.12rem); }
   .vista-inicio .cinta { flex: 0 0 auto; }
-  .vista-inicio .cinta-dentro { flex-wrap: nowrap; gap: 0; padding: 2.7rem 52px 2.7rem .25rem; }
+  .vista-inicio .cinta-dentro { flex-wrap: nowrap; gap: 0; padding: .3rem 52px .3rem .25rem; }
   .vista-inicio .cinta-enlace { min-width: 0; flex: 1 1 0; justify-content: center; gap: .2rem; padding: .3rem .12rem; font-size: clamp(.75rem, 3.2vw, .9rem); }
   .vista-inicio .cinta-enlace .ico { width: 1.15em; height: 1.15em; }
   .vista-inicio .cinta-enlace .letras { min-width: 0; }
@@ -672,10 +670,8 @@ body.is-vista .catalog { padding-top: 108px; }
   .contacto-valor .ico { width: 20px; height: 20px; }
   .contacto-nota { font-size: .75rem; }
   /* La canasta flota abajo a la derecha: lo ultimo de cada vista no se
-     queda debajo de ella al llegar al final. Las que acaban en la franja
-     de espigas no lo necesitan: la franja es adorno y llega al borde. */
-  #raiz > main { padding-bottom: 92px; }
-  #raiz > main:has(.franja-pie) { padding-bottom: 0; }
+     queda debajo de ella al llegar al final. */
+  #raiz > main, #raiz > main:has(.vista-nosotros, .vista-contacto) { padding-bottom: 92px; }
   #raiz > main:has(.vista-inicio) { padding-bottom: 0; }
 }
 
@@ -763,27 +759,7 @@ body.is-vista .catalog { padding-top: 108px; }
   .fondo-contacto .is-arriba-derecha { display: none; }
 }
 
-/* ---- La franja del final (Franja.jsx) ---------------------------------------- */
-
-/* La misma franja de espigas del inicio, dada la vuelta: la curva sube. Sin
-   pie de pagina es lo ultimo de Nosotros, Contacto y la tienda, y llega al
-   borde de abajo como un mostrador. Es adorno: en el telefono la canasta
-   flotante puede quedar encima sin tapar nada que se lea. */
-.franja-pie { margin-top: 2rem; }
-.franja-pie::after { top: -22px; bottom: auto; height: 22px; border-radius: 50% 50% 0 0 / 22px 22px 0 0; }
-.franja-pie .sign-band-inner { min-height: 84px; }
 @media (max-width: 680px) {
-  .franja-pie .sign-band-inner { min-height: 130px; }
-  .franja-pie .sign-trigo { width: 120px; }
-}
-body.is-vista .franja-pie { display: block; }
-/* Nosotros cabe justo en una pantalla: su franja se queda baja. En Contacto,
-   en el telefono, tambien (la banda de Escribenos ya pone su horno). */
-.vista-nosotros .franja-pie .sign-band-inner { min-height: 64px; }
-.vista-contacto .franja-pie .sign-band-inner { min-height: 70px; }
-@media (max-width: 680px) {
-  .vista-nosotros .franja-pie .sign-band-inner { min-height: 52px; }
-  .vista-contacto .franja-pie .sign-band-inner { min-height: 24px; }
   .contacto-escribir { padding: .6rem .9rem; }
 }
 
