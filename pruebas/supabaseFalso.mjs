@@ -43,7 +43,11 @@ const claveDe = (correo) => {
 };
 // Para un caso que quiera ver como se porta la pagina si algo falla: en el
 // servidor de esa ventana.
-const quebrar = (ctx, ruta, estado = 500) => { ctx.supabaseFalso.quiebra = ruta ? { ruta, estado } : null; };
+// Con { despues: true } la ruta hace su trabajo y es la respuesta la que se
+// pierde (el pedido queda hecho y la pagina no se entera).
+const quebrar = (ctx, ruta, estado = 500, { despues = false } = {}) => {
+  ctx.supabaseFalso.quiebra = ruta ? { ruta, estado, despues } : null;
+};
 
 const seis = () => String(100000 + Math.floor(Math.random() * 900000));
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64url');
@@ -158,7 +162,7 @@ const fallaDatos = (d) => {
   const nombre = String(d?.nombre ?? '').trim().replace(/\s+/g, ' ');
   if (nombre.length < 3 || nombre.length > 120 || !nombre.includes(' ')) return 'El nombre lleva nombre y apellido.';
   if (!/^9\d{8}$/.test(String(d?.telefono ?? ''))) return 'El teléfono son 9 números después del +593, empezando por 9.';
-  if (String(d?.direccion ?? '').trim().length > 200) return 'La dirección es demasiado larga.';
+  if (String(d?.direccion ?? '').trim().length > 80) return 'La dirección es demasiado larga.';
   return '';
 };
 const aCuenta = (c) => ({
@@ -203,6 +207,9 @@ const numeroNuevo = () => 'ET-' + Array.from({ length: 4 }, () => LETRAS[Math.fl
 const centavos = (n) => Math.round(n * 100) / 100;
 
 const registrar = (c, d) => {
+  // El mismo intento otra vez: el pedido que ya se hizo.
+  const ya = d.clave && (c.pedidos || []).find((x) => x.clave === d.clave);
+  if (ya) return ya;
   if (!Array.isArray(d.lineas) || !d.lineas.length) return 'Tu canasta está vacía.';
   const domicilio = d.modo === 'domicilio';
   if (domicilio && !String(d.direccion || '').trim()) return 'Escribe la dirección para poder llevarlo.';
@@ -224,6 +231,7 @@ const registrar = (c, d) => {
     metodo: d.metodo === 'tarjeta' ? `Tarjeta terminada en ${d.ultimos}` : domicilio ? 'Efectivo al recibir' : 'Efectivo al retirar',
     subtotal, envio, total: centavos(subtotal + envio), lineas,
   };
+  Object.defineProperty(pedido, 'clave', { value: d.clave, enumerable: false });
   c.pedidos = [pedido, ...(c.pedidos || [])];
   return pedido;
 };
@@ -232,11 +240,13 @@ async function pedidos(sv, route) {
   const { quiebra } = sv;
   const req = route.request();
   if (req.method() === 'OPTIONS') return contestar(route, 200, {});
-  if (quiebra && '/pedidos'.startsWith(quiebra.ruta)) return contestar(route, quiebra.estado, { error: 'falla a proposito' });
+  const falla = quiebra && '/pedidos'.startsWith(quiebra.ruta);
+  if (falla && !quiebra.despues) return contestar(route, quiebra.estado, { error: 'falla a proposito' });
   const c = quienPorToken(sv, req);
   if (!c || !c.confirmada) return contestar(route, 401, { error: 'Inicia sesión otra vez.' });
   if (req.method() === 'GET') return contestar(route, 200, { pedidos: c.pedidos || [] });
   const r = registrar(c, req.postDataJSON?.() || {});
+  if (falla) return contestar(route, quiebra.estado, { error: 'se perdio la respuesta' });
   return typeof r === 'string' ? contestar(route, 400, { error: r }) : contestar(route, 201, r);
 }
 

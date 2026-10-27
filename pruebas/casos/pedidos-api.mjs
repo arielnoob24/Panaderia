@@ -40,6 +40,15 @@ export default async function pedidosApi(t) {
     ok((await p.evaluate(() => localStorage.getItem('eltradicional-pedido'))) === canastaAntes, 'la canasta cambio sin pedido');
     ok(pedidosDe('ana@correo.com').length === 0, 'quedo un pedido en la base');
 
+    // El pedido se hace pero la respuesta se pierde: la pagina no lo sabe y
+    // lo dice como un fallo. Al volver a pulsar va la misma clave, y la base
+    // devuelve ese pedido en vez de hacer otro.
+    quebrar(ctx, '/pedidos', 504, { despues: true });
+    await p.click('.canasta-pagar');
+    await p.waitForSelector('.pago-error:not([hidden])', { timeout: 6000 }).catch(() => {});
+    ok((await hashDe(p)) === '#/confirmar' && pedidosDe('ana@correo.com').length === 1, `respuesta perdida: ${await hashDe(p)}, ${pedidosDe('ana@correo.com').length} en la base`);
+    ok((await p.textContent('.pago-error')).includes('no se hará dos veces'), `con la respuesta perdida no dice que vuelva a pulsar: ${await p.textContent('.pago-error')}`);
+
     // Con la API bien: el comprobante lleva el numero y el total de la base.
     quebrar(ctx, null);
     await p.click('.canasta-pagar');

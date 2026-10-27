@@ -163,7 +163,7 @@ function FormularioDatos() {
             placeholder: '990001122', prefijo: '+593',
           })}
           {campo('direccion', {
-            etiqueta: 'Dirección', type: 'text', autoComplete: 'street-address', maxLength: 200,
+            etiqueta: 'Dirección', type: 'text', autoComplete: 'street-address', maxLength: 80,
             placeholder: 'Calle, número y una referencia', opcional: true,
           })}
           <FormaDePago metodo={metodo} onMetodo={alMetodo} />

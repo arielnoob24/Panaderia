@@ -142,14 +142,18 @@ function FormularioPedido() {
   const ultimo = useRef(null);
   useLayoutEffect(() => { ultimo.current = { lineas, entrega, factura, tarjeta, metodo, sesion }; });
   const reloj = useRef(0);
+  // La clave del intento de pagar (servicios/pedidos.js): se repite hasta que
+  // uno salga bien, para que un reintento no haga dos pedidos.
+  const claveEnvio = useRef(null);
   useEffect(() => () => window.clearTimeout(reloj.current), []);
 
   const aprobar = async () => {
     const ahora = ultimo.current;
     if (!ahora.lineas.length) { setProcesando(false); return; }
+    if (!claveEnvio.current) claveEnvio.current = window.crypto?.randomUUID?.() || null;
     const { pedido, error } = await registrarPedido({
       lineas: ahora.lineas, entrega: ahora.entrega, factura: ahora.factura,
-      metodo: ahora.metodo, numeroTarjeta: ahora.tarjeta.numero,
+      metodo: ahora.metodo, numeroTarjeta: ahora.tarjeta.numero, clave: claveEnvio.current,
     });
     if (error) {
       flushSync(() => { setProcesando(false); setErrorPago(error); });
@@ -157,6 +161,7 @@ function FormularioPedido() {
       avisar(error);
       return;
     }
+    claveEnvio.current = null;
     // El recibo con lo que dijo la base: su numero, su fecha y sus precios.
     const { numero } = pedido;
     const recibo = armarRecibo({

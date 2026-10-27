@@ -43,7 +43,7 @@ const leerCopia = (crudo) => {
     nombre: String(dato.nombre).slice(0, 120),
     correo: String(dato.correo).slice(0, 254),
     telefono: soloNueve(String(dato.telefono || '')),
-    direccion: String(dato.direccion || '').slice(0, 200),
+    direccion: String(dato.direccion || '').slice(0, 80),
     metodo: dato.metodo === 'tarjeta' ? 'tarjeta' : 'efectivo',
   };
 };

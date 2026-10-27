@@ -335,10 +335,15 @@ panes", con la cinta o con el menú.
   confundibles, los precios de hoy y el total, y el comprobante enseña lo
   que dijo la base. Luego correo, copia en IndexedDB (con el `correo` de la
   cuenta), se vacía la canasta y se limpian tarjeta y factura. **Si no se
-  puede registrar** (sin red, sesión caducada, algo agotado), no hay pedido:
-  el motivo sale junto al botón ("…No se cobró nada; inténtalo otra vez."),
-  el foco vuelve al botón y la canasta queda igual.
-- Límites de la entrega, los de `DIRECCIONES` y `PEDIDOS`: dirección 80,
+  puede registrar** (sesión caducada, algo agotado, la base falló), no hay
+  pedido: el motivo sale junto al botón ("…No se cobró nada; inténtalo otra
+  vez."), el foco vuelve al botón y la canasta queda igual. Si **no llega
+  respuesta** (sin red, se pasó el tiempo) no se sabe si quedó hecho: se
+  pide volver a pulsar. Cada intento de pagar lleva una clave (UUID) que se
+  repite hasta que uno sale bien, así que un reintento nunca hace dos
+  pedidos (`PED_ClaveEnvio`).
+- Límites de la entrega, los de `DIRECCIONES` y `PEDIDOS`: dirección 80 (la
+  de la cuenta también, para que pase al pedido sin recortes),
   piso 60, referencia 80 (piso y referencia van juntos en
   `DIR_Referencia`), indicaciones 250. El comprobante dice "Tu
   canasta ya está vacía. El pedido queda en Mis pedidos."
@@ -359,7 +364,7 @@ Auth guarda la contraseña y verifica el correo; nombre y teléfono van en
 | `#/cuenta/verificar` | Código de 6 cifras en 6 casillas (el que manda Auth), "Enviar otro código" cada 60 s; si el correo no sale, se dice y se pide otro (no hay recuadro con el código) | Sin cuenta por verificar → `#/cuenta/entrar` |
 | `#/cuenta/recuperar` | Recuperar la contraseña (abajo) | Con sesión → `#/cuenta` |
 | `#/cuenta` | **Mis datos**, editables ahí mismo: nombre, teléfono, dirección y forma de pago preferida (Efectivo o Tarjeta; "No guardamos tarjetas"); el correo se ve y no se cambia. "Guardar" (pasa a "Guardado ✓" 2 s) y "Cerrar sesión" | Sin sesión → `#/cuenta/entrar` |
-| `#/cuenta/pedidos` | Una fila por pedido de **esta cuenta** (`ET-XXXX`, fecha, total), más nuevo arriba, en `<details>` que se despliega animando la altura. Salen de la base (`GET /pedidos`, se ven desde cualquier navegador) más los que solo estén en este navegador (los de antes, también los sin `correo`); sin API, solo estos. Cada uno con "Pedir otra vez" | Sin sesión → `#/cuenta/entrar` |
+| `#/cuenta/pedidos` | Una fila por pedido de **esta cuenta** (`ET-XXXX`, fecha, total), más nuevo arriba, en `<details>` que se despliega animando la altura; los de la base dicen su estado ("Pagado", "Pendiente de pago"). Salen de la base (`GET /pedidos`, se ven desde cualquier navegador) más los que solo estén en este navegador (los de antes, también los sin `correo`); sin API, solo estos. Cada uno con "Pedir otra vez" | Sin sesión → `#/cuenta/entrar` |
 
 - **Cabecera**: sin sesión, la silueta ("Iniciar sesión / Registrarse") lleva
   a `#/cuenta/entrar`; con sesión, las iniciales abren una ficha con "Mis
@@ -437,6 +442,12 @@ siguen con RLS sin políticas: desde fuera solo entra la API.
 | `GET /cuenta` | Los datos de quien llama: `nombre`, `correo`, `telefono` (sin el 0), `direccion`, `metodo`. 404 si aún no tiene fila en `USUARIOS` | Sí |
 | `POST /cuenta` | Tras verificar el correo: crea su fila en `USUARIOS` (rol Cliente, nombre partido en nombres y apellidos, celular `0` + teléfono, `USU_CodigoAuth` = su id de Auth); si ya la tiene, la devuelve | Sí |
 | `PUT /cuenta` | Guarda Mis datos: nombre y teléfono en `USUARIOS` | Sí |
+
+POST y PUT `/cuenta` escriben con `FN_USUARIOS_GUARDAR`, que fija
+`app.usuario`: la auditoría anota que el cambio lo hizo la propia cuenta.
+
+| Ruta | Qué hace | Pide sesión |
+|---|---|---|
 | `POST /pedidos` | Registra un pedido con `FN_PEDIDOS_REGISTRAR` (abajo) y devuelve el registro (201); un error para el cliente (agotado, canasta vacía, cédula mal) es 400 con su texto | Sí |
 | `GET /pedidos` | Los pedidos de quien llama, el más nuevo primero (`FN_PEDIDOS_DE`): `numero`, `fecha`, `estado`, `modo`, `direccion`, `metodo`, `subtotal`, `envio`, `total`, `lineas` | Sí |
 
@@ -445,7 +456,7 @@ siguen con RLS sin políticas: desde fuera solo entra la API.
   Las rutas con sesión leen el token de `Authorization: Bearer`, lo
   comprueban con Auth (`getUser`) y piden el correo verificado; si no, 401.
   Revisan lo mismo que el formulario (nombre con apellido, teléfono `9` y 8
-  cifras, dirección hasta 200). Dirección y forma de pago no tienen columna
+  cifras, dirección hasta 80). Dirección y forma de pago no tienen columna
   en `USUARIOS`: van en el `user_metadata` de Auth.
 - **CORS**: solo la página publicada (`https://arielnoob24.github.io`) y
   `localhost`/`127.0.0.1` en cualquier puerto.
@@ -486,9 +497,11 @@ siguen con RLS sin políticas: desde fuera solo entra la API.
   - `CLIENTES` y `FACTURAS`: "a otra persona" se guarda o se pone al día
     por su cédula o RUC; "a mi nombre" va a consumidor final. La factura
     hace su asiento con su trigger.
-  Fija `app.usuario`, así que la auditoría sabe quién fue. Las tres
-  funciones (`FN_PEDIDOS_REGISTRAR`, `FN_PEDIDOS_DE`, `FN_PEDIDOS_JSON`)
-  solo las puede ejecutar `service_role`. Lo prueba `probar-bd`, y en el
+  Fija `app.usuario`, así que la auditoría sabe quién fue. Con la misma
+  `clave` de un pedido ya hecho devuelve ese y no hace otro. Las cuatro
+  funciones del sitio (`FN_PEDIDOS_REGISTRAR`, `FN_PEDIDOS_DE`,
+  `FN_PEDIDOS_JSON`, `FN_USUARIOS_GUARDAR`) solo las puede ejecutar
+  `service_role`. Lo prueba `probar-bd`, y en el
   navegador `pruebas/casos/pedidos-api.mjs`.
 
 ### La base de datos (`bd/BD_EL_TRADICIONAL.sql`)
@@ -1239,8 +1252,8 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       `USU_CodigoAuth` (UUID único; su FK a `auth.users`, `RESTRICT`, se
       crea al final del script solo si existe `auth.users`). Aplicado en
       Supabase; `VERIFICACIONES` queda en el modelo pero el sitio no la usa.
-- [x] La API llena `app.usuario` para que la auditoría sepa quién (en los
-      pedidos, `FN_PEDIDOS_REGISTRAR`; los cambios de `/cuenta` aún no).
+- [x] La API llena `app.usuario` para que la auditoría sepa quién
+      (`FN_PEDIDOS_REGISTRAR` y `FN_USUARIOS_GUARDAR`).
 - [ ] El IVA de cada producto es una suposición (pan 0%, dulces y bebidas
       15%): confirmarlo con el contador.
 - [ ] Cuáles alérgenos lleva cada producto (`PRODUCTOS_ALERGENOS`).
@@ -1249,9 +1262,8 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [x] La cuenta por Supabase Auth y la API (`/cuenta`), 27 de octubre de 2026.
 - [x] Pedidos (`POST /pedidos`) y Mis pedidos (`GET /pedidos`) por la API,
       27 de octubre de 2026 (sección 8).
-- [ ] La dirección de la cuenta admite 200 caracteres y la del pedido 80
-      (`DIR_CallePrincipal`): una de más de 80 pasa al pedido y la base la
-      rechaza con "La dirección es demasiado larga". Igualarlas.
+- [x] La dirección de la cuenta y la del pedido, las dos hasta 80.
+- [x] Un reintento de pagar no duplica el pedido (`PED_ClaveEnvio`).
 
 ### SEO
 - [ ] `robots.txt` y `sitemap.xml`.

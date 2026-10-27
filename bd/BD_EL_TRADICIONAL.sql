@@ -564,7 +564,9 @@ ALTER SEQUENCE SEQ_ESTADOS_PEDIDO OWNED BY ESTADOS_PEDIDO.EPE_Codigo;
 
 -- PED_Numero es el que ve el cliente: ET- y 4 caracteres sin 0, 1, I ni O,
 -- que se confunden. PED_CostoEnvio es el del día del pedido; si no se manda,
--- lo copia TG_PEDIDOS_ENTREGA desde TIPOS_ENTREGA.
+-- lo copia TG_PEDIDOS_ENTREGA desde TIPOS_ENTREGA. PED_ClaveEnvio la pone
+-- la página en cada intento de pagar: si la respuesta se pierde y lo vuelve
+-- a mandar, FN_PEDIDOS_REGISTRAR devuelve el que ya hizo en vez de otro.
 CREATE SEQUENCE SEQ_PEDIDOS MAXVALUE 9999999;
 CREATE TABLE PEDIDOS (
     PED_Codigo      CHAR(10)     NOT NULL DEFAULT 'PED' || LPAD(nextval('SEQ_PEDIDOS')::TEXT, 7, '0'),
@@ -576,8 +578,10 @@ CREATE TABLE PEDIDOS (
     PED_Fecha       TIMESTAMPTZ  NOT NULL DEFAULT now(),
     PED_CostoEnvio  NUMERIC(6,2) NOT NULL,
     PED_Observacion VARCHAR(250),
+    PED_ClaveEnvio  UUID,
     CONSTRAINT PK_PEDIDOS PRIMARY KEY (PED_Codigo),
     CONSTRAINT UQ_PEDIDOS_Numero UNIQUE (PED_Numero),
+    CONSTRAINT UQ_PEDIDOS_ClaveEnvio UNIQUE (PED_ClaveEnvio),
     CONSTRAINT FK_PEDIDOS_USUARIOS FOREIGN KEY (USU_Codigo)
         REFERENCES USUARIOS (USU_Codigo) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT FK_PEDIDOS_TIPOS_ENTREGA FOREIGN KEY (TEN_Codigo)
@@ -2935,6 +2939,8 @@ $$;
 --   metodo      'efectivo' o 'tarjeta'; ultimos: los 4 últimos de la tarjeta
 --   factura     { aOtro, nombre, ident, correo, direccion }; sin aOtro, a
 --               consumidor final
+--   clave       un UUID por intento de pagar: si ya hay un pedido de esa
+--               cuenta con esa clave, se devuelve ese y no se hace otro
 -- Con tarjeta el pago queda aprobado y el pedido 'Pagado' (el cobro es
 -- simulado); en efectivo, el pago queda por cobrar y el pedido 'Pendiente de
 -- pago'. La factura se emite al momento y su trigger hace el asiento.
@@ -2952,6 +2958,8 @@ DECLARE
     v_factura    JSONB   := COALESCE(p_pedido -> 'factura', '{}');
     v_ident      TEXT    := regexp_replace(COALESCE(v_factura ->> 'ident', ''), '\D', '', 'g');
     v_correo     TEXT    := lower(btrim(COALESCE(v_factura ->> 'correo', '')));
+    v_clave      UUID    := CASE WHEN p_pedido ->> 'clave' ~* '^[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}$'
+                                 THEN (p_pedido ->> 'clave')::UUID END;
     v_direccion  CHAR(10);
     v_pedido     CHAR(10);
     v_numero     CHAR(7);
@@ -2969,6 +2977,12 @@ BEGIN
     END IF;
     -- Quién hace el cambio, para AUDITORIAS (solo dura esta transacción).
     PERFORM set_config('app.usuario', v_usuario, TRUE);
+
+    -- El mismo intento otra vez (se perdio la respuesta): el que ya se hizo.
+    SELECT PED_Codigo INTO v_pedido FROM PEDIDOS WHERE PED_ClaveEnvio = v_clave AND USU_Codigo = v_usuario;
+    IF FOUND THEN
+        RETURN FN_PEDIDOS_JSON(v_pedido);
+    END IF;
 
     IF jsonb_typeof(p_pedido -> 'lineas') IS DISTINCT FROM 'array' OR jsonb_array_length(p_pedido -> 'lineas') = 0 THEN
         RAISE EXCEPTION 'Tu canasta está vacía.' USING ERRCODE = '22023';
@@ -3005,14 +3019,15 @@ BEGIN
         EXIT WHEN NOT EXISTS (SELECT 1 FROM PEDIDOS WHERE PED_Numero = v_numero);
     END LOOP;
 
-    INSERT INTO PEDIDOS (USU_Codigo, TEN_Codigo, DIR_Codigo, EPE_Codigo, PED_Numero, PED_Observacion)
+    INSERT INTO PEDIDOS (USU_Codigo, TEN_Codigo, DIR_Codigo, EPE_Codigo, PED_Numero, PED_Observacion, PED_ClaveEnvio)
     VALUES (v_usuario,
             (SELECT TEN_Codigo FROM TIPOS_ENTREGA WHERE TEN_PideDireccion = v_domicilio ORDER BY TEN_Codigo LIMIT 1),
             v_direccion,
             (SELECT EPE_Codigo FROM ESTADOS_PEDIDO
               WHERE EPE_Nombre = CASE WHEN v_tarjeta THEN 'Pagado' ELSE 'Pendiente de pago' END),
             v_numero,
-            CASE WHEN v_domicilio THEN NULLIF(left(btrim(COALESCE(p_pedido ->> 'notas', '')), 250), '') END)
+            CASE WHEN v_domicilio THEN NULLIF(left(btrim(COALESCE(p_pedido ->> 'notas', '')), 250), '') END,
+            v_clave)
     RETURNING PED_Codigo INTO v_pedido;
 
     -- Cada línea por su nombre con el tamaño; precio e IVA los copia
@@ -3072,6 +3087,36 @@ BEGIN
 END;
 $$;
 
+-- Crea o pone al día la fila de USUARIOS de una cuenta de Auth (POST y PUT
+-- /cuenta). Fija app.usuario antes de escribir, para que AUDITORIAS sepa
+-- que el cambio lo hizo la propia cuenta. Una cuenta nueva entra como
+-- Cliente; el correo es el de Auth y aquí no se cambia.
+CREATE FUNCTION FN_USUARIOS_GUARDAR(p_auth UUID, p_correo TEXT, p_nombres TEXT, p_apellidos TEXT, p_celular TEXT)
+RETURNS JSONB
+LANGUAGE plpgsql AS $$
+DECLARE
+    v_codigo CHAR(10);
+BEGIN
+    SELECT USU_Codigo INTO v_codigo FROM USUARIOS WHERE USU_CodigoAuth = p_auth;
+    IF FOUND THEN
+        PERFORM set_config('app.usuario', v_codigo, TRUE);
+        UPDATE USUARIOS
+           SET USU_Nombres = p_nombres, USU_Apellidos = p_apellidos, USU_Celular = p_celular
+         WHERE USU_Codigo = v_codigo;
+    ELSE
+        v_codigo := 'USU' || LPAD(nextval('SEQ_USUARIOS')::TEXT, 7, '0');
+        PERFORM set_config('app.usuario', v_codigo, TRUE);
+        INSERT INTO USUARIOS (USU_Codigo, ROL_Codigo, USU_Nombres, USU_Apellidos, USU_Correo, USU_Celular, USU_CodigoAuth)
+        SELECT v_codigo, ROL_Codigo, p_nombres, p_apellidos, lower(p_correo), p_celular, p_auth
+          FROM ROLES WHERE ROL_Nombre = 'Cliente';
+    END IF;
+    RETURN (SELECT jsonb_build_object('usu_codigo', USU_Codigo, 'usu_nombres', USU_Nombres,
+                                      'usu_apellidos', USU_Apellidos, 'usu_correo', USU_Correo,
+                                      'usu_celular', USU_Celular)
+              FROM USUARIOS WHERE USU_Codigo = v_codigo);
+END;
+$$;
+
 
 /* =============================================================================
    Seguridad para Supabase: su API deja a cualquiera con la clave pública
@@ -3115,15 +3160,15 @@ BEGIN
 END;
 $$;
 
--- Las funciones de los pedidos del sitio solo las llama la API, con la
+-- Las funciones del sitio (pedidos y cuenta) solo las llama la API, con la
 -- clave secreta (service_role): nadie con la clave pública puede usarlas.
-REVOKE EXECUTE ON FUNCTION FN_PEDIDOS_REGISTRAR(UUID, JSONB), FN_PEDIDOS_DE(UUID), FN_PEDIDOS_JSON(CHAR) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION FN_PEDIDOS_REGISTRAR(UUID, JSONB), FN_PEDIDOS_DE(UUID), FN_PEDIDOS_JSON(CHAR), FN_USUARIOS_GUARDAR(UUID, TEXT, TEXT, TEXT, TEXT) FROM PUBLIC;
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
-        REVOKE EXECUTE ON FUNCTION FN_PEDIDOS_REGISTRAR(UUID, JSONB), FN_PEDIDOS_DE(UUID), FN_PEDIDOS_JSON(CHAR)
+        REVOKE EXECUTE ON FUNCTION FN_PEDIDOS_REGISTRAR(UUID, JSONB), FN_PEDIDOS_DE(UUID), FN_PEDIDOS_JSON(CHAR), FN_USUARIOS_GUARDAR(UUID, TEXT, TEXT, TEXT, TEXT)
             FROM anon, authenticated;
-        GRANT EXECUTE ON FUNCTION FN_PEDIDOS_REGISTRAR(UUID, JSONB), FN_PEDIDOS_DE(UUID), FN_PEDIDOS_JSON(CHAR)
+        GRANT EXECUTE ON FUNCTION FN_PEDIDOS_REGISTRAR(UUID, JSONB), FN_PEDIDOS_DE(UUID), FN_PEDIDOS_JSON(CHAR), FN_USUARIOS_GUARDAR(UUID, TEXT, TEXT, TEXT, TEXT)
             TO service_role;
     END IF;
 END;

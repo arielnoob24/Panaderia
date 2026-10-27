@@ -118,6 +118,8 @@ function Pedido({ p }) {
             <div><dt>Envío</dt><dd>{Number(p.envio) ? dinero(Number(p.envio)) : 'Gratis'}</dd></div>
             <div><dt>Total</dt><dd>{dinero(Number(p.total) || 0)}</dd></div>
             {p.metodo ? <div><dt>Pago</dt><dd>{p.metodo}</dd></div> : null}
+            {/* Solo los que vienen de la base saben en que van. */}
+            {p.estado ? <div><dt>Estado</dt><dd className="cuenta-pedido-estado">{p.estado}</dd></div> : null}
             <div>
               <dt>Entrega</dt>
               <dd>{p.modo === 'domicilio' ? (p.direccion || 'A domicilio') : 'Retiro en el local'}</dd>

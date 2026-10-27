@@ -72,7 +72,7 @@ function fallosCuenta(d: any) {
   const metodo = d?.metodo === "tarjeta" ? "tarjeta" : "efectivo";
   if (nombre.length < 3 || nombre.length > 120 || !nombre.includes(" ")) return { error: "El nombre lleva nombre y apellido." };
   if (!/^9\d{8}$/.test(telefono)) return { error: "El teléfono son 9 números después del +593, empezando por 9." };
-  if (direccion.length > 200) return { error: "La dirección es demasiado larga." };
+  if (direccion.length > 80) return { error: "La dirección es demasiado larga." };
   return { nombre, telefono, direccion, metodo };
 }
 
@@ -161,30 +161,17 @@ Deno.serve(async (req) => {
 
     // POST /cuenta -> la fila en USUARIOS, al verificar el correo. Si ya
     // existe (se verifico en otra pestana), se devuelve la que hay.
-    if (req.method === "POST") {
-      if (fila) return responder(h, 200, aCuenta(fila, auth.user));
-      const { data: rol } = await base.from("roles").select("rol_codigo").eq("rol_nombre", "Cliente").single();
-      const { data: nueva, error: fallaAlta } = await base.from("usuarios").insert({
-        rol_codigo: rol!.rol_codigo,
-        usu_nombres: nombres,
-        usu_apellidos: apellidos,
-        usu_correo: usuario.email!.toLowerCase(),
-        usu_celular: celular,
-        usu_codigoauth: usuario.id,
-      }).select(COLUMNAS).single();
-      if (fallaAlta) return responder(h, 500, { error: fallaAlta.message });
-      return responder(h, 201, aCuenta(nueva, auth.user));
-    }
-
     // PUT /cuenta -> cambiar nombre, telefono, direccion y forma de pago.
-    // El correo no se cambia aqui.
-    if (req.method === "PUT") {
-      if (!fila) return responder(h, 404, { error: "Esta cuenta todavía no tiene datos." });
-      const { data: cambiada, error: fallaCambio } = await base.from("usuarios")
-        .update({ usu_nombres: nombres, usu_apellidos: apellidos, usu_celular: celular })
-        .eq("usu_codigo", fila.usu_codigo).select(COLUMNAS).single();
-      if (fallaCambio) return responder(h, 500, { error: fallaCambio.message });
-      return responder(h, 200, aCuenta(cambiada, auth.user));
+    // El correo no se cambia aqui. Las dos escriben con FN_USUARIOS_GUARDAR,
+    // que deja en AUDITORIAS que el cambio lo hizo la propia cuenta.
+    if (req.method === "POST" && fila) return responder(h, 200, aCuenta(fila, auth.user));
+    if (req.method === "PUT" && !fila) return responder(h, 404, { error: "Esta cuenta todavía no tiene datos." });
+    if (req.method === "POST" || req.method === "PUT") {
+      const { data: guardada, error: fallaGuardar } = await base.rpc("fn_usuarios_guardar", {
+        p_auth: usuario.id, p_correo: usuario.email!, p_nombres: nombres, p_apellidos: apellidos, p_celular: celular,
+      });
+      if (fallaGuardar) return responder(h, 500, { error: fallaGuardar.message });
+      return responder(h, req.method === "POST" ? 201 : 200, aCuenta(guardada, auth.user));
     }
   }
 

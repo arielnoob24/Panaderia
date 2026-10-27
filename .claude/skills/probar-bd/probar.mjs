@@ -485,5 +485,25 @@ const deLuis = (await q(`SELECT FN_PEDIDOS_DE($1::uuid) r`, [authLuis]))[0].r;
 ok(deAna.length === 4 && deAna.some((x) => x.numero === web.numero) && deLuis.length === 0,
   `Cada cuenta ve solo sus pedidos (Ana ${deAna.length}, Luis ${deLuis.length})`);
 
+const clave = '6f1c2b8e-3d4a-4b5c-9e7f-0a1b2c3d4e5f';
+const pedirConClave = { lineas: [{ nombre: 'Galletas', cantidad: 2 }], modo: 'retiro', metodo: 'efectivo', clave };
+const primero = await registrar(pedirConClave);
+const repetido = await registrar(pedirConClave);
+ok(primero.numero === repetido.numero && await unValor(`SELECT count(*)::int FROM pedidos WHERE ped_claveenvio = $1`, [clave]) === 1,
+  `El mismo intento mandado dos veces es un solo pedido (${primero.numero}, ${repetido.numero})`);
+
+titulo('La cuenta del sitio (FN_USUARIOS_GUARDAR, lo que llama la API)');
+const authNueva = '0b9e7c1a-2f3d-4e5a-8b6c-7d8e9f0a1b2c';
+const alta = (await q(`SELECT FN_USUARIOS_GUARDAR($1::uuid, 'Rosa.Tapuy@Correo.ec', 'Rosa', 'Tapuy', '0987654321') r`, [authNueva]))[0].r;
+ok(alta.usu_correo === 'rosa.tapuy@correo.ec' && /^USU\d{7}$/.test(alta.usu_codigo), `Alta de una cuenta de Auth: ${alta.usu_codigo}`);
+ok(await unValor(`SELECT r.rol_nombre FROM usuarios u JOIN roles r USING (rol_codigo) WHERE u.usu_codigo = $1`, [alta.usu_codigo]) === 'Cliente', 'Entra como Cliente');
+ok(await unValor(`SELECT usu_codigo FROM auditorias WHERE aud_tabla = 'USUARIOS' AND aud_operacion = 'I' AND aud_clave = $1`, [alta.usu_codigo]) === alta.usu_codigo,
+  'El alta queda auditada a nombre de la propia cuenta');
+const cambio2 = (await q(`SELECT FN_USUARIOS_GUARDAR($1::uuid, 'otro@correo.ec', 'Rosa María', 'Tapuy', '0981111111') r`, [authNueva]))[0].r;
+ok(cambio2.usu_codigo === alta.usu_codigo && cambio2.usu_nombres === 'Rosa María' && cambio2.usu_correo === 'rosa.tapuy@correo.ec',
+  'Guardar otra vez cambia nombre y celular, no el correo ni el codigo');
+ok(await unValor(`SELECT usu_codigo FROM auditorias WHERE aud_tabla = 'USUARIOS' AND aud_operacion = 'U' AND aud_clave = $1 ORDER BY aud_codigo DESC LIMIT 1`, [alta.usu_codigo]) === alta.usu_codigo,
+  'El cambio queda auditado a nombre de la propia cuenta');
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

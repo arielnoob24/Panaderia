@@ -11,7 +11,11 @@ import { todosLosPedidos, deLaCuenta } from './cuenta.js';
 const ESPERA_PEDIDO = 10000;
 
 // Lo que se manda. De la tarjeta, solo sus cuatro ultimos digitos.
-const pedidoParaApi = ({ lineas, entrega, factura, metodo, numeroTarjeta }) => ({
+// clave: la del intento de pagar. Si la respuesta se pierde y se vuelve a
+// pulsar, va la misma, y la base devuelve el pedido que ya hizo en vez de
+// hacer otro.
+const pedidoParaApi = ({ lineas, entrega, factura, metodo, numeroTarjeta, clave }) => ({
+  clave,
   lineas: lineas.map(([, l]) => ({ nombre: l.nombre, cantidad: l.cantidad })),
   modo: entrega.modo === 'domicilio' ? 'domicilio' : 'retiro',
   direccion: entrega.direccion, piso: entrega.piso, referencia: entrega.referencia, notas: entrega.notas,
@@ -22,13 +26,15 @@ const pedidoParaApi = ({ lineas, entrega, factura, metodo, numeroTarjeta }) => (
     : { aOtro: false },
 });
 
-// Por que no se registro, dicho para quien paga. Si no se registro, tampoco
-// se cobro: se dice, para que no lo intente con miedo.
+// Por que no se registro, dicho para quien paga. Con un 400 o un 500 la base
+// lo rechazo entero: no se cobro, y se dice para que no lo intente con
+// miedo. Sin respuesta (sin red, se paso el tiempo, un 502-504) no se sabe
+// si llego: se pide volver a pulsar, que con la misma clave no hace dos.
 const textoDelFallo = (e) => {
   if (e.estado === 400) return e.message;
   if (e.estado === 401) return 'Tu sesión caducó. Vuelve a iniciar sesión para pagar; tu canasta se queda como está.';
-  if (e.estado === 0) return 'No pudimos registrar tu pedido: parece que no hay conexión. No se cobró nada; inténtalo otra vez.';
-  return 'No pudimos registrar tu pedido en este momento. No se cobró nada; inténtalo otra vez.';
+  if (e.estado === 500) return 'No pudimos registrar tu pedido en este momento. No se cobró nada; inténtalo otra vez.';
+  return 'No pudimos confirmar tu pedido: la conexión falló. Vuelve a pulsar el botón; si ya había quedado registrado, no se hará dos veces.';
 };
 
 // { pedido } si se registro, o { error } con el texto para la pantalla.
