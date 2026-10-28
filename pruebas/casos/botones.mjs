@@ -135,7 +135,7 @@ export default async function botones(t) {
         letra: c.fontFamily, estilo: c.fontStyle, peso: c.fontWeight, tamano: parseFloat(c.fontSize), borde: c.borderTopStyle,
         bordeColor: c.borderTopColor, bordeAncho: c.borderTopWidth, radio: c.borderRadius,
         fondo: c.backgroundColor, raya: c.textDecorationLine, rayaDespues: getComputedStyle(a, '::after').content,
-        pin: Boolean(pin), pinAncho: pin ? Math.round(pin.getBoundingClientRect().width) : 0, pinColor: pin ? getComputedStyle(pin).color : '',
+        pin: Boolean(pin), pinAncho: pin ? Math.round(pin.getBoundingClientRect().width) : 0, pinColor: pin ? getComputedStyle(pin).fill : '', pinTrazo: pin ? getComputedStyle(pin).stroke : '',
         alto: a.getBoundingClientRect().height,
         letrasEscondidas: letras ? letras.getAttribute('aria-hidden') : null,
         letras: letras ? [...letras.children].map((s) => s.textContent).join('') : '',
@@ -147,8 +147,8 @@ export default async function botones(t) {
     t.ok(conNombre === 1 && llegar.letrasEscondidas === 'true' && llegar.letras === 'Cómo llegar' && llegar.sueltas === 11, `[${nombre}] "Como llegar" no se llama "Cómo llegar" con sus letras sueltas escondidas (${conNombre} enlaces con ese nombre, ${JSON.stringify(llegar)})`);
     const tamanoLlegar = nombre === 'movil' ? 16 : 21.6;
     t.ok(/^"?Fraunces/.test(llegar.letra) && llegar.estilo === 'italic' && llegar.peso === '600' && Math.abs(llegar.tamano - tamanoLlegar) < 0.5, `[${nombre}] "Como llegar" no tiene el tamano responsive Fraunces cursiva 600 (${JSON.stringify(llegar)})`);
-    t.ok(llegar.pin && llegar.pinAncho === 24 && llegar.pinColor === AMBAR, `[${nombre}] el pin de "Como llegar" no es ambar de 24 px (${JSON.stringify(llegar)})`);
-    t.ok(llegar.borde === 'solid' && llegar.bordeColor === HORNO && llegar.bordeAncho === '1px' && llegar.radio === '12px' && llegar.fondo === 'rgba(0, 0, 0, 0)' && llegar.raya === 'none' && llegar.rayaDespues === 'none' && llegar.alto >= 24, `[${nombre}] "Como llegar" no tiene un filete fino sin relleno, lleva raya o mide menos de 24 px (${JSON.stringify(llegar)})`);
+    t.ok(llegar.pin && llegar.pinAncho === (nombre === 'movil' ? 28 : 36) && llegar.pinColor === PAPEL && llegar.pinTrazo === PAPEL, `[${nombre}] el pin de "Como llegar" no es papel sobre el boton horno de 36 px (28 en el telefono) (${JSON.stringify(llegar)})`);
+    t.ok(llegar.borde === 'solid' && llegar.bordeColor === HORNO && llegar.bordeAncho === '1px' && llegar.radio === '12px' && llegar.fondo === HORNO && contraste(PAPEL, llegar.fondo) >= 4.5 && llegar.raya === 'none' && llegar.rayaDespues === 'none' && llegar.alto >= 24, `[${nombre}] "Como llegar" no es un boton horno con filete fino, lleva raya o mide menos de 24 px (${JSON.stringify(llegar)})`);
     t.ok(await p.locator('.h-imprenta, .h-ola, .boton-duro, .nav-pastilla').count() === 0, `[${nombre}] quedan piezas viejas (h-imprenta, h-ola, boton-duro o nav-pastilla)`);
 
     // Con el raton, "Como llegar" pasa a borde horno, el pin salta y las
@@ -512,7 +512,7 @@ async function cinta(t) {
       await p.hover('.cinta-enlace >> nth=1');
       await esperaQue(async () => (await estado(p))[1].pastilla === '1' && (await estado(p))[1].color === HORNO);
       const e = await estado(p);
-      t.ok(e[1].pastilla === '1' && e[1].fondo === PAPEL && e[1].color === HORNO && e[1].icono === HORNO && e[0].pastilla === '0' && e[2].pastilla === '0', `[${nombre}] con el raton la cinta no enciende solo su enlace en papel con texto e icono horno (${JSON.stringify(e)})`);
+      t.ok(e[1].pastilla === '1' && e[1].fondo === AMBAR && e[1].color === HORNO && e[1].icono === HORNO && e[0].pastilla === '0' && e[2].pastilla === '0', `[${nombre}] con el raton la cinta no enciende solo su enlace en ambar con texto e icono horno (${JSON.stringify(e)})`);
       t.ok(contraste(e[1].color, e[1].fondo) >= 4.5, `[${nombre}] el texto de la cinta encendida da ${contraste(e[1].color, e[1].fondo).toFixed(2)}:1`);
       t.ok(e[1].animacion === 'salta' && e[0].animacion !== 'salta' && e[2].animacion !== 'salta', `[${nombre}] al pasar el raton las letras no saltan en ola solo en el enlace bajo el puntero (${JSON.stringify(e)})`);
       const iconos = [['panes', 'salta-hogaza'], ['dulces', 'salta-galleta'], ['bebidas-frias', 'baila-botella']];
@@ -521,12 +521,15 @@ async function cinta(t) {
         await esperaQue(() => p.locator(`.cinta-enlace-${categoria} .ico`).evaluate((svg, nombre) => getComputedStyle(svg).animationName === nombre, animacion));
         t.ok((await estado(p))[i].animacionIcono === animacion, `[${nombre}] el icono de ${categoria} no tiene su animacion (${JSON.stringify(await estado(p))})`);
       }
-      const galleta = await p.locator('.cinta-enlace-dulces .ico').evaluate((svg) => ({
+      // Dulces y pasteles lleva un pastelito de linea (27 de octubre de 2026,
+      // sustituye a la galleta rellena): mismo trazo que la hogaza y la botella.
+      const pastelito = await p.locator('.cinta-enlace-dulces .ico').evaluate((svg) => ({
         viewBox: svg.getAttribute('viewBox'),
         relleno: getComputedStyle(svg).fill,
-        silueta: svg.querySelector('path')?.getAttribute('d'),
+        trazo: svg.getAttribute('stroke'),
+        piezas: svg.querySelectorAll('path, circle').length,
       }));
-      t.ok(galleta.viewBox === '0 -960 960 960' && galleta.relleno !== 'none' && galleta.silueta?.startsWith('M480-80q-83 0-156'), `[${nombre}] la galleta no conserva la silueta rellena solicitada (${JSON.stringify(galleta)})`);
+      t.ok(pastelito.viewBox === '0 0 24 24' && pastelito.relleno === 'none' && pastelito.trazo === 'currentColor' && pastelito.piezas >= 3, `[${nombre}] Dulces y pasteles no lleva el pastelito de linea (${JSON.stringify(pastelito)})`);
       for (const [i, etiqueta] of ['Panes', 'Dulces y pasteles', 'Bebidas'].entries()) {
         const enlace = e[i];
         t.ok(enlace.nombre === etiqueta && enlace.letrasOcultas === 'true' && enlace.letras === etiqueta, `[${nombre}] la categoria "${etiqueta}" no conserva un nombre accesible unico con letras decorativas (${JSON.stringify(enlace)})`);
@@ -534,7 +537,7 @@ async function cinta(t) {
     } else {
       await p.tap('.portada-frase');
       const e = await estado(p);
-      t.ok(e.every((x) => x.pastilla === '0' && x.color === PAPEL), `[${nombre}] la cinta se enciende sin raton (${JSON.stringify(e)})`);
+      t.ok(e.every((x) => x.pastilla === '0' && x.color === HORNO), `[${nombre}] la cinta se enciende sin raton (${JSON.stringify(e)})`);
       t.ok(e.every((x) => x.animacion === 'none' && x.animacionIcono === 'none' && x.nombre === x.letras && x.letrasOcultas === 'true'), `[${nombre}] la cinta tactil no conserva el texto accesible o aplica la ola sin raton (${JSON.stringify(e)})`);
     }
     await ctx.close();

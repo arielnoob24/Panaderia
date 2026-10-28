@@ -68,6 +68,12 @@
 /* "Como llegar": el pin mas grande, macizo en ambar con contorno y punto horno. */
 .enlace-llegar.portada-llegar .ico { width: 36px; height: 36px; fill: var(--ambar); stroke: var(--horno); stroke-width: 1.6; }
 .enlace-llegar.portada-llegar .ico circle { fill: var(--horno); }
+/* Desde el 27 de octubre de 2026 "Como llegar" es un boton horno con texto y pin
+   papel (13,7:1): gana presencia sobre la masa sin quitarle el protagonismo a
+   "Nuestros panes". */
+.enlace-llegar.portada-llegar, .enlace-llegar.portada-llegar:hover { background: var(--horno); border-color: var(--horno); color: var(--papel); }
+.enlace-llegar.portada-llegar .ico { color: var(--papel); fill: var(--papel); stroke: var(--papel); }
+.enlace-llegar.portada-llegar .ico circle { fill: var(--horno); stroke: var(--horno); }
 .portada-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 1.6rem; margin-top: 2rem; }
 .portada-foto { width: min(100%, 460px); margin-left: auto; }
 /* La foto de la portada es cuadrada, y el sello cae abajo a la izquierda,
@@ -127,7 +133,7 @@
 /* El sello (Sello.jsx): el texto da la vuelta al aro. Cae girando al entrar
    y solo se mueve con el puntero encima; el desplazamiento no lo gira.
    Donde cae lo dice cada vista (.portada-sello, .nosotros-sello). */
-.sello { position: absolute; width: 124px; height: 124px; color: var(--horno); background: var(--masa) var(--grano); border-radius: 50%; transform: rotate(-12deg); animation: sella var(--dur-scene) var(--ease-soft) 800ms both; }
+.sello { position: absolute; width: 124px; height: 124px; color: var(--horno); background: var(--ambar) var(--grano); border-radius: 50%; transform: rotate(-12deg); animation: sella var(--dur-scene) var(--ease-soft) 800ms both; }
 .sello svg { display: block; width: 100%; height: 100%; transition: transform var(--dur-editorial) var(--ease-soft); }
 .con-puntero .sello:hover svg { transform: rotate(40deg); }
 .sello-aro { font: 700 11.5px var(--letra-texto); letter-spacing: .26em; text-transform: uppercase; fill: currentColor; }
