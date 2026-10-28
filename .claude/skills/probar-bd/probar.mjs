@@ -696,5 +696,67 @@ const ordenDespues = (await admin('FN_ADMIN_ORDENES', authDueno)).find((o) => o.
 ok(ordenDespues.recepcion.estado === 'Recibida' && Number(ordenDespues.lineas.find((l) => l.codigo === mB.codigo).recibido) === 6, 'La orden muestra lo recibido de cada linea');
 ok(await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'ORDENES_COMPRA' AND aud_clave = $1 AND usu_codigo IS NOT NULL`, [ordenOc.codigo]) >= 1, 'La orden aprobada queda auditada a nombre del Administrador');
 
+titulo('Produccion y ajustes de inventario');
+ok(yoDueno.permisos.includes('inventario.reportar') && (await admin('FN_ADMIN_YO', authEmpleado)).permisos.includes('inventario.reportar') && !(await admin('FN_ADMIN_YO', authNueva)).permisos.includes('inventario.reportar'),
+  'Administrador y Empleado reportan ajustes; el Cliente no');
+await sinPermiso('FN_ADMIN_PRODUCCION', 'Un cliente no ve la produccion', authNueva);
+await sinPermiso('FN_ADMIN_PRODUCCION_REGISTRAR', 'Un cliente no registra tandas', authNueva, 'PRO001', 'TAM001', 1);
+await sinPermiso('FN_ADMIN_AJUSTES', 'Un cliente no ve los ajustes', authNueva);
+await sinPermiso('FN_ADMIN_AJUSTE_CREAR', 'Un cliente no reporta ajustes', authNueva, '{}');
+const prod0 = await admin('FN_ADMIN_PRODUCCION', authEmpleado);
+ok(prod0.productos.length > 10 && prod0.costos === false, `Se pueden producir ${prod0.productos.length} productos; el Empleado no ve costos`);
+const unProd = prod0.productos[0];
+const tandasAntes = await unValor(`SELECT count(*)::int FROM ordenes_produccion`);
+const consumosAntes = await unValor(`SELECT count(*)::int FROM consumos_produccion`);
+const falloProd = async (msg, texto, ...args) => {
+  try { await admin('FN_ADMIN_PRODUCCION_REGISTRAR', authEmpleado, ...args); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await falloProd('Mas de lo que alcanza', 'No alcanza', unProd.producto, unProd.tamano, 9999);
+ok(await unValor(`SELECT count(*)::int FROM ordenes_produccion`) === tandasAntes && await unValor(`SELECT count(*)::int FROM consumos_produccion`) === consumosAntes, 'Una tanda que no alcanza no deja nada a medias');
+await falloProd('Cantidad 0', 'de 1 a 9999', unProd.producto, unProd.tamano, 0);
+await falloProd('Producto sin receta', 'no tiene receta', 'PRO999', unProd.tamano, 5);
+await q(`INSERT INTO lotes_material (mat_codigo, lma_cantidadrecibida, lma_cantidadinicial, lma_costounitario, lma_fechacaducidad)
+         SELECT mat_codigo, 1000, 100000, 0.01, CURRENT_DATE + 60 FROM materiales`);
+const hecha = await admin('FN_ADMIN_PRODUCCION_REGISTRAR', authEmpleado, unProd.producto, unProd.tamano, 10);
+const prod1 = await admin('FN_ADMIN_PRODUCCION', authEmpleado);
+const suya = prod1.ordenes.find((o) => o.codigo === hecha.codigo);
+ok(suya && suya.estado === 'Producida' && suya.cantidad === 10 && suya.costoTotal === null,
+  `El Empleado registra una tanda de 10 (${hecha.codigo}) y no ve su costo`);
+const prod2 = await admin('FN_ADMIN_PRODUCCION', authDueno);
+const suyaAdm = prod2.ordenes.find((o) => o.codigo === hecha.codigo);
+ok(prod2.costos === true && Number(suyaAdm.costoTotal) > 0 && Number(suyaAdm.costoUnitario) > 0, `El Administrador ve el costo (${suyaAdm.costoTotal})`);
+ok(await unValor(`SELECT count(*)::int FROM consumos_produccion WHERE orp_codigo = $1`, [hecha.codigo]) >= 1, 'La tanda descuenta lotes (consumos)');
+
+const aj0 = await admin('FN_ADMIN_AJUSTES', authEmpleado);
+ok(aj0.lotes.length > 5 && aj0.costos === false, `Hay ${aj0.lotes.length} lotes con saldo para ajustar`);
+const loteAj = aj0.lotes[0];
+const falloAj = async (msg, texto, datos, quien = authEmpleado) => {
+  try { await admin('FN_ADMIN_AJUSTE_CREAR', quien, JSON.stringify(datos)); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await falloAj('Sin motivo', 'motivo', { motivo: ' ', lineas: [{ lote: loteAj.codigo, cantidad: -1 }] });
+await falloAj('Sin lotes', 'al menos un lote', { motivo: 'Se cayo', lineas: [] });
+await falloAj('Cantidad 0', 'distinta de 0', { motivo: 'Se cayo', lineas: [{ lote: loteAj.codigo, cantidad: 0 }] });
+await falloAj('Sacar mas de lo que hay', 'solo quedan', { motivo: 'Se cayo', lineas: [{ lote: loteAj.codigo, cantidad: -99999999 }] });
+await falloAj('Lote repetido', 'dos veces', { motivo: 'Se cayo', lineas: [{ lote: loteAj.codigo, cantidad: -1 }, { lote: loteAj.codigo, cantidad: -2 }] });
+await falloAj('Lote que no existe', 'no existe', { motivo: 'Se cayo', lineas: [{ lote: 'LMA9999999', cantidad: -1 }] });
+const ajusteN = await admin('FN_ADMIN_AJUSTE_CREAR', authEmpleado, JSON.stringify({ motivo: 'Se cayo un saco', lineas: [{ lote: loteAj.codigo, cantidad: -2 }] }));
+ok(ajusteN.estado === 'Abierto' && ajusteN.lineas.length === 1 && ajusteN.lineas[0].valor === null, `El Empleado reporta un faltante (${ajusteN.codigo})`);
+const cambioAj = async (msg, texto, quien, codigo, estado) => {
+  try { await admin('FN_ADMIN_AJUSTE_ESTADO', quien, codigo, estado); ok(false, `${msg}: entro`); } catch (e) { ok((e.code === '22023' || e.code === '42501') && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await cambioAj('El Empleado no aprueba', 'No tienes permiso', authEmpleado, ajusteN.codigo, 'Aprobado');
+await cambioAj('Estado que no existe', 'aprueba o se anula', authDueno, ajusteN.codigo, 'Volando');
+const saldoAntes = Number(loteAj.saldo);
+const aprobado = await admin('FN_ADMIN_AJUSTE_ESTADO', authDueno, ajusteN.codigo, 'Aprobado');
+ok(aprobado.estado === 'Aprobado' && aprobado.autorizo && aprobado.autorizo !== aprobado.hizo, 'El Administrador aprueba el ajuste del Empleado');
+const saldoDespues = Number((await admin('FN_ADMIN_AJUSTES', authDueno)).lotes.find((l) => l.codigo === loteAj.codigo).saldo);
+ok(Math.abs(saldoAntes - saldoDespues - 2) < 1e-6, `El ajuste baja el saldo del lote (${saldoAntes} -> ${saldoDespues})`);
+await cambioAj('Un ajuste aprobado ya no cambia', 'ya está aprobado', authDueno, ajusteN.codigo, 'Anulado');
+const propio = await admin('FN_ADMIN_AJUSTE_CREAR', authDueno, JSON.stringify({ motivo: 'Conteo', lineas: [{ lote: loteAj.codigo, cantidad: 1 }] }));
+await cambioAj('No se aprueba el propio ajuste', 'Otra persona', authDueno, propio.codigo, 'Aprobado');
+ok((await admin('FN_ADMIN_AJUSTE_ESTADO', authDueno, propio.codigo, 'Anulado')).estado === 'Anulado', 'Quien lo reporto lo puede anular');
+const ajustesFin = await admin('FN_ADMIN_AJUSTES', authDueno);
+ok(ajustesFin.costos === true && ajustesFin.ajustes.find((a) => a.codigo === ajusteN.codigo).lineas[0].valor !== null, 'El Administrador ve los ajustes con su valor');
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

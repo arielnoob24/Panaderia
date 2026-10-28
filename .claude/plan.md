@@ -1181,7 +1181,7 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
       - **Se dejó para la tanda 2**: la canasta flotante tapa un importe en el
         teléfono; "Por entregar" del Resumen como acción destacada; un
         rediseño de las tarjetas de producto (menos espacio muerto).
-- [ ] **Tanda 2, bodega y producción**, en cuatro pasos:
+- [x] **Tanda 2, bodega y producción**, hecha el 28 de octubre de 2026, en tres pasos:
       - [x] **2a, Inventario (solo lectura)**, hecho el 28 de octubre de 2026:
         pestaña `#/admin/inventario` con materiales y su alerta de stock bajo
         (los que están mal, primero), lotes caducados o que caducan en 30
@@ -1227,10 +1227,27 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
           cierra con su motivo (no se genera otra para el resto).
         Para recibir hace falta un empleado: el dueño tiene EMP0000003 con un
         sueldo provisional de 470.00 (el real se cambia en la tanda 3).
-      - [ ] 2c, ajustes y producción: ver y aprobar o anular los que ya
-        existen (`inventario.ajustar`, `produccion.registrar`).
-      - [ ] 2d, crear documentos nuevos (orden de compra, de producción,
-        ajuste): formularios largos, solo si hacen falta.
+      - [x] **2c, producción y ajustes** (28 de octubre de 2026), con su
+        formulario de crear, porque la base estaba vacía (lo que era 2d se
+        hizo aquí):
+        - **Producción** (`#/admin/produccion`, `produccion.registrar`,
+          Administrador y Empleado): se registra una tanda ya hecha
+          (producto con receta, tamaño, unidades). Crear y aprobar es un solo
+          paso: la base descuenta de los lotes lo que pide la receta (FEFO,
+          FIFO, LIFO o promedio) y, si un material no alcanza, no guarda nada
+          y dice cuál falta. Una tanda producida ya no se anula. El costo
+          solo lo ve quien tiene `reportes.ver`. Funciones
+          `FN_ADMIN_PRODUCCION` y `..._REGISTRAR`; rutas `/admin/produccion`.
+        - **Ajustes** (`#/admin/ajustes`): permiso nuevo
+          **`inventario.reportar`** (Administrador y Empleado) para reportar
+          un faltante o sobrante de un lote; aprobar o anular es de
+          `inventario.ajustar` (Administrador) y de **otra persona** (la base
+          no deja aprobar el propio ajuste), así que con un solo empleado
+          ligado el dueño no puede aprobar lo que él mismo reportó: hace
+          falta el empleado de la tanda 3. Aprobar pide confirmar. Funciones
+          `FN_AJUSTE_JSON`, `FN_ADMIN_AJUSTES`, `..._AJUSTE_CREAR`,
+          `..._AJUSTE_ESTADO`; rutas `/admin/ajustes`. Migración
+          `panel_produccion_ajustes`.
 - [ ] **Tanda 3, administración:** facturas (anular), clientes, empleados,
       nómina, contabilidad, usuarios y roles.
 - Pendiente de datos: el correo de la cuenta del dueño (a 27 de octubre aún no

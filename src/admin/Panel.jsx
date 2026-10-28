@@ -15,9 +15,11 @@ import Productos from './Productos.jsx';
 import Inventario from './Inventario.jsx';
 import Compras from './Compras.jsx';
 import Bodega from './Bodega.jsx';
+import Produccion from './Produccion.jsx';
+import Ajustes from './Ajustes.jsx';
 import '../estilos/admin.css';
 
-const VISTAS = { resumen: Resumen, pedidos: Pedidos, productos: Productos, inventario: Inventario, compras: Compras, bodega: Bodega };
+const VISTAS = { resumen: Resumen, pedidos: Pedidos, productos: Productos, inventario: Inventario, compras: Compras, bodega: Bodega, produccion: Produccion, ajustes: Ajustes };
 
 function Panel() {
   // Se mira al llegar y no despues (vease Desvio.jsx).

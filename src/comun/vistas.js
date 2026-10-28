@@ -11,7 +11,7 @@
 //   #/cuenta (Mis
 //   datos), #/cuenta/pedidos   la cuenta (src/cuenta/); cada una lleva a
 //   otra con replace cuando no corresponde (fase 5 en la seccion 15 del plan)
-//   #/admin, #/admin/resumen, #/admin/pedidos, #/admin/productos, #/admin/inventario, #/admin/compras, #/admin/bodega  el panel
+//   #/admin, #/admin/resumen, #/admin/pedidos, #/admin/productos, #/admin/inventario, #/admin/compras, #/admin/bodega, #/admin/produccion, #/admin/ajustes  el panel
 //   de quien atiende el local (src/admin/), sin enlace publico
 // Las tiendas son una sola vista: cambiar de categoria no es cambiar de
 // pagina, y el catalogo no se vuelve a montar.
@@ -47,7 +47,7 @@ function vistaDeRuta(pathname) {
   if (pathname === '/comprobante') return 'comprobante';
   if (CUENTA[pathname]) return CUENTA[pathname];
   // El panel de quien atiende el local: #/admin y sus pestañas son una vista.
-  if (/^\/admin(\/(resumen|pedidos|productos|inventario|compras|bodega))?$/.test(pathname)) return 'admin';
+  if (/^\/admin(\/(resumen|pedidos|productos|inventario|compras|bodega|produccion|ajustes))?$/.test(pathname)) return 'admin';
   const categoria = categoriaDeRuta(pathname);
   return categoria && categoria !== 'todos' ? 'tienda' : null;
 }

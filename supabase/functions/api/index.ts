@@ -308,6 +308,35 @@ Deno.serve(async (req) => {
       });
     }
 
+    // PRODUCCION (produccion.registrar: Administrador y Empleado).
+    // GET /admin/produccion -> { costos, ordenes, productos }
+    if (req.method === "GET" && ruta === "/admin/produccion") return llamar("fn_admin_produccion", {});
+    // POST /admin/produccion { producto, tamano, cantidad } -> registra la tanda ya hecha.
+    if (req.method === "POST" && ruta === "/admin/produccion") {
+      const c = await req.json().catch(() => null);
+      if (typeof c?.producto !== "string" || typeof c?.tamano !== "string" || !Number.isInteger(c?.cantidad)) {
+        return responder(h, 400, { error: "Faltan el producto, el tamaño y la cantidad." });
+      }
+      return llamar("fn_admin_produccion_registrar", { p_producto: c.producto, p_tamano: c.tamano, p_cantidad: c.cantidad }, 201);
+    }
+
+    // AJUSTES de inventario (inventario.reportar para reportar; aprobar es de inventario.ajustar).
+    // GET /admin/ajustes -> { costos, ajustes, lotes }
+    if (req.method === "GET" && ruta === "/admin/ajustes") return llamar("fn_admin_ajustes", {});
+    // POST /admin/ajustes { motivo, lineas: [{ lote, cantidad }] } (negativa si falta, positiva si sobra)
+    if (req.method === "POST" && ruta === "/admin/ajustes") {
+      const c = await req.json().catch(() => null);
+      if (!c || typeof c !== "object" || Array.isArray(c)) return responder(h, 400, { error: "Faltan los datos del ajuste." });
+      return llamar("fn_admin_ajuste_crear", { p_datos: c }, 201);
+    }
+    // PUT /admin/ajustes/AJU0000001 { estado: "Aprobado" | "Anulado" }
+    const ajuste = ruta.match(/^\/admin\/ajustes\/(AJU\d{7})$/);
+    if (req.method === "PUT" && ajuste) {
+      const c = await req.json().catch(() => null);
+      if (typeof c?.estado !== "string") return responder(h, 400, { error: "Falta el estado." });
+      return llamar("fn_admin_ajuste_estado", { p_ajuste: ajuste[1], p_estado: c.estado });
+    }
+
     // PUT /admin/pedidos/ET-XXXX { estado } -> pasa el pedido a ese estado.
     const pedido = ruta.match(/^\/admin\/pedidos\/(ET-[A-Z0-9]{4})$/);
     if (req.method === "PUT" && pedido) {

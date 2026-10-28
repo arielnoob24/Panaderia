@@ -66,7 +66,7 @@ async function panel(t, nombre, ventana) {
   await p.click('#cuenta-menu a[href$="/admin"]');
   await p.waitForSelector('.admin-pedido');
   ok((await hash()) === '#/admin/pedidos', `#/admin no lleva a Pedidos: ${await hash()}`);
-  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Pedidos,Inventario,Bodega', 'el empleado no ve Pedidos, Inventario y Bodega');
+  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Pedidos,Inventario,Bodega,Producción,Ajustes', 'el empleado no ve sus cinco pestañas');
   ok((await p.$$('.admin-pedido')).length === 2, `Por atender no esconde lo entregado: ${(await p.$$('.admin-pedido')).length}`);
   await p.goto(URL + '#/admin/productos');
   await p.reload();
@@ -82,6 +82,33 @@ async function panel(t, nombre, ventana) {
   // Bodega sin compras por recibir.
   await p.click('.admin-pestana >> text=Bodega');
   await esperaQue(async () => (await p.textContent('.cuenta-vista-admin')).includes('No hay compras por recibir'));
+  // Produccion: el empleado registra una tanda; sin costos.
+  await p.click('.admin-pestana >> text=Producción');
+  await p.waitForSelector('#admin-registrar-tanda');
+  await p.click('button:has-text("Registrar tanda")');
+  await p.waitForSelector('.admin-formulario .admin-error');
+  ok((await p.textContent('.admin-formulario .admin-error')).includes('número entero'), 'una tanda sin cantidad no avisa');
+  await p.getByLabel('Unidades que salieron').fill('500');
+  await p.click('button:has-text("Registrar tanda")');
+  await esperaQue(async () => (await p.textContent('.admin-formulario .admin-error').catch(() => '')).includes('No alcanza'));
+  ok((await p.textContent('.admin-formulario .admin-error')).includes('No alcanza Harina'), 'una tanda que no alcanza no dice que falta');
+  await p.getByLabel('Unidades que salieron').fill('12');
+  await p.click('button:has-text("Registrar tanda")');
+  await esperaQue(async () => (await p.$$('.admin-tandas li')).length === 1);
+  const tanda = await p.textContent('.admin-tandas li');
+  ok(tanda.includes('Pan redondo') && tanda.includes('12 u · Producida') && !tanda.includes('costó'), `la tanda no sale registrada sin costo: ${tanda}`);
+  // Ajustes: el empleado reporta, pero no aprueba.
+  await p.click('.admin-pestana >> text=Ajustes');
+  await p.waitForSelector('#admin-reportar-ajuste');
+  await p.getByLabel('Cuánto (kg)').fill('2');
+  await p.click('button:has-text("Reportar")');
+  await esperaQue(async () => (await p.textContent('.admin-formulario .admin-error').catch(() => '')).includes('motivo'));
+  await p.getByLabel('Motivo').fill('Se cayó un saco');
+  await p.click('button:has-text("Reportar")');
+  await p.waitForSelector('li.admin-material:has-text("AJU0000001")');
+  ok((await p.textContent('li.admin-material:has-text("AJU0000001")')).includes('Abierto'), 'el ajuste reportado no sale abierto');
+  ok((await p.textContent('li.admin-material:has-text("AJU0000001")')).includes('-2 kg'), 'el ajuste no dice cuánto falta');
+  ok((await p.$$('button[aria-label^="Aprobar el ajuste"]')).length === 0, 'el empleado puede aprobar un ajuste');
   await p.click('.admin-pestana >> text=Pedidos');
   await p.waitForSelector('.admin-pedido');
 
@@ -148,7 +175,7 @@ async function panel(t, nombre, ventana) {
   await p.goto(URL + '#/admin');
   await p.waitForSelector('.admin-cifras');
   ok((await hash()) === '#/admin/resumen', `#/admin no lleva al Resumen: ${await hash()}`);
-  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario,Compras,Bodega', 'el administrador no ve las seis pestañas');
+  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario,Compras,Bodega,Producción,Ajustes', 'el administrador no ve las ocho pestañas');
   ok((await p.textContent('.admin-cifras')).includes('Ventas de hoy'), 'el resumen no dice las ventas de hoy');
   ok((await p.textContent('.admin-lista')).includes('Pan redondo'), 'lo mas vendido no esta');
   await p.click('.admin-pestana >> text=Productos');
@@ -293,6 +320,24 @@ async function panel(t, nombre, ventana) {
   await p.click('.admin-pestana >> text=Compras');
   await p.waitForSelector('li.admin-material:has-text("OCO0000001")');
   ok((await p.locator('li.admin-material', { hasText: 'OCO0000001' }).textContent()).includes('recibido 2'), 'la orden no muestra lo recibido');
+
+  // Produccion con costo y ajustes: el administrador aprueba lo que reporto el empleado.
+  await p.click('.admin-pestana >> text=Producción');
+  await p.waitForSelector('.admin-tandas li');
+  ok((await p.textContent('.admin-tandas li')).includes('costó $'), 'el administrador no ve el costo de la tanda');
+  await p.click('.admin-pestana >> text=Ajustes');
+  const ajuste = p.locator('li.admin-material', { hasText: 'AJU0000001' });
+  await ajuste.waitFor();
+  await ajuste.locator('button[aria-label="Aprobar el ajuste AJU0000001"]').click();
+  await espera(150);
+  ok((await ajuste.locator('.admin-estado').textContent()) === 'Abierto', 'aprobar un ajuste con un solo toque lo aprueba');
+  await p.keyboard.press('Escape');
+  await espera(150);
+  ok(await p.evaluate(() => document.activeElement?.getAttribute('aria-label') === 'Aprobar el ajuste AJU0000001'), 'tras Escape el foco no vuelve a Aprobar el ajuste');
+  await ajuste.locator('button[aria-label="Aprobar el ajuste AJU0000001"]').click();
+  await ajuste.locator('.admin-confirmar').click();
+  await esperaQue(async () => (await p.locator('li.admin-material', { hasText: 'AJU0000001' }).locator('.admin-estado').textContent()) === 'Aprobado');
+  ok((await p.textContent('li.admin-material:has-text("AJU0000001")')).includes('lo aprobó'), 'el ajuste aprobado no dice quién lo aprobó');
 
   ok(t.errores?.length ? false : true, 'hubo errores de pagina');
   await ctx.close();

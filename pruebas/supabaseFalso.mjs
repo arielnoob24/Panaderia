@@ -264,8 +264,8 @@ const pedidosDe = (correo) => {
 // caso lo cambia con ponerRol(). Los pedidos son los de todas las cuentas de
 // esa ventana; los productos, el catalogo de data/productos.json.
 const PERMISOS = {
-  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir'],
-  Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver', 'bodega.recibir'],
+  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar', 'inventario.ajustar'],
+  Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar'],
   Cliente: [],
 };
 const ponerRol = (correo, rol) => {
@@ -295,6 +295,8 @@ const MATERIALES_COMPRA = [
 const CANTONES = [{ codigo: '1501', nombre: 'Tena' }, { codigo: '1503', nombre: 'Archidona' }];
 const proveedoresDe = (sv) => (sv.proveedores ||= []);
 const ordenesDe = (sv) => (sv.ordenes ||= []);
+const tandasDe = (sv) => (sv.tandas ||= []);
+const ajustesDe = (sv) => (sv.ajustes ||= []);
 const recepcionesDe = (sv) => (sv.recepciones ||= { pendientes: [], recibidas: [] });
 
 async function admin(sv, route) {
@@ -472,6 +474,62 @@ async function admin(sv, route) {
     o.recepcion.estado = 'Recibida';
     for (const l of o.lineas) l.recibido = lotes.filter((x) => x.nombre === l.nombre).reduce((s, x) => s + x.cantidad, 0);
     return contestar(route, 200, { codigo: r.codigo, orden: r.orden, lotes: lotes.length });
+  }
+  if (ruta === '/produccion') {
+    if (!permisos.includes('produccion.registrar')) return sin();
+    const costos = permisos.includes('reportes.ver');
+    const lista = tandasDe(sv);
+    if (req.method() === 'GET') {
+      return contestar(route, 200, {
+        costos, productos: [{ producto: 'PRO001', tamano: 'TAM001', nombre: 'Pan redondo' }, { producto: 'PRO002', tamano: 'TAM001', nombre: 'Pastel grande' }],
+        ordenes: lista.map((o) => ({ ...o, costoTotal: costos ? o.cantidad * 0.1 : null, costoUnitario: costos ? 0.1 : null })).reverse(),
+      });
+    }
+    const d = req.postDataJSON?.() || {};
+    if (!(d.cantidad >= 1 && d.cantidad <= 9999)) return contestar(route, 400, { error: 'La cantidad va de 1 a 9999.' });
+    if (d.cantidad > 100) return contestar(route, 400, { error: 'No alcanza Harina de trigo: faltan 5 kg' });
+    lista.push({ codigo: `ORP${String(lista.length + 1).padStart(7, '0')}`, fecha: new Date().toISOString(), producto: d.producto === 'PRO002' ? 'Pastel grande' : 'Pan redondo', tamano: 'Único', cantidad: d.cantidad, estado: 'Producida', hizo: c.rol === 'Administrador' ? 'Dueño Prueba' : 'Ana Prueba' });
+    return contestar(route, 201, { codigo: lista[lista.length - 1].codigo });
+  }
+  if (ruta === '/ajustes' || ruta.startsWith('/ajustes/')) {
+    if (!permisos.includes('inventario.reportar')) return sin();
+    const costos = permisos.includes('reportes.ver');
+    const lista = ajustesDe(sv);
+    const malo = (error) => contestar(route, 400, { error });
+    const LOTES = [
+      { codigo: 'LMA0000001', material: 'Harina de trigo', unidad: 'kg', saldo: 12.5, caduca: null },
+      { codigo: 'LMA0000002', material: 'Huevos', unidad: 'u', saldo: 6, caduca: '2026-11-02' },
+    ];
+    if (ruta === '/ajustes' && req.method() === 'GET') return contestar(route, 200, { costos, lotes: LOTES, ajustes: [...lista].reverse().map(({ cuenta, rolQueLoHizo, ...a }) => a) });
+    const d = req.postDataJSON?.() || {};
+    if (ruta === '/ajustes' && req.method() === 'POST') {
+      if (!String(d.motivo || '').trim()) return malo('Escribe el motivo (hasta 150 letras).');
+      const l = d.lineas?.[0];
+      const lote = LOTES.find((x) => x.codigo === l?.lote);
+      if (!lote || !Number(l.cantidad)) return malo('La cantidad tiene que ser distinta de 0 (hasta 3 decimales).');
+      if (lote.saldo + Number(l.cantidad) < 0) return malo(`Del lote de ${lote.material} solo quedan ${lote.saldo} y quieres sacar ${-Number(l.cantidad)}.`);
+      lista.push({
+        codigo: `AJU${String(lista.length + 1).padStart(7, '0')}`, fecha: new Date().toISOString(), motivo: d.motivo.trim(), estado: 'Abierto',
+        hizo: c.rol === 'Administrador' ? 'Dueño Prueba' : 'Ana Prueba', autorizo: null, cuenta: c, rolQueLoHizo: c.rol,
+        lineas: [{ lote: lote.codigo, material: lote.material, unidad: lote.unidad, cantidad: Number(l.cantidad), valor: costos ? Number(l.cantidad) * 0.5 : null }],
+      });
+      return contestar(route, 201, { codigo: lista[lista.length - 1].codigo });
+    }
+    const aj = ruta.match(/^\/ajustes\/(AJU\d{7})$/);
+    const a = aj && lista.find((x) => x.codigo === aj[1]);
+    if (!a) return malo('Ese ajuste no existe.');
+    if (a.estado !== 'Abierto') return malo(`Ese ajuste ya está ${a.estado.toLowerCase()}, y ya no cambia.`);
+    if (d.estado === 'Aprobado') {
+      if (!permisos.includes('inventario.ajustar')) return sin();
+      // En la prueba una misma cuenta cambia de rol: "el propio" es la misma cuenta con el mismo rol.
+      if (a.cuenta === c && a.rolQueLoHizo === c.rol) return malo('Otra persona tiene que aprobar este ajuste: no se aprueba el propio.');
+      a.estado = 'Aprobado';
+      a.autorizo = 'Dueño Prueba';
+    } else {
+      if (!permisos.includes('inventario.ajustar')) return sin();
+      a.estado = 'Anulado';
+    }
+    return contestar(route, 200, { codigo: a.codigo, estado: a.estado });
   }
   if (ruta === '/resumen') {
     if (!permisos.includes('reportes.ver')) return sin();
