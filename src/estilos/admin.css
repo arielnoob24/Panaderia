@@ -102,3 +102,17 @@
 .admin-mov-cifras { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .admin-caducan li::before, .admin-productos-inv li::before { content: none; }
 .admin-ver-mov:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+
+/* Compras: proveedores y lo que vende cada uno */
+.admin-proveedor-nombre { margin: 0; color: var(--horno); font: 700 1.05rem Arial, sans-serif; }
+.admin-formulario { margin: 1rem 0; padding: 1rem; border: 1px solid var(--masa-linea); border-radius: var(--r-btn); background: var(--papel); }
+.admin-campos { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: .8rem; align-items: end; }
+.admin-campo { display: flex; flex-direction: column; gap: .25rem; color: var(--horno); font: 700 .85rem Arial, sans-serif; }
+.admin-campo input, .admin-campo select { min-height: 44px; padding: 0 .6rem; border: 1px solid var(--horno); border-radius: var(--r-btn); background: var(--papel); color: var(--horno); font: 1rem Arial, sans-serif; }
+.admin-campo input[aria-invalid="true"] { border-color: var(--rojo); }
+.admin-campo input:focus-visible, .admin-campo select:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
+.admin-ancho { grid-column: 1 / -1; }
+.admin-vende { margin-top: .8rem; }
+.admin-vende .admin-lista li::before { content: none; }
+.admin-vende .admin-lista small { display: block; color: var(--horno-suave); font: .8rem/1.4 Arial, sans-serif; }
+.admin-vende-form { margin-top: .8rem; }

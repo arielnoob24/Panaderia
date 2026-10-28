@@ -13,9 +13,10 @@ import Resumen from './Resumen.jsx';
 import Pedidos from './Pedidos.jsx';
 import Productos from './Productos.jsx';
 import Inventario from './Inventario.jsx';
+import Compras from './Compras.jsx';
 import '../estilos/admin.css';
 
-const VISTAS = { resumen: Resumen, pedidos: Pedidos, productos: Productos, inventario: Inventario };
+const VISTAS = { resumen: Resumen, pedidos: Pedidos, productos: Productos, inventario: Inventario, compras: Compras };
 
 function Panel() {
   // Se mira al llegar y no despues (vease Desvio.jsx).

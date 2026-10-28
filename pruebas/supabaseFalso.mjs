@@ -264,7 +264,7 @@ const pedidosDe = (correo) => {
 // caso lo cambia con ponerRol(). Los pedidos son los de todas las cuentas de
 // esa ventana; los productos, el catalogo de data/productos.json.
 const PERMISOS = {
-  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver'],
+  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar'],
   Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver'],
   Cliente: [],
 };
@@ -286,6 +286,14 @@ const productosDe = (sv) => {
   return sv.productos;
 };
 const SIGUE_FINAL = ['Entregado', 'Cancelado'];
+// Los proveedores del panel: empiezan sin ninguno y cada ventana guarda los suyos.
+const MATERIALES_COMPRA = [
+  { codigo: 'MAT001', nombre: 'Harina de trigo', unidad: 'qq' },
+  { codigo: 'MAT002', nombre: 'Azúcar', unidad: 'qq' },
+  { codigo: 'MAT003', nombre: 'Huevos', unidad: 'cubeta' },
+];
+const CANTONES = [{ codigo: '1501', nombre: 'Tena' }, { codigo: '1503', nombre: 'Archidona' }];
+const proveedoresDe = (sv) => (sv.proveedores ||= []);
 
 async function admin(sv, route) {
   const req = route.request();
@@ -352,6 +360,44 @@ async function admin(sv, route) {
       { fecha: new Date().toISOString(), tipo: 'Producción', documento: 'ORP0000001', cantidad: -5, saldo: 12.5, valor: costos ? -7.35 : null },
       { fecha: new Date(Date.now() - 864e5).toISOString(), tipo: 'Compra', documento: 'RCP0000001', cantidad: 17.5, saldo: 17.5, valor: costos ? 25.75 : null },
     ] : [] });
+  }
+  if (ruta.startsWith('/proveedores')) {
+    if (!permisos.includes('compras.aprobar')) return sin();
+    const lista = proveedoresDe(sv);
+    const malo = (error) => contestar(route, 400, { error });
+    if (ruta === '/proveedores' && req.method() === 'GET') {
+      return contestar(route, 200, { proveedores: lista, cantones: CANTONES, materiales: MATERIALES_COMPRA });
+    }
+    if (ruta === '/proveedores' && req.method() === 'POST') {
+      const d = req.postDataJSON?.() || {};
+      if (!String(d.razonSocial || '').trim()) return malo('Escribe el nombre o razón social (hasta 150 letras).');
+      if (!/^\d{10}(\d{3})?$/.test(d.identificacion || '')) return malo('La cédula o el RUC no es válido.');
+      if (lista.some((x) => x.identificacion === d.identificacion)) return malo('Ya hay un proveedor con esa cédula o RUC.');
+      if (!/^\S+@\S+\.\S+$/.test(d.correo || '')) return malo('El correo no es válido.');
+      if (!String(d.direccion || '').trim()) return malo('Escribe la dirección (hasta 200 letras).');
+      const nuevo = {
+        codigo: `PVD${String(lista.length + 1).padStart(7, '0')}`, razonSocial: d.razonSocial.trim(), tipo: d.tipo === '04' ? 'RUC' : 'Cédula',
+        identificacion: d.identificacion, correo: d.correo.toLowerCase(), celular: d.celular || null, telefono: d.telefono || null,
+        direccion: d.direccion.trim(), canton: CANTONES.find((c) => c.codigo === d.canton)?.nombre || 'Tena', activo: true, materiales: [],
+      };
+      lista.push(nuevo);
+      return contestar(route, 201, nuevo);
+    }
+    const prov = ruta.match(/^\/proveedores\/(PVD\d{7})(?:\/materiales\/(MAT\d{3})(\/quitar)?)?$/);
+    const p = prov && lista.find((x) => x.codigo === prov[1]);
+    if (!p) return malo('Ese proveedor no existe.');
+    const d = req.postDataJSON?.() || {};
+    if (!prov[2] && req.method() === 'PUT') { p.activo = d.activo; return contestar(route, 200, p); }
+    const m = MATERIALES_COMPRA.find((x) => x.codigo === prov[2]);
+    if (prov[3]) {
+      if (!p.materiales.some((x) => x.codigo === prov[2])) return malo('Ese proveedor no vende ese material.');
+      p.materiales = p.materiales.filter((x) => x.codigo !== prov[2]);
+      return contestar(route, 200, p);
+    }
+    if (!(d.precio > 0 && d.precio < 10000)) return malo('El precio tiene que ser mayor que 0 y menor que 10000.');
+    const hay = p.materiales.find((x) => x.codigo === prov[2]);
+    if (hay) { hay.precio = d.precio; hay.dias = d.dias; } else p.materiales.push({ codigo: m.codigo, nombre: m.nombre, unidad: m.unidad, precio: d.precio, dias: d.dias });
+    return contestar(route, 200, p);
   }
   if (ruta === '/resumen') {
     if (!permisos.includes('reportes.ver')) return sin();

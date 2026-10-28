@@ -1193,9 +1193,27 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
         `GET /admin/inventario` y `GET /admin/inventario/MAT###`. Migración
         `panel_inventario`. Hoy las existencias están en cero (no se ha
         recibido ninguna compra), así que casi todo sale "Bajo el mínimo".
-      - [ ] 2b, compras y bodega: ver órdenes de compra y proveedores;
-        aprobar o anular (`compras.aprobar`) y confirmar la recepción
-        (`bodega.recibir`).
+      - [ ] **2b, el flujo de compras entero** (la base está vacía: sin
+        proveedores, órdenes ni recepciones, así que ver listas no serviría
+        de nada). Tres pasos, cada uno se publica solo:
+        - [x] **Proveedores** (28 de octubre de 2026): pestaña
+          `#/admin/compras` (permiso `compras.aprobar`, solo el
+          Administrador) con la lista, el alta (cédula o RUC validados por la
+          base, correo, celular, teléfono, dirección, cantón), activar o
+          desactivar y "Lo que vende": material, precio de referencia por
+          unidad de compra sin IVA y días de entrega (la base solo deja pedir
+          lo que el proveedor vende). Funciones `FN_ADMIN_PROVEEDORES`,
+          `FN_ADMIN_PROVEEDOR_CREAR`, `..._MATERIAL`, `..._QUITAR_MATERIAL`,
+          `..._ACTIVO`; rutas `/admin/proveedores...` (sin DELETE: quitar es
+          un POST a `/quitar`). Migración `panel_proveedores`.
+        - [ ] **Órdenes de compra**: crear con líneas del proveedor y fecha de
+          entrega, aprobar (crea la recepción pendiente y el asiento) o
+          anular, con confirmación.
+        - [ ] **Bodega, recepciones** (`bodega.recibir`, también el
+          Empleado): confirmar lo recibido y la caducidad de cada línea; crea
+          los lotes y llena el Inventario.
+        Para recibir hace falta un empleado: el dueño tiene EMP0000003 con un
+        sueldo provisional de 470.00 (el real se cambia en la tanda 3).
       - [ ] 2c, ajustes y producción: ver y aprobar o anular los que ya
         existen (`inventario.ajustar`, `produccion.registrar`).
       - [ ] 2d, crear documentos nuevos (orden de compra, de producción,

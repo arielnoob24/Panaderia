@@ -248,6 +248,34 @@ Deno.serve(async (req) => {
       return r.ok ? responder(h, 200, { movimientos: await r.json() }) : r;
     }
 
+    // COMPRAS (compras.aprobar, solo el Administrador). Sin DELETE: quitar lo
+    // que vende un proveedor es un POST a /quitar.
+    // GET /admin/proveedores -> { proveedores, cantones, materiales }
+    if (req.method === "GET" && ruta === "/admin/proveedores") return llamar("fn_admin_proveedores", {});
+    // POST /admin/proveedores { tipo, identificacion, razonSocial, correo, telefono?, celular?, direccion, canton }
+    if (req.method === "POST" && ruta === "/admin/proveedores") {
+      const c = await req.json().catch(() => null);
+      if (!c || typeof c !== "object" || Array.isArray(c)) return responder(h, 400, { error: "Faltan los datos del proveedor." });
+      return llamar("fn_admin_proveedor_crear", { p_datos: c }, 201);
+    }
+    // PUT /admin/proveedores/PVD0000001 { activo } -> activa o desactiva.
+    const proveedor = ruta.match(/^\/admin\/proveedores\/(PVD\d{7})$/);
+    if (req.method === "PUT" && proveedor) {
+      const c = await req.json().catch(() => null);
+      if (typeof c?.activo !== "boolean") return responder(h, 400, { error: "Falta si el proveedor está activo." });
+      return llamar("fn_admin_proveedor_activo", { p_proveedor: proveedor[1], p_activo: c.activo });
+    }
+    // PUT /admin/proveedores/PVD0000001/materiales/MAT001 { precio, dias } -> lo que vende.
+    const vende = ruta.match(/^\/admin\/proveedores\/(PVD\d{7})\/materiales\/(MAT\d{3})(\/quitar)?$/);
+    if (req.method === "PUT" && vende && !vende[3]) {
+      const c = await req.json().catch(() => null);
+      if (typeof c?.precio !== "number" || !Number.isInteger(c?.dias)) return responder(h, 400, { error: "Faltan el precio y los días de entrega." });
+      return llamar("fn_admin_proveedor_material", { p_proveedor: vende[1], p_material: vende[2], p_precio: c.precio, p_dias: c.dias });
+    }
+    if (req.method === "POST" && vende && vende[3]) {
+      return llamar("fn_admin_proveedor_quitar_material", { p_proveedor: vende[1], p_material: vende[2] });
+    }
+
     // PUT /admin/pedidos/ET-XXXX { estado } -> pasa el pedido a ese estado.
     const pedido = ruta.match(/^\/admin\/pedidos\/(ET-[A-Z0-9]{4})$/);
     if (req.method === "PUT" && pedido) {

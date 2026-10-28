@@ -585,5 +585,44 @@ ok(movs.length >= 1 && movs[0].saldo !== undefined, `El kardex de ${matInv.nombr
 ok((await admin('FN_ADMIN_KARDEX', authEmpleado, matInv.codigo)).every((k) => k.valor === null), 'El kardex del Empleado no trae valores');
 try { await admin('FN_ADMIN_KARDEX', authDueno, 'MAT999'); ok(false, 'Un material que no existe: entro'); } catch (e) { ok(e.code === '22023', `Un material que no existe: ${e.message}`); }
 
+titulo('Compras: proveedores (FN_ADMIN_PROVEEDOR_*)');
+ok(yoDueno.permisos.includes('compras.aprobar') && !yoEmpleado.permisos.includes('compras.aprobar'), 'Solo el Administrador maneja compras');
+await sinPermiso('FN_ADMIN_PROVEEDORES', 'Un empleado no ve los proveedores', authEmpleado);
+await sinPermiso('FN_ADMIN_PROVEEDOR_CREAR', 'Un empleado no crea proveedores', authEmpleado, '{}');
+const provBase = { tipo: '05', identificacion: '1501107609', razonSocial: 'Molino Napo', correo: 'Molino@Napo.ec', celular: '0991112233', telefono: '062887766', direccion: 'Av. Tena 1', canton: '1501' };
+const provNuevo = await admin('FN_ADMIN_PROVEEDOR_CREAR', authDueno, JSON.stringify(provBase));
+ok(provNuevo.razonSocial === 'Molino Napo' && provNuevo.correo === 'molino@napo.ec' && provNuevo.activo === true && provNuevo.materiales.length === 0 && provNuevo.canton === 'Tena',
+  `El Administrador crea un proveedor (${provNuevo.codigo})`);
+const falloProv = async (msg, texto, cambios) => {
+  try { await admin('FN_ADMIN_PROVEEDOR_CREAR', authDueno, JSON.stringify({ ...provBase, ...cambios })); ok(false, `${msg}: entro`); }
+  catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await falloProv('Misma cedula dos veces', 'Ya hay', {});
+await falloProv('Cedula mala', 'no es válido', { identificacion: '1501107600' });
+await falloProv('Tipo que no vale', 'RUC o con cédula', { tipo: '06' });
+await falloProv('Sin nombre', 'razón social', { razonSocial: ' ' });
+await falloProv('Correo mal escrito', 'correo', { identificacion: '0102030400', correo: 'molino' });
+await falloProv('Celular mal', 'celular', { identificacion: '0102030400', celular: '0891112233' });
+await falloProv('Telefono mal', 'teléfono', { identificacion: '0102030400', telefono: '12345' });
+await falloProv('Canton que no existe', 'cantón', { identificacion: '0102030400', canton: '9999' });
+const listaProv = await admin('FN_ADMIN_PROVEEDORES', authDueno);
+ok(listaProv.proveedores.some((p) => p.codigo === provNuevo.codigo) && listaProv.cantones.length >= 5 && listaProv.materiales.length > 5,
+  `La lista trae el proveedor, ${listaProv.cantones.length} cantones y ${listaProv.materiales.length} materiales`);
+const matProv = listaProv.materiales[0];
+const vende = await admin('FN_ADMIN_PROVEEDOR_MATERIAL', authDueno, provNuevo.codigo, matProv.codigo, 12.5, 2);
+ok(vende.materiales.length === 1 && Number(vende.materiales[0].precio) === 12.5 && vende.materiales[0].dias === 2, `El proveedor vende ${matProv.nombre} a 12.50`);
+const cambia = await admin('FN_ADMIN_PROVEEDOR_MATERIAL', authDueno, provNuevo.codigo, matProv.codigo, 13, 3);
+ok(cambia.materiales.length === 1 && Number(cambia.materiales[0].precio) === 13, 'Volver a ponerlo cambia el precio, no lo repite');
+for (const [precio, dias, msg] of [[0, 1, 'Precio 0'], [10000, 1, 'Precio de 10000'], [5, -1, 'Dias negativos'], [5, 400, 'Mas de 365 dias']]) {
+  try { await admin('FN_ADMIN_PROVEEDOR_MATERIAL', authDueno, provNuevo.codigo, matProv.codigo, precio, dias); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023', `${msg}: ${e.message}`); }
+}
+try { await admin('FN_ADMIN_PROVEEDOR_MATERIAL', authDueno, provNuevo.codigo, 'MAT999', 5, 1); ok(false, 'Material que no existe: entro'); } catch (e) { ok(e.code === '22023', `Material que no existe: ${e.message}`); }
+const sinMat = await admin('FN_ADMIN_PROVEEDOR_QUITAR_MATERIAL', authDueno, provNuevo.codigo, matProv.codigo);
+ok(sinMat.materiales.length === 0, 'Se le quita lo que vendia');
+try { await admin('FN_ADMIN_PROVEEDOR_QUITAR_MATERIAL', authDueno, provNuevo.codigo, matProv.codigo); ok(false, 'Quitar dos veces: entro'); } catch (e) { ok(e.code === '22023', `Quitar dos veces: ${e.message}`); }
+ok((await admin('FN_ADMIN_PROVEEDOR_ACTIVO', authDueno, provNuevo.codigo, false)).activo === false, 'Se desactiva un proveedor');
+ok(await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'PROVEEDORES' AND aud_clave = $1 AND usu_codigo IS NOT NULL`, [provNuevo.codigo]) >= 1,
+  'El alta del proveedor queda auditada a nombre del Administrador');
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);
