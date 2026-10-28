@@ -1271,7 +1271,16 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
         Funciones `FN_FACTURA_JSON`, `FN_ADMIN_FACTURAS`,
         `FN_ADMIN_FACTURA_ANULAR`; rutas `GET /admin/facturas` y
         `POST /admin/facturas/FAC#######/anular`. Migración `panel_facturas`.
-      - [ ] 3c, nómina (roles de pago).
+      - [x] **3c, Nómina** (28 de octubre de 2026): pestaña
+        `#/admin/nomina` (`nomina.aprobar`, solo el Administrador). Abrir el
+        rol de un empleado activo en un mes que ya llegó (la base pone el
+        sueldo y el aporte al IESS y no deja dos roles del mismo mes), agregar
+        o quitar horas extra, fondo de reserva, préstamo o impuesto a la
+        renta mientras está abierto, y aprobarlo (crea el asiento y fija la
+        fecha de pago) o anularlo; los dos piden confirmar. Funciones
+        `FN_NOMINA_JSON`, `FN_ADMIN_NOMINAS`, `..._NOMINA_CREAR`, `..._LINEA`,
+        `..._QUITAR_LINEA`, `..._ESTADO`; rutas `/admin/nomina`. Migración
+        `panel_nomina`.
       - [ ] 3d, contabilidad (asientos).
 - Pendiente de datos: el correo de la cuenta del dueño (a 27 de octubre aún no
   hay ninguna cuenta registrada) y cómo se darán de alta los empleados (por

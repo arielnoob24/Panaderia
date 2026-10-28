@@ -264,7 +264,7 @@ const pedidosDe = (correo) => {
 // caso lo cambia con ponerRol(). Los pedidos son los de todas las cuentas de
 // esa ventana; los productos, el catalogo de data/productos.json.
 const PERMISOS = {
-  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar', 'inventario.ajustar', 'usuarios.gestionar', 'facturas.anular'],
+  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar', 'inventario.ajustar', 'usuarios.gestionar', 'facturas.anular', 'nomina.aprobar'],
   Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar'],
   Cliente: [],
 };
@@ -295,6 +295,14 @@ const MATERIALES_COMPRA = [
 const CANTONES = [{ codigo: '1501', nombre: 'Tena' }, { codigo: '1503', nombre: 'Archidona' }];
 const proveedoresDe = (sv) => (sv.proveedores ||= []);
 const ordenesDe = (sv) => (sv.ordenes ||= []);
+// Los roles de pago de la prueba: ninguno al empezar. Sueldo 470 y IESS 44.42 como los pone la base.
+const nominasDe = (sv) => (sv.nominas ||= []);
+const rolNeto = (r) => {
+  const ing = r.lineas.filter((l) => l.tipo === 'ING').reduce((t, l) => t + Number(l.valor), 0);
+  const des = r.lineas.filter((l) => l.tipo === 'DES').reduce((t, l) => t + Number(l.valor), 0);
+  r.ingresos = ing.toFixed(2); r.descuentos = des.toFixed(2); r.neto = (ing - des).toFixed(2);
+  return r;
+};
 // Las facturas de la prueba: una vigente de 12.50 y otra de 4.00.
 const facturasDe = (sv) => (sv.facturas ||= [
   { codigo: 'FAC0000002', numero: '001-001-000000002', pedido: 'ET-B2B2', cliente: 'Panadería Hermanos Cruz', ident: '1790012345001', fecha: '2026-10-27T10:00:00Z', total: '4.00', anulada: null },
@@ -540,6 +548,56 @@ async function admin(sv, route) {
       a.estado = 'Anulado';
     }
     return contestar(route, 200, { codigo: a.codigo, estado: a.estado });
+  }
+  if (ruta === '/nomina' || ruta.startsWith('/nomina/')) {
+    if (!permisos.includes('nomina.aprobar')) return sin();
+    const lista = nominasDe(sv);
+    const malo = (error) => contestar(route, 400, { error });
+    if (ruta === '/nomina' && req.method() === 'GET') {
+      return contestar(route, 200, {
+        nominas: lista,
+        empleados: [{ codigo: 'EMP0000003', nombre: 'Ariel Escobar', sueldo: '470.00' }, { codigo: 'EMP0000004', nombre: 'Rosa Pérez', sueldo: '500.00' }],
+        conceptos: [{ numero: '1010', nombre: 'Horas extra', tipo: 'ING' }, { numero: '1020', nombre: 'Fondo de reserva', tipo: 'ING' }, { numero: '2010', nombre: 'Préstamo de la empresa', tipo: 'DES' }, { numero: '2021', nombre: 'Impuesto a la renta', tipo: 'DES' }],
+      });
+    }
+    if (ruta === '/nomina' && req.method() === 'POST') {
+      const d = req.postDataJSON();
+      if (lista.some((r) => r.empleado === d.empleado && r.anio === d.anio && r.mes === d.mes && r.estado !== 'Anulado')) return malo('Ese empleado ya tiene su rol de ese mes.');
+      if (d.anio > 2026 || (d.anio === 2026 && d.mes > 10)) return malo('Ese mes todavía no llega.');
+      const rol = rolNeto({
+        codigo: `NOM000000${lista.length + 1}`, empleado: d.empleado, nombre: d.empleado === 'EMP0000003' ? 'Ariel Escobar' : 'Rosa Pérez',
+        anio: d.anio, mes: d.mes, estado: 'Abierto', fechaPago: null,
+        lineas: [
+          { numero: '1000', nombre: 'Sueldo mensual', tipo: 'ING', cantidad: '30.00', valor: '470.00', fija: true },
+          { numero: '2000', nombre: 'Aporte personal al IESS', tipo: 'DES', cantidad: '1.00', valor: '44.42', fija: true },
+        ],
+      });
+      lista.unshift(rol);
+      return contestar(route, 201, rol);
+    }
+    const no = ruta.match(/^\/nomina\/(NOM\d{7})(\/lineas(\/quitar)?)?$/);
+    const r = no && lista.find((x) => x.codigo === no[1]);
+    if (!r) return malo('Ese rol no existe.');
+    const d = req.postDataJSON();
+    if (r.estado !== 'Abierto') return malo(r.estado === 'Aprobado' && !no[2] ? 'Ese rol ya está aprobado, y ya no cambia.' : 'Ese rol ya no está abierto y no se cambia.');
+    if (!no[2]) {
+      r.estado = d.estado;
+      if (d.estado === 'Aprobado') r.fechaPago = '2026-10-28';
+      return contestar(route, 200, r);
+    }
+    if (no[3]) {
+      const i = r.lineas.findIndex((l) => l.numero === d.concepto && !l.fija);
+      if (i < 0) return malo('Ese rol no tiene esa línea.');
+      r.lineas.splice(i, 1);
+      return contestar(route, 200, rolNeto(r));
+    }
+    const nombres = { 1010: ['Horas extra', 'ING'], 1020: ['Fondo de reserva', 'ING'], 2010: ['Préstamo de la empresa', 'DES'], 2021: ['Impuesto a la renta', 'DES'] };
+    const [nombre, tipo] = nombres[d.concepto] || [];
+    if (!nombre) return malo('Ese concepto no se agrega a mano.');
+    const linea = { numero: d.concepto, nombre, tipo, cantidad: String(d.cantidad), valor: Number(d.valor).toFixed(2), fija: false };
+    const i = r.lineas.findIndex((l) => l.numero === d.concepto);
+    if (i >= 0) r.lineas[i] = linea; else r.lineas.push(linea);
+    return contestar(route, 200, rolNeto(r));
   }
   if (ruta === '/facturas' || ruta.startsWith('/facturas/')) {
     if (!permisos.includes('facturas.anular')) return sin();

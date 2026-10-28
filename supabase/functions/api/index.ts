@@ -364,6 +364,36 @@ Deno.serve(async (req) => {
       }
     }
 
+    // NOMINA (nomina.aprobar, solo el Administrador).
+    // GET /admin/nomina -> { nominas, empleados, conceptos }
+    if (req.method === "GET" && ruta === "/admin/nomina") return llamar("fn_admin_nominas", {});
+    // POST /admin/nomina { empleado, anio, mes } -> abre el rol de ese empleado en ese mes.
+    if (req.method === "POST" && ruta === "/admin/nomina") {
+      const c = await req.json().catch(() => null);
+      if (typeof c?.empleado !== "string" || !Number.isInteger(c.anio) || !Number.isInteger(c.mes)) return responder(h, 400, { error: "Faltan el empleado y el mes." });
+      return llamar("fn_admin_nomina_crear", { p_empleado: c.empleado, p_anio: c.anio, p_mes: c.mes }, 201);
+    }
+    const nomina = ruta.match(/^\/admin\/nomina\/(NOM\d{7})(\/lineas(\/quitar)?)?$/);
+    if (nomina) {
+      const c = await req.json().catch(() => null);
+      if (!c || typeof c !== "object" || Array.isArray(c)) return responder(h, 400, { error: "Faltan los datos." });
+      // PUT /admin/nomina/NOM0000001 { estado: "Aprobado" | "Anulado" }
+      if (req.method === "PUT" && !nomina[2]) {
+        if (typeof c.estado !== "string") return responder(h, 400, { error: "Falta el estado." });
+        return llamar("fn_admin_nomina_estado", { p_nomina: nomina[1], p_estado: c.estado });
+      }
+      // PUT /admin/nomina/NOM0000001/lineas { concepto, cantidad, valor } -> agrega o cambia una linea.
+      if (req.method === "PUT" && nomina[2] === "/lineas") {
+        if (typeof c.concepto !== "string" || typeof c.cantidad !== "number" || typeof c.valor !== "number") return responder(h, 400, { error: "Faltan el concepto, la cantidad y el valor." });
+        return llamar("fn_admin_nomina_linea", { p_nomina: nomina[1], p_concepto: c.concepto, p_cantidad: c.cantidad, p_valor: c.valor });
+      }
+      // POST /admin/nomina/NOM0000001/lineas/quitar { concepto }
+      if (req.method === "POST" && nomina[3]) {
+        if (typeof c.concepto !== "string") return responder(h, 400, { error: "Falta el concepto." });
+        return llamar("fn_admin_nomina_quitar_linea", { p_nomina: nomina[1], p_concepto: c.concepto });
+      }
+    }
+
     // FACTURAS y CLIENTES (facturas.anular, solo el Administrador).
     // GET /admin/facturas -> { facturas, clientes }
     if (req.method === "GET" && ruta === "/admin/facturas") return llamar("fn_admin_facturas", {});

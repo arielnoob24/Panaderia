@@ -845,5 +845,59 @@ const cliAntes = fac0.clientes.find((c) => c.codigo === cliFac);
 const cliDespues = fac1.clientes.find((c) => c.codigo === cliAntes.codigo);
 ok(cliDespues.facturas === cliAntes.facturas - 1 && Number(cliDespues.facturado) < Number(cliAntes.facturado), 'El cliente ya no cuenta la factura anulada');
 
+titulo('Nomina (FN_ADMIN_NOMINAS y FN_ADMIN_NOMINA_*)');
+ok(yoDueno.permisos.includes('nomina.aprobar') && !(await admin('FN_ADMIN_YO', authEmpleado)).permisos.includes('nomina.aprobar'), 'Solo el Administrador maneja la nomina');
+await sinPermiso('FN_ADMIN_NOMINAS', 'Un empleado no ve la nomina', authEmpleado);
+const nom0 = await admin('FN_ADMIN_NOMINAS', authDueno);
+ok(nom0.empleados.length >= 2 && nom0.conceptos.length === 4 && !nom0.conceptos.some((c) => ['1000', '2000'].includes(c.numero)), `Trae ${nom0.empleados.length} empleados y ${nom0.conceptos.length} conceptos a mano`);
+// El año pasado: los bloques de arriba ya abrieron roles de este mes.
+const nomAnio = (await unValor(`SELECT EXTRACT(year FROM CURRENT_DATE)::int`)) - 1;
+const nomMes = 6;
+await sinPermiso('FN_ADMIN_NOMINA_CREAR', 'Un empleado no abre roles', authEmpleado, panadero, nomAnio, nomMes);
+const nomFalla = async (msg, texto, fn, ...args) => {
+  try { await admin(fn, authDueno, ...args); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await nomFalla('Empleado que no existe', 'no existe', 'FN_ADMIN_NOMINA_CREAR', 'EMP9999999', nomAnio, nomMes);
+await nomFalla('Mes que no llega', 'todavía no llega', 'FN_ADMIN_NOMINA_CREAR', panadero, nomAnio + 2, 1);
+await nomFalla('Mes 13', 'válidos', 'FN_ADMIN_NOMINA_CREAR', panadero, nomAnio, 13);
+await nomFalla('Empleado de baja', 'no está activo', 'FN_ADMIN_NOMINA_CREAR', luisEmp.codigo, nomAnio, nomMes);
+const rolNom = await admin('FN_ADMIN_NOMINA_CREAR', authDueno, panadero, nomAnio, nomMes);
+ok(rolNom.estado === 'Abierto' && rolNom.lineas.length === 2 && rolNom.lineas.every((l) => l.fija) && Number(rolNom.neto) > 0, `Se abre el rol ${rolNom.codigo} con sueldo e IESS puestos solos (neto ${rolNom.neto})`);
+ok(await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'NOMINAS' AND aud_clave = $1 AND usu_codigo IS NOT NULL`, [rolNom.codigo]) >= 1, 'Abrir el rol queda auditado a nombre del Administrador');
+await nomFalla('Segundo rol del mismo mes', 'ya tiene su rol', 'FN_ADMIN_NOMINA_CREAR', panadero, nomAnio, nomMes);
+const netoBase = Number(rolNom.neto);
+await sinPermiso('FN_ADMIN_NOMINA_LINEA', 'Un empleado no agrega lineas', authEmpleado, rolNom.codigo, '1010', 5, 20);
+await nomFalla('Concepto fijo', 'no se agrega a mano', 'FN_ADMIN_NOMINA_LINEA', rolNom.codigo, '1000', 1, 20);
+await nomFalla('Concepto que no existe', 'no se agrega a mano', 'FN_ADMIN_NOMINA_LINEA', rolNom.codigo, '9999', 1, 20);
+await nomFalla('Valor 0', 'valor', 'FN_ADMIN_NOMINA_LINEA', rolNom.codigo, '1010', 5, 0);
+await nomFalla('Cantidad 0', 'cantidad', 'FN_ADMIN_NOMINA_LINEA', rolNom.codigo, '1010', 0, 20);
+await nomFalla('Rol que no existe', 'no existe', 'FN_ADMIN_NOMINA_LINEA', 'NOM9999999', '1010', 5, 20);
+const conExtraN = await admin('FN_ADMIN_NOMINA_LINEA', authDueno, rolNom.codigo, '1010', 5, 37.5);
+ok(conExtraN.lineas.length === 3 && Math.abs(Number(conExtraN.neto) - (netoBase + 37.5)) < 0.005, 'Las horas extra suben el neto');
+const cambiadaN = await admin('FN_ADMIN_NOMINA_LINEA', authDueno, rolNom.codigo, '1010', 8, 60);
+ok(cambiadaN.lineas.length === 3 && Math.abs(Number(cambiadaN.neto) - (netoBase + 60)) < 0.005, 'Repetir el concepto lo cambia, no lo duplica');
+await nomFalla('Quitar el sueldo', 'no se quitan', 'FN_ADMIN_NOMINA_QUITAR_LINEA', rolNom.codigo, '1000');
+await nomFalla('Quitar lo que no hay', 'no tiene esa línea', 'FN_ADMIN_NOMINA_QUITAR_LINEA', rolNom.codigo, '2010');
+const sinExtraN = await admin('FN_ADMIN_NOMINA_QUITAR_LINEA', authDueno, rolNom.codigo, '1010');
+ok(sinExtraN.lineas.length === 2 && Math.abs(Number(sinExtraN.neto) - netoBase) < 0.005, 'Quitar la linea deja el neto como estaba');
+await nomFalla('Descuentos que superan al sueldo', 'descuentos superan', 'FN_ADMIN_NOMINA_ESTADO', (await admin('FN_ADMIN_NOMINA_LINEA', authDueno, rolNom.codigo, '2010', 1, 99999)).codigo, 'Aprobado');
+await admin('FN_ADMIN_NOMINA_QUITAR_LINEA', authDueno, rolNom.codigo, '2010');
+await sinPermiso('FN_ADMIN_NOMINA_ESTADO', 'Un empleado no aprueba roles', authEmpleado, rolNom.codigo, 'Aprobado');
+await nomFalla('Estado que no vale', 'se aprueba o se anula', 'FN_ADMIN_NOMINA_ESTADO', rolNom.codigo, 'Abierto');
+const asNomAntes = await unValor(`SELECT count(*)::int FROM asientos WHERE asi_origen = 'NOM' AND asi_referencia = $1`, [rolNom.codigo]);
+const aprobadoN = await admin('FN_ADMIN_NOMINA_ESTADO', authDueno, rolNom.codigo, 'Aprobado');
+ok(aprobadoN.estado === 'Aprobado' && aprobadoN.fechaPago !== null, 'El Administrador aprueba el rol y queda con fecha de pago');
+ok(await unValor(`SELECT count(*)::int FROM asientos WHERE asi_origen = 'NOM' AND asi_referencia = $1`, [rolNom.codigo]) === asNomAntes + 1, 'Aprobar crea el asiento del rol');
+await nomFalla('Aprobar otra vez', 'ya está aprobado', 'FN_ADMIN_NOMINA_ESTADO', rolNom.codigo, 'Aprobado');
+await nomFalla('Anular uno aprobado', 'ya está aprobado', 'FN_ADMIN_NOMINA_ESTADO', rolNom.codigo, 'Anulado');
+await nomFalla('Agregar a uno aprobado', 'ya no está abierto', 'FN_ADMIN_NOMINA_LINEA', rolNom.codigo, '1010', 1, 5);
+const nom1 = await admin('FN_ADMIN_NOMINAS', authDueno);
+ok(nom1.nominas.some((n) => n.codigo === rolNom.codigo && n.estado === 'Aprobado'), 'La lista trae el rol aprobado');
+// Un rol anulado libera el mes para abrir otroN.
+const otroN = await admin('FN_ADMIN_NOMINA_CREAR', authDueno, nom0.empleados.find((e) => e.codigo !== panadero).codigo, nomAnio, nomMes);
+const otroAnuladoN = await admin('FN_ADMIN_NOMINA_ESTADO', authDueno, otroN.codigo, 'Anulado');
+ok(otroAnuladoN.estado === 'Anulado', 'Un rol abierto se puede anular');
+ok((await admin('FN_ADMIN_NOMINA_CREAR', authDueno, otroN.empleado, nomAnio, nomMes)).estado === 'Abierto', 'Anulado el rol, se puede abrir otro de ese mes');
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

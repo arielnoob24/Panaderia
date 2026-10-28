@@ -41,6 +41,7 @@ const SECCIONES = [
   { id: 'ajustes', nombre: 'Ajustes', permiso: 'inventario.reportar' },
   { id: 'equipo', nombre: 'Equipo', permiso: 'usuarios.gestionar' },
   { id: 'facturas', nombre: 'Facturas', permiso: 'facturas.anular' },
+  { id: 'nomina', nombre: 'Nómina', permiso: 'nomina.aprobar' },
 ];
 
 function usePanel() {
