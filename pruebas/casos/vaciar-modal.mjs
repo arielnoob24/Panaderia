@@ -1,4 +1,4 @@
-// "Vaciar la canasta" pregunta en una hoja modal (ConfirmarVaciar.jsx), no en
+// "Vaciar la canasta" pregunta en una hoja modal (ConfirmarCanasta.jsx), no en
 // el mismo sitio: sube sobre la canasta, el foco empieza en "Cancelar", Escape
 // y "Cancelar" la cierran sin tocar la canasta, y "Si, vaciar" la vacia y
 // ofrece Deshacer. Lo de detras queda inert mientras esta arriba.

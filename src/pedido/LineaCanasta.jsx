@@ -4,8 +4,8 @@
 // la X no sale: haria lo mismo y se llamaba igual. En el tope de cien el mas
 // sigue enfocable, pero con aria-disabled, y al pulsarlo dice por que.
 //
-// Quitarla es directo: la barra de Deshacer da 12 s para recuperarla (antes
-// la linea preguntaba "¿Lo quitamos?"; cambiado el 27 de octubre de 2026).
+// Quitarla pregunta antes en una hoja modal (ConfirmarCanasta.jsx, que pone
+// Canasta) y despues la barra de Deshacer da 12 s para recuperarla.
 //
 // Con Motion (seccion 15 del plan) la linea entra desde la derecha, de donde
 // llega la gaveta, sale hacia la izquierda al quitarla, y las demas suben a
@@ -97,7 +97,7 @@ function LineaCanasta({ id, linea, foto, onMenos, onMas, onQuitar }) {
           <h3>{nombre}</h3>
           {/* La X quita el producto entero, lleve las unidades que lleve. */}
           {ultima ? null : (
-            <button ref={refs.quitar} className="canasta-quitar" type="button" aria-label={`Quitar ${nombre} de la canasta`} data-tip="Quitar de la canasta" onClick={() => onQuitar(id)}>×</button>
+            <button ref={refs.quitar} className="canasta-quitar" type="button" aria-label={`Quitar ${nombre} de la canasta`} data-tip="Quitar de la canasta" onClick={() => onQuitar(id, 'quitar')}>×</button>
           )}
         </div>
         <p className="canasta-precio">{dinero(precio)} c/u</p>
