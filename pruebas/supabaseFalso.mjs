@@ -264,7 +264,7 @@ const pedidosDe = (correo) => {
 // caso lo cambia con ponerRol(). Los pedidos son los de todas las cuentas de
 // esa ventana; los productos, el catalogo de data/productos.json.
 const PERMISOS = {
-  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar', 'inventario.ajustar'],
+  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar', 'inventario.ajustar', 'usuarios.gestionar'],
   Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar'],
   Cliente: [],
 };
@@ -295,6 +295,11 @@ const MATERIALES_COMPRA = [
 const CANTONES = [{ codigo: '1501', nombre: 'Tena' }, { codigo: '1503', nombre: 'Archidona' }];
 const proveedoresDe = (sv) => (sv.proveedores ||= []);
 const ordenesDe = (sv) => (sv.ordenes ||= []);
+// El equipo empieza con el dueño (EMP0000003), con la cuenta de quien mira ligada.
+const equipoDe = (sv, correo) => (sv.equipo ||= [{
+  codigo: 'EMP0000003', nombre: 'Ariel Antonio Escobar Orna', cedula: '1501107609', cargo: 'Administrador', cargoCodigo: 'CAR001', contrato: 'Permanente',
+  sueldo: 470, correo: 'ariel@correo.ec', celular: '0960868821', ingreso: '2026-10-28', activo: true, cuentas: [{ correo, rol: 'Administrador', activa: true }],
+}]);
 const tandasDe = (sv) => (sv.tandas ||= []);
 const ajustesDe = (sv) => (sv.ajustes ||= []);
 const recepcionesDe = (sv) => (sv.recepciones ||= { pendientes: [], recibidas: [] });
@@ -530,6 +535,57 @@ async function admin(sv, route) {
       a.estado = 'Anulado';
     }
     return contestar(route, 200, { codigo: a.codigo, estado: a.estado });
+  }
+  if (ruta === '/equipo' || ruta.startsWith('/equipo/')) {
+    if (!permisos.includes('usuarios.gestionar')) return sin();
+    const malo = (error) => contestar(route, 400, { error });
+    const miCorreo = [...sv.cuentas.entries()].find(([, v]) => v === c)?.[0];
+    const lista = equipoDe(sv, miCorreo);
+    const CARGOS = [{ codigo: 'CAR001', nombre: 'Administrador' }, { codigo: 'CAR002', nombre: 'Panadero' }];
+    if (ruta === '/equipo' && req.method() === 'GET') return contestar(route, 200, { empleados: lista, cargos: CARGOS, cantones: CANTONES });
+    const d = req.postDataJSON?.() || {};
+    if (ruta === '/equipo' && req.method() === 'POST') {
+      if (!/^\d{10}$/.test(d.cedula || '')) return malo('La cédula no es válida.');
+      if (lista.some((x) => x.cedula === d.cedula)) return malo('Ya hay un empleado con esa cédula.');
+      if (!String(d.primerNombre || '').trim() || !String(d.primerApellido || '').trim()) return malo('Escribe el primer nombre y el primer apellido (hasta 30 letras cada uno).');
+      if (!(Number(d.sueldo) > 0)) return malo('El sueldo tiene que ser mayor que 0 y menor que 10000, con hasta 2 decimales.');
+      const nuevo = {
+        codigo: `EMP${String(lista.length + 3).padStart(7, '0')}`, nombre: `${d.primerNombre} ${d.primerApellido}`, cedula: d.cedula,
+        cargo: CARGOS.find((x) => x.codigo === d.cargo)?.nombre || 'Panadero', cargoCodigo: d.cargo, contrato: 'Permanente', sueldo: Number(d.sueldo),
+        correo: String(d.correo || '').toLowerCase(), celular: d.celular, ingreso: new Date().toISOString().slice(0, 10), activo: true, cuentas: [],
+      };
+      lista.push(nuevo);
+      return contestar(route, 201, nuevo);
+    }
+    const eq = ruta.match(/^\/equipo\/(EMP\d{7})(\/cuenta(\/quitar)?)?$/);
+    const e = eq && lista.find((x) => x.codigo === eq[1]);
+    if (!e) return malo('Ese empleado no existe.');
+    if (!eq[2] && req.method() === 'PUT') {
+      if (d.sueldo !== undefined && !(Number(d.sueldo) > 0)) return malo('El sueldo tiene que ser mayor que 0 y menor que 10000, con hasta 2 decimales.');
+      if (d.sueldo !== undefined) e.sueldo = Number(d.sueldo);
+      if (d.cargo) { e.cargoCodigo = d.cargo; e.cargo = CARGOS.find((x) => x.codigo === d.cargo)?.nombre || e.cargo; }
+      if (d.activo === false) {
+        if (e.cuentas.some((x) => x.correo === miCorreo)) return malo('No puedes darte de baja a ti mismo.');
+        e.activo = false;
+        e.cuentas = [];
+      }
+      return contestar(route, 200, e);
+    }
+    const correo = String(d.correo || '').toLowerCase();
+    if (eq[2] === '/cuenta' && req.method() === 'PUT') {
+      if (correo === miCorreo) return malo('No puedes cambiar el acceso de tu propia cuenta.');
+      if (!sv.cuentas.has(correo)) return malo('No hay una cuenta con ese correo. La persona tiene que crearla primero en el sitio.');
+      sv.cuentas.get(correo).rol = d.rol;
+      e.cuentas.push({ correo, rol: d.rol, activa: true });
+      return contestar(route, 200, e);
+    }
+    if (eq[3]) {
+      if (!e.cuentas.some((x) => x.correo === correo)) return malo('Esa cuenta no es de ese empleado.');
+      if (correo === miCorreo) return malo('No puedes quitarte el acceso a ti mismo.');
+      e.cuentas = e.cuentas.filter((x) => x.correo !== correo);
+      if (sv.cuentas.has(correo)) sv.cuentas.get(correo).rol = 'Cliente';
+      return contestar(route, 200, e);
+    }
   }
   if (ruta === '/resumen') {
     if (!permisos.includes('reportes.ver')) return sin();

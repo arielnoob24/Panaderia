@@ -39,6 +39,7 @@ const SECCIONES = [
   { id: 'bodega', nombre: 'Bodega', permiso: 'bodega.recibir' },
   { id: 'produccion', nombre: 'Producción', permiso: 'produccion.registrar' },
   { id: 'ajustes', nombre: 'Ajustes', permiso: 'inventario.reportar' },
+  { id: 'equipo', nombre: 'Equipo', permiso: 'usuarios.gestionar' },
 ];
 
 function usePanel() {

@@ -1248,8 +1248,23 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
           `FN_AJUSTE_JSON`, `FN_ADMIN_AJUSTES`, `..._AJUSTE_CREAR`,
           `..._AJUSTE_ESTADO`; rutas `/admin/ajustes`. Migración
           `panel_produccion_ajustes`.
-- [ ] **Tanda 3, administración:** facturas (anular), clientes, empleados,
-      nómina, contabilidad, usuarios y roles.
+- [ ] **Tanda 3, administración**, por pasos:
+      - [x] **3a, Equipo** (28 de octubre de 2026): pestaña `#/admin/equipo`
+        (`usuarios.gestionar`, solo el Administrador). Dar de alta a un
+        empleado (la base revisa cédula, correo, celular y que tenga 15
+        años), cambiarle cargo y sueldo, darle acceso al panel ligando la
+        cuenta del sitio con su correo (rol Empleado o Administrador),
+        quitarle ese acceso y darlo de baja (que le quita el acceso a sus
+        cuentas). Nadie cambia su propia cuenta ni se da de baja, así que
+        siempre queda un Administrador. Con esto el dueño puede aprobar los
+        ajustes que reporta un empleado. Funciones `FN_EMPLEADO_JSON`,
+        `FN_ADMIN_EQUIPO`, `..._EMPLEADO_CREAR`, `..._EDITAR`, `..._CUENTA`,
+        `..._QUITAR_CUENTA`; rutas `/admin/equipo`. Migración
+        `panel_equipo`. El sueldo de EMP0000003 (dueño) sigue en 470.00
+        provisional: se cambia desde esta pestaña.
+      - [ ] 3b, facturas (ver y anular) y clientes.
+      - [ ] 3c, nómina (roles de pago).
+      - [ ] 3d, contabilidad (asientos).
 - Pendiente de datos: el correo de la cuenta del dueño (a 27 de octubre aún no
   hay ninguna cuenta registrada) y cómo se darán de alta los empleados (por
   ahora cambiándoles el rol a mano; una pantalla para eso sería de la tanda 3).

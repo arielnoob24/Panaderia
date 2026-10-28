@@ -337,6 +337,33 @@ Deno.serve(async (req) => {
       return llamar("fn_admin_ajuste_estado", { p_ajuste: ajuste[1], p_estado: c.estado });
     }
 
+    // EQUIPO (usuarios.gestionar, solo el Administrador).
+    // GET /admin/equipo -> { empleados, cargos, cantones }
+    if (req.method === "GET" && ruta === "/admin/equipo") return llamar("fn_admin_equipo", {});
+    // POST /admin/equipo { cedula, primerNombre, ..., sueldo } -> da de alta a un empleado.
+    if (req.method === "POST" && ruta === "/admin/equipo") {
+      const c = await req.json().catch(() => null);
+      if (!c || typeof c !== "object" || Array.isArray(c)) return responder(h, 400, { error: "Faltan los datos del empleado." });
+      return llamar("fn_admin_empleado_crear", { p_datos: c }, 201);
+    }
+    const equipo = ruta.match(/^\/admin\/equipo\/(EMP\d{7})(\/cuenta(\/quitar)?)?$/);
+    if (equipo) {
+      const c = await req.json().catch(() => null);
+      if (!c || typeof c !== "object" || Array.isArray(c)) return responder(h, 400, { error: "Faltan los datos." });
+      // PUT /admin/equipo/EMP0000001 { cargo?, sueldo?, activo? }
+      if (req.method === "PUT" && !equipo[2]) return llamar("fn_admin_empleado_editar", { p_empleado: equipo[1], p_datos: c });
+      // PUT /admin/equipo/EMP0000001/cuenta { correo, rol } -> da acceso al panel.
+      if (req.method === "PUT" && equipo[2] === "/cuenta") {
+        if (typeof c.correo !== "string" || typeof c.rol !== "string") return responder(h, 400, { error: "Faltan el correo y el rol." });
+        return llamar("fn_admin_empleado_cuenta", { p_empleado: equipo[1], p_correo: c.correo, p_rol: c.rol });
+      }
+      // POST /admin/equipo/EMP0000001/cuenta/quitar { correo } -> le quita el acceso.
+      if (req.method === "POST" && equipo[3]) {
+        if (typeof c.correo !== "string") return responder(h, 400, { error: "Falta el correo." });
+        return llamar("fn_admin_empleado_quitar_cuenta", { p_empleado: equipo[1], p_correo: c.correo });
+      }
+    }
+
     // PUT /admin/pedidos/ET-XXXX { estado } -> pasa el pedido a ese estado.
     const pedido = ruta.match(/^\/admin\/pedidos\/(ET-[A-Z0-9]{4})$/);
     if (req.method === "PUT" && pedido) {

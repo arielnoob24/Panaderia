@@ -758,5 +758,69 @@ ok((await admin('FN_ADMIN_AJUSTE_ESTADO', authDueno, propio.codigo, 'Anulado')).
 const ajustesFin = await admin('FN_ADMIN_AJUSTES', authDueno);
 ok(ajustesFin.costos === true && ajustesFin.ajustes.find((a) => a.codigo === ajusteN.codigo).lineas[0].valor !== null, 'El Administrador ve los ajustes con su valor');
 
+titulo('Equipo: empleados y acceso al panel (FN_ADMIN_EQUIPO y FN_ADMIN_EMPLEADO_*)');
+ok(yoDueno.permisos.includes('usuarios.gestionar') && !(await admin('FN_ADMIN_YO', authEmpleado)).permisos.includes('usuarios.gestionar'), 'Solo el Administrador gestiona el equipo');
+await sinPermiso('FN_ADMIN_EQUIPO', 'Un empleado no ve el equipo', authEmpleado);
+await sinPermiso('FN_ADMIN_EMPLEADO_CREAR', 'Un empleado no da de alta empleados', authEmpleado, '{}');
+const equipo0 = await admin('FN_ADMIN_EQUIPO', authDueno);
+ok(equipo0.empleados.length >= 2 && equipo0.cargos.length >= 3 && equipo0.cantones.length >= 5, `El equipo trae ${equipo0.empleados.length} empleados, ${equipo0.cargos.length} cargos y ${equipo0.cantones.length} cantones`);
+const cargoPanadero = equipo0.cargos.find((c) => c.nombre === 'Panadero').codigo;
+const empBase = { cedula: '0102030400', primerNombre: 'Luis', segundoNombre: 'Mario', primerApellido: 'Andi', segundoApellido: 'Grefa', nacimiento: '1995-03-12',
+  sexo: 'h', correo: 'Luis@Panaderia.ec', celular: '0987654321', direccion: 'Barrio Centro, Tena', canton: '1501', cargo: cargoPanadero, contrato: 'PER', sueldo: '470.00' };
+const falloEmp = async (msg, texto, cambios) => {
+  try { await admin('FN_ADMIN_EMPLEADO_CREAR', authDueno, JSON.stringify({ ...empBase, ...cambios })); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await falloEmp('Cedula mala', 'cédula no es válida', { cedula: '0102030401' });
+await falloEmp('Sin nombre', 'primer nombre', { primerNombre: ' ' });
+await falloEmp('Muy joven', 'nacimiento', { nacimiento: '2015-01-01' });
+await falloEmp('Fecha que no es fecha', 'nacimiento', { nacimiento: 'ayer' });
+await falloEmp('Sexo que no vale', 'hombre o mujer', { sexo: 'X' });
+await falloEmp('Correo mal', 'correo', { correo: 'luis' });
+await falloEmp('Celular mal', 'celular', { celular: '0887654321' });
+await falloEmp('Canton que no existe', 'cantón', { canton: '9999' });
+await falloEmp('Cargo que no existe', 'cargo', { cargo: 'CAR999' });
+await falloEmp('Contrato que no existe', 'contrato', { contrato: 'XXX' });
+await falloEmp('Sueldo 0', 'sueldo', { sueldo: '0' });
+await falloEmp('Sueldo con letras', 'sueldo', { sueldo: 'mucho' });
+await falloEmp('Cedula repetida', 'Ya hay un empleado', { cedula: '1501234569' });
+const luisEmp = await admin('FN_ADMIN_EMPLEADO_CREAR', authDueno, JSON.stringify(empBase));
+ok(luisEmp.nombre === 'Luis Mario Andi Grefa' && luisEmp.cargo === 'Panadero' && Number(luisEmp.sueldo) === 470 && luisEmp.activo === true && luisEmp.cuentas.length === 0 && luisEmp.correo === 'luis@panaderia.ec',
+  `El Administrador da de alta a ${luisEmp.nombre} (${luisEmp.codigo})`);
+ok(await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'EMPLEADOS' AND aud_clave = $1 AND usu_codigo IS NOT NULL`, [luisEmp.codigo]) >= 1, 'El alta del empleado queda auditada a nombre del Administrador');
+
+const luisSube = await admin('FN_ADMIN_EMPLEADO_EDITAR', authDueno, luisEmp.codigo, JSON.stringify({ sueldo: '520.5' }));
+ok(Number(luisSube.sueldo) === 520.5 && luisSube.cargo === 'Panadero', 'Se le cambia el sueldo sin tocar lo demas');
+const cargoJefe = equipo0.cargos.find((c) => c.nombre === 'Jefe de producción').codigo;
+ok((await admin('FN_ADMIN_EMPLEADO_EDITAR', authDueno, luisEmp.codigo, JSON.stringify({ cargo: cargoJefe }))).cargo === 'Jefe de producción', 'Se le cambia el cargo');
+for (const [datos, msg] of [[{ sueldo: '0' }, 'Sueldo 0'], [{ cargo: 'CAR999' }, 'Cargo que no existe'], [{ activo: 'si' }, 'Activo que no es si o no']]) {
+  try { await admin('FN_ADMIN_EMPLEADO_EDITAR', authDueno, luisEmp.codigo, JSON.stringify(datos)); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023', `${msg}: ${e.message}`); }
+}
+try { await admin('FN_ADMIN_EMPLEADO_EDITAR', authDueno, 'EMP9999999', '{}'); ok(false, 'Empleado que no existe: entro'); } catch (e) { ok(e.code === '22023', `Empleado que no existe: ${e.message}`); }
+try { await admin('FN_ADMIN_EMPLEADO_EDITAR', authDueno, panadero, JSON.stringify({ activo: false })); ok(false, 'Darse de baja a si mismo: entro'); } catch (e) { ok(e.code === '22023' && e.message.includes('a ti mismo'), `Darse de baja a si mismo: ${e.message}`); }
+
+const authLuisEq = '9c3d5b7e-1a2f-4c6d-8e0b-3a4b5c6d7e8f';
+await q(`SELECT FN_USUARIOS_GUARDAR($1::uuid, $2, $3, 'Andi', '0987654321')`, [authLuisEq, 'luis@panaderia.ec', 'Luis']);
+const cuentaFalla = async (msg, texto, ...args) => {
+  try { await admin('FN_ADMIN_EMPLEADO_CUENTA', authDueno, ...args); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await sinPermiso('FN_ADMIN_EMPLEADO_CUENTA', 'Un empleado no da acceso', authEmpleado, luisEmp.codigo, 'luis@panaderia.ec', 'Empleado');
+await cuentaFalla('Correo sin cuenta', 'No hay una cuenta', luisEmp.codigo, 'nadie@correo.ec', 'Empleado');
+await cuentaFalla('Rol que no vale', 'Empleado o de Administrador', luisEmp.codigo, 'luis@panaderia.ec', 'Cliente');
+await cuentaFalla('Cambiar su propia cuenta', 'tu propia cuenta', luisEmp.codigo, 'dueno@correo.ec', 'Administrador');
+await cuentaFalla('Empleado que no existe', 'no existe', 'EMP9999999', 'luis@panaderia.ec', 'Empleado');
+const conCuenta = await admin('FN_ADMIN_EMPLEADO_CUENTA', authDueno, luisEmp.codigo, 'Luis@Panaderia.ec', 'Empleado');
+ok(conCuenta.cuentas.length === 1 && conCuenta.cuentas[0].rol === 'Empleado' && conCuenta.cuentas[0].correo === 'luis@panaderia.ec', 'La cuenta de Luis queda con el rol Empleado y ligada a el');
+const yoLuis = await admin('FN_ADMIN_YO', authLuisEq);
+ok(yoLuis.rol === 'Empleado' && yoLuis.permisos.includes('produccion.registrar') && !yoLuis.permisos.includes('usuarios.gestionar'), 'Con eso Luis ya entra al panel como Empleado');
+await cuentaFalla('Cuenta de otro empleado', 'ya es de otro empleado', panadero, 'luis@panaderia.ec', 'Empleado');
+const quita = async (...args) => admin('FN_ADMIN_EMPLEADO_QUITAR_CUENTA', authDueno, ...args);
+try { await quita(luisEmp.codigo, 'dueno@correo.ec'); ok(false, 'Quitarse el acceso: entro'); } catch (e) { ok(e.code === '22023', `Quitarse el acceso: ${e.message}`); }
+const sinCuenta = await quita(luisEmp.codigo, 'luis@panaderia.ec');
+ok(sinCuenta.cuentas.length === 0 && (await admin('FN_ADMIN_YO', authLuisEq)).rol === 'Cliente', 'Quitar el acceso devuelve la cuenta a cliente');
+await admin('FN_ADMIN_EMPLEADO_CUENTA', authDueno, luisEmp.codigo, 'luis@panaderia.ec', 'Empleado');
+const deBaja = await admin('FN_ADMIN_EMPLEADO_EDITAR', authDueno, luisEmp.codigo, JSON.stringify({ activo: false }));
+ok(deBaja.activo === false && deBaja.cuentas.length === 0 && (await admin('FN_ADMIN_YO', authLuisEq)).rol === 'Cliente', 'Dar de baja a un empleado le quita el acceso al panel');
+await cuentaFalla('Dar acceso a quien ya no trabaja', 'ya no está activo', luisEmp.codigo, 'luis@panaderia.ec', 'Empleado');
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);
