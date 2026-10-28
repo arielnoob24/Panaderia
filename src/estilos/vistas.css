@@ -45,7 +45,7 @@
 
 /* La cabecera de periodico: fecha, el oficio entre filetes dobles que se
    dibujan de izquierda a derecha al entrar, y si esta abierto. */
-.periodico { display: flex; align-items: center; gap: 1rem; padding-block: .9rem; border-bottom: 1px solid var(--horno); }
+.periodico { display: flex; align-items: center; gap: 1rem; padding-block: 1.15rem; border-bottom: 1px solid var(--horno); }
 /* El filete doble: el de la cabecera de periodico y el que enmarca el h2 de
    los principios de #/nosotros. En la portada se dibuja al entrar; en
    Nosotros, en la misma escena, tras la historia (mas abajo). */
@@ -56,6 +56,18 @@
 
 .portada-rejilla { display: grid; grid-template-columns: 1.2fr .8fr; gap: 3rem; align-items: center; padding-block: 2rem 2.6rem; }
 .portada-llegar { min-height: 44px; border-width: 1.5px; }
+/* La frase de la portada va recta (27 de octubre de 2026): en cursiva repetia
+   la del titular y le restaba contraste. En Nosotros sigue en cursiva. */
+.portada-frase { font-style: normal; }
+/* "Nuestros panes" lleva un filete punteado por dentro, a 8 px del borde
+   (fuera de las mordidas de 9 px), y la hogaza blanca con contorno horno
+   (27 de octubre de 2026). Es un <i> y no un pseudoelemento porque ::before y
+   ::after del boton ya son el vale y su sombra. */
+.portada-filete { position: absolute; inset: 8px; border: 1.5px dotted var(--horno); border-radius: 3px; pointer-events: none; }
+.portada-panes .ico { fill: var(--papel); }
+/* "Como llegar": el pin mas grande, macizo en ambar con contorno y punto horno. */
+.enlace-llegar.portada-llegar .ico { width: 36px; height: 36px; fill: var(--ambar); stroke: var(--horno); stroke-width: 1.6; }
+.enlace-llegar.portada-llegar .ico circle { fill: var(--horno); }
 .portada-acciones { display: flex; flex-wrap: wrap; align-items: center; gap: 1.2rem 1.6rem; margin-top: 2rem; }
 .portada-foto { width: min(100%, 460px); margin-left: auto; }
 /* La foto de la portada es cuadrada, y el sello cae abajo a la izquierda,
@@ -136,18 +148,27 @@
 
 /* ---- #/ : la cinta de categorias con las categorias (Cinta.jsx) --------------- */
 
-/* Papel sobre horno: 13,9:1. Los enlaces van en cursiva de titulo y se
+/* Horno sobre avena: unos 12:1. Los enlaces van en cursiva de titulo y se
    encienden en su sitio como el menu de arriba (las dos son navegacion),
-   con el raton aparece una pastilla papel llena que crece un
-   poco, y el texto y el icono pasan a horno (13,9:1). Las letras saltan en
+   con el raton aparece una pastilla ambar llena que crece un
+   poco; el texto y el icono siguen en horno (7,5:1 sobre el ambar). Las letras saltan en
    secuencia, sin cambiar el nombre accesible. Un blanco tenue, como el del
    menu, dejaria el texto claro sobre la pastilla por debajo de 4,5:1. */
-.cinta { background: var(--horno); color: var(--papel); border-block: 6px double var(--masa); }
-.cinta-dentro { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 2rem; padding-block: .7rem; }
-.cinta-enlace { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--papel); font: italic 400 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
-.cinta-enlace .ico { width: 1.35em; height: 1.35em; color: var(--masa); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
+/* Desde el 27 de octubre de 2026 la cinta es clara: fondo avena (la masa con
+   un 6 % de horno), el filete doble en horno por arriba, y texto e iconos en
+   horno (la barra oscura de abajo cerraba la portada y pesaba como la
+   cabecera). Con el puntero la pastilla se llena de ambar. */
+.cinta { position: relative; background: var(--papel); color: var(--horno); border-top: 1px solid var(--masa-linea); box-shadow: 0 -6px 20px rgba(58, 40, 34, .08); }
+.cinta-dentro { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .4rem 2rem; padding-block: 1rem; }
+.cinta-enlace { position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .85rem; border-radius: var(--r-pill); color: var(--horno); font: italic 400 1.35rem/1.2 var(--letra-titulo); transition: color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.cinta-enlace .ico { width: 1.35em; height: 1.35em; color: var(--horno); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
+/* Iconos con relleno de ambar y trazo de horno, como el alfiler de "Como llegar";
+   con el puntero el fondo del enlace ya es ambar, asi que el relleno pasa a papel. */
+.cinta-enlace .ico path { fill: var(--ambar); transition: fill var(--dur-fast) var(--ease-ui); }
+.cinta-enlace .ico circle { fill: var(--horno); }
+.con-puntero .cinta-enlace:hover .ico path { fill: var(--papel); }
 .cinta-enlace .letras span { display: inline-block; white-space: pre; }
-.cinta-enlace::before { position: absolute; inset: 0; z-index: -1; content: ""; background: var(--papel); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-soft); }
+.cinta-enlace::before { position: absolute; inset: 0; z-index: -1; content: ""; background: var(--ambar); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-soft); }
 .con-puntero .cinta-enlace:hover::before { opacity: 1; transform: none; }
 .con-puntero .cinta-enlace:hover, .con-puntero .cinta-enlace:hover .ico { color: var(--horno); }
 .con-puntero .cinta-enlace:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
@@ -158,9 +179,8 @@
 @keyframes salta-hogaza { 40% { transform: translateY(-4px) rotate(-7deg); } }
 @keyframes salta-galleta { 40% { transform: translateY(-4px) rotate(7deg); } }
 @keyframes baila-botella { 25%, 65% { transform: rotate(-8deg); } 45%, 85% { transform: rotate(8deg); } }
-/* Sobre el horno el anillo horno no se ve: aqui es papel. */
-.cinta a:focus-visible { outline-color: var(--papel); }
-.cinta-estrella { color: var(--ambar); }
+.cinta a:focus-visible { outline-color: var(--horno); }
+.cinta-estrella { color: var(--ambar-texto); }
 /* La cinta es lo ultimo de #/ (sin carrusel ni pie debajo): un respiro de
    masa hasta el borde de la pantalla. */
 .vista-inicio { display: flex; width: 100%; height: 100vh; height: 100svh; min-height: 0; flex-direction: column; }
@@ -170,6 +190,15 @@
 .vista-inicio .portada > .container { display: flex; min-height: 0; flex: 1; flex-direction: column; }
 .vista-inicio .portada-rejilla { min-height: 0; flex: 1; padding-block: clamp(.4rem, 2.5svh, 2rem); }
 .vista-inicio .portada-foto { width: min(100%, clamp(160px, 52svh, 460px)); }
+/* En pantallas altas el contenido crece con el alto (foto, titular y el aire
+   de los botones) en vez de quedarse en su tamano con un vacio arriba y
+   abajo: reparte mejor el espacio entre el texto y la cinta. En las bajas se
+   achica. Solo de escritorio: tableta y telefono tienen sus reglas abajo. */
+@media (min-width: 901px) {
+  .vista-inicio .portada-foto { width: min(100%, clamp(160px, 58svh, 540px)); }
+  .vista-inicio .portada h1 { font-size: clamp(3.4rem, min(9vw, 15svh), 9.5rem); }
+  .vista-inicio .portada-acciones { margin-top: clamp(1.2rem, 3.8svh, 2.8rem); }
+}
 
 /* Con menos movimiento la portada (y la historia de #/nosotros, que usa sus
    piezas) esta quieta desde el principio: sin entrada, sin filetes que se
@@ -216,12 +245,19 @@
 /* El parrafo de la madrugada es texto corrido: Arial, no la Georgia de body. */
 .nosotros-madrugada { max-width: 62ch; margin: 0; color: var(--horno-suave); font: 1.05rem/1.6 var(--letra-texto); }
 .nosotros-llegar { margin-top: clamp(.6rem, 2.4svh, 1.8rem); }
-/* El boton de la vista, relleno de ambar (el acento): con el filete fino
-   se perdia entre el texto. */
-.enlace-llegar.nosotros-llegar { background: var(--ambar); border-color: var(--horno); box-shadow: 3px 3px 0 var(--horno); }
-.enlace-llegar.nosotros-llegar .ico { color: var(--horno); }
-.enlace-llegar.nosotros-llegar:hover { background: var(--ambar-claro); }
-.enlace-llegar.nosotros-llegar:active { box-shadow: 0 0 0 var(--horno); transform: translate(3px, 3px); }
+/* Mas aire vertical entre el boton y el bloque oscuro de los principios. */
+.nosotros-texto { padding-bottom: clamp(.6rem, 2.8svh, 2.2rem); }
+/* El boton de la vista: ambar liso con borde horno y un filete punteado por
+   dentro, como la linea de las fichas de la tienda (27 de octubre de 2026;
+   el degradado se perdia con el fondo). Lleva el pin y no una flecha. Texto
+   horno sobre ambar: 7,5:1. Con el puntero o el foco sube 2 px, se aclara y
+   la sombra dura crece. */
+.enlace-llegar.nosotros-llegar { background: var(--ambar); border: 2px solid var(--horno); color: var(--horno); box-shadow: 0 4px 0 var(--horno); transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.enlace-llegar.nosotros-llegar::before { content: ""; position: absolute; inset: 4px; border: 1.5px dotted var(--horno); border-radius: calc(var(--r-btn) - 4px); pointer-events: none; }
+.enlace-llegar.nosotros-llegar .ico { color: var(--horno); fill: var(--papel); }
+.enlace-llegar.nosotros-llegar .ico circle { fill: var(--horno); }
+.con-puntero .enlace-llegar.nosotros-llegar:hover, .enlace-llegar.nosotros-llegar:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); box-shadow: 0 6px 0 var(--horno); }
+.enlace-llegar.nosotros-llegar:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--horno); }
 /* La foto con peso: el arco (4:5) y su pie ocupan casi todo el alto que
    dejan la barra (86 px), la franja con su curva (86) y el aire: unos
    520 px de ancho a 1440x900 y 420 a 1366x768, sin pasar de 540 ni del
@@ -237,10 +273,9 @@
    le quedan mas de 8 px hasta el texto. */
 .nosotros-sello { right: -44px; bottom: 40px; width: clamp(96px, 15svh, 124px); height: auto; aspect-ratio: 1; }
 
-/* Los principios, sobre la masa y alineados con el texto: el h2 en
-   versalitas con una linea doble de la cabecera de periodico a su derecha,
-   y una fila de tres columnas separadas por una estrella. El numero, en
-   versalitas horno (.rotulo, sobre el grano). */
+/* Los principios, alineados con el texto: el h2 en versalitas con una
+   linea doble de la cabecera de periodico a su derecha, y una fila de tres
+   columnas (icono, nombre y frase) separadas por una linea vertical tenue. */
 .nosotros-principios { --icono: clamp(32px, 5svh, 44px); --icono-aire: clamp(.3rem, 1.2svh, .9rem); grid-area: principios; align-self: start; }
 .principios-cabeza, .contacto-cabeza { display: flex; align-items: center; gap: 1.4rem; }
 .principios-titulo, .contacto-subtitulo { flex: 0 1 auto; margin: 0; color: var(--horno); font: 700 .95rem/1.4 var(--letra-texto); letter-spacing: .22em; text-align: center; text-transform: uppercase; }
@@ -248,11 +283,9 @@
 :is(.principios-cabeza, .contacto-cabeza) .linea-doble { min-width: 24px; }
 .principios { --hueco: clamp(1.5rem, 2.6vw, 3rem); display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 var(--hueco); margin: clamp(.6rem, 2.2svh, 1.8rem) 0 0; padding: 0; list-style: none; }
 .principio { position: relative; text-align: left; }
-/* La estrella entre dos columnas, en medio del hueco y a la altura del
-   icono (bajo el numero, que mide .94rem). Es adorno: sin texto para el
-   lector (alt vacio). */
-.principio + .principio::before { position: absolute; top: calc(.94rem + var(--icono-aire) + var(--icono) / 2); left: calc(var(--hueco) / -2); color: var(--ambar); content: "✦"; content: "✦" / ""; font-size: 1.1rem; line-height: 1; transform: translate(-50%, -50%); }
-.principio-numero { display: block; }
+/* Entre dos columnas, una linea vertical muy tenue en medio del hueco. Es
+   adorno, sin texto. */
+.principio + .principio::before { position: absolute; top: 0; bottom: 0; left: calc(var(--hueco) / -2); width: 1px; content: ""; background: currentColor; opacity: .16; }
 .principio-icono { display: block; width: var(--icono); height: var(--icono); margin: var(--icono-aire) 0 clamp(.3rem, 1.1svh, .8rem); color: var(--ambar); transform-origin: center 80%; }
 .principio h3 { margin: 0 0 .4rem; font: 500 clamp(1.1rem, 2.6svh, 1.35rem)/1.2 var(--letra-titulo); }
 .principio p { max-width: 26ch; margin: 0; color: var(--horno-suave); font: .95rem/1.45 var(--letra-texto); }
@@ -318,7 +351,6 @@
 .chip::before { position: absolute; inset: min(0px, calc((100% - 44px) / 2)) -2px; content: ""; }
 .chip .ico { width: 1.2em; height: 1.2em; flex: none; color: var(--ambar); stroke-width: 1.4; transform-origin: center 75%; transition: color var(--dur-fast) var(--ease-ui); }
 .chip .letras span { display: inline-block; white-space: pre; }
-.chip-estrella { color: var(--ambar); font-size: .95rem; line-height: 1; }
 .con-puntero .chip:hover { background: var(--papel); }
 .con-puntero .chip:hover .letras span { animation: salta var(--dur-slow) var(--ease-soft) both; animation-delay: calc(var(--i) * 28ms); }
 .con-puntero .chip-panes:hover .ico { animation: salta-hogaza var(--dur-slow) var(--ease-soft) both; }
@@ -341,7 +373,11 @@
 .vista-barra .linea-doble { min-width: 24px; }
 .vista-mandos { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: .7rem 1.4rem; }
 .vista-mando { display: inline-flex; align-items: center; gap: .55rem; }
-.vista-mando > span:not(.sr-only) { color: var(--horno); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .18em; text-transform: uppercase; }
+.vista-mando > span:not(.sr-only) { color: var(--horno); font: 700 .8rem/1.3 var(--letra-texto); letter-spacing: .16em; text-transform: uppercase; }
+/* "Filtrar por" igual que "Ordenar por" y "Mostrar": horno (13,9:1 sobre la
+   masa) pero mas grande y en negrita, porque en .7rem y 600 se perdian entre
+   el grano y los dibujos del fondo. */
+.vista-chips > .rotulo { font-size: .8rem; font-weight: 700; letter-spacing: .16em; }
 /* "Ordenar por" (OrdenarPor.jsx): el boton es un cuadrado de esquinas
    redondeadas (--r-btn) con filete horno aclarado; dice el orden elegido y
    lleva la flecha. Al abrirlo, el panel es el mismo cuadro que el menu de "Tu
@@ -444,7 +480,6 @@ body.is-vista .catalog { padding-top: 108px; }
   .vista-chips { row-gap: .85rem; }
   .vista-chips > .rotulo { flex-basis: 100%; margin: 0 0 .1rem; }
   .chip { padding: .3rem .65rem; font-size: 1.1rem; }
-  .chip-estrella { display: none; }
   /* Los mandos se apilan, entre las lineas de arriba y abajo. */
   .vista-mandos { flex-direction: column; align-items: stretch; }
   /* Si el rotulo y el selector no caben en una linea (texto con mas
@@ -470,7 +505,7 @@ body.is-vista .catalog { padding-top: 108px; }
    asoma por la derecha del mapa: clip, sin desplazamiento de lado. */
 .vista-contacto { display: flex; min-height: 100vh; min-height: 100svh; flex-direction: column; padding-top: 86px; overflow-x: clip; }
 #raiz > main:has(.vista-contacto) { padding-bottom: 0; }
-.contacto-vista { flex: 0 0 auto; margin-block: auto; padding-block: clamp(.75rem, 3.5svh, 3rem) clamp(2rem, 5svh, 3rem); }
+.contacto-vista { flex: 0 0 auto; margin-block: auto; padding-block: clamp(.75rem, 3.5svh, 3rem) clamp(3.4rem, 9svh, 6rem); }
 
 /* Arriba, como la portada: el texto a la izquierda y el mapa a la derecha.
    Debajo, el horario y Escribenos, cada uno con su cabeza entre lineas
@@ -490,7 +525,11 @@ body.is-vista .catalog { padding-top: 108px; }
    animacion va en el iframe para que el clip no se coma el marco. */
 .contacto-mapa { grid-area: mapa; position: relative; }
 .contacto-mapa-marco { height: clamp(200px, 50svh - 100px, 420px); margin: 11px; background: var(--masa-honda); box-shadow: 0 0 0 10px var(--masa), 0 0 0 11px var(--horno); }
-.contacto-mapa-marco iframe { display: block; width: 100%; height: 100%; border: 0; animation: descubre var(--dur-scene) var(--ease-soft) 200ms both; }
+.contacto-mapa-marco iframe { display: block; width: 100%; height: 100%; border: 0; pointer-events: none; animation: descubre var(--dur-scene) var(--ease-soft) 200ms both; }
+/* El mapa no captura el scroll de la pagina: el iframe no recibe el puntero
+   (el clic cae en el marco, que lo activa) hasta hacer clic en el mapa, y al
+   salir se restablece (Contacto.jsx). */
+.contacto-mapa-marco.is-activo iframe { pointer-events: auto; }
 /* El sello, arriba a la derecha: abajo estan el logo y los creditos de
    Google, a la derecha los mandos del zoom y arriba a la izquierda la
    tarjeta del sitio. Es adorno: deja pasar el puntero al mapa (sin el giro
@@ -499,8 +538,8 @@ body.is-vista .catalog { padding-top: 108px; }
 
 /* El horario y Escribenos, sobre la masa. Entran en la misma escena, tras
    el texto: los bloques suben y las lineas dobles se dibujan. */
-.contacto-horario { grid-area: horario; align-self: start; }
-.contacto-escribir { grid-area: escribir; align-self: start; }
+.contacto-horario { grid-area: horario; align-self: stretch; }
+.contacto-escribir { grid-area: escribir; align-self: stretch; }
 .contacto-horario, .contacto-escribir { animation: sube var(--dur-editorial) var(--ease-soft) 700ms both; }
 .contacto-escribir { animation-delay: 820ms; }
 .contacto-cabeza { margin-bottom: clamp(.5rem, 1.8svh, 1.1rem); }
@@ -525,14 +564,16 @@ body.is-vista .catalog { padding-top: 108px; }
 /* "Escribenos" es una banda de horno (seccion 10 del plan, "Tres colores,
    60-30-10"): con la barra, la franja y esta banda, Contacto llega al 30 %
    de horno. Dentro, texto papel (13,7:1) y el pin ambar (7:1). */
-.contacto-escribir { padding: clamp(.4rem, 1.3svh, 1.4rem) clamp(1rem, 2.4vw, 1.8rem); background: var(--horno); border-radius: var(--r-card); color: var(--sobre-horno); }
+.contacto-escribir { display: flex; flex-direction: column; justify-content: center; padding: clamp(.4rem, 1.3svh, 1.4rem) clamp(1rem, 2.4vw, 1.8rem); background: var(--horno); border-radius: var(--r-card); color: var(--sobre-horno); }
 .contacto-escribir :is(.contacto-subtitulo, .rotulo) { color: var(--sobre-horno); }
 .contacto-escribir .linea-doble { border-color: var(--sobre-horno-tenue); }
-/* Rellenos de ambar con texto horno (el acento): sobre el horno el filete
-   fino no bastaba y los botones se perdian. */
-.contacto-escribir .enlace-llegar { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
-.contacto-escribir .enlace-llegar .ico { color: var(--horno); }
-.contacto-escribir .enlace-llegar:hover { background: var(--ambar-claro); border-color: var(--ambar-claro); color: var(--horno); }
+/* WhatsApp e Instagram son secundarios: borde papel y fondo transparente. El
+   unico relleno de ambar de Contacto es "Ver en el mapa" (la accion
+   principal). Papel sobre horno 13,7:1; el icono, ambar (7:1). Con el puntero
+   se enciende un blanco tenue, como el menu de arriba. */
+.contacto-escribir .enlace-llegar { background: transparent; border: 1.5px solid var(--sobre-horno); color: var(--sobre-horno); transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.contacto-escribir .enlace-llegar .ico { color: var(--ambar); }
+.con-puntero .contacto-escribir .enlace-llegar:hover { background: var(--papel-tenue); border-color: var(--papel); color: var(--papel); }
 .contacto-escribir .enlace-llegar:focus-visible { outline-color: var(--papel); }
 .contacto-escribir .contacto-nota { color: var(--sobre-horno-tenue); }
 
@@ -602,9 +643,10 @@ body.is-vista .catalog { padding-top: 108px; }
   .vista-inicio .portada h1 em { padding-left: .45em; }
   .vista-inicio .portada-frase { font-size: clamp(.92rem, 4vw, 1.18rem); line-height: 1.2; }
   .vista-inicio .portada-acciones { gap: .45rem .7rem; margin-top: .65rem; }
+  .vista-inicio .enlace-llegar.portada-llegar .ico { width: 28px; height: 28px; }
   .vista-inicio .portada-llegar { min-height: 36px; padding: .25rem .55rem; font-size: clamp(.95rem, 4vw, 1.12rem); }
   .vista-inicio .cinta { flex: 0 0 auto; }
-  .vista-inicio .cinta-dentro { flex-wrap: nowrap; gap: 0; padding: .3rem 52px .3rem .25rem; }
+  .vista-inicio .cinta-dentro { flex-wrap: nowrap; gap: 0; padding: .6rem 52px .6rem .25rem; }
   .vista-inicio .cinta-enlace { min-width: 0; flex: 1 1 0; justify-content: center; gap: .2rem; padding: .3rem .12rem; font-size: clamp(.75rem, 3.2vw, .9rem); }
   .vista-inicio .cinta-enlace .ico { width: 1.15em; height: 1.15em; }
   .vista-inicio .cinta-enlace .letras { min-width: 0; }
@@ -640,15 +682,13 @@ body.is-vista .catalog { padding-top: 108px; }
   .nosotros-foto { width: auto; margin: 7px; }
   .nosotros-arco { height: clamp(150px, 100svh - 580px, 300px); aspect-ratio: auto; box-shadow: 0 0 0 6px var(--masa), 0 0 0 7px var(--horno); }
   .nosotros-foto figcaption, .nosotros-foto .sello { display: none; }
-  /* Los principios siguen en una fila de tres, con su numero, el icono y
-     el nombre; sin la frase. Si un nombre no cabe (texto espaciado, WCAG
+  /* Los principios siguen en una fila de tres, con el icono y el nombre;
+     sin la frase. Si un nombre no cabe (texto espaciado, WCAG
      1.4.12), la palabra se parte antes que salirse. */
   .nosotros-principios { --icono: clamp(28px, 4.6svh, 36px); --icono-aire: clamp(.25rem, 1svh, .6rem); padding: .5rem .6rem; }
   .principios-cabeza, .contacto-cabeza { gap: .7rem; }
   .principios-titulo, .contacto-subtitulo { font-size: .72rem; letter-spacing: .14em; }
   .principios { --hueco: 1rem; margin-top: clamp(.5rem, 1.4svh, 1.2rem); }
-  .principio + .principio::before { font-size: .9rem; }
-  .principio-numero { letter-spacing: .14em; }
   .principio h3 { margin: 0; font-size: clamp(.78rem, 3.3vw, 1.05rem); overflow-wrap: anywhere; hyphens: auto; }
   .principio p { display: none; }
   /* Contacto en el telefono (seccion 10 del plan): una columna, con el
@@ -749,9 +789,10 @@ body.is-vista .catalog { padding-top: 108px; }
 /* Los panes de la tienda, a la derecha: el texto va a la izquierda. */
 .fondo-tienda .is-arriba-izquierda { top: 150px; right: 30%; left: auto; width: 200px; }
 .fondo-tienda .is-arriba-derecha { top: 30px; right: 4%; width: 260px; }
-/* El maiz, en la esquina de abajo, a la derecha de Instagram y de la nota,
-   no debajo de ellos. */
-.fondo-contacto .is-abajo-izquierda { right: -30px; bottom: -50px; left: auto; width: 170px; }
+/* El maiz, en la esquina de abajo a la derecha, entero y bajo Escribenos (la
+   seccion deja sitio de sobra bajo la tarjeta): antes asomaba 50 px por el
+   pie y quedaba cortado. */
+.fondo-contacto .is-abajo-izquierda { right: clamp(8px, 2vw, 40px); bottom: 4px; left: auto; width: clamp(44px, 7svh, 64px); }
 .fondo-contacto .is-arriba-derecha { top: 0; right: 40%; width: 200px; }
 
 @media (max-width: 680px) {
@@ -800,7 +841,36 @@ body.is-vista .catalog { padding-top: 108px; }
 
 /* ---- Nosotros: los principios sobre una banda horno (el 30 %) ----------- */
 .nosotros-principios { padding: clamp(.8rem, 2.4svh, 1.6rem) clamp(1rem, 2vw, 1.6rem); background: var(--horno); border-radius: var(--r-card); color: var(--sobre-horno); }
-.nosotros-principios :is(.principios-titulo, .principio-numero) { color: var(--sobre-horno); }
+.nosotros-principios .principios-titulo { color: var(--sobre-horno); }
 .nosotros-principios .principio h3 { color: var(--papel); }
 .nosotros-principios .principio p { color: var(--sobre-horno-tenue); }
 .nosotros-principios .linea-doble { border-color: var(--sobre-horno-tenue); }
+
+/* ---- Iconos con relleno de ambar y contorno de horno (27 de octubre de 2026) ---
+   Como la hogaza de "Nuestros panes" y el alfiler de "Como llegar": el dibujo
+   macizo en ambar y el trazo en horno, para que resalte. Cada sitio solo dice
+   su fondo; el relleno va en path y circle y no en el svg. */
+/* Los principios, sobre la banda horno: la silueta ambar y los detalles en horno. */
+.principio-icono { color: var(--horno); }
+.principio-icono :is(path, circle) { fill: var(--ambar); }
+.principio-icono circle:not(:only-of-type) { fill: var(--horno); }
+.principio-icono .principio-aguja { fill: none; }
+.principio-origen .principio-icono path:first-child { fill: none; stroke: var(--ambar); }
+.principio-tiempo .principio-icono circle { fill: var(--ambar); }
+/* "Filtrar por": en la pastilla elegida (horno) el contorno pasa a masa. */
+.chip .ico { color: var(--horno); }
+.chip .ico :is(path, circle) { fill: var(--ambar); }
+/* El rotulo de la espiga. */
+.rotulo-espiga .ico { color: var(--horno); }
+.rotulo-espiga .ico path:first-child { fill: none; stroke: var(--ambar); }
+.rotulo-espiga .ico path:not(:first-child) { fill: var(--ambar); }
+/* La canasta, sobre el boton ambar: relleno papel, como la hogaza de la portada. */
+.floating-whatsapp .canasta-icono :is(path, circle) { fill: var(--papel); }
+/* "Ver en el mapa", sobre el boton ambar: pin papel con el punto en horno
+   (WhatsApp e Instagram de la banda horno quedan como estaban). */
+.contacto-mapa-enlace .ico { fill: var(--papel); }
+.contacto-mapa-enlace .ico circle { fill: var(--horno); }
+/* "Como llegar" al confirmar, y la persona de "Inicia sesion para pagar" sobre su circulo ambar. */
+.mapa-ruta svg path { fill: var(--ambar); }
+.mapa-ruta svg circle { fill: var(--horno); }
+.pide-cuenta-dibujo svg :is(path, circle) { fill: var(--papel); }
