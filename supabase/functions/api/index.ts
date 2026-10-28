@@ -220,7 +220,8 @@ Deno.serve(async (req) => {
     };
 
     // GET /admin/yo -> el rol y los permisos de quien llama (403 si no tiene
-    // fila activa en USUARIOS): lo que la pagina usa para enseñar el panel.
+    // fila activa en USUARIOS): lo que la pagina usa para enseñar el panel. Un
+    // cliente tambien recibe 200, con los permisos de un cliente.
     if (req.method === "GET" && ruta === "/admin/yo") {
       const { data, error } = await base.rpc("fn_admin_yo", { p_auth: usuario.id });
       if (error) return responder(h, 500, { error: "Algo falló en el servidor." });

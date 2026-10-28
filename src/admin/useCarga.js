@@ -12,6 +12,7 @@ const textoDeFallo = (e) => {
   if (!e.estado) return SIN_RED;
   if (e.estado === 401) return 'Tu sesión caducó. Vuelve a iniciar sesión.';
   if (e.estado === 403) return 'Tu rol no tiene permiso para esto.';
+  if (e.estado >= 500) return 'El servidor tuvo un problema. Inténtalo otra vez en un momento.';
   return e.message || 'Algo falló en el servidor. Inténtalo otra vez en un momento.';
 };
 

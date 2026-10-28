@@ -6,7 +6,9 @@
 //
 // La respuesta se guarda medio minuto por correo: la ficha de la cuenta y el
 // panel la piden a la vez y no hace falta ir dos veces. null es "esta cuenta
-// no tiene panel" (un cliente); undefined, que no se pudo saber (sin red).
+// tiene fila" (cuenta sin datos); undefined, que no se pudo saber (sin red).
+// Un cliente recibe sus permisos, que no abren ninguna seccion: sin 403 ni
+// ruido en la consola de quien solo viene a comprar.
 import { useEffect, useState } from 'react';
 import { useSesion } from '../estado/SesionProvider.jsx';
 import { pedirApi } from '../servicios/api.js';
@@ -34,20 +36,18 @@ const SECCIONES = [
   { id: 'productos', nombre: 'Productos', permiso: 'productos.gestionar' },
 ];
 
-// activo: false hasta que haga falta saber (la ficha de la cuenta espera a que
-// se abra), para no preguntar en cada pagina a quien solo viene a comprar.
-function usePanel(activo = true) {
+function usePanel() {
   const { dentro, correo } = useSesion();
   const [lectura, setLectura] = useState({ correo: null, quien: null });
   useEffect(() => {
-    if (!dentro || !activo) return undefined;
+    if (!dentro) return undefined;
     let vigente = true;
     leer(correo).then((quien) => { if (vigente) setLectura({ correo, quien }); });
     return () => { vigente = false; };
-  }, [dentro, activo, correo]);
+  }, [dentro, correo]);
 
   // Listo cuando la respuesta es de la cuenta que esta abierta ahora.
-  const listo = dentro && activo && lectura.correo === correo;
+  const listo = dentro && lectura.correo === correo;
   const permisos = listo && lectura.quien ? lectura.quien.permisos : [];
   const secciones = SECCIONES.filter((s) => permisos.includes(s.permiso));
   return { listo, rol: listo && lectura.quien ? lectura.quien.rol : '', permisos, secciones, hayPanel: secciones.length > 0 };

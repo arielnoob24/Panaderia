@@ -273,10 +273,11 @@ const ponerRol = (correo, rol) => {
   const sv = [...servidores].reverse().find((x) => x.cuentas.has(c));
   if (sv) sv.cuentas.get(c).rol = rol;
 };
+const NOMBRE_CATEGORIA = { panes: 'Panes', dulces: 'Dulces', 'bebidas-frias': 'Bebidas frías' };
 const productosDe = (sv) => {
   if (!sv.productos) {
     sv.productos = CATALOGO.map((p, i) => ({
-      codigo: `PRO${String(i + 1).padStart(3, '0')}`, nombre: p.nombre, categoria: p.categoria,
+      codigo: `PRO${String(i + 1).padStart(3, '0')}`, nombre: p.nombre, categoria: NOMBRE_CATEGORIA[p.categoria] || p.categoria,
       disponible: p.disponible !== false, destacado: Boolean(p.destacado),
       tamanos: (p.tamanos?.length ? p.tamanos : [{ valor: 'Único', precio: p.precio }])
         .map((t, j) => ({ codigo: t.valor === 'Único' ? 'TAM001' : `TAM${String(j + 2).padStart(3, '0')}`, nombre: t.valor, precio: t.precio })),
@@ -294,7 +295,7 @@ async function admin(sv, route) {
   const permisos = PERMISOS[c.rol || 'Cliente'];
   const sin = () => contestar(route, 403, { error: 'No tienes permiso para esto.' });
   const ruta = new URL(req.url()).pathname.replace(/^.*\/api\/admin/, '');
-  if (ruta === '/yo') return permisos.length ? contestar(route, 200, { rol: c.rol, permisos }) : sin();
+  if (ruta === '/yo') return contestar(route, 200, { rol: c.rol || 'Cliente', permisos: c.rol ? permisos : ['pedidos.crear', 'pedidos.ver_propios'] });
   if (ruta === '/pedidos' && req.method() === 'GET') {
     if (!permisos.includes('pedidos.ver_todos')) return sin();
     const todos = [...sv.cuentas.values()].flatMap((x) => (x.pedidos || []).map((p) => ({ ...p, cliente: aCuenta(x).nombre, celular: `0${aCuenta(x).telefono}` })));

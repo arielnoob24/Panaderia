@@ -87,16 +87,39 @@ async function panel(t, nombre, ventana) {
   await avanzar('ET-BBBB', 'En preparación');
   ok((await tarjeta('ET-BBBB').locator('.admin-avanzar').textContent()).includes('En camino'), 'un pedido a domicilio no ofrece En camino');
   await avanzar('ET-AAAA', 'Listo para retirar');
-  // Lo entregado y lo cancelado sale de "Por atender" (sigue en "Todos").
+  // El foco se queda en el boton tras avanzar (no pasa al body).
+  ok(await p.evaluate(() => document.activeElement?.classList.contains('admin-avanzar')), 'tras avanzar el foco no esta en el boton');
+  ok((await tarjeta('ET-AAAA').locator('.admin-avanzar').getAttribute('aria-label')).includes('ET-AAAA'), 'el boton de avanzar no dice de que pedido es');
+  // Entregado pide confirmar: Escape lo deja como estaba y devuelve el foco.
   await tarjeta('ET-AAAA').locator('.admin-avanzar').click();
+  await espera(150);
+  ok((await tarjeta('ET-AAAA').locator('.admin-estado').textContent()) === 'Listo para retirar', 'Entregado se marca con un solo toque');
+  ok(await p.evaluate(() => document.activeElement?.classList.contains('admin-confirmar')), 'el foco no va al Si de la confirmacion');
+  await p.keyboard.press('Escape');
+  await espera(150);
+  ok((await tarjeta('ET-AAAA').locator('.admin-confirma').count()) === 0, 'Escape no deja la confirmacion');
+  ok(await p.evaluate(() => document.activeElement?.classList.contains('admin-avanzar')), 'tras Escape el foco no vuelve al boton');
+  await tarjeta('ET-AAAA').locator('.admin-avanzar').click();
+  await tarjeta('ET-AAAA').locator('.admin-no').click();
+  await espera(150);
+  ok((await tarjeta('ET-AAAA').locator('.admin-estado').textContent()) === 'Listo para retirar', '«No, dejarlo» cambia el estado');
+  await tarjeta('ET-AAAA').locator('.admin-avanzar').click();
+  await tarjeta('ET-AAAA').locator('.admin-confirmar').click();
+  // Lo entregado sale de "Por atender" (sigue en "Todos") y el foco va al titulo.
   await esperaQue(async () => (await tarjeta('ET-AAAA').count()) === 0);
   ok((await tarjeta('ET-AAAA').count()) === 0, 'un pedido entregado sigue en Por atender');
-  // Cancelar pide un segundo toque.
+  await espera(100);
+  ok(await p.evaluate(() => document.activeElement?.id === 'admin-pedidos-titulo'), `el foco no va al titulo: ${await p.evaluate(() => document.activeElement?.tagName)}`);
+  // Cancelar pide confirmar y se puede dejar.
   await tarjeta('ET-BBBB').locator('.admin-cancelar').click();
   await espera(150);
   ok((await tarjeta('ET-BBBB').locator('.admin-estado').textContent()) === 'En preparación', 'cancelar con un solo toque cancela');
-  ok((await tarjeta('ET-BBBB').locator('.admin-cancelar').textContent()).includes('Sí, cancelar'), 'cancelar no pide confirmar');
+  ok((await tarjeta('ET-BBBB').locator('.admin-confirmar').textContent()).includes('Sí, cancelar'), 'cancelar no pide confirmar');
+  await p.keyboard.press('Escape');
+  await espera(150);
+  ok((await tarjeta('ET-BBBB').locator('.admin-confirma').count()) === 0, 'Escape no deja la confirmacion de cancelar');
   await tarjeta('ET-BBBB').locator('.admin-cancelar').click();
+  await tarjeta('ET-BBBB').locator('.admin-confirmar').click();
   await esperaQue(async () => (await tarjeta('ET-BBBB').count()) === 0);
   ok((await tarjeta('ET-BBBB').count()) === 0, 'confirmar no cancela');
   const aviso = await p.evaluate(() => document.querySelector('[aria-live="polite"]').textContent);
@@ -127,9 +150,15 @@ async function panel(t, nombre, ventana) {
   await primero.locator('.admin-guardar').click();
   await espera(150);
   ok((await primero.locator('.admin-error').count()) === 1, 'un precio de 0 no avisa');
+  ok(await p.evaluate(() => document.activeElement?.getAttribute('aria-invalid') === 'true'), 'con un precio malo el foco no va al campo');
+  ok(!!(await primero.locator('.admin-precio-caja input').getAttribute('aria-describedby')), 'el campo malo no apunta a su error');
   await primero.locator('.admin-precio-caja input').fill('0,40');
+  ok((await primero.locator('.admin-error').count()) === 0, 'el error sigue tras corregir el precio');
+  ok((await primero.locator('.admin-guardar').getAttribute('aria-label')).startsWith('Guardar '), 'Guardar no dice de que producto es');
   await primero.locator('.admin-guardar').click();
-  await esperaQue(async () => (await p.locator('.admin-producto').first().locator('.admin-guardar').isDisabled()));
+  await esperaQue(async () => (await p.locator('.admin-producto').first().locator('.admin-agotado').count()) === 1);
+  ok(await p.evaluate(() => document.activeElement?.classList.contains('admin-guardar')), 'tras guardar el foco no esta en Guardar');
+  ok((await p.locator('.admin-producto').first().locator('.admin-agotado').count()) === 1, 'un producto agotado no lleva su etiqueta');
   await p.reload();
   await p.waitForSelector('.admin-producto');
   const vuelto = p.locator('.admin-producto').first();

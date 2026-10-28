@@ -1166,8 +1166,21 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
       - **Pruebas**: `pruebas/casos/panel.mjs` (cliente fuera, empleado solo
         Pedidos, administrador con todo; el servidor de mentira ya sabe los
         permisos de cada rol, `ponerRol()`) y un bloque en `probar-bd`.
-      - **Sin pasar todavía**: la revisión visual y la de accesibilidad del
-        panel (el dueño lo aprobó a ojo). Conviene hacerlas antes de entregar.
+      - **Revisiones pasadas** (27 de octubre de 2026, visual y de
+        accesibilidad) y arregladas: el foco no se pierde (lo ocupado es
+        `aria-disabled`; al cerrarse un pedido el foco va al título de la
+        sección); cada control dice de qué pedido o producto es; Entregado y
+        Cancelado piden confirmar ("Sí…" / "No, dejarlo": el foco va al "Sí",
+        Escape o salir lo deja como estaba, a los 8 s se retira solo); el error
+        de un precio va asociado a su campo y se va al corregir; la pestaña
+        actual lleva raya de horno; los estados se distinguen (ámbar abierto,
+        horno lleno "Listo para retirar" / "En camino", ✓ entregado, ✕ y
+        tachado cancelado); el rol se pregunta al entrar para que "Panel" ya
+        esté al abrir la ficha. **El rojo** (`--rojo`) vale para lo que cancela
+        o borra y para los errores del panel.
+      - **Se dejó para la tanda 2**: la canasta flotante tapa un importe en el
+        teléfono; "Por entregar" del Resumen como acción destacada; un
+        rediseño de las tarjetas de producto (menos espacio muerto).
 - [ ] **Tanda 2, bodega y producción:** inventario y alertas de stock bajo,
       compras y proveedores, recetas y producción.
 - [ ] **Tanda 3, administración:** facturas (anular), clientes, empleados,

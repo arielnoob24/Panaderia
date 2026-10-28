@@ -107,8 +107,8 @@ function FichaCuenta({ alAbrir }) {
   const [abierta, setAbierta] = useState(false);
   // Cuantas veces se abrio: es la clave de OpcionesCuenta.
   const [vez, setVez] = useState(0);
-  // El rol se pregunta a la API la primera vez que se abre la ficha.
-  const { hayPanel } = usePanel(vez > 0);
+  // El rol se pregunta a la API al entrar, para que "Panel" ya este al abrir la ficha.
+  const { hayPanel } = usePanel();
   const botonRef = useRef(null);
   const entrarRef = useRef(null);
   const fichaRef = useRef(null);
