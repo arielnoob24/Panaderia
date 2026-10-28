@@ -201,6 +201,65 @@ Deno.serve(async (req) => {
     }
   }
 
+  // RUTAS de /admin: el panel de quien atiende el local. Piden sesion, y la
+  // base mira ademas que el rol de la cuenta tenga el permiso de cada cosa
+  // (FN_ADMIN_*, en bd/BD_EL_TRADICIONAL.sql): 42501 es "no tienes permiso"
+  // (403) y 22023 un dato mal (400). Esconder el panel en la pagina no
+  // protege nada; esto si.
+  if (ruta.startsWith("/admin/")) {
+    const usuario = await quienLlama(req);
+    if (!usuario) return responder(h, 401, { error: "Inicia sesión otra vez." });
+
+    const llamar = async (funcion: string, args: Record<string, unknown>, exito = 200) => {
+      const { data, error } = await base.rpc(funcion, { p_auth: usuario.id, ...args });
+      if (error) {
+        const estado = error.code === "42501" ? 403 : error.code === "22023" ? 400 : 500;
+        return responder(h, estado, { error: estado === 500 ? "Algo falló en el servidor." : error.message });
+      }
+      return responder(h, exito, data);
+    };
+
+    // GET /admin/yo -> el rol y los permisos de quien llama (403 si no tiene
+    // fila activa en USUARIOS): lo que la pagina usa para enseñar el panel.
+    if (req.method === "GET" && ruta === "/admin/yo") {
+      const { data, error } = await base.rpc("fn_admin_yo", { p_auth: usuario.id });
+      if (error) return responder(h, 500, { error: "Algo falló en el servidor." });
+      if (!data) return responder(h, 403, { error: "No tienes permiso para esto." });
+      return responder(h, 200, data);
+    }
+    if (req.method === "GET" && ruta === "/admin/pedidos") {
+      const r = await llamar("fn_admin_pedidos", {});
+      return r.ok ? responder(h, 200, { pedidos: await r.json() }) : r;
+    }
+    if (req.method === "GET" && ruta === "/admin/productos") {
+      const r = await llamar("fn_admin_productos", {});
+      return r.ok ? responder(h, 200, { productos: await r.json() }) : r;
+    }
+    if (req.method === "GET" && ruta === "/admin/resumen") return llamar("fn_admin_resumen", {});
+
+    // PUT /admin/pedidos/ET-XXXX { estado } -> pasa el pedido a ese estado.
+    const pedido = ruta.match(/^\/admin\/pedidos\/(ET-[A-Z0-9]{4})$/);
+    if (req.method === "PUT" && pedido) {
+      const cuerpo = await req.json().catch(() => null);
+      if (typeof cuerpo?.estado !== "string") return responder(h, 400, { error: "Falta el estado." });
+      return llamar("fn_admin_pedido_estado", { p_numero: pedido[1], p_estado: cuerpo.estado });
+    }
+
+    // PUT /admin/productos/PRO001 { disponible, destacado, precios } -> guarda
+    // lo que cambio (precios: { TAM001: 1.25 }, solo los que cambiaron).
+    const producto = ruta.match(/^\/admin\/productos\/(PRO\d{3})$/);
+    if (req.method === "PUT" && producto) {
+      const c = await req.json().catch(() => null);
+      if (typeof c?.disponible !== "boolean" || typeof c?.destacado !== "boolean") {
+        return responder(h, 400, { error: "Faltan los datos del producto." });
+      }
+      const precios = c.precios && typeof c.precios === "object" && !Array.isArray(c.precios) ? c.precios : {};
+      return llamar("fn_admin_producto_guardar", {
+        p_codigo: producto[1], p_disponible: c.disponible, p_destacado: c.destacado, p_precios: precios,
+      });
+    }
+  }
+
   // Cualquier otra ruta: no existe
   return responder(h, 404, { error: "Ruta no encontrada" });
 });

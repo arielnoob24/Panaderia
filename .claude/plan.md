@@ -1122,6 +1122,60 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 
 ## 13. Pendiente
 
+### Panel de administración (acordado el 27 de octubre de 2026)
+
+Una parte del sitio que los clientes no ven: `#/admin` dentro del mismo sitio,
+sin enlace público ("Panel" aparece en el menú de la cuenta solo si el rol lo
+permite). La seguridad va en la API: cada ruta `/admin/...` comprueba el token
+y el permiso, y responde 403 si falta. Usa los roles que ya hay en la base:
+**Administrador** (el dueño), **Empleado** y **Cliente**. Cada cambio queda en
+`AUDITORIAS`. Se diseña primero para el teléfono.
+
+Quién ve qué: el cliente solo lo suyo; el empleado entra al panel y ve pedidos
+(`pedidos.ver_todos`, `pedidos.cambiar_estado`), facturas (`facturas.emitir`) y,
+en la tanda 2, bodega y producción; el administrador lo ve todo.
+
+- [x] **Tanda 1, lo de todos los días** (hecha el 27 de octubre de 2026; falta
+      que la pruebe el dueño en la página publicada): pedidos de todos los
+      clientes con cambio de estado; productos (precio, agotar, recomendado);
+      resumen (ventas de hoy y del mes, pendientes, lo más vendido). Cómo está
+      hecha:
+      - **Base** (`bd/BD_EL_TRADICIONAL.sql`, grupo "El panel de
+        administración"): `FN_TIENE_PERMISO`, `FN_EXIGIR_PERMISO` (42501 si
+        falta el permiso; fija `app.usuario` para la auditoría), `FN_ADMIN_YO`,
+        `FN_ADMIN_PEDIDOS` (últimos 100), `FN_ADMIN_PEDIDO_ESTADO` (Entregado y
+        Cancelado son finales; "Listo para retirar" solo en retiro, "En camino"
+        solo a domicilio), `FN_ADMIN_PRODUCTOS`, `FN_ADMIN_PRODUCTO_GUARDAR`
+        (precio mayor que 0 y menor que 1000), `FN_ADMIN_RESUMEN` (hora de
+        Ecuador). Solo `service_role` las ejecuta. No hay permisos nuevos: se
+        usan `pedidos.ver_todos`, `pedidos.cambiar_estado`,
+        `productos.gestionar` y `reportes.ver`. Subida a Supabase con la
+        migración `panel_admin_funciones`; la cuenta del dueño
+        (`arielescobar2003@gmail.com`) quedó como Administrador con
+        `dueno_administrador`.
+      - **API**: `GET /admin/yo`, `GET /admin/pedidos`, `PUT /admin/pedidos/ET-XXXX`,
+        `GET /admin/productos`, `PUT /admin/productos/PRO###`, `GET
+        /admin/resumen`. Todas piden sesión; 403 sin permiso, 400 dato mal.
+      - **Página** (`src/admin/`): `#/admin` (lleva a la primera pestaña que
+        el rol tenga), `#/admin/resumen|pedidos|productos`. `usePanel` pregunta
+        el rol a la API (medio minuto en memoria) y la ficha de la cuenta
+        enseña "Panel" solo si hay alguna pestaña; la pregunta se hace al
+        abrir la ficha por primera vez, no en cada página. Llega aparte
+        (`cargaPorPartes.js`, grupo `admin`). Un cliente que escribe la
+        dirección lee que no tiene acceso.
+      - **Pruebas**: `pruebas/casos/panel.mjs` (cliente fuera, empleado solo
+        Pedidos, administrador con todo; el servidor de mentira ya sabe los
+        permisos de cada rol, `ponerRol()`) y un bloque en `probar-bd`.
+      - **Falta de esta tanda**: mirar el aspecto con la revisión visual y la de
+        accesibilidad (no se han pasado) y ajustar lo que salga.
+- [ ] **Tanda 2, bodega y producción:** inventario y alertas de stock bajo,
+      compras y proveedores, recetas y producción.
+- [ ] **Tanda 3, administración:** facturas (anular), clientes, empleados,
+      nómina, contabilidad, usuarios y roles.
+- Pendiente de datos: el correo de la cuenta del dueño (a 27 de octubre aún no
+  hay ninguna cuenta registrada) y cómo se darán de alta los empleados (por
+  ahora cambiándoles el rol a mano; una pantalla para eso sería de la tanda 3).
+
 ### Contenido y confianza
 - [ ] Llegar a **10 productos por categoría** (hoy 6 panes, 5 dulces, 6 bebidas frías;
       pedido del 21 de octubre). El usuario pasa los productos; cada uno con su foto

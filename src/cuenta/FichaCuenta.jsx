@@ -18,6 +18,7 @@ import { useAvisos } from '../comun/Avisos.jsx';
 import { iniciales } from '../servicios/cuenta.js';
 import { usePedidosGuardados } from './usePedidosGuardados.js';
 import { precargar } from '../comun/cargaPorPartes.js';
+import { usePanel } from '../admin/usePanel.js';
 import '../estilos/cuenta.css';
 
 // Las vistas de la cuenta van en su propio archivo: con el puntero o el foco
@@ -38,6 +39,11 @@ const PEDIDOS = (
     <path d="M9 8h6M9 11.5h6M9 15h3.5" />
   </>
 );
+const PANEL = (
+  <>
+    <path d="M4.5 19.5v-9M10 19.5V5M15.5 19.5v-6M21 19.5H3" />
+  </>
+);
 const SALIR = (
   <>
     <path d="M14 4.5H7a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h7" />
@@ -49,7 +55,7 @@ const SALIR = (
 // Lo de dentro de la ficha. Se monta de nuevo cada vez que se abre (la clave
 // de quien la usa): asi el numero de pedidos se vuelve a leer, porque puede
 // haberse pagado uno desde la ultima vez.
-function OpcionesCuenta({ nombre, correo, ruta, opcionesRef, alElegir, alSalir }) {
+function OpcionesCuenta({ nombre, correo, ruta, hayPanel, opcionesRef, alElegir, alSalir }) {
   const pedidos = usePedidosGuardados();
   const n = pedidos?.length || 0;
   const guardar = (i) => (el) => { opcionesRef.current[i] = el; };
@@ -76,8 +82,15 @@ function OpcionesCuenta({ nombre, correo, ruta, opcionesRef, alElegir, alSalir }
             el numero va en su pastilla. */}
         {n ? <span className="cuenta-menu-numero"><span className="sr-only">(</span>{n}<span className="sr-only">)</span></span> : null}
       </Link>
+      {/* Solo para quien atiende el local: la API dice si el rol lo permite. */}
+      {hayPanel ? (
+        <Link ref={guardar(2)} className="cuenta-menu-opcion" to="/admin" aria-current={ruta.startsWith('/admin') ? 'page' : undefined} onClick={() => alElegir(ruta)} onPointerEnter={() => precargar('admin')} onFocus={() => precargar('admin')}>
+          <svg className="cuenta-icono" {...trazo}>{PANEL}</svg>
+          <span>Panel</span>
+        </Link>
+      ) : null}
       <hr className="cuenta-menu-raya" />
-      <button ref={guardar(2)} className="cuenta-menu-opcion is-salir" type="button" onClick={alSalir}>
+      <button ref={guardar(3)} className="cuenta-menu-opcion is-salir" type="button" onClick={alSalir}>
         <svg className="cuenta-icono" {...trazo}>{SALIR}</svg>
         <span>Cerrar sesión</span>
       </button>
@@ -94,6 +107,8 @@ function FichaCuenta({ alAbrir }) {
   const [abierta, setAbierta] = useState(false);
   // Cuantas veces se abrio: es la clave de OpcionesCuenta.
   const [vez, setVez] = useState(0);
+  // El rol se pregunta a la API la primera vez que se abre la ficha.
+  const { hayPanel } = usePanel(vez > 0);
   const botonRef = useRef(null);
   const entrarRef = useRef(null);
   const fichaRef = useRef(null);
@@ -240,6 +255,7 @@ function FichaCuenta({ alAbrir }) {
           nombre={nombre}
           correo={correo}
           ruta={location.pathname}
+          hayPanel={hayPanel}
           opcionesRef={opcionesRef}
           alElegir={alElegir}
           alSalir={alSalir}

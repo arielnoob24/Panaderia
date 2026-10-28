@@ -6,7 +6,8 @@
 //     de respuesta y de error que GoTrue;
 //   - la API (/functions/v1/api/cuenta): GET, POST y PUT, con las mismas
 //     reglas que supabase/functions/api/index.ts, y /pedidos (GET y POST)
-//     con las de FN_PEDIDOS_REGISTRAR.
+//     con las de FN_PEDIDOS_REGISTRAR, y /admin/... (el panel) con los permisos
+//     de cada rol.
 // El codigo de 6 cifras que "se manda" queda apuntado: codigoDe() se lo da a
 // la prueba, que lo escribe como lo haria quien lo lee en su correo.
 // Cada ventana de prueba (contexto) tiene su propio servidor, vacio: un caso
@@ -257,6 +258,91 @@ const pedidosDe = (correo) => {
   return sv?.cuentas.get(c).pedidos || [];
 };
 
+// ---- El panel (/functions/v1/api/admin/...) --------------------------------
+// Los permisos de cada rol (ROLES_PERMISOS) y las reglas de FN_ADMIN_* de
+// bd/BD_EL_TRADICIONAL.sql. El rol de cada cuenta es 'Cliente' hasta que un
+// caso lo cambia con ponerRol(). Los pedidos son los de todas las cuentas de
+// esa ventana; los productos, el catalogo de data/productos.json.
+const PERMISOS = {
+  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver'],
+  Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado'],
+  Cliente: [],
+};
+const ponerRol = (correo, rol) => {
+  const c = String(correo).toLowerCase();
+  const sv = [...servidores].reverse().find((x) => x.cuentas.has(c));
+  if (sv) sv.cuentas.get(c).rol = rol;
+};
+const productosDe = (sv) => {
+  if (!sv.productos) {
+    sv.productos = CATALOGO.map((p, i) => ({
+      codigo: `PRO${String(i + 1).padStart(3, '0')}`, nombre: p.nombre, categoria: p.categoria,
+      disponible: p.disponible !== false, destacado: Boolean(p.destacado),
+      tamanos: (p.tamanos?.length ? p.tamanos : [{ valor: 'Único', precio: p.precio }])
+        .map((t, j) => ({ codigo: t.valor === 'Único' ? 'TAM001' : `TAM${String(j + 2).padStart(3, '0')}`, nombre: t.valor, precio: t.precio })),
+    }));
+  }
+  return sv.productos;
+};
+const SIGUE_FINAL = ['Entregado', 'Cancelado'];
+
+async function admin(sv, route) {
+  const req = route.request();
+  if (req.method() === 'OPTIONS') return contestar(route, 200, {});
+  const c = quienPorToken(sv, req);
+  if (!c || !c.confirmada) return contestar(route, 401, { error: 'Inicia sesión otra vez.' });
+  const permisos = PERMISOS[c.rol || 'Cliente'];
+  const sin = () => contestar(route, 403, { error: 'No tienes permiso para esto.' });
+  const ruta = new URL(req.url()).pathname.replace(/^.*\/api\/admin/, '');
+  if (ruta === '/yo') return permisos.length ? contestar(route, 200, { rol: c.rol, permisos }) : sin();
+  if (ruta === '/pedidos' && req.method() === 'GET') {
+    if (!permisos.includes('pedidos.ver_todos')) return sin();
+    const todos = [...sv.cuentas.values()].flatMap((x) => (x.pedidos || []).map((p) => ({ ...p, cliente: aCuenta(x).nombre, celular: `0${aCuenta(x).telefono}` })));
+    return contestar(route, 200, { pedidos: todos.sort((a, b) => b.fecha.localeCompare(a.fecha)) });
+  }
+  const pedido = ruta.match(/^\/pedidos\/(ET-[A-Z0-9]{4})$/);
+  if (pedido && req.method() === 'PUT') {
+    if (!permisos.includes('pedidos.cambiar_estado')) return sin();
+    const p = [...sv.cuentas.values()].flatMap((x) => x.pedidos || []).find((x) => x.numero === pedido[1]);
+    const { estado } = req.postDataJSON?.() || {};
+    if (!p) return contestar(route, 400, { error: 'Ese pedido no existe.' });
+    if (SIGUE_FINAL.includes(p.estado)) return contestar(route, 400, { error: `Un pedido ${p.estado.toLowerCase()} ya no cambia.` });
+    if (estado === 'Listo para retirar' && p.modo === 'domicilio') return contestar(route, 400, { error: 'Un pedido a domicilio no se retira: va "En camino".' });
+    if (estado === 'En camino' && p.modo !== 'domicilio') return contestar(route, 400, { error: 'Un pedido para retirar no va "En camino": va "Listo para retirar".' });
+    p.estado = estado;
+    return contestar(route, 200, p);
+  }
+  if (ruta === '/productos' && req.method() === 'GET') {
+    return permisos.includes('productos.gestionar') ? contestar(route, 200, { productos: productosDe(sv) }) : sin();
+  }
+  const producto = ruta.match(/^\/productos\/(PRO\d{3})$/);
+  if (producto && req.method() === 'PUT') {
+    if (!permisos.includes('productos.gestionar')) return sin();
+    const p = productosDe(sv).find((x) => x.codigo === producto[1]);
+    const d = req.postDataJSON?.() || {};
+    if (!p) return contestar(route, 400, { error: 'Ese producto no existe.' });
+    for (const v of Object.values(d.precios || {})) {
+      if (!(v > 0 && v < 1000)) return contestar(route, 400, { error: 'El precio tiene que ser mayor que 0 y menor que 1000.' });
+    }
+    p.disponible = d.disponible;
+    p.destacado = d.destacado;
+    for (const t of p.tamanos) if (d.precios?.[t.codigo] !== undefined) t.precio = d.precios[t.codigo];
+    return contestar(route, 200, p);
+  }
+  if (ruta === '/resumen') {
+    if (!permisos.includes('reportes.ver')) return sin();
+    const todos = [...sv.cuentas.values()].flatMap((x) => x.pedidos || []).filter((p) => p.estado !== 'Cancelado');
+    const suma = (l) => ({ pedidos: l.length, ventas: centavos(l.reduce((s, p) => s + p.total, 0)) });
+    const cuenta = new Map();
+    for (const p of todos) for (const l of p.lineas) cuenta.set(l.nombre, (cuenta.get(l.nombre) || 0) + l.cantidad);
+    return contestar(route, 200, {
+      hoy: suma(todos), mes: suma(todos), pendientes: todos.filter((p) => !SIGUE_FINAL.includes(p.estado)).length,
+      masVendidos: [...cuenta].map(([nombre, unidades]) => ({ nombre, unidades })).sort((a, b) => b.unidades - a.unidades).slice(0, 5),
+    });
+  }
+  return contestar(route, 404, { error: 'Ruta no encontrada' });
+}
+
 // Se instala en cada ventana (probar.mjs, despues del corte de internet:
 // Playwright mira primero la ruta registrada la ultima).
 const instalar = async (ctx) => {
@@ -266,6 +352,7 @@ const instalar = async (ctx) => {
   await ctx.route(`${PROYECTO}/auth/v1/**`, (r) => auth(sv, r));
   await ctx.route(`${PROYECTO}/functions/v1/api/cuenta`, (r) => api(sv, r));
   await ctx.route(`${PROYECTO}/functions/v1/api/pedidos`, (r) => pedidos(sv, r));
+  await ctx.route(`${PROYECTO}/functions/v1/api/admin/**`, (r) => admin(sv, r));
 };
 
-export { instalar, reiniciar, codigoDe, claveDe, pedidosDe, quebrar };
+export { instalar, reiniciar, codigoDe, claveDe, pedidosDe, ponerRol, quebrar };

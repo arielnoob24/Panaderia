@@ -81,6 +81,9 @@ const PIEZAS = {
   'cuenta-pedidos': [
     { donde: 'arriba-derecha', caja: '-120 -80 240 160', trazos: [enrollado({ x: -40, y: 0, giro: -12, escala: 0.7 }), barra({ x: 50, y: 20, giro: 10, escala: 0.6 })] },
   ],
+  'cuenta-admin': [
+    { donde: 'arriba-derecha', caja: '-120 -80 240 160', trazos: [barra({ x: -30, y: 0, giro: -10, escala: 0.7 }), enrollado({ x: 56, y: 14, giro: 14, escala: 0.6 })] },
+  ],
   // #/contacto: maiz cruzado abajo a la izquierda y una hogaza a la derecha.
   contacto: [
     { donde: 'abajo-izquierda', caja: '-110 -120 220 240', trazos: [mazorca({ x: -20, giro: -20 }), mazorca({ x: 30, y: 10, giro: 22, escala: 0.9 })] },

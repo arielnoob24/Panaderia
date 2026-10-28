@@ -505,5 +505,64 @@ ok(cambio2.usu_codigo === alta.usu_codigo && cambio2.usu_nombres === 'Rosa Marí
 ok(await unValor(`SELECT usu_codigo FROM auditorias WHERE aud_tabla = 'USUARIOS' AND aud_operacion = 'U' AND aud_clave = $1 ORDER BY aud_codigo DESC LIMIT 1`, [alta.usu_codigo]) === alta.usu_codigo,
   'El cambio queda auditado a nombre de la propia cuenta');
 
+titulo('El panel de administracion (FN_ADMIN_*, lo que llama la API)');
+const authDueno = '7a1d3f5b-9c2e-4a6b-8d0f-1e2a3b4c5d6e';
+const authEmpleado = '8b2e4a6c-0d3f-4b7c-9e1a-2f3b4c5d6e7f';
+for (const [a, c, n, rol] of [[authDueno, 'dueno@correo.ec', 'Dora', 'Administrador'], [authEmpleado, 'caja@correo.ec', 'Caty', 'Empleado']]) {
+  await q(`SELECT FN_USUARIOS_GUARDAR($1::uuid, $2, $3, 'Prueba', '0991234567')`, [a, c, n]);
+  await q(`UPDATE usuarios SET rol_codigo = (SELECT rol_codigo FROM roles WHERE rol_nombre = $2) WHERE usu_codigoauth = $1::uuid`, [a, rol]);
+}
+const admin = async (fn, ...args) => (await q(`SELECT ${fn}(${args.map((_, i) => `$${i + 1}`).join(', ')}) r`, args))[0].r;
+const sinPermiso = async (fn, msg, ...args) => {
+  try { await admin(fn, ...args); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '42501', `${msg}: ${e.message}`); }
+};
+const yoDueno = await admin('FN_ADMIN_YO', authDueno);
+const yoEmpleado = await admin('FN_ADMIN_YO', authEmpleado);
+const yoCliente = await admin('FN_ADMIN_YO', authNueva);
+ok(yoDueno.rol === 'Administrador' && yoDueno.permisos.includes('productos.gestionar') && yoDueno.permisos.includes('reportes.ver'), 'El Administrador tiene productos y reportes');
+ok(yoEmpleado.permisos.includes('pedidos.cambiar_estado') && !yoEmpleado.permisos.includes('productos.gestionar'), 'El Empleado cambia estados pero no gestiona productos');
+ok(!yoCliente.permisos.includes('pedidos.ver_todos') && !yoCliente.permisos.some((p) => p.includes('gestionar')), 'El Cliente no tiene permisos del panel');
+await sinPermiso('FN_ADMIN_PEDIDOS', 'Un cliente no ve los pedidos de todos', authNueva);
+await sinPermiso('FN_ADMIN_PEDIDO_ESTADO', 'Un cliente no cambia estados', authNueva, web.numero, 'En preparación');
+await sinPermiso('FN_ADMIN_PRODUCTOS', 'Un empleado no ve la edicion de productos', authEmpleado);
+await sinPermiso('FN_ADMIN_RESUMEN', 'Un empleado no ve el resumen', authEmpleado);
+await sinPermiso('FN_ADMIN_PEDIDOS', 'Una cuenta que no existe no entra', '00000000-0000-0000-0000-000000000000');
+await q(`UPDATE usuarios SET usu_activo = FALSE WHERE usu_codigoauth = $1::uuid`, [authEmpleado]);
+await sinPermiso('FN_ADMIN_PEDIDOS', 'Una cuenta desactivada no entra', authEmpleado);
+await q(`UPDATE usuarios SET usu_activo = TRUE WHERE usu_codigoauth = $1::uuid`, [authEmpleado]);
+const todos = await admin('FN_ADMIN_PEDIDOS', authEmpleado);
+ok(todos.length >= 4 && todos.every((p) => p.cliente && p.celular) && new Set(todos.map((p) => p.numero)).size === todos.length,
+  `El empleado ve los pedidos de todos con su cliente (${todos.length})`);
+const enPrep = await admin('FN_ADMIN_PEDIDO_ESTADO', authEmpleado, web.numero, 'En preparación');
+ok(enPrep.estado === 'En preparación', 'El empleado pasa un pedido a En preparación');
+const fallaEstado = async (msg, texto, ...args) => {
+  try { await admin('FN_ADMIN_PEDIDO_ESTADO', authEmpleado, ...args); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await fallaEstado('Un pedido a domicilio no se retira', 'En camino', web.numero, 'Listo para retirar');
+await fallaEstado('Un pedido para retirar no va en camino', 'Listo para retirar', efectivo.numero, 'En camino');
+await fallaEstado('Un estado que no existe', 'no existe', web.numero, 'Volando');
+await fallaEstado('Un pedido que no existe', 'no existe', 'ET-ZZZZ', 'Pagado');
+await admin('FN_ADMIN_PEDIDO_ESTADO', authEmpleado, efectivo.numero, 'Listo para retirar');
+await admin('FN_ADMIN_PEDIDO_ESTADO', authEmpleado, efectivo.numero, 'Entregado');
+await fallaEstado('Un pedido entregado ya no cambia', 'ya no cambia', efectivo.numero, 'Cancelado');
+const catalogoAdmin = await admin('FN_ADMIN_PRODUCTOS', authDueno);
+const panAdm = catalogoAdmin.find((p) => p.nombre === 'Pan redondo');
+ok(catalogoAdmin.length > 10 && panAdm && panAdm.tamanos.length >= 1 && Number(panAdm.tamanos[0].precio) > 0, `El Administrador ve ${catalogoAdmin.length} productos con sus precios`);
+const guardado = await admin('FN_ADMIN_PRODUCTO_GUARDAR', authDueno, panAdm.codigo, false, true, JSON.stringify({ [panAdm.tamanos[0].codigo]: 0.4 }));
+ok(guardado.disponible === false && guardado.destacado === true && Number(guardado.tamanos[0].precio) === 0.4, 'El Administrador agota un producto y le cambia el precio');
+ok(await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'PRODUCTOS' AND aud_clave = $1 AND usu_codigo IS NOT NULL`, [panAdm.codigo]) >= 1,
+  'El cambio de producto queda auditado a nombre del Administrador');
+await sinPermiso('FN_ADMIN_PRODUCTO_GUARDAR', 'Un empleado no cambia productos', authEmpleado, panAdm.codigo, true, false, '{}');
+const malPrecio = async (precio, msg) => {
+  try { await admin('FN_ADMIN_PRODUCTO_GUARDAR', authDueno, panAdm.codigo, true, false, JSON.stringify({ [panAdm.tamanos[0].codigo]: precio })); ok(false, `${msg}: entro`); }
+  catch (e) { ok(e.code === '22023', `${msg}: ${e.message}`); }
+};
+await malPrecio(0, 'Precio 0');
+await malPrecio(-3, 'Precio negativo');
+await malPrecio(1000, 'Precio de 1000 o mas');
+const resumen = await admin('FN_ADMIN_RESUMEN', authDueno);
+ok(resumen.hoy.pedidos >= 1 && Number(resumen.hoy.ventas) > 0 && resumen.masVendidos.length >= 1 && resumen.masVendidos.length <= 5 && resumen.pendientes >= 1,
+  `El resumen del Administrador: hoy ${resumen.hoy.pedidos} pedidos, ${resumen.pendientes} pendientes, ${resumen.masVendidos[0]?.nombre} el mas vendido`);
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);
