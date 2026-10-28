@@ -147,7 +147,7 @@ export default async function botones(t) {
     t.ok(conNombre === 1 && llegar.letrasEscondidas === 'true' && llegar.letras === 'Cómo llegar' && llegar.sueltas === 11, `[${nombre}] "Como llegar" no se llama "Cómo llegar" con sus letras sueltas escondidas (${conNombre} enlaces con ese nombre, ${JSON.stringify(llegar)})`);
     const tamanoLlegar = nombre === 'movil' ? 16 : 21.6;
     t.ok(/^"?Fraunces/.test(llegar.letra) && llegar.estilo === 'italic' && llegar.peso === '600' && Math.abs(llegar.tamano - tamanoLlegar) < 0.5, `[${nombre}] "Como llegar" no tiene el tamano responsive Fraunces cursiva 600 (${JSON.stringify(llegar)})`);
-    t.ok(llegar.pin && llegar.pinAncho === (nombre === 'movil' ? 28 : 36) && llegar.pinColor === PAPEL && llegar.pinTrazo === PAPEL, `[${nombre}] el pin de "Como llegar" no es papel sobre el boton horno de 36 px (28 en el telefono) (${JSON.stringify(llegar)})`);
+    t.ok(llegar.pin && llegar.pinAncho === (nombre === 'movil' ? 22 : 26) && llegar.pinColor === PAPEL && llegar.pinTrazo === PAPEL, `[${nombre}] el pin de "Como llegar" no es papel sobre el boton horno de 26 px (22 en el telefono) (${JSON.stringify(llegar)})`);
     t.ok(llegar.borde === 'solid' && llegar.bordeColor === HORNO && llegar.bordeAncho === '1px' && llegar.radio === '12px' && llegar.fondo === HORNO && contraste(PAPEL, llegar.fondo) >= 4.5 && llegar.raya === 'none' && llegar.rayaDespues === 'none' && llegar.alto >= 24, `[${nombre}] "Como llegar" no es un boton horno con filete fino, lleva raya o mide menos de 24 px (${JSON.stringify(llegar)})`);
     t.ok(await p.locator('.h-imprenta, .h-ola, .boton-duro, .nav-pastilla').count() === 0, `[${nombre}] quedan piezas viejas (h-imprenta, h-ola, boton-duro o nav-pastilla)`);
 

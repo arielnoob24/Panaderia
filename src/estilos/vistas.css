@@ -66,7 +66,7 @@
 .portada-filete { position: absolute; inset: 8px; border: 1.5px dotted var(--horno); border-radius: 3px; pointer-events: none; }
 .portada-panes .ico { fill: var(--papel); }
 /* "Como llegar": el pin mas grande, macizo en ambar con contorno y punto horno. */
-.enlace-llegar.portada-llegar .ico { width: 36px; height: 36px; fill: var(--ambar); stroke: var(--horno); stroke-width: 1.6; }
+.enlace-llegar.portada-llegar .ico { width: 26px; height: 26px; fill: var(--ambar); stroke: var(--horno); stroke-width: 1.6; }
 .enlace-llegar.portada-llegar .ico circle { fill: var(--horno); }
 /* Desde el 27 de octubre de 2026 "Como llegar" es un boton horno con texto y pin
    papel (13,7:1): gana presencia sobre la masa sin quitarle el protagonismo a
@@ -649,7 +649,7 @@ body.is-vista .catalog { padding-top: 108px; }
   .vista-inicio .portada h1 em { padding-left: .45em; }
   .vista-inicio .portada-frase { font-size: clamp(.92rem, 4vw, 1.18rem); line-height: 1.2; }
   .vista-inicio .portada-acciones { gap: .45rem .7rem; margin-top: .65rem; }
-  .vista-inicio .enlace-llegar.portada-llegar .ico { width: 28px; height: 28px; }
+  .vista-inicio .enlace-llegar.portada-llegar .ico { width: 22px; height: 22px; }
   .vista-inicio .portada-llegar { min-height: 36px; padding: .25rem .55rem; font-size: clamp(.95rem, 4vw, 1.12rem); }
   .vista-inicio .cinta { flex: 0 0 auto; }
   .vista-inicio .cinta-dentro { flex-wrap: nowrap; gap: 0; padding: .6rem 52px .6rem .25rem; }
