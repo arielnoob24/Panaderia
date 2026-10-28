@@ -264,7 +264,7 @@ const pedidosDe = (correo) => {
 // caso lo cambia con ponerRol(). Los pedidos son los de todas las cuentas de
 // esa ventana; los productos, el catalogo de data/productos.json.
 const PERMISOS = {
-  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar', 'inventario.ajustar', 'usuarios.gestionar'],
+  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar', 'inventario.ajustar', 'usuarios.gestionar', 'facturas.anular'],
   Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar'],
   Cliente: [],
 };
@@ -295,6 +295,11 @@ const MATERIALES_COMPRA = [
 const CANTONES = [{ codigo: '1501', nombre: 'Tena' }, { codigo: '1503', nombre: 'Archidona' }];
 const proveedoresDe = (sv) => (sv.proveedores ||= []);
 const ordenesDe = (sv) => (sv.ordenes ||= []);
+// Las facturas de la prueba: una vigente de 12.50 y otra de 4.00.
+const facturasDe = (sv) => (sv.facturas ||= [
+  { codigo: 'FAC0000002', numero: '001-001-000000002', pedido: 'ET-B2B2', cliente: 'Panadería Hermanos Cruz', ident: '1790012345001', fecha: '2026-10-27T10:00:00Z', total: '4.00', anulada: null },
+  { codigo: 'FAC0000001', numero: '001-001-000000001', pedido: 'ET-A1A1', cliente: 'CONSUMIDOR FINAL', ident: '9999999999999', fecha: '2026-10-26T10:00:00Z', total: '12.50', anulada: null },
+]);
 // El equipo empieza con el dueño (EMP0000003), con la cuenta de quien mira ligada.
 const equipoDe = (sv, correo) => (sv.equipo ||= [{
   codigo: 'EMP0000003', nombre: 'Ariel Antonio Escobar Orna', cedula: '1501107609', cargo: 'Administrador', cargoCodigo: 'CAR001', contrato: 'Permanente',
@@ -535,6 +540,25 @@ async function admin(sv, route) {
       a.estado = 'Anulado';
     }
     return contestar(route, 200, { codigo: a.codigo, estado: a.estado });
+  }
+  if (ruta === '/facturas' || ruta.startsWith('/facturas/')) {
+    if (!permisos.includes('facturas.anular')) return sin();
+    const lista = facturasDe(sv);
+    if (ruta === '/facturas' && req.method() === 'GET') {
+      return contestar(route, 200, {
+        facturas: lista,
+        clientes: [
+          { codigo: 'CLI0000001', nombre: 'CONSUMIDOR FINAL', ident: '9999999999999', tipo: 'Consumidor final', correo: null, telefono: null, facturas: lista.filter((f) => !f.anulada).length, facturado: lista.filter((f) => !f.anulada).reduce((t, f) => t + Number(f.total), 0).toFixed(2) },
+          { codigo: 'CLI0000002', nombre: 'Panadería Hermanos Cruz', ident: '1790012345001', tipo: 'RUC', correo: 'cruz@correo.ec', telefono: '0991112233', facturas: 0, facturado: '0.00' },
+        ],
+      });
+    }
+    const fa = ruta.match(/^\/facturas\/(FAC\d{7})\/anular$/);
+    const f = fa && lista.find((x) => x.codigo === fa[1]);
+    if (!f) return contestar(route, 400, { error: 'Esa factura no existe.' });
+    if (f.anulada) return contestar(route, 400, { error: 'Esa factura ya estaba anulada.' });
+    f.anulada = '2026-10-28T15:00:00Z';
+    return contestar(route, 200, f);
   }
   if (ruta === '/equipo' || ruta.startsWith('/equipo/')) {
     if (!permisos.includes('usuarios.gestionar')) return sin();

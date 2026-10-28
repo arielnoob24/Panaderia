@@ -175,7 +175,7 @@ async function panel(t, nombre, ventana) {
   await p.goto(URL + '#/admin');
   await p.waitForSelector('.admin-cifras');
   ok((await hash()) === '#/admin/resumen', `#/admin no lleva al Resumen: ${await hash()}`);
-  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario,Compras,Bodega,Producción,Ajustes,Equipo', 'el administrador no ve las nueve pestañas');
+  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario,Compras,Bodega,Producción,Ajustes,Equipo,Facturas', 'el administrador no ve las diez pestañas');
   ok((await p.textContent('.admin-cifras')).includes('Ventas de hoy'), 'el resumen no dice las ventas de hoy');
   ok((await p.textContent('.admin-lista')).includes('Pan redondo'), 'lo mas vendido no esta');
   await p.click('.admin-pestana >> text=Productos');
@@ -384,6 +384,24 @@ async function panel(t, nombre, ventana) {
   await esperaQue(async () => (await luis.locator('.admin-agotado').count()) === 1);
   ok((await luis.locator('.admin-agotado').textContent()) === 'De baja', 'un empleado de baja no lo dice');
 
+  // Facturas: ver las ultimas, anular una con confirmacion y ver que el cliente ya no la cuenta.
+  await p.click('.admin-pestana >> text=Facturas');
+  const fa1 = p.locator('li.admin-material', { hasText: 'Factura 001-001-000000001' });
+  await fa1.waitFor();
+  ok((await fa1.textContent()).includes('$12.50') && (await fa1.textContent()).includes('ET-A1A1'), 'la factura no trae su total y su pedido');
+  ok((await p.locator('li.admin-material', { hasText: 'Hermanos Cruz' }).count()) >= 1, 'no salen los clientes');
+  await fa1.locator('button[aria-label="Anular la factura 001-001-000000001"]').click();
+  await espera(150);
+  ok((await fa1.locator('.admin-agotado').count()) === 0, 'anular con un solo toque anula');
+  ok(await p.evaluate(() => document.activeElement?.classList.contains('admin-confirmar')), 'el foco no va al Si de anular');
+  await p.keyboard.press('Escape');
+  await espera(150);
+  ok(await p.evaluate(() => document.activeElement?.getAttribute('aria-label') === 'Anular la factura 001-001-000000001'), 'tras Escape el foco no vuelve a Anular');
+  await fa1.locator('button[aria-label="Anular la factura 001-001-000000001"]').click();
+  await fa1.locator('.admin-confirmar').click();
+  await esperaQue(async () => (await fa1.locator('.admin-agotado').count()) === 1);
+  ok((await fa1.locator('.admin-agotado').textContent()) === 'Anulada', 'una factura anulada no lo dice');
+  ok((await fa1.locator('button[aria-label^="Anular"]').count()) === 0, 'una factura anulada deja anular otra vez');
   ok(t.errores?.length ? false : true, 'hubo errores de pagina');
   await ctx.close();
 }

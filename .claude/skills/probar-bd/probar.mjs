@@ -822,5 +822,28 @@ const deBaja = await admin('FN_ADMIN_EMPLEADO_EDITAR', authDueno, luisEmp.codigo
 ok(deBaja.activo === false && deBaja.cuentas.length === 0 && (await admin('FN_ADMIN_YO', authLuisEq)).rol === 'Cliente', 'Dar de baja a un empleado le quita el acceso al panel');
 await cuentaFalla('Dar acceso a quien ya no trabaja', 'ya no está activo', luisEmp.codigo, 'luis@panaderia.ec', 'Empleado');
 
+titulo('Facturas y clientes (FN_ADMIN_FACTURAS y FN_ADMIN_FACTURA_ANULAR)');
+ok(yoDueno.permisos.includes('facturas.anular') && !(await admin('FN_ADMIN_YO', authEmpleado)).permisos.includes('facturas.anular'), 'Solo el Administrador anula facturas');
+await sinPermiso('FN_ADMIN_FACTURAS', 'Un empleado no ve las facturas', authEmpleado);
+const fac0 = await admin('FN_ADMIN_FACTURAS', authDueno);
+ok(fac0.facturas.length >= 2 && fac0.clientes.length >= 2, `Trae ${fac0.facturas.length} facturas y ${fac0.clientes.length} clientes`);
+const facVigente = fac0.facturas.find((f) => f.anulada === null);
+ok(/^001-001-\d{9}$/.test(facVigente.numero) && /^ET-/.test(facVigente.pedido) && Number(facVigente.total) > 0 && facVigente.cliente, `Una factura trae numero, pedido, cliente y total (${facVigente.numero})`);
+ok(fac0.facturas.every((f, i, a) => i === 0 || a[i - 1].fecha >= f.fecha), 'Las facturas vienen de la mas nueva a la mas vieja');
+const asientosAntes = await unValor(`SELECT count(*)::int FROM asientos WHERE asi_origen = 'VEN' AND asi_referencia = $1`, [facVigente.codigo]);
+await sinPermiso('FN_ADMIN_FACTURA_ANULAR', 'Un empleado no anula facturas', authEmpleado, facVigente.codigo);
+const facAnulada = await admin('FN_ADMIN_FACTURA_ANULAR', authDueno, facVigente.codigo);
+ok(facAnulada.anulada !== null && facAnulada.codigo === facVigente.codigo, 'El Administrador anula una factura vigente');
+ok(await unValor(`SELECT count(*)::int FROM asientos WHERE asi_origen = 'VEN' AND asi_referencia = $1`, [facVigente.codigo]) === asientosAntes + 1, 'Anularla crea el asiento contrario');
+ok(await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'FACTURAS' AND aud_clave = $1 AND usu_codigo IS NOT NULL`, [facVigente.codigo]) >= 1, 'La anulacion queda auditada a nombre del Administrador');
+for (const [codigo, texto] of [[facVigente.codigo, 'ya estaba anulada'], ['FAC9999999', 'no existe']]) {
+  try { await admin('FN_ADMIN_FACTURA_ANULAR', authDueno, codigo); ok(false, `${codigo}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${codigo}: ${e.message}`); }
+}
+const fac1 = await admin('FN_ADMIN_FACTURAS', authDueno);
+const cliFac = await unValor(`SELECT cli_codigo FROM facturas WHERE fac_codigo = $1`, [facVigente.codigo]);
+const cliAntes = fac0.clientes.find((c) => c.codigo === cliFac);
+const cliDespues = fac1.clientes.find((c) => c.codigo === cliAntes.codigo);
+ok(cliDespues.facturas === cliAntes.facturas - 1 && Number(cliDespues.facturado) < Number(cliAntes.facturado), 'El cliente ya no cuenta la factura anulada');
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

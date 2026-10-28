@@ -364,6 +364,13 @@ Deno.serve(async (req) => {
       }
     }
 
+    // FACTURAS y CLIENTES (facturas.anular, solo el Administrador).
+    // GET /admin/facturas -> { facturas, clientes }
+    if (req.method === "GET" && ruta === "/admin/facturas") return llamar("fn_admin_facturas", {});
+    // POST /admin/facturas/FAC0000001/anular -> anula la factura (crea el asiento contrario).
+    const factura = ruta.match(/^\/admin\/facturas\/(FAC\d{7})\/anular$/);
+    if (req.method === "POST" && factura) return llamar("fn_admin_factura_anular", { p_factura: factura[1] });
+
     // PUT /admin/pedidos/ET-XXXX { estado } -> pasa el pedido a ese estado.
     const pedido = ruta.match(/^\/admin\/pedidos\/(ET-[A-Z0-9]{4})$/);
     if (req.method === "PUT" && pedido) {

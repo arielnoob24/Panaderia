@@ -1262,7 +1262,15 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
         `..._QUITAR_CUENTA`; rutas `/admin/equipo`. Migración
         `panel_equipo`. El sueldo de EMP0000003 (dueño) sigue en 470.00
         provisional: se cambia desde esta pestaña.
-      - [ ] 3b, facturas (ver y anular) y clientes.
+      - [x] **3b, Facturas y clientes** (28 de octubre de 2026): pestaña
+        `#/admin/facturas` (`facturas.anular`, solo el Administrador). Las
+        últimas 100 facturas con su número, pedido, cliente y total, y
+        abajo los clientes con las facturas vigentes y lo facturado (las
+        anuladas no cuentan). Anular pide confirmar; la base crea sola el
+        asiento contrario y una factura anulada no se vuelve a anular.
+        Funciones `FN_FACTURA_JSON`, `FN_ADMIN_FACTURAS`,
+        `FN_ADMIN_FACTURA_ANULAR`; rutas `GET /admin/facturas` y
+        `POST /admin/facturas/FAC#######/anular`. Migración `panel_facturas`.
       - [ ] 3c, nómina (roles de pago).
       - [ ] 3d, contabilidad (asientos).
 - Pendiente de datos: el correo de la cuenta del dueño (a 27 de octubre aún no
