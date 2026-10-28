@@ -1193,7 +1193,7 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
         `GET /admin/inventario` y `GET /admin/inventario/MAT###`. Migración
         `panel_inventario`. Hoy las existencias están en cero (no se ha
         recibido ninguna compra), así que casi todo sale "Bajo el mínimo".
-      - [ ] **2b, el flujo de compras entero** (la base está vacía: sin
+      - [x] **2b, el flujo de compras entero** (la base está vacía: sin
         proveedores, órdenes ni recepciones, así que ver listas no serviría
         de nada). Tres pasos, cada uno se publica solo:
         - [x] **Proveedores** (28 de octubre de 2026): pestaña
@@ -1206,12 +1206,25 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
           `FN_ADMIN_PROVEEDOR_CREAR`, `..._MATERIAL`, `..._QUITAR_MATERIAL`,
           `..._ACTIVO`; rutas `/admin/proveedores...` (sin DELETE: quitar es
           un POST a `/quitar`). Migración `panel_proveedores`.
-        - [ ] **Órdenes de compra**: crear con líneas del proveedor y fecha de
-          entrega, aprobar (crea la recepción pendiente y el asiento) o
-          anular, con confirmación.
-        - [ ] **Bodega, recepciones** (`bodega.recibir`, también el
-          Empleado): confirmar lo recibido y la caducidad de cada línea; crea
-          los lotes y llena el Inventario.
+        - [x] **Órdenes de compra** (28 de octubre de 2026): dentro de la
+          pestaña Compras. Se arma con un proveedor activo que venda algo,
+          fecha de entrega y cantidad de cada material (precio e IVA los
+          copia la base del momento); nace "Abierta" y se aprueba (crea la
+          recepción pendiente y el asiento) o se anula, siempre
+          confirmando; una aprobada ya no se anula. Pide que la cuenta esté
+          ligada a un empleado (`USUARIOS.EMP_Codigo`). Funciones
+          `FN_ORDEN_JSON`, `FN_ADMIN_ORDENES`, `..._ORDEN_CREAR`,
+          `..._ORDEN_ESTADO`; rutas `/admin/ordenes`.
+        - [x] **Bodega, recepciones** (28 de octubre de 2026): pestaña
+          `#/admin/bodega` (`bodega.recibir`, Administrador y Empleado, sin
+          precios). Por cada orden aprobada: cuánto llegó de cada material
+          (ya escrito lo que falta), caducidad de los perecibles (si no, los
+          días de vida útil del material); no se recibe más de lo que falta
+          y si llega menos hay que escribir el motivo. Cada línea es un
+          lote y de ahí sale el Inventario. Funciones `FN_ADMIN_RECEPCIONES`
+          y `..._RECEPCION_CONFIRMAR`; rutas `/admin/recepciones`.
+          Migración `panel_ordenes_recepciones`. Una recepción corta se
+          cierra con su motivo (no se genera otra para el resto).
         Para recibir hace falta un empleado: el dueño tiene EMP0000003 con un
         sueldo provisional de 470.00 (el real se cambia en la tanda 3).
       - [ ] 2c, ajustes y producción: ver y aprobar o anular los que ya

@@ -264,8 +264,8 @@ const pedidosDe = (correo) => {
 // caso lo cambia con ponerRol(). Los pedidos son los de todas las cuentas de
 // esa ventana; los productos, el catalogo de data/productos.json.
 const PERMISOS = {
-  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar'],
-  Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver'],
+  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir'],
+  Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver', 'bodega.recibir'],
   Cliente: [],
 };
 const ponerRol = (correo, rol) => {
@@ -294,6 +294,8 @@ const MATERIALES_COMPRA = [
 ];
 const CANTONES = [{ codigo: '1501', nombre: 'Tena' }, { codigo: '1503', nombre: 'Archidona' }];
 const proveedoresDe = (sv) => (sv.proveedores ||= []);
+const ordenesDe = (sv) => (sv.ordenes ||= []);
+const recepcionesDe = (sv) => (sv.recepciones ||= { pendientes: [], recibidas: [] });
 
 async function admin(sv, route) {
   const req = route.request();
@@ -398,6 +400,78 @@ async function admin(sv, route) {
     const hay = p.materiales.find((x) => x.codigo === prov[2]);
     if (hay) { hay.precio = d.precio; hay.dias = d.dias; } else p.materiales.push({ codigo: m.codigo, nombre: m.nombre, unidad: m.unidad, precio: d.precio, dias: d.dias });
     return contestar(route, 200, p);
+  }
+  if (ruta === '/ordenes' || ruta.startsWith('/ordenes/')) {
+    if (!permisos.includes('compras.aprobar')) return sin();
+    const malo = (error) => contestar(route, 400, { error });
+    const lista = ordenesDe(sv);
+    if (ruta === '/ordenes' && req.method() === 'GET') return contestar(route, 200, { ordenes: [...lista].reverse() });
+    const d = req.postDataJSON?.() || {};
+    if (ruta === '/ordenes' && req.method() === 'POST') {
+      const prov = proveedoresDe(sv).find((x) => x.codigo === d.proveedor && x.activo);
+      if (!prov) return malo('Elige un proveedor activo.');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d.entrega || '')) return malo('La fecha de entrega va de hoy a un año.');
+      if (!d.lineas?.length) return malo('Agrega al menos un material a la orden.');
+      const lineas = [];
+      for (const l of d.lineas) {
+        const m = prov.materiales.find((x) => x.codigo === l.material);
+        if (!m) return malo('Ese proveedor no vende uno de los materiales.');
+        if (!(Number(l.cantidad) > 0)) return malo(`La cantidad de ${m.nombre} tiene que ser mayor que 0 (hasta 2 decimales).`);
+        lineas.push({ codigo: m.codigo, nombre: m.nombre, unidad: m.unidad, cantidad: Number(l.cantidad), precio: m.precio, iva: 15, recibido: 0 });
+      }
+      const subtotal = centavos(lineas.reduce((s, l) => s + l.cantidad * l.precio, 0));
+      const iva = centavos(subtotal * 0.15);
+      const nueva = {
+        codigo: `OCO${String(lista.length + 1).padStart(7, '0')}`, proveedorCodigo: prov.codigo, proveedor: prov.razonSocial,
+        fecha: new Date().toISOString(), entrega: d.entrega, estado: 'Abierta', observacion: d.observacion || null,
+        subtotal, iva, total: centavos(subtotal + iva), recepcion: null, lineas,
+      };
+      lista.push(nueva);
+      return contestar(route, 201, nueva);
+    }
+    const oc = ruta.match(/^\/ordenes\/(OCO\d{7})$/);
+    const o = oc && lista.find((x) => x.codigo === oc[1]);
+    if (!o) return malo('Esa orden no existe.');
+    if (!['Aprobada', 'Anulada'].includes(d.estado)) return malo('Una orden se aprueba o se anula.');
+    if (o.estado !== 'Abierta') return malo(`Esa orden ya está ${o.estado.toLowerCase()}, y ya no cambia.`);
+    o.estado = d.estado;
+    if (d.estado === 'Aprobada') {
+      const rcp = recepcionesDe(sv);
+      const codigo = `RCP${String(rcp.pendientes.length + rcp.recibidas.length + 1).padStart(7, '0')}`;
+      o.recepcion = { codigo, estado: 'Pendiente' };
+      rcp.pendientes.push({
+        codigo, orden: o.codigo, proveedor: o.proveedor, entrega: o.entrega,
+        lineas: o.lineas.map((l) => ({ codigo: l.codigo, nombre: l.nombre, unidad: l.unidad, pedido: l.cantidad, falta: l.cantidad, perecible: l.codigo === 'MAT003', diasVida: l.codigo === 'MAT003' ? 15 : null })),
+      });
+    }
+    return contestar(route, 200, o);
+  }
+  if (ruta === '/recepciones' || ruta.startsWith('/recepciones/')) {
+    if (!permisos.includes('bodega.recibir')) return sin();
+    const rcp = recepcionesDe(sv);
+    if (ruta === '/recepciones' && req.method() === 'GET') return contestar(route, 200, { pendientes: rcp.pendientes, recibidas: [...rcp.recibidas].reverse() });
+    const malo = (error) => contestar(route, 400, { error });
+    const m = ruta.match(/^\/recepciones\/(RCP\d{7})$/);
+    const r = m && rcp.pendientes.find((x) => x.codigo === m[1]);
+    if (!r) return malo('Esa recepción ya no está pendiente.');
+    const d = req.postDataJSON?.() || {};
+    const lotes = [];
+    for (const l of d.lineas || []) {
+      const linea = r.lineas.find((x) => x.codigo === l.material);
+      const cant = Number(l.cantidad);
+      if (!linea) return malo('La orden no pidió uno de los materiales.');
+      if (cant > linea.falta) return malo(`De ${linea.nombre} no puede llegar más de lo que falta (${linea.falta}).`);
+      if (cant > 0) lotes.push({ lote: `LMA${String(lotes.length + 1).padStart(7, '0')}`, nombre: linea.nombre, unidad: linea.unidad, cantidad: cant, caduca: l.caducidad || null });
+    }
+    if (!lotes.length) return malo('Pon cuánto llegó de al menos un material.');
+    const corto = r.lineas.some((x) => lotes.reduce((s, l) => (l.nombre === x.nombre ? s + l.cantidad : s), 0) < x.falta);
+    if (corto && !String(d.observacion || '').trim()) return malo('Llegó menos de lo pedido: escribe el motivo.');
+    rcp.pendientes = rcp.pendientes.filter((x) => x !== r);
+    rcp.recibidas.push({ codigo: r.codigo, orden: r.orden, proveedor: r.proveedor, fecha: new Date().toISOString(), observacion: String(d.observacion || '').trim() || null, lotes });
+    const o = ordenesDe(sv).find((x) => x.codigo === r.orden);
+    o.recepcion.estado = 'Recibida';
+    for (const l of o.lineas) l.recibido = lotes.filter((x) => x.nombre === l.nombre).reduce((s, x) => s + x.cantidad, 0);
+    return contestar(route, 200, { codigo: r.codigo, orden: r.orden, lotes: lotes.length });
   }
   if (ruta === '/resumen') {
     if (!permisos.includes('reportes.ver')) return sin();

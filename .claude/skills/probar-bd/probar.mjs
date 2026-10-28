@@ -624,5 +624,77 @@ ok((await admin('FN_ADMIN_PROVEEDOR_ACTIVO', authDueno, provNuevo.codigo, false)
 ok(await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'PROVEEDORES' AND aud_clave = $1 AND usu_codigo IS NOT NULL`, [provNuevo.codigo]) >= 1,
   'El alta del proveedor queda auditada a nombre del Administrador');
 
+titulo('Compras: ordenes de compra y recepciones de bodega');
+await q(`UPDATE usuarios SET emp_codigo = $2 WHERE usu_codigoauth = $1::uuid`, [authDueno, panadero]);
+await q(`UPDATE usuarios SET emp_codigo = $2 WHERE usu_codigoauth = $1::uuid`, [authEmpleado, contador]);
+await admin('FN_ADMIN_PROVEEDOR_ACTIVO', authDueno, provNuevo.codigo, true);
+const [mA, mB, mC] = listaProv.materiales;
+await admin('FN_ADMIN_PROVEEDOR_MATERIAL', authDueno, provNuevo.codigo, mA.codigo, 10, 1);
+await admin('FN_ADMIN_PROVEEDOR_MATERIAL', authDueno, provNuevo.codigo, mB.codigo, 5, 2);
+const fecha = (dias) => unValor(`SELECT ((now() AT TIME ZONE 'America/Guayaquil')::date + $1::int)::text`, [dias]);
+const en3 = await fecha(3);
+await sinPermiso('FN_ADMIN_ORDENES', 'Un empleado no ve las ordenes', authEmpleado);
+await sinPermiso('FN_ADMIN_ORDEN_CREAR', 'Un empleado no crea ordenes', authEmpleado, '{}');
+await sinPermiso('FN_ADMIN_RECEPCIONES', 'Un cliente no ve la bodega', authNueva);
+const ordenBase = { proveedor: provNuevo.codigo, entrega: en3, lineas: [{ material: mA.codigo, cantidad: 4 }, { material: mB.codigo, cantidad: '10' }] };
+const ordenesAntes = await unValor(`SELECT count(*)::int FROM ordenes_compra`);
+const falloOrden = async (msg, texto, cambios) => {
+  try { await admin('FN_ADMIN_ORDEN_CREAR', authDueno, JSON.stringify({ ...ordenBase, ...cambios })); ok(false, `${msg}: entro`); }
+  catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await falloOrden('Sin proveedor', 'proveedor', { proveedor: '' });
+await falloOrden('Entrega en el pasado', 'fecha de entrega', { entrega: await fecha(-1) });
+await falloOrden('Entrega que no es fecha', 'fecha de entrega', { entrega: 'manana' });
+await falloOrden('Sin lineas', 'al menos un material', { lineas: [] });
+await falloOrden('Material que no vende', 'no vende', { lineas: [{ material: mC.codigo, cantidad: 1 }] });
+await falloOrden('Material repetido', 'dos veces', { lineas: [{ material: mA.codigo, cantidad: 1 }, { material: mA.codigo, cantidad: 2 }] });
+await falloOrden('Cantidad 0', 'mayor que 0', { lineas: [{ material: mA.codigo, cantidad: 0 }] });
+await falloOrden('Cantidad con letras', 'mayor que 0', { lineas: [{ material: mA.codigo, cantidad: 'dos' }] });
+ok(await unValor(`SELECT count(*)::int FROM ordenes_compra`) === ordenesAntes, 'Una orden mala no deja nada a medias');
+const ordenOc = await admin('FN_ADMIN_ORDEN_CREAR', authDueno, JSON.stringify(ordenBase));
+ok(ordenOc.estado === 'Abierta' && ordenOc.lineas.length === 2 && Number(ordenOc.total) > 0 && ordenOc.recepcion === null, `El Administrador crea una orden abierta (${ordenOc.codigo}, total ${ordenOc.total})`);
+ok(Number(ordenOc.lineas.find((l) => l.codigo === mA.codigo).precio) === 10, 'El precio de la linea es el del proveedor');
+const cambioOc = async (msg, texto, o, estado) => {
+  try { await admin('FN_ADMIN_ORDEN_ESTADO', authDueno, o, estado); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await sinPermiso('FN_ADMIN_ORDEN_ESTADO', 'Un empleado no aprueba ordenes', authEmpleado, ordenOc.codigo, 'Aprobada');
+await cambioOc('Estado que no existe', 'aprueba o se anula', ordenOc.codigo, 'Volando');
+await cambioOc('Orden que no existe', 'no existe', 'OCO9999999', 'Aprobada');
+const aprobada = await admin('FN_ADMIN_ORDEN_ESTADO', authDueno, ordenOc.codigo, 'Aprobada');
+ok(aprobada.estado === 'Aprobada' && aprobada.recepcion?.estado === 'Pendiente', 'Aprobar la orden crea la recepcion pendiente');
+await cambioOc('Una orden aprobada no se anula', 'ya está aprobada', ordenOc.codigo, 'Anulada');
+const otra = await admin('FN_ADMIN_ORDEN_CREAR', authDueno, JSON.stringify({ ...ordenBase, lineas: [{ material: mA.codigo, cantidad: 1 }] }));
+ok((await admin('FN_ADMIN_ORDEN_ESTADO', authDueno, otra.codigo, 'Anulada')).estado === 'Anulada', 'Una orden abierta se anula');
+await cambioOc('Una orden anulada no cambia', 'ya está anulada', otra.codigo, 'Aprobada');
+const listaOrdenes = await admin('FN_ADMIN_ORDENES', authDueno);
+ok(listaOrdenes.length === ordenesAntes + 2 && listaOrdenes.every((o) => o.lineas.length >= 1), `La lista trae las ${listaOrdenes.length} ordenes con sus lineas`);
+
+const bodega = await admin('FN_ADMIN_RECEPCIONES', authEmpleado);
+const pend = bodega.pendientes.find((r) => r.orden === ordenOc.codigo);
+ok(pend && pend.lineas.length === 2 && pend.lineas.every((l) => l.pedido !== undefined && l.precio === undefined), 'El Empleado ve lo que espera llegar, sin precios');
+ok(bodega.pendientes.length === 1, 'La orden anulada no deja recepcion pendiente');
+const recibir = (lineas, obs, quien = authEmpleado) => admin('FN_ADMIN_RECEPCION_CONFIRMAR', quien, pend.codigo, JSON.stringify(lineas), obs ?? null);
+const falloRecibir = async (msg, texto, lineas, obs) => {
+  try { await recibir(lineas, obs); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await sinPermiso('FN_ADMIN_RECEPCION_CONFIRMAR', 'Un cliente no recibe compras', authNueva, pend.codigo, '[]', null);
+await falloRecibir('Sin nada recibido', 'al menos un material', []);
+await falloRecibir('Mas de lo pedido', 'no puede llegar más', [{ material: mA.codigo, cantidad: 5 }]);
+await falloRecibir('Material que la orden no pidio', 'no pidió', [{ material: mC.codigo, cantidad: 1 }]);
+await falloRecibir('Caducidad pasada', 'ya pasó', [{ material: mA.codigo, cantidad: 4, caducidad: await fecha(-2) }]);
+await falloRecibir('Llega menos y no dice por que', 'escribe el motivo', [{ material: mA.codigo, cantidad: 4 }]);
+ok(await unValor(`SELECT count(*)::int FROM lotes_material WHERE rcp_codigo = $1`, [pend.codigo]) === 0, 'Una recepcion mala no deja lotes a medias');
+const existAntes = (await admin('FN_ADMIN_INVENTARIO', authDueno)).materiales.find((m) => m.codigo === mA.codigo).existencia;
+const hecho = await recibir([{ material: mA.codigo, cantidad: 4 }, { material: mB.codigo, cantidad: 6 }], 'El proveedor trajo 6 de 10');
+ok(hecho.lotes === 2, 'El Empleado confirma la recepcion: 2 lotes');
+const existDespues = (await admin('FN_ADMIN_INVENTARIO', authDueno)).materiales.find((m) => m.codigo === mA.codigo).existencia;
+ok(Number(existDespues) > Number(existAntes), `Lo recibido entra al inventario (${existAntes} -> ${existDespues})`);
+try { await recibir([{ material: mA.codigo, cantidad: 1 }]); ok(false, 'Recibir dos veces: entro'); } catch (e) { ok(e.code === '22023' && e.message.includes('ya no está pendiente'), `Recibir dos veces: ${e.message}`); }
+const despues = await admin('FN_ADMIN_RECEPCIONES', authEmpleado);
+ok(despues.pendientes.length === 0 && despues.recibidas[0]?.codigo === pend.codigo && despues.recibidas[0].lotes.length === 2, 'Lo recibido sale de pendientes y queda en recibidas');
+const ordenDespues = (await admin('FN_ADMIN_ORDENES', authDueno)).find((o) => o.codigo === ordenOc.codigo);
+ok(ordenDespues.recepcion.estado === 'Recibida' && Number(ordenDespues.lineas.find((l) => l.codigo === mB.codigo).recibido) === 6, 'La orden muestra lo recibido de cada linea');
+ok(await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'ORDENES_COMPRA' AND aud_clave = $1 AND usu_codigo IS NOT NULL`, [ordenOc.codigo]) >= 1, 'La orden aprobada queda auditada a nombre del Administrador');
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

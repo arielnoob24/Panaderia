@@ -276,6 +276,38 @@ Deno.serve(async (req) => {
       return llamar("fn_admin_proveedor_quitar_material", { p_proveedor: vende[1], p_material: vende[2] });
     }
 
+    // GET /admin/ordenes -> { ordenes } las ultimas 100, con sus lineas.
+    if (req.method === "GET" && ruta === "/admin/ordenes") {
+      const r = await llamar("fn_admin_ordenes", {});
+      return r.ok ? responder(h, 200, { ordenes: await r.json() }) : r;
+    }
+    // POST /admin/ordenes { proveedor, entrega, observacion?, lineas: [{ material, cantidad }] }
+    if (req.method === "POST" && ruta === "/admin/ordenes") {
+      const c = await req.json().catch(() => null);
+      if (!c || typeof c !== "object" || Array.isArray(c)) return responder(h, 400, { error: "Faltan los datos de la orden." });
+      return llamar("fn_admin_orden_crear", { p_datos: c }, 201);
+    }
+    // PUT /admin/ordenes/OCO0000001 { estado: "Aprobada" | "Anulada" }
+    const ordenCompra = ruta.match(/^\/admin\/ordenes\/(OCO\d{7})$/);
+    if (req.method === "PUT" && ordenCompra) {
+      const c = await req.json().catch(() => null);
+      if (typeof c?.estado !== "string") return responder(h, 400, { error: "Falta el estado." });
+      return llamar("fn_admin_orden_estado", { p_orden: ordenCompra[1], p_estado: c.estado });
+    }
+
+    // BODEGA (bodega.recibir: Administrador y Empleado).
+    // GET /admin/recepciones -> { pendientes, recibidas }
+    if (req.method === "GET" && ruta === "/admin/recepciones") return llamar("fn_admin_recepciones", {});
+    // POST /admin/recepciones/RCP0000001 { lineas: [{ material, cantidad, caducidad? }], observacion? }
+    const recepcion = ruta.match(/^\/admin\/recepciones\/(RCP\d{7})$/);
+    if (req.method === "POST" && recepcion) {
+      const c = await req.json().catch(() => null);
+      if (!Array.isArray(c?.lineas)) return responder(h, 400, { error: "Faltan las cantidades recibidas." });
+      return llamar("fn_admin_recepcion_confirmar", {
+        p_recepcion: recepcion[1], p_lineas: c.lineas, p_observacion: typeof c.observacion === "string" ? c.observacion : null,
+      });
+    }
+
     // PUT /admin/pedidos/ET-XXXX { estado } -> pasa el pedido a ese estado.
     const pedido = ruta.match(/^\/admin\/pedidos\/(ET-[A-Z0-9]{4})$/);
     if (req.method === "PUT" && pedido) {

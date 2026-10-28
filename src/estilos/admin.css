@@ -116,3 +116,14 @@
 .admin-vende .admin-lista li::before { content: none; }
 .admin-vende .admin-lista small { display: block; color: var(--horno-suave); font: .8rem/1.4 Arial, sans-serif; }
 .admin-vende-form { margin-top: .8rem; }
+
+/* Compras: ordenes y bodega */
+.admin-lineas { margin: 1rem 0 0; padding: 0; border: 0; }
+.admin-lineas legend { margin-bottom: .5rem; padding: 0; color: var(--horno); font: 700 .88rem Arial, sans-serif; }
+.admin-linea-oc { flex-direction: row; align-items: center; justify-content: space-between; gap: 1rem; padding: .4rem 0; border-bottom: 1px solid var(--masa-linea); }
+.admin-linea-oc small, .admin-linea-recibir small { display: block; color: var(--horno-suave); font: 400 .8rem/1.4 Arial, sans-serif; }
+.admin-linea-oc .admin-precio-caja input, .admin-linea-recibir .admin-precio-caja input { width: 5.5rem; }
+.admin-orden-lineas li::before, .admin-recibidas li::before { content: none; }
+.admin-orden-lineas small, .admin-recibidas small { display: block; color: var(--horno-suave); font: .8rem/1.4 Arial, sans-serif; }
+.admin-linea-recibir { margin-bottom: .6rem; }
+.admin-lineas-recibir { margin: .6rem 0; }

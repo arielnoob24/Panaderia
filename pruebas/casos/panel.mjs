@@ -66,7 +66,7 @@ async function panel(t, nombre, ventana) {
   await p.click('#cuenta-menu a[href$="/admin"]');
   await p.waitForSelector('.admin-pedido');
   ok((await hash()) === '#/admin/pedidos', `#/admin no lleva a Pedidos: ${await hash()}`);
-  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Pedidos,Inventario', 'el empleado no ve Pedidos e Inventario');
+  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Pedidos,Inventario,Bodega', 'el empleado no ve Pedidos, Inventario y Bodega');
   ok((await p.$$('.admin-pedido')).length === 2, `Por atender no esconde lo entregado: ${(await p.$$('.admin-pedido')).length}`);
   await p.goto(URL + '#/admin/productos');
   await p.reload();
@@ -79,6 +79,9 @@ async function panel(t, nombre, ventana) {
   const invEmp = await p.textContent('.cuenta-vista-admin');
   ok(invEmp.includes('Harina de trigo') && invEmp.includes('Hay 12,5 kg'), 'el empleado no ve las existencias');
   ok(!invEmp.includes('vale $') && !invEmp.includes('costo $'), 'el empleado ve valores o costos');
+  // Bodega sin compras por recibir.
+  await p.click('.admin-pestana >> text=Bodega');
+  await esperaQue(async () => (await p.textContent('.cuenta-vista-admin')).includes('No hay compras por recibir'));
   await p.click('.admin-pestana >> text=Pedidos');
   await p.waitForSelector('.admin-pedido');
 
@@ -145,7 +148,7 @@ async function panel(t, nombre, ventana) {
   await p.goto(URL + '#/admin');
   await p.waitForSelector('.admin-cifras');
   ok((await hash()) === '#/admin/resumen', `#/admin no lleva al Resumen: ${await hash()}`);
-  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario,Compras', 'el administrador no ve las cinco pestañas');
+  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario,Compras,Bodega', 'el administrador no ve las seis pestañas');
   ok((await p.textContent('.admin-cifras')).includes('Ventas de hoy'), 'el resumen no dice las ventas de hoy');
   ok((await p.textContent('.admin-lista')).includes('Pan redondo'), 'lo mas vendido no esta');
   await p.click('.admin-pestana >> text=Productos');
@@ -235,6 +238,61 @@ async function panel(t, nombre, ventana) {
   await p.click('button[aria-label="Desactivar a Molino Napo"]');
   await p.waitForSelector('.admin-material .admin-agotado');
   ok((await p.textContent('.admin-material .admin-agotado')) === 'Desactivado', 'un proveedor desactivado no lo dice');
+
+  // Ordenes de compra: se arma una con el proveedor, se aprueba confirmando y bodega la recibe.
+  await p.click('button[aria-label="Activar a Molino Napo"]');
+  await esperaQue(async () => (await p.locator('.admin-material .admin-agotado').count()) === 0);
+  await p.getByLabel('Precio sin IVA').fill('12,5');
+  await p.click('.admin-vende button:has-text("Agregar")');
+  await p.waitForSelector('.admin-vende .admin-lista li');
+  await p.click('button:has-text("Nueva orden")');
+  await p.waitForSelector('#admin-nueva-orden');
+  await p.click('button:has-text("Crear orden")');
+  await p.waitForSelector('.admin-formulario .admin-error');
+  ok((await p.textContent('.admin-formulario .admin-error')).includes('al menos un material'), 'una orden sin materiales no avisa');
+  await p.getByLabel('Cantidad de Harina de trigo en qq').fill('3');
+  ok((await p.textContent('.admin-formulario')).includes('$37.50'), 'la orden no suma el subtotal');
+  await p.click('button:has-text("Crear orden")');
+  const orden = p.locator('li.admin-material', { hasText: 'OCO0000001' });
+  await orden.waitFor();
+  ok((await orden.textContent()).includes('Abierta') && (await orden.textContent()).includes('$43.13'), `la orden creada no sale abierta con su total: ${await orden.textContent()}`);
+  ok(await p.evaluate(() => document.activeElement?.textContent === 'Nueva orden'), 'tras crear la orden el foco no vuelve a Nueva orden');
+  // Aprobar pide confirmar; Escape la deja abierta y devuelve el foco.
+  await orden.locator('button[aria-label="Aprobar la orden OCO0000001"]').click();
+  await espera(150);
+  ok((await orden.locator('.admin-estado').textContent()) === 'Abierta', 'aprobar con un solo toque aprueba');
+  ok(await p.evaluate(() => document.activeElement?.classList.contains('admin-confirmar')), 'el foco no va al Si de aprobar');
+  await p.keyboard.press('Escape');
+  await espera(150);
+  ok(await p.evaluate(() => document.activeElement?.getAttribute('aria-label') === 'Aprobar la orden OCO0000001'), 'tras Escape el foco no vuelve a Aprobar');
+  await orden.locator('button[aria-label="Aprobar la orden OCO0000001"]').click();
+  await orden.locator('.admin-confirmar').click();
+  await esperaQue(async () => (await orden.locator('.admin-estado').textContent()) === 'Aprobada');
+  ok((await orden.textContent()).includes('recepción pendiente'), 'la orden aprobada no dice que espera su recepcion');
+  ok((await orden.locator('button[aria-label^="Anular"]').count()) === 0, 'una orden aprobada se puede anular');
+
+  // Bodega: lo que llega menos de lo pedido pide el motivo.
+  await p.click('.admin-pestana >> text=Bodega');
+  const recibo = p.locator('form[aria-label^="Recibir la orden OCO0000001"]');
+  await recibo.waitFor();
+  const cuanto = recibo.getByLabel('Cuánto llegó de Harina de trigo en qq');
+  ok((await cuanto.inputValue()) === '3', 'bodega no trae escrito lo que falta');
+  await cuanto.fill('2');
+  await recibo.locator('button[type=submit]').click();
+  await recibo.locator('.admin-error').waitFor();
+  ok((await recibo.locator('.admin-error').textContent()).includes('motivo'), 'llegar menos sin motivo no avisa');
+  await cuanto.fill('5');
+  await recibo.locator('button[type=submit]').click();
+  await esperaQue(async () => (await recibo.locator('.admin-error').textContent()).includes('más de lo que falta'));
+  await cuanto.fill('2');
+  await recibo.getByLabel('Motivo: llegó menos de lo pedido').fill('Faltaron dos sacos');
+  await recibo.locator('button[type=submit]').click();
+  await esperaQue(async () => (await p.textContent('.cuenta-vista-admin')).includes('No hay compras por recibir'));
+  ok((await p.textContent('.admin-recibidas')).includes('2 qq de Harina de trigo'), 'lo recibido no queda en la lista');
+  ok(await p.evaluate(() => document.activeElement?.id === 'admin-bodega-titulo'), 'tras recibir el foco no va al titulo');
+  await p.click('.admin-pestana >> text=Compras');
+  await p.waitForSelector('li.admin-material:has-text("OCO0000001")');
+  ok((await p.locator('li.admin-material', { hasText: 'OCO0000001' }).textContent()).includes('recibido 2'), 'la orden no muestra lo recibido');
 
   ok(t.errores?.length ? false : true, 'hubo errores de pagina');
   await ctx.close();

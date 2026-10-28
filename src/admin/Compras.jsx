@@ -15,6 +15,7 @@ import { pedirApi } from '../servicios/api.js';
 import { useAvisos } from '../comun/Avisos.jsx';
 import { useCarga, textoDeFallo } from './useCarga.js';
 import Seccion from './Seccion.jsx';
+import Ordenes from './Ordenes.jsx';
 
 const aNumero = (texto) => Number(String(texto).trim().replace(',', '.'));
 const precioBueno = (texto) => /^\d{1,4}([.,]\d{1,4})?$/.test(String(texto).trim()) && aNumero(texto) > 0 && aNumero(texto) < 10000;
@@ -245,6 +246,8 @@ function Compras() {
           {d.proveedores.length ? (
             <ul className="admin-materiales">{d.proveedores.map((p) => <Proveedor key={p.codigo} p={p} materiales={d.materiales} alCambiar={reemplazar} />)}</ul>
           ) : <p className="admin-vacio">Todavía no hay proveedores. Crea el primero para poder hacer una orden de compra.</p>}
+
+          <Ordenes proveedores={d.proveedores} />
         </>
       ) : null}
     </Seccion>
