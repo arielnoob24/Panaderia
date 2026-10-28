@@ -23,6 +23,7 @@ import { useSesion } from '../estado/SesionProvider.jsx';
 import { useCanasta } from './CanastaProvider.jsx';
 import LineaCanasta from './LineaCanasta.jsx';
 import PideCuenta from './PideCuenta.jsx';
+import ConfirmarVaciar from './ConfirmarVaciar.jsx';
 import GuardadoCanasta from './GuardadoCanasta.jsx';
 
 function Canasta() {
@@ -49,7 +50,7 @@ function Canasta() {
   const panelRef = useRef(null);
   const cerrarRef = useRef(null);
   const vaciarRef = useRef(null);
-  const vaciarSiRef = useRef(null);
+  const vaciarNoRef = useRef(null);
   const enviarRef = useRef(null);
   const principalRef = useRef(null);
   const ultimoFoco = useRef(null);
@@ -138,11 +139,11 @@ function Canasta() {
     decirComoQueda(hacer({ tipo: 'agregar', id, nombre: l.nombre, precio: l.precio }), id, l.nombre);
   };
 
-  // ---- Vaciar, con pregunta y deshacer ---------------------------------
+  // ---- Vaciar, con la hoja de ConfirmarVaciar y deshacer ---------------------------------
   const alVaciar = () => {
     flushSync(() => setPreguntaVaciar(true));
-    // Como en la X de cada linea: el foco va al "Si", que es lo que se pidio.
-    vaciarSiRef.current?.focus();
+    // El foco empieza en "Cancelar", lo seguro.
+    vaciarNoRef.current?.focus();
     avisar('¿Vaciar la canasta?');
   };
   const noVaciar = () => {
@@ -158,13 +159,6 @@ function Canasta() {
     avisar('Vaciaste la canasta.');
     deshacerRef.current?.focus();
   };
-  // Escape contesta que no y se queda aqui: si subiera, cerraria el panel.
-  const teclaVaciar = (e) => {
-    if (e.key !== 'Escape') return;
-    e.stopPropagation();
-    noVaciar();
-  };
-
   // ---- Ir a pagar ------------------------------------------------------
   // Pagar pide una cuenta con el correo verificado: el comprobante va a ese
   // correo. Sin ella sale la hoja de "Inicia sesion para pagar" dentro de
@@ -211,14 +205,14 @@ function Canasta() {
         aria-modal="true"
         aria-labelledby="canasta-titulo"
       >
-        <div className="canasta-cabecera" inert={Boolean(pide)}>
+        <div className="canasta-cabecera" inert={Boolean(pide) || preguntaVaciar}>
           <div className="canasta-cabecera-titulo">
             <h2 ref={tituloRef} id="canasta-titulo" tabIndex={-1}>Tu canasta</h2>
             <span className="canasta-cabecera-cuenta" hidden={!hayAlgo}>{cuantos}</span>
           </div>
           <button ref={cerrarRef} className="canasta-cerrar" type="button" aria-label="Cerrar la canasta" onClick={cerrar}>×</button>
         </div>
-        <div className="canasta-pasos" inert={Boolean(pide)}>
+        <div className="canasta-pasos" inert={Boolean(pide) || preguntaVaciar}>
           <section className="canasta-paso" data-paso="canasta">
             <div className="canasta-cuerpo">
               <ul className="canasta-lista">
@@ -249,14 +243,7 @@ function Canasta() {
                 <button className="canasta-vacio-ir" type="button" onClick={verVitrina}>Ver la vitrina</button>
               </div>
               <div className="canasta-vaciar-zona" hidden={!hayAlgo}>
-                <button ref={vaciarRef} className="canasta-vaciar" type="button" hidden={preguntaVaciar} onClick={alVaciar}>Vaciar la canasta</button>
-                <div className="canasta-vaciar-pregunta" hidden={!preguntaVaciar} onKeyDown={teclaVaciar}>
-                  <p className="canasta-confirma-dicho">¿Quitamos todo lo que hay en la canasta?</p>
-                  <div className="canasta-confirma">
-                    <button ref={vaciarSiRef} className="canasta-confirma-si canasta-vaciar-si" type="button" onClick={siVaciar}>Sí, vaciar</button>
-                    <button className="canasta-confirma-no canasta-vaciar-no" type="button" onClick={noVaciar}>Cancelar</button>
-                  </div>
-                </div>
+                <button ref={vaciarRef} className="canasta-vaciar" type="button" onClick={alVaciar}>Vaciar la canasta</button>
               </div>
             </div>
             <div className="canasta-pie">
@@ -281,6 +268,7 @@ function Canasta() {
             </div>
           </section>
         </div>
+        <ConfirmarVaciar abierta={preguntaVaciar} cuantos={cuantos} cancelarRef={vaciarNoRef} onSi={siVaciar} onNo={noVaciar} />
         <PideCuenta pide={pide} principalRef={principalRef} onVolver={volverDePide} />
       </div>
     </>

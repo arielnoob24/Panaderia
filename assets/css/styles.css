@@ -1068,10 +1068,9 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* Vaciar va debajo de la lista, a la derecha y discreto: es una salida, no lo
    que se viene a hacer a la canasta. */
 .canasta-vaciar-zona { margin-top: .6rem; text-align: right; }
-.canasta-vaciar-zona[hidden], .canasta-vaciar[hidden], .canasta-vaciar-pregunta[hidden] { display: none; }
+.canasta-vaciar-zona[hidden], .canasta-vaciar[hidden] { display: none; }
 .canasta-vaciar { min-height: 44px; padding: .4rem .2rem; background: none; border: 0; color: var(--horno); cursor: pointer; font: 700 .8rem Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 .canasta-vaciar:hover { color: var(--horno); }
-.canasta-vaciar-pregunta { padding: .8rem .9rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-btn); text-align: left; }
 .canasta-vacio { display: grid; justify-items: center; gap: .35rem; margin: 3rem 0 1rem; text-align: center; }
 .canasta-vacio[hidden] { display: none; }
 /* La misma canasta del boton de la cabecera, en grande y en horno. */

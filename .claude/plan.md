@@ -301,8 +301,10 @@ panes", con la cinta o con el menú.
   avisan "El máximo es 100 por producto. Ya hay 100 de … en la canasta."
 - Campo de cantidad de la ficha: Enter asienta lo escrito y Esc lo descarta,
   sin sacar el foco del campo (con 0 el producto sale y el foco pasa al +).
-- **Deshacer** durante 12 s al quitar o al vaciar ("¿Quitamos todo lo que hay
-  en la canasta?"). El reloj se para con el foco o el puntero encima. Mientras
+- **Vaciar la canasta** pregunta en una hoja modal (`ConfirmarVaciar.jsx`, 27 de
+  octubre de 2026): foco en "Cancelar", Esc cancela, lo de detrás inert. Quitar
+  una sola línea sigue con su pregunta en el sitio.
+- **Deshacer** durante 12 s al quitar o al vaciar. El reloj se para con el foco o el puntero encima. Mientras
   la barra se ve en el teléfono, `scroll-padding-bottom` sube a 168 px para que
   no tape el foco. Con la canasta abierta, mientras se ve la barra, la
   lista guarda abajo 136 px para que el foco no quede debajo de ella.
@@ -1123,8 +1125,10 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 - [ ] Llegar a **10 productos por categoría** (hoy 6 panes, 5 dulces, 6 bebidas frías;
       pedido del 21 de octubre). El usuario pasa los productos; cada uno con su foto
       `-420.jpg` y `-840.jpg`, y entran en `data/productos.json` y en `bd/`.
-- [ ] Barra de pasos desde la canasta hasta la confirmación (pedido del 21 de octubre).
-- [ ] Modales de confirmación al vaciar la canasta y al quitar un producto (hoy: Deshacer 12 s).
+- [x] Barra de pasos: la corta (Confirmar y pagar → Pedido listo) está hecha; la larga con
+      "Canasta" se descartó el 27 de octubre de 2026.
+- [x] Modal de confirmación al vaciar la canasta (27 de octubre de 2026); al quitar un
+      producto se queda la pregunta en el sitio y Deshacer (decidido).
 - [ ] Revisar el formato de los correos de verificación y de comprobante (plantillas en Brevo y EmailJS).
 - [x] Mini panel al agregar: descartado, basta el destello (decidido el 27 de octubre de 2026).
 - [ ] Teléfono, WhatsApp e Instagram reales, o quitarlos del JSON-LD y de los enlaces.
