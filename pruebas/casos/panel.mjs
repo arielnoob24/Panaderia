@@ -175,7 +175,7 @@ async function panel(t, nombre, ventana) {
   await p.goto(URL + '#/admin');
   await p.waitForSelector('.admin-cifras');
   ok((await hash()) === '#/admin/resumen', `#/admin no lleva al Resumen: ${await hash()}`);
-  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario,Compras,Bodega,Producción,Ajustes,Equipo,Facturas,Nómina', 'el administrador no ve las once pestañas');
+  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario,Compras,Bodega,Producción,Ajustes,Equipo,Facturas,Nómina,Contabilidad', 'el administrador no ve las doce pestañas');
   ok((await p.textContent('.admin-cifras')).includes('Ventas de hoy'), 'el resumen no dice las ventas de hoy');
   ok((await p.textContent('.admin-lista')).includes('Pan redondo'), 'lo mas vendido no esta');
   await p.click('.admin-pestana >> text=Productos');
@@ -438,6 +438,29 @@ async function panel(t, nombre, ventana) {
   await esperaQue(async () => (await rol.locator('.admin-estado').textContent()) === 'Aprobado');
   ok((await rol.locator('.admin-estado').textContent()) === 'Aprobado', 'un rol aprobado no lo dice');
   ok((await rol.locator('form').count()) === 0 && (await rol.locator('button[aria-label^="Anular"]').count()) === 0, 'un rol aprobado deja agregar lineas o anularlo');
+  // Contabilidad: asientos por aprobar, aprobar con confirmacion y ver el saldo.
+  await p.click('.admin-pestana >> text=Contabilidad');
+  const as1 = p.locator('li.admin-material', { hasText: 'Venta, factura 001-001-000000001' });
+  await as1.waitFor();
+  ok((await p.textContent('.admin-nota')).includes('2 asientos esperan'), 'no dice cuantos asientos esperan');
+  ok((await as1.textContent()).includes('Cuadra') && (await as1.textContent()).includes('Caja'), 'el asiento no trae sus lineas ni si cuadra');
+  await as1.locator('button[aria-label="Aprobar el asiento ASI0000001"]').click();
+  await espera(150);
+  ok((await as1.locator('.admin-estado').textContent()) === 'Pendiente', 'aprobar con un solo toque aprueba');
+  ok(await p.evaluate(() => document.activeElement?.classList.contains('admin-confirmar')), 'el foco no va al Si de aprobar el asiento');
+  await p.keyboard.press('Escape');
+  await espera(150);
+  ok(await p.evaluate(() => document.activeElement?.getAttribute('aria-label') === 'Aprobar el asiento ASI0000001'), 'tras Escape el foco no vuelve a Aprobar el asiento');
+  await as1.locator('button[aria-label="Aprobar el asiento ASI0000001"]').click();
+  await as1.locator('.admin-confirmar').click();
+  await esperaQue(async () => (await as1.count()) === 0);
+  ok(await p.evaluate(() => document.activeElement?.tagName === 'H2'), 'al salir de Por aprobar el foco no va al titulo');
+  await p.click('button:has-text("Todos")');
+  const as1b = p.locator('li.admin-material', { hasText: 'Venta, factura 001-001-000000001' });
+  await esperaQue(async () => (await as1b.locator('.admin-estado').textContent()) === 'Aprobado');
+  ok((await as1b.textContent()).includes('Aprobó Ariel Escobar') && (await as1b.locator('button[aria-label^="Aprobar"]').count()) === 0, 'un asiento aprobado no dice quien lo aprobo o deja aprobarlo otra vez');
+  await esperaQue(async () => (await p.locator('ul[aria-label="Saldos de las cuentas"]').count()) === 1);
+  ok((await p.textContent('ul[aria-label="Saldos de las cuentas"]')).includes('$12.50'), 'el saldo de Caja no sube con el asiento aprobado');
   ok(t.errores?.length ? false : true, 'hubo errores de pagina');
   await ctx.close();
 }

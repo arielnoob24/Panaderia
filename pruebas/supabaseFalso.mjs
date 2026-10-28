@@ -264,7 +264,7 @@ const pedidosDe = (correo) => {
 // caso lo cambia con ponerRol(). Los pedidos son los de todas las cuentas de
 // esa ventana; los productos, el catalogo de data/productos.json.
 const PERMISOS = {
-  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar', 'inventario.ajustar', 'usuarios.gestionar', 'facturas.anular', 'nomina.aprobar'],
+  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver', 'compras.aprobar', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar', 'inventario.ajustar', 'usuarios.gestionar', 'facturas.anular', 'nomina.aprobar', 'contabilidad.aprobar'],
   Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver', 'bodega.recibir', 'produccion.registrar', 'inventario.reportar'],
   Cliente: [],
 };
@@ -295,6 +295,13 @@ const MATERIALES_COMPRA = [
 const CANTONES = [{ codigo: '1501', nombre: 'Tena' }, { codigo: '1503', nombre: 'Archidona' }];
 const proveedoresDe = (sv) => (sv.proveedores ||= []);
 const ordenesDe = (sv) => (sv.ordenes ||= []);
+// Los asientos de la prueba: dos pendientes (una venta y un rol) y un saldo.
+const asientosDe = (sv) => (sv.asientos ||= [
+  { codigo: 'ASI0000002', fecha: '2026-10-27T10:00:00Z', descripcion: 'Rol de pagos 9/2026 del empleado EMP0000003', origen: 'Nómina', estado: 'Pendiente', debe: '470.00', haber: '470.00', cuadra: true, aprobo: null,
+    lineas: [{ cuenta: '1.1.01.02', nombre: 'Bancos', debe: '0.00', haber: '425.58' }, { cuenta: '2.1.03.01', nombre: 'IESS por pagar', debe: '0.00', haber: '44.42' }, { cuenta: '5.2.01', nombre: 'Sueldos', debe: '470.00', haber: '0.00' }] },
+  { codigo: 'ASI0000001', fecha: '2026-10-26T10:00:00Z', descripcion: 'Venta, factura 001-001-000000001', origen: 'Ventas', estado: 'Pendiente', debe: '12.50', haber: '12.50', cuadra: true, aprobo: null,
+    lineas: [{ cuenta: '1.1.01.01', nombre: 'Caja', debe: '12.50', haber: '0.00' }, { cuenta: '4.1.01', nombre: 'Ventas', debe: '0.00', haber: '12.50' }] },
+]);
 // Los roles de pago de la prueba: ninguno al empezar. Sueldo 470 y IESS 44.42 como los pone la base.
 const nominasDe = (sv) => (sv.nominas ||= []);
 const rolNeto = (r) => {
@@ -548,6 +555,27 @@ async function admin(sv, route) {
       a.estado = 'Anulado';
     }
     return contestar(route, 200, { codigo: a.codigo, estado: a.estado });
+  }
+  if (ruta === '/contabilidad' || ruta.startsWith('/contabilidad/')) {
+    if (!permisos.includes('contabilidad.aprobar')) return sin();
+    const lista = asientosDe(sv);
+    if (ruta === '/contabilidad' && req.method() === 'GET') {
+      const apr = lista.filter((a) => a.estado === 'Aprobado');
+      const caja = apr.reduce((t, a) => t + a.lineas.filter((l) => l.cuenta === '1.1.01.01').reduce((u, l) => u + Number(l.debe), 0), 0);
+      return contestar(route, 200, {
+        asientos: lista,
+        porAprobar: lista.filter((a) => ['Abierto', 'Pendiente', 'Con error'].includes(a.estado)).length,
+        saldos: caja ? [{ cuenta: '1.1.01.01', nombre: 'Caja', debe: caja.toFixed(2), haber: '0.00', saldo: caja.toFixed(2) }] : [],
+      });
+    }
+    const as = ruta.match(/^\/contabilidad\/(ASI\d{7})$/);
+    const a = as && lista.find((x) => x.codigo === as[1]);
+    if (!a) return contestar(route, 400, { error: 'Ese asiento no existe.' });
+    if (!['Abierto', 'Pendiente', 'Con error'].includes(a.estado)) return contestar(route, 400, { error: `Ese asiento ya está ${a.estado.toLowerCase()}, y ya no cambia.` });
+    const d = req.postDataJSON();
+    a.estado = d.estado;
+    if (d.estado === 'Aprobado') a.aprobo = 'Ariel Escobar';
+    return contestar(route, 200, a);
   }
   if (ruta === '/nomina' || ruta.startsWith('/nomina/')) {
     if (!permisos.includes('nomina.aprobar')) return sin();

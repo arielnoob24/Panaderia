@@ -899,5 +899,37 @@ const otroAnuladoN = await admin('FN_ADMIN_NOMINA_ESTADO', authDueno, otroN.codi
 ok(otroAnuladoN.estado === 'Anulado', 'Un rol abierto se puede anular');
 ok((await admin('FN_ADMIN_NOMINA_CREAR', authDueno, otroN.empleado, nomAnio, nomMes)).estado === 'Abierto', 'Anulado el rol, se puede abrir otro de ese mes');
 
+titulo('Contabilidad (FN_ADMIN_CONTABILIDAD y FN_ADMIN_ASIENTO_ESTADO)');
+ok(yoDueno.permisos.includes('contabilidad.aprobar') && !(await admin('FN_ADMIN_YO', authEmpleado)).permisos.includes('contabilidad.aprobar'), 'Solo el Administrador maneja la contabilidad');
+await sinPermiso('FN_ADMIN_CONTABILIDAD', 'Un empleado no ve la contabilidad', authEmpleado);
+const con0C = await admin('FN_ADMIN_CONTABILIDAD', authDueno);
+ok(con0C.asientos.length >= 3 && con0C.porAprobar >= 2, `Trae ${con0C.asientos.length} asientos, ${con0C.porAprobar} por aprobar`);
+const asPendC = con0C.asientos.filter((a) => a.estado === 'Pendiente' && a.cuadra);
+ok(asPendC.length >= 2 && asPendC[0].lineas.length >= 2 && Number(asPendC[0].debe) === Number(asPendC[0].haber), 'Un asiento pendiente trae sus lineas y cuadra');
+await sinPermiso('FN_ADMIN_ASIENTO_ESTADO', 'Un empleado no aprueba asientos', authEmpleado, asPendC[0].codigo, 'Aprobado');
+const conFallaC = async (msg, texto, ...args) => {
+  try { await admin('FN_ADMIN_ASIENTO_ESTADO', authDueno, ...args); ok(false, `${msg}: entro`); } catch (e) { ok(e.code === '22023' && e.message.includes(texto), `${msg}: ${e.message}`); }
+};
+await conFallaC('Asiento que no existe', 'no existe', 'ASI9999999', 'Aprobado');
+await conFallaC('Estado que no vale', 'se aprueba o se anula', asPendC[0].codigo, 'Pendiente');
+await q(`UPDATE usuarios SET emp_codigo = NULL WHERE usu_codigoauth = $1::uuid`, [authDueno]);
+await conFallaC('Cuenta sin empleado', 'ligada a un empleado', asPendC[0].codigo, 'Aprobado');
+await q(`UPDATE usuarios SET emp_codigo = $2 WHERE usu_codigoauth = $1::uuid`, [authDueno, panadero]);
+const debeAntesCon = (await admin('FN_ADMIN_CONTABILIDAD', authDueno)).saldos.reduce((t, c) => t + Number(c.debe), 0);
+const asAprC = await admin('FN_ADMIN_ASIENTO_ESTADO', authDueno, asPendC[0].codigo, 'Aprobado');
+ok(asAprC.estado === 'Aprobado' && asAprC.aprobo, `El Administrador aprueba ${asAprC.codigo} y queda a nombre de ${asAprC.aprobo}`);
+const con1C = await admin('FN_ADMIN_CONTABILIDAD', authDueno);
+ok(con1C.saldos.reduce((t, c) => t + Number(c.debe), 0) > debeAntesCon && con1C.porAprobar === con0C.porAprobar - 1, 'Aprobarlo mueve los saldos y baja los por aprobar');
+await conFallaC('Aprobar otra vez', 'ya está aprobado', asPendC[0].codigo, 'Aprobado');
+await conFallaC('Anular uno aprobado', 'ya está aprobado', asPendC[0].codigo, 'Anulado');
+const asAnuC = await admin('FN_ADMIN_ASIENTO_ESTADO', authDueno, asPendC[1].codigo, 'Anulado');
+ok(asAnuC.estado === 'Anulado', 'Un asiento pendiente se puede anular');
+await conFallaC('Aprobar uno anulado', 'ya está anulado', asPendC[1].codigo, 'Aprobado');
+const manualC = (await q(`INSERT INTO asientos (asi_descripcion) VALUES ('Prueba que no cuadra') RETURNING asi_codigo`))[0].asi_codigo;
+await q(`INSERT INTO detalles_asiento (asi_codigo, cue_codigo, das_debe) SELECT $1, cue_codigo, 10 FROM cuentas_contables WHERE cue_numero = '1.1.01.01'`, [manualC]);
+const asErrC = await admin('FN_ADMIN_ASIENTO_ESTADO', authDueno, manualC, 'Aprobado');
+ok(asErrC.estado === 'Con error' && asErrC.cuadra === false, 'Un asiento que no cuadra no se aprueba: queda con error');
+ok((await admin('FN_ADMIN_ASIENTO_ESTADO', authDueno, manualC, 'Anulado')).estado === 'Anulado', 'Uno con error se puede anular');
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

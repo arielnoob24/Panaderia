@@ -20,9 +20,10 @@ import Ajustes from './Ajustes.jsx';
 import Equipo from './Equipo.jsx';
 import Facturas from './Facturas.jsx';
 import Nomina from './Nomina.jsx';
+import Contabilidad from './Contabilidad.jsx';
 import '../estilos/admin.css';
 
-const VISTAS = { resumen: Resumen, pedidos: Pedidos, productos: Productos, inventario: Inventario, compras: Compras, bodega: Bodega, produccion: Produccion, ajustes: Ajustes, equipo: Equipo, facturas: Facturas, nomina: Nomina };
+const VISTAS = { resumen: Resumen, pedidos: Pedidos, productos: Productos, inventario: Inventario, compras: Compras, bodega: Bodega, produccion: Produccion, ajustes: Ajustes, equipo: Equipo, facturas: Facturas, nomina: Nomina, contabilidad: Contabilidad };
 
 function Panel() {
   // Se mira al llegar y no despues (vease Desvio.jsx).

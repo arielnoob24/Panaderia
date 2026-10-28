@@ -364,6 +364,17 @@ Deno.serve(async (req) => {
       }
     }
 
+    // CONTABILIDAD (contabilidad.aprobar, solo el Administrador).
+    // GET /admin/contabilidad -> { asientos, porAprobar, saldos }
+    if (req.method === "GET" && ruta === "/admin/contabilidad") return llamar("fn_admin_contabilidad", {});
+    // PUT /admin/contabilidad/ASI0000001 { estado: "Aprobado" | "Anulado" }
+    const asiento = ruta.match(/^\/admin\/contabilidad\/(ASI\d{7})$/);
+    if (req.method === "PUT" && asiento) {
+      const c = await req.json().catch(() => null);
+      if (typeof c?.estado !== "string") return responder(h, 400, { error: "Falta el estado." });
+      return llamar("fn_admin_asiento_estado", { p_asiento: asiento[1], p_estado: c.estado });
+    }
+
     // NOMINA (nomina.aprobar, solo el Administrador).
     // GET /admin/nomina -> { nominas, empleados, conceptos }
     if (req.method === "GET" && ruta === "/admin/nomina") return llamar("fn_admin_nominas", {});

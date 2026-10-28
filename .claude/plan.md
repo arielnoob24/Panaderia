@@ -1281,7 +1281,17 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
         `FN_NOMINA_JSON`, `FN_ADMIN_NOMINAS`, `..._NOMINA_CREAR`, `..._LINEA`,
         `..._QUITAR_LINEA`, `..._ESTADO`; rutas `/admin/nomina`. Migración
         `panel_nomina`.
-      - [ ] 3d, contabilidad (asientos).
+      - [x] **3d, Contabilidad** (28 de octubre de 2026): pestaña
+        `#/admin/contabilidad` (`contabilidad.aprobar`, solo el
+        Administrador). Los asientos que dejan ventas, compras, producción,
+        inventario y nómina quedan "Pendiente"; aquí se ven con sus líneas y
+        si cuadran, y se aprueban (a nombre del empleado ligado a la cuenta de
+        quien aprueba) o se anulan, con confirmación. Uno que no cuadra queda
+        "Con error". Abajo, los saldos de las cuentas, que solo cuentan los
+        asientos aprobados. Funciones `FN_ASIENTO_JSON`,
+        `FN_ADMIN_CONTABILIDAD`, `FN_ADMIN_ASIENTO_ESTADO`; rutas
+        `/admin/contabilidad`. Migración `panel_contabilidad`. Con esto la
+        tanda 3 y el panel quedan completos.
 - Pendiente de datos: el correo de la cuenta del dueño (a 27 de octubre aún no
   hay ninguna cuenta registrada) y cómo se darán de alta los empleados (por
   ahora cambiándoles el rol a mano; una pantalla para eso sería de la tanda 3).
