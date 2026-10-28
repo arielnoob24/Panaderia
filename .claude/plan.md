@@ -1135,8 +1135,8 @@ Quién ve qué: el cliente solo lo suyo; el empleado entra al panel y ve pedidos
 (`pedidos.ver_todos`, `pedidos.cambiar_estado`), facturas (`facturas.emitir`) y,
 en la tanda 2, bodega y producción; el administrador lo ve todo.
 
-- [x] **Tanda 1, lo de todos los días** (hecha el 27 de octubre de 2026; falta
-      que la pruebe el dueño en la página publicada): pedidos de todos los
+- [x] **Tanda 1, lo de todos los días** (hecha y publicada el 27 de octubre de
+      2026; el dueño la vio en la página y la aprobó): pedidos de todos los
       clientes con cambio de estado; productos (precio, agotar, recomendado);
       resumen (ventas de hoy y del mes, pendientes, lo más vendido). Cómo está
       hecha:
@@ -1166,8 +1166,8 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
       - **Pruebas**: `pruebas/casos/panel.mjs` (cliente fuera, empleado solo
         Pedidos, administrador con todo; el servidor de mentira ya sabe los
         permisos de cada rol, `ponerRol()`) y un bloque en `probar-bd`.
-      - **Falta de esta tanda**: mirar el aspecto con la revisión visual y la de
-        accesibilidad (no se han pasado) y ajustar lo que salga.
+      - **Sin pasar todavía**: la revisión visual y la de accesibilidad del
+        panel (el dueño lo aprobó a ojo). Conviene hacerlas antes de entregar.
 - [ ] **Tanda 2, bodega y producción:** inventario y alertas de stock bajo,
       compras y proveedores, recetas y producción.
 - [ ] **Tanda 3, administración:** facturas (anular), clientes, empleados,
