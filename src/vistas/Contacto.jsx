@@ -11,7 +11,7 @@
 // Como la portada y Nosotros, cabe en una sola pantalla sin desplazarse
 // (vistas.css): el mapa, el titular y los espacios se ajustan al alto
 // visible. Todo entra en una sola escena, una vez.
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useVista } from '../comun/useVista.js';
 import { useHorario } from '../comun/useHorario.js';
 import EstadoAbierto from '../comun/EstadoAbierto.jsx';
@@ -34,6 +34,24 @@ function Contacto() {
   const tituloRef = useRef(null);
   useVista('Visítanos | El Tradicional', tituloRef);
   const horario = useHorario();
+  // El mapa no captura el scroll: el iframe no recibe el puntero hasta hacer
+  // clic en el marco (el clic cae en el marco, que esta debajo), y se
+  // restablece al salir el puntero (raton o lapiz), al tocar fuera o al
+  // desplazar la pagina. Con el dedo no hay "salir": se suelta tocando fuera
+  // del mapa, que es donde el usuario empieza a desplazar la pagina.
+  const marcoRef = useRef(null);
+  const [mapaActivo, setMapaActivo] = useState(false);
+  useEffect(() => {
+    if (!mapaActivo) return undefined;
+    const fuera = (e) => { if (!marcoRef.current?.contains(e.target)) setMapaActivo(false); };
+    const suelta = () => setMapaActivo(false);
+    document.addEventListener('pointerdown', fuera);
+    window.addEventListener('scroll', suelta, { passive: true });
+    return () => {
+      document.removeEventListener('pointerdown', fuera);
+      window.removeEventListener('scroll', suelta);
+    };
+  }, [mapaActivo]);
   return (
     <div className="vista vista-contacto">
       <section id="visitanos" className="contacto-vista con-fondo" aria-labelledby="contacto-titulo">
@@ -50,7 +68,8 @@ function Contacto() {
             <h1 ref={tituloRef} id="contacto-titulo" className="titular" tabIndex={-1}>Visítanos{' '}<em>en Tena</em></h1>
             <address className="frase contacto-direccion">Esquina de Eloy Alfaro<br />{' '}y Gabriel Espinosa, Tena</address>
             {/* Lo que se viene a hacer aqui es llegar: es el boton principal
-                de la vista, el ticket ambar como "Nuestros panes". */}
+                de la vista y el unico relleno de ambar (WhatsApp e Instagram
+                son secundarios, con borde), el ticket como "Nuestros panes". */}
             <a className="button button-yellow contacto-mapa-enlace" href={MAPA} target="_blank" rel="noopener">
               <IconoPin clase="ico" grosor="1.6" />Ver en el mapa <span aria-hidden="true">↗</span><span className="sr-only"> (abre en una pestaña nueva)</span>
             </a>
@@ -59,7 +78,12 @@ function Contacto() {
             {/* El marco es el filete de la foto en arco, recto para no
                 recortar el mapa. loading="lazy": en el telefono queda mas
                 abajo y pesa; se pide cuando se acerca a la pantalla. */}
-            <div className="contacto-mapa-marco">
+            <div
+              ref={marcoRef}
+              className={mapaActivo ? 'contacto-mapa-marco is-activo' : 'contacto-mapa-marco'}
+              onClick={() => setMapaActivo(true)}
+              onPointerLeave={(e) => { if (e.pointerType !== 'touch') setMapaActivo(false); }}
+            >
               <iframe
                 src={MAPA_EMBEBIDO}
                 title="Mapa de la ubicación de El Tradicional, en Eloy Alfaro y Gabriel Espinosa, Tena"

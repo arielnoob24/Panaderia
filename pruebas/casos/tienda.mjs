@@ -8,7 +8,7 @@
 //   tienda-mandos.mjs); el rotulo "Nuestra vitrina" con la espiga; el h1 en
 //   Fraunces a la izquierda y la frase en cursiva de cada vista;
 // - "Filtrar por" como la cinta: radios con su nombre de siempre, Fraunces
-//   cursiva, el icono de cada categoria (Todas sin), estrellas de adorno,
+//   cursiva, el icono de cada categoria (Todas sin), sin adornos entre ellas,
 //   la elegida en pastilla horno con texto papel, las flechas cambian de
 //   categoria y el foco se ve en la etiqueta; en el telefono no se sale;
 // - los mandos entre lineas dobles, buscador papel, Ordenar por solo texto con linea, rotulos en versalitas y
@@ -103,7 +103,7 @@ export default async function tienda(t) {
     }
     t.ok(m.etiquetas.map((e) => e.icono).join() === 'false,true,true,true', `[${nombre}] los iconos de las categorias no son los de la cinta (${JSON.stringify(m.etiquetas)})`);
     t.ok(m.etiquetas.every((e) => ES_FRAUNCES.test(e.letra) && e.cursiva === 'italic' && e.ola === 'true' && e.alto >= 24), `[${nombre}] las categorias no van en Fraunces cursiva con la ola, o miden menos de 24 px (${JSON.stringify(m.etiquetas)})`);
-    t.ok(m.estrellas.length === 3 && m.estrellas.every((a) => a === 'true'), `[${nombre}] las estrellas no son adorno (${m.estrellas})`);
+    t.ok(m.estrellas.length === 0, `[${nombre}] quedan ${m.estrellas.length} adornos entre las categorias`);
     // Sobre la masa, la pastilla es horno con texto papel.
     t.ok(m.elegida?.[0] === HORNO && m.elegida?.[1] === PAPEL && m.elegida?.[2] === 1, `[${nombre}] la elegida no va en la pastilla horno (una sola, la que viaja) con texto papel (${m.elegida})`);
     t.ok(m.lineas === 2 && m.campos.length === 1 && m.campos.every((c) => c === MASA), `[${nombre}] los mandos no van en la barra clara o el buscador no es masa (${m.lineas}, ${m.campos})`);

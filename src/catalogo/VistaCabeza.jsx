@@ -47,15 +47,14 @@ function VistaCabeza({
         <h1 className="vista-titulo titular" tabIndex={-1} ref={tituloRef}>{titulo}</h1>
         <p className="frase tienda-frase">{frase}</p>
         {/* Como la cinta de #/: cada categoria con su icono y la ola de
-            letras; la elegida en una pastilla horno. Las estrellas son
-            adorno. El nombre de cada radio es el de su etiqueta (TextoOla
+            letras; la elegida en una pastilla horno. Sin adornos entre
+            ellas. El nombre de cada radio es el de su etiqueta (TextoOla
             deja el texto entero escondido a la vista). */}
         <LayoutGroup id="filtro-categoria">
         <div className="vista-chips solo-catalogo" role="radiogroup" aria-labelledby="vista-sub-rotulo">
           <span id="vista-sub-rotulo" className="rotulo">Filtrar por</span>
-          {OPCIONES.map(([valor, texto], i) => (
+          {OPCIONES.map(([valor, texto]) => (
             <Fragment key={valor}>
-              {i > 0 && <span className="chip-estrella" aria-hidden="true">✦</span>}
               <input
                 className="chip-input"
                 type="radio"

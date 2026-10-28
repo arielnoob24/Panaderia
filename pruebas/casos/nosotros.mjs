@@ -12,8 +12,8 @@
 //   pie, y sin el parrafo de la madrugada;
 // - los principios sin banda oscura: el h2 con una sola linea doble a su
 //   derecha, y tres en una lista (role="list"), alineados a la izquierda,
-//   con N.º, icono y nombre en Fraunces, en una fila de tres separadas por
-//   la estrella; su frase solo en escritorio;
+//   con icono y nombre en Fraunces (sin numeros), en una fila de tres
+//   separadas por una linea vertical tenue; su frase solo en escritorio;
 // - todo en una sola pantalla, sin desplazarse, con la franja en el borde
 //   de abajo, de 1440x900 a 360x640 (tambien 1024x768); con zoom o ventana
 //   muy baja (320x256, 640x360) crece y se desplaza sin cortar ni pisar
@@ -82,14 +82,12 @@ const mirar = (p) => p.evaluate(() => {
     oscuras: vista.querySelectorAll('.banda-oscura, .fondo-principios').length,
     ultimo: vista.lastElementChild.className,
     rol: lista.getAttribute('role'),
-    numeros: items.map((li) => li.querySelector('.principio-numero')?.textContent),
-    numerosOcultos: items.every((li) => li.querySelector('.principio-numero')?.getAttribute('aria-hidden') === 'true'),
-    numeroColor: estilo('.principio-numero').color,
+    numeros: vista.querySelectorAll('.principio-numero').length,
     iconos: items.filter((li) => li.querySelector('svg.principio-icono')?.getClientRects().length).length,
     h3: items.map((li) => getComputedStyle(li.querySelector('h3')).fontFamily),
     frasesSeVen: items.filter((li) => li.querySelector('p').getClientRects().length).length,
     columnas: getComputedStyle(lista).gridTemplateColumns.split(' ').length,
-    estrella: getComputedStyle(items[1], '::before').content,
+    separador: (() => { const e = getComputedStyle(items[1], '::before'); return { ancho: e.width, opacidad: e.opacity, contenido: e.content }; })(),
     marcas: vista.querySelectorAll('[data-aparece]').length,
   };
 });
@@ -110,7 +108,7 @@ const todoVisible = (a) => a.opacidades.every((o) => o === 1) && a.lineas.every(
 const medir = (p) => p.evaluate(() => {
   const ancho = window.innerWidth;
   const r = (s) => document.querySelector(s).getBoundingClientRect();
-  const textos = [...document.querySelectorAll('.vista-nosotros :is(.rotulo-espiga, h1, .frase, .nosotros-madrugada, .nosotros-llegar, h2, .principio-numero, h3, .principio p, figcaption)')]
+  const textos = [...document.querySelectorAll('.vista-nosotros :is(.rotulo-espiga, h1, .frase, .nosotros-madrugada, .nosotros-llegar, h2, h3, .principio p, figcaption)')]
     .filter((e) => e.getClientRects().length);
   const cortados = textos.filter((e) => {
     const c = e.getBoundingClientRect();
@@ -178,11 +176,10 @@ export default async function nosotros(t) {
     }
     t.ok(m.oscuras === 0, `[${nombre}] Nosotros todavia lleva banda oscura o el fondo de los principios`);
     t.ok(m.rol === 'list', `[${nombre}] la lista de principios no lleva role="list" (${m.rol})`);
-    t.ok(m.numeros.join() === 'N.º 1,N.º 2,N.º 3' && m.numerosOcultos, `[${nombre}] los numeros de los principios son ${JSON.stringify(m.numeros)}`);
-    t.ok(m.numeroColor === 'rgb(238, 228, 216)', `[${nombre}] el numero no va en claro sobre la banda horno (${m.numeroColor})`);
+    t.ok(m.numeros === 0, `[${nombre}] los principios todavia llevan ${m.numeros} numeros (no es una secuencia)`);
     t.ok(m.iconos === 3 && m.h3.every((f) => ES_FRAUNCES.test(f)), `[${nombre}] a los principios les falta el icono o el nombre en Fraunces`);
     t.ok(m.columnas === 3, `[${nombre}] los principios van en ${m.columnas} columnas`);
-    t.ok(m.estrella.includes('✦'), `[${nombre}] no hay estrella entre los principios (${m.estrella})`);
+    t.ok(m.separador.ancho === '1px' && parseFloat(m.separador.opacidad) < .3 && !m.separador.contenido.includes('✦'), `[${nombre}] entre los principios no hay una linea vertical tenue (${JSON.stringify(m.separador)})`);
 
     const d = await medir(p);
     t.ok(nombre === 'movil' || d.alto <= d.ventana, `[${nombre}] Nosotros no cabe en la pantalla (${JSON.stringify(d)})`);
@@ -202,7 +199,7 @@ export default async function nosotros(t) {
       // La canasta flotante no tapa el enlace ni los principios.
       const tapa = await p.evaluate(() => {
         const f = document.querySelector('.floating-whatsapp.is-canasta').getBoundingClientRect();
-        return [...document.querySelectorAll('.nosotros-llegar, .principio-numero, .principio-icono, .principio h3')]
+        return [...document.querySelectorAll('.nosotros-llegar, .principio-icono, .principio h3')]
           .filter((e) => {
             const r = e.getBoundingClientRect();
             return Math.min(r.right, f.right) > Math.max(r.left, f.left) && Math.min(r.bottom, f.bottom) > Math.max(r.top, f.top);

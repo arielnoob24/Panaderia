@@ -109,7 +109,7 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
 | Menú | Ruta | Contenido |
 |---|---|---|
 | Logo / Inicio | `#/` | Cabecera de periódico, portada y la cinta de categorías (Panes, Dulces y pasteles, Bebidas), y nada más: sin carrusel |
-| Nosotros | `#/nosotros` | La historia (foto en arco, sello y titular como la portada) y los tres principios numerados sobre la masa (sección 10, "Nosotros con el estilo de la portada"); la galería cuando haya fotos |
+| Nosotros | `#/nosotros` | La historia (foto en arco, sello y titular como la portada) y los tres principios sobre un bloque de horno, sin numerar (sección 10, "Nosotros con el estilo de la portada"); la galería cuando haya fotos |
 | Tienda | `#/tienda-catalogo`, `#/tienda-<categoría>` | El catálogo; cambiar de categoría no vuelve a montar la vista |
 | Contáctanos | `#/contacto` | Dirección, mapa con su sello, horario estilo carta con el día de hoy marcado, abierto/cerrado y contacto, en una sola pantalla (sección 10, "Contacto con el estilo de la portada") |
 | — | `#/confirmar`, `#/comprobante` | El pedido (sección 6) |
@@ -246,7 +246,13 @@ panes", con la cinta o con el menú.
   esquinas rectas, borde fino `--horno` y la foto con un margen de papel;
   categoría en versalitas, nombre en Fraunces, sin hueco vacío entre el
   nombre y el precio. El precio en Fraunces y, entre el precio y el
-  control, **puntos como en una pizarra**. **Solo hay un sello, el de
+  control, **puntos como en una pizarra: la única línea punteada de la
+  ficha** (sin divisoria encima; 27 de octubre de 2026). La foto va sobre un
+  **marco crema cálido** con las esquinas de arriba redondeadas, el título
+  guarda alto para dos líneas (el precio y el control quedan a la misma
+  altura entre fichas de una y dos líneas) y el `+` se toca en 44 × 44 px
+  (aunque se vea de 30 a 34) y pasa un instante a una ✓ al agregar (solo
+  aspecto; con menos movimiento sin animación). **Solo hay un sello, el de
   "Agotado"** (26 de octubre de 2026: los de "Nuevo", "Favorito" y
   similares sobraban en las demás fichas), como **sello de tinta**
   (doble aro), letra de al menos 11 px. Con el puntero encima sube con
@@ -622,7 +628,7 @@ pedido sigue valiendo.
 - **Tres colores, 60-30-10** (26 de octubre de 2026; el usuario fijó los
   tres): el sitio tiene estos colores y nada más.
   - **60 %** `--masa` `#f7f1e7` (+ `--papel`): fondo y fichas.
-  - **30 %** `--horno` `#3a2822`: texto y bloques oscuros (barra, cinta,
+  - **30 %** `--horno` `#3a2822`: texto y bloques oscuros (barra,
     franja de las espigas, bandas). Debe haber bandas de horno suficientes
     en cada vista para acercarse al 30 % (cinta y franja más altas, una
     banda oscura en Tienda y Contacto).
@@ -636,6 +642,10 @@ pedido sigue valiendo.
     masa/papel es solo ~1,9:1**: vale como relleno con texto horno
     encima y como adorno, **nunca como texto ni como borde de un control**
     (bordes de control, de error y de foco van en `--horno`).
+  - **`--ambar-texto`** (27 de octubre de 2026): el ámbar mezclado con un
+    55 % de horno (`color-mix`), un tono derivado, no un color nuevo. Es el
+    único "acento" que vale como texto o borde sobre claro (5,3:1 sobre
+    papel, 4,8:1 sobre masa); hoy no lo usa ningún control.
   - "Cerrado" y los errores llevan siempre texto (y icono o subrayado)
     además del tono, como pide WCAG 1.4.1.
 - **Regla 60-30-10** en cada vista, **medida con capturas** (1440 y 390 px,
@@ -708,8 +718,10 @@ ritmo del movimiento y la accesibilidad no cambian.
   ("Horneado cada mañana"), el `h1` "El sabor / *de siempre*" en Fraunces
   grande (la segunda línea en cursiva en horno y desplazada), la frase
   **"Pan recién horneado, todos los días."** en cursiva, el botón
-  **"Nuestros panes"** con el icono de la **hogaza** y "Cómo llegar" con el
-  pin. A la derecha la foto **cuadrada en arco** (unos 460 px, marco fino a
+  **"Nuestros panes"** con la **hogaza** blanca de contorno horno y un filete
+  punteado por dentro (a 8 px del borde, fuera de las mordidas; desde el 27
+  de octubre de 2026), y "Cómo llegar" con el pin más grande (36 px, 28 en el
+  teléfono), macizo en ámbar con contorno y punto horno. A la derecha la foto **cuadrada en arco** (unos 460 px, marco fino a
   10 px), con el pie "Miga abierta, corteza tostada" y el **sello** "Hecho a
   mano · Pan de la casa", quieto (solo gira un poco con el puntero encima;
   **nunca con el scroll**: marea). La nota "Horneando ahora mismo" sale de
@@ -727,10 +739,13 @@ ritmo del movimiento y la accesibilidad no cambian.
   - Al entrar: rótulo, título, frase y botones suben uno tras otro; la foto
     se descubre de abajo arriba; el sello cae girando. Una vez, escena.
 - **Cinta en horno** baja (el relleno vertical de antes, no la versión alta del 26 de octubre) (en lugar de la franja de trigo): Panes, Dulces y
-  pasteles, Bebidas, cada una con su icono de línea (hogaza, galleta con
-  chispas, botella), separadas por ✦; cada una es un enlace a su categoría. Al pasar
+  pasteles, Bebidas, cada una con su icono de línea (hogaza, pastelito con
+  cereza, botella), separadas por ✦; cada una es un enlace a su categoría. Al pasar
   el puntero, cada icono acompaña la ola de las letras con un movimiento
   breve propio; con menos movimiento se queda quieto.
+- **Pantallas altas** (27 de octubre de 2026): en escritorio la foto, el
+  titular y el aire de los botones crecen con el alto (`svh`) para no dejar
+  un vacío arriba y abajo; en las bajas se achican.
 - **Navegación superior**: la pastilla de la vista actual viaja a la opción
   elegida con una animación breve, también al entrar a Tienda desde una de
   sus categorías; se desactiva con movimiento reducido. La cuenta seleccionada
@@ -772,7 +787,9 @@ ritmo del movimiento y la accesibilidad no cambian.
   un `span` `aria-hidden`, sin cambiar el nombre accesible), el texto y el
   borde pasa a `--horno` (el texto ya lo es) y el pin da un saltito. Con
   menos movimiento solo cambia el color.
-- **Menú de arriba: todo en blanco** (W1 y S2 de `muestra-colores.html`,
+- **Menú de arriba: todo en blanco** (desde el 27 de octubre de 2026, la
+  pastilla tenue también se levanta 2 px y deja una sombra suave con el
+  puntero, salvo la de la página actual) (W1 y S2 de `muestra-colores.html`,
   23 de octubre de 2026; sustituye al ámbar de M2, que no gustó). Con el
   puntero, sobre el mismo enlace se enciende en su sitio un **blanco
   tenue** (`--papel` al 16 %, opacidad y `scale(.85)` → 1, respuesta
@@ -784,12 +801,13 @@ ritmo del movimiento y la accesibilidad no cambian.
   `--papel`. Entre 681 y 900 px el menú va centrado en el hueco entre el
   logo y los botones (rejilla `auto 1fr auto`, logo de 52 px), para que
   nada se pise.
-- **La cinta de categorías** también sin ámbar: con el puntero se enciende
-  en su sitio una pastilla `--papel` llena con el texto y el icono en
-  `--horno` y las letras saltan en secuencia, como una ola; el lector de
-  pantalla sigue recibiendo el nombre de cada categoría como una sola frase.
-  Con menos movimiento no hay ola. (Un blanco tenue sobre la cinta dejaría
-  el texto por debajo de 4,5:1.)
+- **La cinta de categorías** es **clara** desde el 27 de octubre de 2026:
+  fondo avena (`--masa` con un 6 % de `--horno`), filete doble `--horno` por
+  arriba, texto e iconos en `--horno` y las estrellas en `--ambar-texto`. Con
+  el puntero se enciende en su sitio una pastilla `--ambar` llena (texto e
+  icono siguen en `--horno`, 7,5:1) y las letras saltan en secuencia, como
+  una ola; el lector de pantalla sigue recibiendo el nombre de cada
+  categoría como una sola frase. Con menos movimiento no hay ola.
 - **Iconos de línea** del mismo trazo que los dibujos de trigo
   (`comun/iconos.jsx`): hogaza, rebanada, botella, espiga, pin, flecha y
   **cesta con asa**, que pasa a ser el icono de la canasta (arriba y la
@@ -808,7 +826,12 @@ clases o en piezas comunes, no copiado.
   con el tratamiento del `h1` de la portada (Fraunces grande, la segunda
   línea en cursiva en horno y desplazada), "No hacemos pan rápido. Hacemos
   pan que vale la espera." en cursiva como la frase de la portada, el
-  párrafo de la madrugada en Arial, y **"Conoce nuestro local"** con el
+  párrafo de la madrugada en Arial, y **"Conoce nuestro local"** (desde el 27
+  de octubre de 2026 **de ámbar liso** con borde y sombra dura en
+  horno y un filete punteado por dentro (como la línea de las fichas), el pin
+  de GPS en papel (blanco) con contorno y punto en horno en lugar de una flecha, texto horno; con el puntero o el foco sube
+  2 px, se aclara a `--ambar-claro` y la sombra crece; más aire bajo él
+  hasta el bloque de los principios) con el
   aspecto y la ola de "Cómo llegar" (pin, Fraunces en cursiva, filete
   `--ambar`), que sigue llevando a `#/contacto`.
 - **Sello propio** sobre la foto: "Masa madre · Hecho despacio", el mismo
@@ -887,6 +910,11 @@ la historia y los principios se leían como dos bloques:
 - Sigue todo lo demás: una sola pantalla sin scroll, la escena de
   entrada, menos movimiento, y crecer con scroll cuando con zoom no quepa.
 
+**Retoques del 27 de octubre de 2026** (mandan sobre lo de arriba donde
+choquen): los principios **ya no llevan "N.º"** (no es una secuencia) ni ✦;
+se separan con una **línea vertical muy tenue** y quedan icono, nombre y
+frase. En el teléfono, igual (icono y nombre).
+
 ### Contacto con el estilo de la portada (24 de octubre de 2026)
 
 Como Nosotros, sin muestra (elegido por el usuario) y con las mismas piezas
@@ -932,6 +960,18 @@ entrada), no copiadas.
   dice en el nombre), uno al lado del otro con el rótulo de cada uno
   encima, y la nota de que son de ejemplo, que **se ve siempre**:
   "Teléfono y redes de ejemplo (proyecto de clase)."
+- **Un solo principal** (27 de octubre de 2026): "Ver en el mapa" es el
+  único relleno de `--ambar` de la vista; WhatsApp e Instagram son
+  **secundarios**: fondo transparente, borde de 1,5 px `--sobre-horno`,
+  texto `--sobre-horno` e icono ámbar (13,7:1), con un blanco tenue con el
+  puntero. La tarjeta de Escríbenos y la columna del horario miden lo mismo
+  (la rejilla las estira y el contenido de la tarjeta va centrado).
+- **El mapa no atrapa el scroll**: el `iframe` lleva `pointer-events: none`
+  hasta hacer clic en el marco (clase `is-activo`); se restablece al salir
+  el puntero (ratón o lápiz), al tocar fuera o al desplazar la página. Con
+  el dedo no hay "salir": se suelta tocando fuera del mapa.
+- **El maíz** de la esquina de abajo a la derecha va entero, bajo la
+  tarjeta (la sección deja más sitio abajo), ya no asoma por el pie.
 - **Entrada**: la escena de la portada (rótulo, título, dirección y
   enlaces suben uno tras otro; el mapa se descubre de abajo arriba; el
   sello cae girando; las líneas del horario se dibujan). Una vez.
@@ -971,6 +1011,8 @@ pequeñas desde el 25 de octubre, sección 4).
   Las opciones de orden por precio y por nombre llevan una **flecha** (↑
   de menor a mayor y de la A a la Z, ↓ de mayor a menor), en el botón y en
   la lista; es adorno, el texto ya dice el sentido.
+- **Rótulos de los mandos** ("Filtrar por", "Ordenar por", "Mostrar"): horno
+  en negrita de .8rem, para que no se pierdan con el grano y los dibujos.
 - **El texto**, alineado a la izquierda como la portada (sin "Volver al
   inicio" desde el 25 de octubre): el rótulo con la espiga **"Nuestra vitrina"**; el
   `h1` con el nombre de la vista en Fraunces grande; y debajo una **frase
@@ -981,14 +1023,14 @@ pequeñas desde el 25 de octubre, sección 4).
   - Bebidas: "Para acompañar el pan."
 - **"Filtrar por" como la cinta**: Todas ✦ Panes ✦ Dulces y pasteles ✦
   Bebidas, en Fraunces cursiva, cada categoría con su icono de la cinta
-  (hogaza, galleta, botella) y la ola de letras con el puntero. La
+  (hogaza, pastelito, botella) y la ola de letras con el puntero. La
   elegida en una **pastilla `--horno` con el texto `--papel`, que se
   desliza de una categoría a otra** (un solo elemento compartido,
   `layoutId` de Motion, resorte corto de ~250 ms; con menos movimiento
   salta; si las categorías parten en dos filas, cruza de una a otra). Siguen
   siendo radios (Tab entra una vez, las flechas cambian), con el rótulo
   "Filtrar por" en versalitas. El nombre de cada radio es el de siempre
-  (el texto entero escondido de la ola); las estrellas son adorno; el
+  (el texto entero escondido de la ola); sin adornos entre ellas desde el 27 de octubre de 2026; el
   foco se ve en la etiqueta con el anillo de los campos. En el teléfono
   el rótulo va encima y las categorías parten en las líneas que hagan
   falta, sin estrellas. El icono de cada categoría es uno solo para la
@@ -1078,6 +1120,13 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
 ## 13. Pendiente
 
 ### Contenido y confianza
+- [ ] Llegar a **10 productos por categoría** (hoy 6 panes, 5 dulces, 6 bebidas frías;
+      pedido del 21 de octubre). El usuario pasa los productos; cada uno con su foto
+      `-420.jpg` y `-840.jpg`, y entran en `data/productos.json` y en `bd/`.
+- [ ] Barra de pasos desde la canasta hasta la confirmación (pedido del 21 de octubre).
+- [ ] Modales de confirmación al vaciar la canasta y al quitar un producto (hoy: Deshacer 12 s).
+- [ ] Revisar el formato de los correos de verificación y de comprobante (plantillas en Brevo y EmailJS).
+- [x] Mini panel al agregar: descartado, basta el destello (decidido el 27 de octubre de 2026).
 - [ ] Teléfono, WhatsApp e Instagram reales, o quitarlos del JSON-LD y de los enlaces.
 - [ ] Ingredientes y alérgenos por producto (confirmados por el negocio).
 - [ ] Unidad del precio (pieza, funda, docena).

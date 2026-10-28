@@ -91,14 +91,12 @@ function Nosotros() {
               <h2 id="principios-titulo" className="principios-titulo">Tres cosas que no cambiamos</h2>
               <span className="linea-doble" aria-hidden="true"></span>
             </div>
-            {/* La lista ya dice cuantos son y en que puesto va cada uno: el
-                "N.º" es para la vista y el lector se lo salta. Las estrellas
-                que los separan son de CSS (::before), sin texto. role="list"
-                porque Safari quita el rol de lista con list-style: none. */}
+            {/* Sin numeros: no es una secuencia. Los separa una linea vertical
+                tenue de CSS (::before), sin texto. role="list" porque Safari
+                quita el rol de lista con list-style: none. */}
             <ol className="principios" role="list">
               {PRINCIPIOS.map((p, i) => (
                 <li key={p.clase} className={`principio ${p.clase}`} style={{ '--n': i }}>
-                  <span className="rotulo principio-numero" aria-hidden="true">N.º {i + 1}</span>
                   {p.dibujo}
                   <h3>{p.nombre}</h3>
                   <p>{p.frase}</p>

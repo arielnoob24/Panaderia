@@ -59,12 +59,23 @@ function ControlCantidad({ nombre, precio }) {
 
   const tope = enTope(n);
 
+  // Al agregar, el + pasa a una palomita un instante (solo aspecto: no toca
+  // lo que se pide). Es un contador y no un booleano: cada toque reinicia el reloj; el nombre accesible del
+  // boton no cambia y el anuncio ya lo hace avisar().
+  const [agregado, setAgregado] = useState(0);
+  useEffect(() => {
+    if (!agregado) return undefined;
+    const reloj = setTimeout(() => setAgregado(0), 900);
+    return () => clearTimeout(reloj);
+  }, [agregado]);
+
   const alMas = () => {
     // En el tope el mas no suma: dice por que, sin brinco ni destello.
     if (tope) { avisar(avisoTope(nombre)); return; }
     const despues = hacer({ tipo: 'agregar', id, nombre, precio });
     soltarGolpe(golpesRef.current, '+1');
     pideDestello.current = true;
+    setAgregado((v) => v + 1);
     latir();
     avisar(`${nombre} añadido. ${cuantosQuedan(despues)}`);
   };
@@ -171,7 +182,9 @@ function ControlCantidad({ nombre, precio }) {
         data-tip={tope ? consejoTope : (n ? 'Uno más' : 'Añadir a la canasta')}
         onClick={alMas}
       >
-        +
+        {agregado > 0
+          ? <svg className="card-palomita" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+          : '+'}
       </button>
       <span ref={golpesRef} className="card-golpes" aria-hidden="true"></span>
     </div>
