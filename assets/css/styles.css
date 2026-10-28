@@ -7,6 +7,7 @@
   --horno: #3a2822;
   --ambar: #e8a87c;
   --papel: #fffdf8;
+  --rojo: #a63a2e;               /* solo lo que borra (la X de la canasta): 6,3:1 sobre papel */
 
   /* Tonos derivados de los cinco de arriba. No son colores nuevos:
      cada uno es el mismo matiz con otra luminosidad. */
@@ -1033,8 +1034,11 @@ body.is-checkout .floating-whatsapp { display: none; }
 .canasta-subtotal { color: var(--horno); font: 700 1.08rem/1.2 Arial, sans-serif; font-variant-numeric: tabular-nums; }
 /* La X va en gris y sin fondo, en la esquina: es una salida a mano, no algo
    que deba llamar la atencion por encima del + y el -. */
-.canasta-quitar { display: grid; width: 32px; height: 32px; flex: 0 0 auto; margin: -.3rem -.35rem 0 0; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--horno-suave); cursor: pointer; font: 1.35rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.con-puntero .canasta-quitar:hover, .canasta-quitar:focus-visible { background: var(--masa); color: var(--horno); }
+.canasta-quitar { display: grid; width: 32px; height: 32px; flex: 0 0 auto; margin: -.3rem -.35rem 0 0; place-items: center; background: none; border: 0; border-radius: 50%; color: var(--rojo); cursor: pointer; font: 1.35rem/1 Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+.con-puntero .canasta-quitar:hover, .canasta-quitar:focus-visible { background: rgba(166, 58, 46, .1); color: var(--rojo); }
+/* La fila del nombre mide siempre lo que la X, la lleve o no (con una sola unidad no
+   sale): asi todas las lineas de la canasta tienen el mismo alto. */
+.canasta-fila:not(.canasta-fila-baja) { min-height: calc(32px - .3rem); }
 /* El mismo control que en la ficha del catalogo, al detalle: el "mas" en ambar
    relleno, el basurero en horno y la pastilla con su pizca de aire. Es el
    mismo gesto sobre el mismo producto, y cambiarle el aspecto segun desde donde
