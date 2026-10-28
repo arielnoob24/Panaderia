@@ -303,7 +303,8 @@ panes", con la cinta o con el menú.
   sin sacar el foco del campo (con 0 el producto sale y el foco pasa al +).
 - **Vaciar la canasta** pregunta en una hoja modal (`ConfirmarVaciar.jsx`, 27 de
   octubre de 2026): foco en "Cancelar", Esc cancela, lo de detrás inert. Quitar
-  una sola línea sigue con su pregunta en el sitio.
+  una sola línea (X, basurero o `−` de la última unidad) es directo, sin pregunta:
+  Deshacer lo recupera.
 - **Deshacer** durante 12 s al quitar o al vaciar. El reloj se para con el foco o el puntero encima. Mientras
   la barra se ve en el teléfono, `scroll-padding-bottom` sube a 168 px para que
   no tape el foco. Con la canasta abierta, mientras se ve la barra, la
@@ -1127,8 +1128,8 @@ prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
       `-420.jpg` y `-840.jpg`, y entran en `data/productos.json` y en `bd/`.
 - [x] Barra de pasos: la corta (Confirmar y pagar → Pedido listo) está hecha; la larga con
       "Canasta" se descartó el 27 de octubre de 2026.
-- [x] Modal de confirmación al vaciar la canasta (27 de octubre de 2026); al quitar un
-      producto se queda la pregunta en el sitio y Deshacer (decidido).
+- [x] Modal de confirmación al vaciar la canasta (27 de octubre de 2026); quitar un
+      producto es directo con Deshacer, sin pregunta (decidido el mismo día).
 - [ ] Revisar el formato de los correos de verificación y de comprobante (plantillas en Brevo y EmailJS).
 - [x] Mini panel al agregar: descartado, basta el destello (decidido el 27 de octubre de 2026).
 - [ ] Teléfono, WhatsApp e Instagram reales, o quitarlos del JSON-LD y de los enlaces.

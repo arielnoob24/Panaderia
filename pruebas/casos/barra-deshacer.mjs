@@ -69,7 +69,6 @@ async function enLaCanasta(t) {
     await p.waitForSelector('.canasta-panel.is-open .canasta-quitar');
     await espera(300);
     await p.locator('.canasta-panel .canasta-quitar').first().tap();
-    await p.locator('.canasta-panel .canasta-confirma-si:visible').first().tap();
     const hay = await esperaQue(() => p.isVisible('.deshacer-barra'));
     t.ok(hay, `[canasta ${nombre}] no salio la barra de deshacer`);
     if (!hay) { await ctx.close(); continue; }

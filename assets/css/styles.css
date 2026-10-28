@@ -1050,21 +1050,6 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* El basurero de la ultima unidad, al mismo tamanio que en la ficha. */
 .canasta-cantidad .card-icono { width: 17px; height: 17px; }
 
-/* ---- "¿Lo quitamos de la canasta?" ---------------------------------------
-   La pregunta ocupa el sitio del control de cantidad, en la misma linea del
-   producto: preguntar en una ventana aparte obligaria a mirar a otro lado para
-   contestar por algo que esta aqui. El nombre se queda arriba, asi que la
-   pregunta no tiene que repetirlo y puede ser corta. */
-.canasta-confirma-dicho { margin: .15rem 0 0; color: var(--horno); font: 700 .85rem/1.4 Arial, sans-serif; }
-.canasta-confirma { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .5rem; }
-.canasta-confirma button { padding: .4rem .8rem; border-radius: var(--r-pill); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui); }
-/* El que borra lleva el horno y no el ambar de los demas botones:
-   es el unico de la canasta que deshace algo, y conviene que no se pulse por
-   inercia creyendo que es el de siempre. */
-.canasta-confirma-si { background: var(--horno); border: 0; color: var(--sobre-horno); }
-.con-puntero .canasta-confirma-si:hover { background: var(--horno-suave); }
-.canasta-confirma-no { background: none; border: 1px solid var(--masa-linea); color: var(--horno); }
-.con-puntero .canasta-confirma-no:hover { background: var(--masa); }
 /* Vaciar va debajo de la lista, a la derecha y discreto: es una salida, no lo
    que se viene a hacer a la canasta. */
 .canasta-vaciar-zona { margin-top: .6rem; text-align: right; }
@@ -1267,25 +1252,25 @@ body.is-checkout .floating-whatsapp { display: none; }
    que: el comprobante va al correo de la cuenta. Es una hoja que sube desde
    abajo, donde se acaba de pulsar "Ir a pagar", sobre la canasta oscurecida:
    un renglon encima del boton pasaba desapercibido. */
-.pide-cuenta { position: absolute; inset: 0; z-index: 2; display: flex; align-items: flex-end; background: rgba(58, 40, 34, .6); animation: pide-fondo var(--dur-base) var(--ease-out) both; }
-.pide-cuenta[hidden] { display: none; }
-.pide-cuenta-hoja { display: grid; width: 100%; justify-items: center; gap: .55rem; padding: 1.8rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom)); background: var(--papel); border-radius: 22px 22px 0 0; box-shadow: 0 -14px 34px rgba(58, 40, 34, .3); text-align: center; animation: pide-sube var(--dur-slow) var(--ease-out) both; }
+:is(.pide-cuenta, .confirmar-vaciar) { position: absolute; inset: 0; z-index: 2; display: flex; align-items: flex-end; background: rgba(58, 40, 34, .6); animation: pide-fondo var(--dur-base) var(--ease-out) both; }
+:is(.pide-cuenta, .confirmar-vaciar)[hidden] { display: none; }
+:is(.pide-cuenta-hoja, .confirmar-vaciar-hoja) { display: grid; width: 100%; justify-items: center; gap: .55rem; padding: 1.8rem 1.5rem calc(1.4rem + env(safe-area-inset-bottom)); background: var(--papel); border-radius: 22px 22px 0 0; box-shadow: 0 -14px 34px rgba(58, 40, 34, .3); text-align: center; animation: pide-sube var(--dur-slow) var(--ease-out) both; }
 /* En pantallas bajas (el telefono tumbado, 640x360) la hoja mide mas que la
    gaveta y, pegada abajo, se salia por arriba con el titulo fuera. Se queda
    en el alto de la gaveta y lo que sobra se desplaza dentro de ella. */
-.pide-cuenta-hoja { max-height: 100%; overflow-y: auto; overscroll-behavior: contain; }
-.pide-cuenta-dibujo { display: grid; width: 68px; height: 68px; margin-bottom: .3rem; place-items: center; background: var(--ambar); border-radius: 50%; box-shadow: 0 0 0 8px rgba(232, 168, 124, .2); color: var(--horno); }
-.pide-cuenta-dibujo svg { width: 34px; height: 34px; }
-.pide-cuenta-hoja h3 { margin: 0; color: var(--horno); font: 500 1.5rem/1.2 var(--letra-titulo); }
-.pide-cuenta-hoja p { max-width: 32ch; margin: 0 0 .5rem; color: var(--horno-suave); font: .92rem/1.5 Arial, sans-serif; }
+:is(.pide-cuenta-hoja, .confirmar-vaciar-hoja) { max-height: 100%; overflow-y: auto; overscroll-behavior: contain; }
+:is(.pide-cuenta-dibujo, .confirmar-vaciar-dibujo) { display: grid; width: 68px; height: 68px; margin-bottom: .3rem; place-items: center; background: var(--ambar); border-radius: 50%; box-shadow: 0 0 0 8px rgba(232, 168, 124, .2); color: var(--horno); }
+:is(.pide-cuenta-dibujo, .confirmar-vaciar-dibujo) svg { width: 34px; height: 34px; }
+:is(.pide-cuenta-hoja, .confirmar-vaciar-hoja) h3 { margin: 0; color: var(--horno); font: 500 1.5rem/1.2 var(--letra-titulo); }
+:is(.pide-cuenta-hoja, .confirmar-vaciar-hoja) p { max-width: 32ch; margin: 0 0 .5rem; color: var(--horno-suave); font: .92rem/1.5 Arial, sans-serif; }
 .pide-cuenta-hoja p strong { color: var(--horno); }
-.pide-cuenta-hoja .button { width: 100%; justify-content: center; }
+:is(.pide-cuenta-hoja, .confirmar-vaciar-hoja) .button { width: 100%; justify-content: center; }
 .pide-cuenta-volver { min-height: 44px; padding: .4rem .8rem; background: none; border: 0; color: var(--horno-suave); cursor: pointer; font: 700 .85rem Arial, sans-serif; text-decoration: underline; text-underline-offset: 3px; }
 .pide-cuenta-volver:hover { color: var(--horno); }
 @keyframes pide-fondo { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pide-sube { from { transform: translateY(100%); } to { transform: none; } }
 @media (prefers-reduced-motion: reduce) {
-  .pide-cuenta, .pide-cuenta-hoja { animation: none; }
+  .pide-cuenta, .pide-cuenta-hoja, .confirmar-vaciar, .confirmar-vaciar-hoja { animation: none; }
 }
 
 /* ---- Canal del comprobante ----------------------------------------------

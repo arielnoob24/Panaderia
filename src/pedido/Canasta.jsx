@@ -29,23 +29,18 @@ import GuardadoCanasta from './GuardadoCanasta.jsx';
 function Canasta() {
   const { lineas, unidades: n, subtotal, hacer } = usePedido();
   const {
-    abierta, cerrar, pide, setPide, botonRef, barraRef, deshacerRef, tituloRef, enfocarLinea,
+    abierta, cerrar, pide, setPide, botonRef, barraRef, deshacerRef, tituloRef,
   } = useCanasta();
   const avisar = useAvisos();
   const sesion = useSesion();
   const navegar = useNavigate();
   const { pathname } = useLocation();
 
-  // Que linea espera un si o un no ({ id, desde }) y si se pregunta por
-  // vaciar. La hoja de la cuenta (pide) es de CanastaProvider.
-  const [porConfirmar, setPorConfirmar] = useState(null);
+  // Si se pregunta por vaciar. La hoja de la cuenta (pide) es de CanastaProvider.
   const [preguntaVaciar, setPreguntaVaciar] = useState(false);
   // Una pregunta sin contestar no sobrevive al cierre: al volver, todo se ve
-  // como estaba y no con un "¿lo quitamos?" de la visita anterior.
-  if (!abierta && (porConfirmar || preguntaVaciar)) {
-    setPorConfirmar(null);
-    setPreguntaVaciar(false);
-  }
+  // como estaba y no con un "¿vaciamos?" de la visita anterior.
+  if (!abierta && preguntaVaciar) setPreguntaVaciar(false);
 
   const panelRef = useRef(null);
   const cerrarRef = useRef(null);
@@ -92,29 +87,12 @@ function Canasta() {
 
   useAtraparFoco(abierta, [panelRef, barraRef], cerrar);
 
-  // ---- Quitar una linea, con pregunta ----------------------------------
-  const pedirQuitar = (id, desde) => {
+  // ---- Quitar una linea, sin pregunta ----------------------------------
+  // Se quita de una vez (27 de octubre de 2026): la barra de Deshacer da 12 s
+  // para recuperarla, que es mas amable que una pregunta en cada linea.
+  // Vaciar todo si pregunta (ConfirmarVaciar.jsx).
+  const quitarLinea = (id) => {
     const l = lineas.find(([otro]) => otro === id)?.[1];
-    if (!l) return;
-    setPorConfirmar({ id, desde });
-    // El foco va al "Si, quitar": quien pulso el basurero o la X ya dijo lo
-    // que queria, y la pregunta esta para que lo vea.
-    enfocarLinea(id, 'si');
-    avisar(l.cantidad === 1
-      ? `¿Quitar ${l.nombre} de la canasta?`
-      : `¿Quitar las ${l.cantidad} unidades de ${l.nombre} de la canasta?`);
-  };
-  const cancelarQuitar = (id) => {
-    if (porConfirmar?.id !== id) return;
-    const nombre = lineas.find(([otro]) => otro === id)?.[1].nombre;
-    setPorConfirmar(null);
-    // De vuelta al boton del que salio la pregunta.
-    enfocarLinea(id, porConfirmar.desde);
-    avisar(`${nombre || 'El producto'} sigue en la canasta.`);
-  };
-  const confirmarQuitar = (id) => {
-    const l = lineas.find(([otro]) => otro === id)?.[1];
-    setPorConfirmar(null);
     if (!l) return;
     let despues;
     flushSync(() => { despues = hacer({ tipo: 'quitar', id }); });
@@ -130,7 +108,7 @@ function Canasta() {
     avisar(`${queda} de ${nombre}. ${productos(unidades(despues.lineas))} en la canasta.`);
   };
   const alMenos = (id, l) => {
-    if (l.cantidad === 1) { pedirQuitar(id, 'menos'); return; }
+    if (l.cantidad === 1) { quitarLinea(id); return; }
     decirComoQueda(hacer({ tipo: 'cambiar', id, cantidad: l.cantidad - 1 }), id, l.nombre);
   };
   const alMas = (id, l) => {
@@ -153,7 +131,6 @@ function Canasta() {
   const siVaciar = () => {
     flushSync(() => {
       setPreguntaVaciar(false);
-      setPorConfirmar(null);
       hacer({ tipo: 'vaciar' });
     });
     avisar('Vaciaste la canasta.');
@@ -225,12 +202,9 @@ function Canasta() {
                       id={id}
                       linea={l}
                       foto={fotoDeLinea(l.nombre)}
-                      confirmando={porConfirmar?.id === id}
                       onMenos={alMenos}
                       onMas={alMas}
-                      onQuitar={pedirQuitar}
-                      onSi={confirmarQuitar}
-                      onNo={cancelarQuitar}
+                      onQuitar={quitarLinea}
                     />
                   ))}
                 </AnimatePresence>
