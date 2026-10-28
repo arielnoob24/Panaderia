@@ -54,6 +54,13 @@ export default async function checkoutCabeza(t) {
     t.ok(c.ancho < c.fila * .6, `[${nombre}] "Volver a la tienda" ocupa ${c.ancho} de ${c.fila} px`);
     t.ok(!c.clases.join(' ').includes('vista-'), `[${nombre}] la cabeza del pago lleva clases de la tienda (${c.clases})`);
 
+    // La barra de pasos corta: dos pasos, el primero es el actual (horno con texto papel).
+    const pasos = await p.evaluate(() => [...document.querySelectorAll('.checkout-pasos li')].map((li) => ({
+      texto: li.textContent, actual: li.getAttribute('aria-current'), fondo: getComputedStyle(li).backgroundColor, color: getComputedStyle(li).color,
+    })));
+    t.ok(pasos.length === 2 && pasos[0].actual === 'step' && pasos[1].actual === null && /Confirmar y pagar/.test(pasos[0].texto) && /Pedido listo/.test(pasos[1].texto), `[${nombre}] la barra de pasos no marca el paso 1 de 2 (${JSON.stringify(pasos)})`);
+    t.ok(pasos[0].fondo === 'rgb(58, 40, 34)' && pasos[0].color === 'rgb(255, 253, 248)', `[${nombre}] el paso actual no es horno con texto papel (${JSON.stringify(pasos[0])})`);
+
     await pulsar('.checkout-volver');
     await esperaQue(() => p.evaluate(() => location.hash === '#/'));
     t.ok((await p.evaluate(() => location.hash)) === '#/', `[${nombre}] "Volver a la tienda" no sale del pago`);

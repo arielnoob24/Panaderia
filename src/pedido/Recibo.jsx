@@ -42,7 +42,7 @@ function Recibo({ recibo: r }) {
   return (
     <section id="confirmar" className="checkout section-pad">
       <div className="container">
-        <CabezaPedido titulo="Pedido confirmado" tituloRef={tituloRef} onVolver={salir} />
+        <CabezaPedido titulo="Pedido confirmado" paso={2} tituloRef={tituloRef} onVolver={salir} />
         <div className="checkout-paso" data-checkout="comprobante">
           <div className="checkout-recibo">
             <div className="recibo-cuerpo">

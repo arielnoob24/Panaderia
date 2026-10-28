@@ -11,6 +11,7 @@
   /* Tonos derivados de los cinco de arriba. No son colores nuevos:
      cada uno es el mismo matiz con otra luminosidad. */
   --ambar-claro: #f3c4a0;      /* acento en hover */
+  --ambar-texto: color-mix(in srgb, var(--ambar) 45%, var(--horno)); /* el ambar oscurecido para texto y borde de acento sobre claro: 5,3:1 sobre papel y 4,8:1 sobre masa (el ambar puro no pasa de 1,9:1) */
   --horno-suave: #5e514a;      /* texto secundario sobre fondo claro */
   --horno-claro: #7a6c65;      /* horno aclarado con masa, para el puntero en los filtros */
   --masa-linea: #ded2c2;       /* bordes y filetes */
@@ -162,6 +163,11 @@ section[id] { scroll-margin-top: -12px; }
   .site-header .main-nav > a { padding: .55rem .9rem; }
   .con-puntero .site-header .main-nav > a::before { position: absolute; top: 50%; right: 0; left: 0; z-index: -1; height: 2.3rem; margin-top: -1.15rem; content: ""; background: var(--papel-tenue); border-radius: var(--r-pill); opacity: 0; pointer-events: none; transform: scale(.85); transition: opacity var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-soft); }
   .con-puntero .site-header .main-nav > a:hover::before { opacity: 1; transform: none; }
+  /* Hover bien definido: la pastilla se despega ~2 px y deja una sombra suave.
+     La sombra va fija en la capa y entra con su opacidad (sin animar
+     box-shadow). La pagina actual ya es blanca llena y no se levanta. */
+  .con-puntero .site-header .main-nav > a:not([aria-current="page"])::before { box-shadow: 0 4px 12px rgba(0, 0, 0, .3); }
+  .con-puntero .site-header .main-nav > a:not([aria-current="page"]):hover::before { transform: translateY(-2px); }
 }
 /* Entre la tableta y el corte del telefono no caben logo, menu y botones
    con el menu centrado en la pagina (rejilla 1fr auto 1fr): a 681 px
@@ -319,14 +325,14 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .product-card::after { position: absolute; inset: -1px; content: ""; box-shadow: 6px 6px 0 var(--horno); opacity: 0; pointer-events: none; transition: opacity var(--dur-slow) var(--ease-soft); }
 .product-card.catalog-enter { animation: rise var(--dur-slow) var(--ease-out) both; animation-delay: var(--catalog-delay, 0ms); }
 .product-grid.is-filtering .product-card { opacity: .35; transform: scale(.985); transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out); }
-.product-image { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--masa-honda); transition: background-color var(--dur-base) var(--ease-ui); }
+.product-image { --crema-foto: color-mix(in srgb, var(--ambar) 18%, var(--masa)); position: relative; aspect-ratio: 4 / 3; overflow: hidden; padding: .5rem; background: var(--crema-foto); border-radius: var(--r-chip) var(--r-chip) 0 0; transition: background-color var(--dur-base) var(--ease-ui); }
 /* Mientras la foto llega, su hueco late. Antes era un color plano y quieto,
    que no distingue "esta cargando" de "esto se colgo". Late solo el hueco:
    el nombre y el precio ya estan ahi desde el primer momento y taparlos
    seria esconder algo que ya se puede leer. */
 .product-image.is-loading { background: var(--masa-carga); animation: latir-carga 1.5s var(--ease-ui) infinite; }
 @keyframes latir-carga { 0%, 100% { background-color: var(--masa-carga); } 50% { background-color: var(--masa); } }
-.product-image img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-editorial) var(--ease-out); }
+.product-image img { width: 100%; height: 100%; border-radius: calc(var(--r-chip) - 2px) calc(var(--r-chip) - 2px) 0 0; object-fit: cover; opacity: 0; transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-editorial) var(--ease-out); }
 .product-image img.is-loaded { opacity: 1; }
 /* El sello, como un sello de tinta: doble aro (el de dentro, del color del
    texto) y versalitas. 11 px de letra como poco (antes 9, no se leia), y el
@@ -341,7 +347,7 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .product-categoria { margin-bottom: .4rem; color: var(--horno); font: 600 .7rem/1.3 var(--letra-texto); letter-spacing: .2em; text-transform: uppercase; }
 /* El nombre en Fraunces, como en la canasta: es el mismo producto y se
    reconoce por la letra. */
-.product-info h3 { margin: 0 0 .5rem; font: 500 1.35rem/1.15 var(--letra-titulo); font-variation-settings: "opsz" 36, "SOFT" 50; }
+.product-info h3 { min-height: 2.3em; margin: 0 0 .5rem; font: 500 1.35rem/1.15 var(--letra-titulo); font-variation-settings: "opsz" 36, "SOFT" 50; }
 /* Sin tamanios, el aire minimo hasta el pie lo pone el nombre. */
 .product-info h3:has(+ .product-bottom) { margin-bottom: .9rem; }
 .product-info > p { min-height: 50px; margin: 0; color: var(--horno-suave); font: .85rem/1.5 Arial, sans-serif; }
@@ -363,11 +369,12 @@ h2 em { color: var(--ambar); font-weight: 500; }
 .tamano-input:disabled + .tamano { cursor: default; opacity: .45; }
 .con-puntero .tamano-input:disabled + .tamano:hover { border-color: var(--horno-claro); color: var(--horno-suave); }
 
-.product-bottom { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: auto; padding-top: .75rem; border-top: 1px dashed var(--masa-linea); }
+.product-bottom { display: flex; align-items: center; justify-content: space-between; gap: .6rem; margin-top: auto; padding-top: .75rem; }
 /* El precio es lo segundo que se busca despues del nombre: va mas grande que
    el, en Fraunces y con cifras de pizarra (todas del mismo ancho). */
 .product-bottom strong { font: 600 1.4rem/1.2 var(--letra-titulo); font-variant-numeric: lining-nums tabular-nums; }
-/* Del precio al control, puntos como en la pizarra de la panaderia. */
+/* Del precio al control, puntos como en la pizarra de la panaderia: la unica
+   linea punteada de la ficha (sin divisoria encima), como en un ticket. */
 .product-puntos { flex: 1; min-width: .8rem; border-bottom: 2px dotted var(--horno-suave); opacity: .5; transform: translateY(5px); }
 .order-button { display: inline-flex; align-items: center; gap: .35rem; padding: .45rem .65rem; background: var(--ambar); color: var(--horno); border-radius: var(--r-chip); font: 700 .78rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui); }
 .con-puntero .order-button:hover, .order-button:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
@@ -393,6 +400,16 @@ h2 em { color: var(--ambar); font-weight: 500; }
 /* Igual que los chips: 44 px de alto para el dedo, y a lo ancho lo que mide,
    porque el menos, el numero y el mas van pegados. */
 .card-cantidad button::before { position: absolute; inset: calc((100% - 44px) / 2) 0; content: ""; }
+/* El + se toca en 44 x 44 aunque se vea de 30 a 34: la zona crece a los
+   lados tambien (hacia fuera; con la pastilla abierta, solo a la derecha para
+   no tapar el numero). */
+.card-cantidad .card-mas::before { inset: calc((100% - 44px) / 2); }
+.card-cantidad.is-lleno .card-mas::before { left: 0; }
+/* Al agregar el + pasa a una palomita un instante (ControlCantidad.jsx):
+   entra con un fundido corto; con menos movimiento solo cambia. */
+.card-palomita { width: 55%; height: 55%; animation: palomita-entra var(--dur-fast) var(--ease-out) both; }
+@keyframes palomita-entra { from { opacity: 0; transform: scale(.6); } }
+@media (prefers-reduced-motion: reduce) { .card-palomita { animation: none; } }
 /* El ambar solo no se separa del papel de la ficha: un aro de horno lo marca. */
 .card-cantidad .card-mas { background: var(--ambar); box-shadow: inset 0 0 0 1px var(--horno); }
 .con-puntero .card-cantidad .card-mas:hover, .card-cantidad .card-mas:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); }
@@ -705,6 +722,15 @@ body.is-checkout .floating-whatsapp { display: none; }
 .checkout-volver { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem .5rem .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
 .con-puntero .checkout-volver:hover { background: var(--masa); border-color: var(--ambar); }
 .checkout-volver svg { width: 16px; height: 16px; }
+/* La barra de pasos: dos pastillas unidas por un filete. El paso actual en horno
+   con texto papel (13,7:1), el hecho con la marca en ambar y el que falta tenue. */
+.checkout-pasos { display: flex; align-items: center; gap: .6rem; margin: 0; padding: 0; list-style: none; font: 700 .8rem/1.2 var(--letra-texto); }
+.checkout-pasos li { display: inline-flex; align-items: center; gap: .5rem; padding: .3rem .85rem .3rem .35rem; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno-suave); }
+.checkout-paso-num { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--masa); color: var(--horno); font-size: .78rem; }
+.checkout-pasos .is-actual { background: var(--horno); border-color: var(--horno); color: var(--papel); }
+.checkout-pasos .is-actual .checkout-paso-num { background: var(--ambar); color: var(--horno); }
+.checkout-pasos .is-hecho { color: var(--horno); }
+.checkout-pasos .is-hecho .checkout-paso-num { background: var(--ambar); }
 .checkout-titulo { align-self: stretch; margin: 0; font: 500 clamp(2.4rem, 5vw, 3.6rem)/1 var(--letra-titulo); text-align: center; }
 .checkout-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); align-items: start; gap: 1.6rem 2.4rem; }
 .checkout-datos { min-width: 0; }
