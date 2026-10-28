@@ -264,8 +264,8 @@ const pedidosDe = (correo) => {
 // caso lo cambia con ponerRol(). Los pedidos son los de todas las cuentas de
 // esa ventana; los productos, el catalogo de data/productos.json.
 const PERMISOS = {
-  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver'],
-  Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado'],
+  Administrador: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'productos.gestionar', 'reportes.ver', 'inventario.ver'],
+  Empleado: ['pedidos.ver_todos', 'pedidos.cambiar_estado', 'inventario.ver'],
   Cliente: [],
 };
 const ponerRol = (correo, rol) => {
@@ -329,6 +329,29 @@ async function admin(sv, route) {
     p.destacado = d.destacado;
     for (const t of p.tamanos) if (d.precios?.[t.codigo] !== undefined) t.precio = d.precios[t.codigo];
     return contestar(route, 200, p);
+  }
+  if (ruta === '/inventario' && req.method() === 'GET') {
+    if (!permisos.includes('inventario.ver')) return sin();
+    const costos = permisos.includes('reportes.ver');
+    const mats = [
+      { codigo: 'MAT001', nombre: 'Harina de trigo', existencia: 12.5, unidad: 'kg', existenciaCompra: 0.25, unidadCompra: 'qq', minimo: 45, bajoMinimo: true, valor: 18.4 },
+      { codigo: 'MAT002', nombre: 'Azúcar', existencia: 80, unidad: 'kg', existenciaCompra: 1.6, unidadCompra: 'qq', minimo: 20, bajoMinimo: false, valor: 70 },
+      { codigo: 'MAT003', nombre: 'Huevos', existencia: 0, unidad: 'u', existenciaCompra: 0, unidadCompra: 'cubeta', minimo: 30, bajoMinimo: true, valor: 0 },
+    ].map((m) => ({ ...m, valor: costos ? m.valor : null }));
+    return contestar(route, 200, {
+      costos, materiales: mats,
+      caducan: [{ lote: 'LMA0000001', material: 'Huevos', unidad: 'u', saldo: 6, caduca: '2026-11-02', caducado: false }],
+      productos: [{ nombre: 'Pan redondo', tamano: 'Único', producido: 0, vendido: 4, existencia: -4, costo: costos ? 0.1 : null, precio: 0.25 }],
+    });
+  }
+  const kardex = ruta.match(/^\/inventario\/(MAT\d{3})$/);
+  if (kardex && req.method() === 'GET') {
+    if (!permisos.includes('inventario.ver')) return sin();
+    const costos = permisos.includes('reportes.ver');
+    return contestar(route, 200, { movimientos: kardex[1] === 'MAT001' ? [
+      { fecha: new Date().toISOString(), tipo: 'Producción', documento: 'ORP0000001', cantidad: -5, saldo: 12.5, valor: costos ? -7.35 : null },
+      { fecha: new Date(Date.now() - 864e5).toISOString(), tipo: 'Compra', documento: 'RCP0000001', cantidad: 17.5, saldo: 17.5, valor: costos ? 25.75 : null },
+    ] : [] });
   }
   if (ruta === '/resumen') {
     if (!permisos.includes('reportes.ver')) return sin();

@@ -564,5 +564,26 @@ const resumen = await admin('FN_ADMIN_RESUMEN', authDueno);
 ok(resumen.hoy.pedidos >= 1 && Number(resumen.hoy.ventas) > 0 && resumen.masVendidos.length >= 1 && resumen.masVendidos.length <= 5 && resumen.pendientes >= 1,
   `El resumen del Administrador: hoy ${resumen.hoy.pedidos} pedidos, ${resumen.pendientes} pendientes, ${resumen.masVendidos[0]?.nombre} el mas vendido`);
 
+titulo('El inventario del panel (FN_ADMIN_INVENTARIO y FN_ADMIN_KARDEX)');
+ok(yoDueno.permisos.includes('inventario.ver') && yoEmpleado.permisos.includes('inventario.ver') && !yoCliente.permisos.includes('inventario.ver'),
+  'Administrador y Empleado ven el inventario; el Cliente no');
+await sinPermiso('FN_ADMIN_INVENTARIO', 'Un cliente no ve el inventario', authNueva);
+await sinPermiso('FN_ADMIN_KARDEX', 'Un cliente no ve el kardex', authNueva, 'MAT001');
+const invDueno = await admin('FN_ADMIN_INVENTARIO', authDueno);
+const invEmpleado = await admin('FN_ADMIN_INVENTARIO', authEmpleado);
+ok(invDueno.costos === true && invEmpleado.costos === false, 'Solo el Administrador ve costos');
+ok(invDueno.materiales.length > 5 && invDueno.materiales.every((m) => m.valor !== null) && invEmpleado.materiales.every((m) => m.valor === null),
+  `El Administrador ve el valor de ${invDueno.materiales.length} materiales; el Empleado no`);
+ok(invEmpleado.productos.every((x) => x.costo === null), 'El costo de los productos tampoco lo ve el Empleado');
+ok(invDueno.productos.some((x) => x.nombre === 'Pan redondo' && Number(x.vendido) >= 10), 'Lo vendido por el sitio aparece en productos');
+const bajo = invDueno.materiales.filter((m) => m.bajoMinimo);
+ok(invDueno.materiales.every((m) => m.bajoMinimo === (Number(m.existencia) < Number(m.minimo))), `La alerta de stock bajo coincide con el minimo (${bajo.length} bajo el minimo)`);
+ok(!invDueno.materiales.slice(0, bajo.length).some((m) => !m.bajoMinimo), 'Los que estan bajo el minimo salen primero');
+const matInv = invDueno.materiales.find((m) => Number(m.existencia) > 0);
+const movs = await admin('FN_ADMIN_KARDEX', authDueno, matInv.codigo);
+ok(movs.length >= 1 && movs[0].saldo !== undefined, `El kardex de ${matInv.nombre} trae ${movs.length} movimiento(s)`);
+ok((await admin('FN_ADMIN_KARDEX', authEmpleado, matInv.codigo)).every((k) => k.valor === null), 'El kardex del Empleado no trae valores');
+try { await admin('FN_ADMIN_KARDEX', authDueno, 'MAT999'); ok(false, 'Un material que no existe: entro'); } catch (e) { ok(e.code === '22023', `Un material que no existe: ${e.message}`); }
+
 console.log(fallos ? `\n${fallos} comprobacion(es) fallaron` : '\nTodo bien');
 process.exit(fallos ? 1 : 0);

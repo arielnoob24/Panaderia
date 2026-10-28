@@ -34,6 +34,7 @@ const SECCIONES = [
   { id: 'resumen', nombre: 'Resumen', permiso: 'reportes.ver' },
   { id: 'pedidos', nombre: 'Pedidos', permiso: 'pedidos.ver_todos' },
   { id: 'productos', nombre: 'Productos', permiso: 'productos.gestionar' },
+  { id: 'inventario', nombre: 'Inventario', permiso: 'inventario.ver' },
 ];
 
 function usePanel() {

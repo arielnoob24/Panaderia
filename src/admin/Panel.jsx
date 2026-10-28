@@ -12,9 +12,10 @@ import { usePanel } from './usePanel.js';
 import Resumen from './Resumen.jsx';
 import Pedidos from './Pedidos.jsx';
 import Productos from './Productos.jsx';
+import Inventario from './Inventario.jsx';
 import '../estilos/admin.css';
 
-const VISTAS = { resumen: Resumen, pedidos: Pedidos, productos: Productos };
+const VISTAS = { resumen: Resumen, pedidos: Pedidos, productos: Productos, inventario: Inventario };
 
 function Panel() {
   // Se mira al llegar y no despues (vease Desvio.jsx).

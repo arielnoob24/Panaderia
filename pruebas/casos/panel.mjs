@@ -66,12 +66,21 @@ async function panel(t, nombre, ventana) {
   await p.click('#cuenta-menu a[href$="/admin"]');
   await p.waitForSelector('.admin-pedido');
   ok((await hash()) === '#/admin/pedidos', `#/admin no lleva a Pedidos: ${await hash()}`);
-  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Pedidos', 'el empleado ve mas pestañas que Pedidos');
+  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Pedidos,Inventario', 'el empleado no ve Pedidos e Inventario');
   ok((await p.$$('.admin-pedido')).length === 2, `Por atender no esconde lo entregado: ${(await p.$$('.admin-pedido')).length}`);
   await p.goto(URL + '#/admin/productos');
   await p.reload();
   await p.waitForSelector('.admin-pedido');
   ok((await hash()) === '#/admin/pedidos', `el empleado entra a Productos: ${await hash()}`);
+
+  // El empleado ve el inventario con cantidades, pero sin valores.
+  await p.click('.admin-pestana >> text=Inventario');
+  await p.waitForSelector('.admin-material');
+  const invEmp = await p.textContent('.cuenta-vista-admin');
+  ok(invEmp.includes('Harina de trigo') && invEmp.includes('Hay 12,5 kg'), 'el empleado no ve las existencias');
+  ok(!invEmp.includes('vale $') && !invEmp.includes('costo $'), 'el empleado ve valores o costos');
+  await p.click('.admin-pestana >> text=Pedidos');
+  await p.waitForSelector('.admin-pedido');
 
   // Avanzar un pedido de retiro: Pendiente de pago -> Pagado -> En preparacion -> Listo para retirar -> Entregado.
   const tarjeta = (numero) => p.locator('.admin-pedido', { hasText: numero });
@@ -136,7 +145,7 @@ async function panel(t, nombre, ventana) {
   await p.goto(URL + '#/admin');
   await p.waitForSelector('.admin-cifras');
   ok((await hash()) === '#/admin/resumen', `#/admin no lleva al Resumen: ${await hash()}`);
-  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos', 'el administrador no ve las tres pestañas');
+  ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario', 'el administrador no ve las cuatro pestañas');
   ok((await p.textContent('.admin-cifras')).includes('Ventas de hoy'), 'el resumen no dice las ventas de hoy');
   ok((await p.textContent('.admin-lista')).includes('Pan redondo'), 'lo mas vendido no esta');
   await p.click('.admin-pestana >> text=Productos');
@@ -164,6 +173,21 @@ async function panel(t, nombre, ventana) {
   const vuelto = p.locator('.admin-producto').first();
   ok(!(await vuelto.locator('input[type=checkbox] >> nth=0').isChecked()), 'lo guardado como agotado vuelve disponible');
   ok((await vuelto.locator('.admin-precio-caja input').inputValue()) === '0.40', `el precio guardado no sigue: ${await vuelto.locator('.admin-precio-caja input').inputValue()}`);
+
+  // Inventario del administrador: alertas, valores, filtro y movimientos.
+  await p.click('.admin-pestana >> text=Inventario');
+  await p.waitForSelector('.admin-material');
+  ok((await p.$$('.admin-material')).length === 3, 'el inventario no trae los 3 materiales');
+  ok((await p.textContent('.cuenta-vista-admin')).includes('vale $18.40'), 'el administrador no ve el valor');
+  ok((await p.$$eval('.admin-material .admin-estado', (l) => l.map((x) => x.textContent))).join() === 'Bajo el mínimo,Bajo el mínimo', 'las alertas de stock bajo no estan');
+  await p.click('.admin-filtro >> text=Bajo el mínimo');
+  await espera(150);
+  ok((await p.$$('.admin-material')).length === 2, 'el filtro Bajo el minimo no deja 2');
+  ok((await p.textContent('.admin-caducan')).includes('Caduca el'), 'los lotes por caducar no salen');
+  await p.click('.admin-ver-mov >> nth=0');
+  await p.waitForSelector('.admin-movimientos li');
+  ok((await p.$$('.admin-movimientos li')).length === 2, 'el kardex no trae 2 movimientos');
+  ok((await p.getAttribute('.admin-ver-mov >> nth=0', 'aria-expanded')) === 'true', 'el boton de movimientos no dice que esta abierto');
 
   ok(t.errores?.length ? false : true, 'hubo errores de pagina');
   await ctx.close();

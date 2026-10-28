@@ -238,6 +238,16 @@ Deno.serve(async (req) => {
     }
     if (req.method === "GET" && ruta === "/admin/resumen") return llamar("fn_admin_resumen", {});
 
+    // GET /admin/inventario -> existencias, lotes por caducar y producto
+    // producido contra vendido; los costos solo para quien tiene reportes.ver.
+    if (req.method === "GET" && ruta === "/admin/inventario") return llamar("fn_admin_inventario", {});
+    // GET /admin/inventario/MAT001 -> los movimientos (kardex) de ese material.
+    const kardex = ruta.match(/^\/admin\/inventario\/(MAT\d{3})$/);
+    if (req.method === "GET" && kardex) {
+      const r = await llamar("fn_admin_kardex", { p_material: kardex[1] });
+      return r.ok ? responder(h, 200, { movimientos: await r.json() }) : r;
+    }
+
     // PUT /admin/pedidos/ET-XXXX { estado } -> pasa el pedido a ese estado.
     const pedido = ruta.match(/^\/admin\/pedidos\/(ET-[A-Z0-9]{4})$/);
     if (req.method === "PUT" && pedido) {

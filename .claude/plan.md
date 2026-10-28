@@ -1181,8 +1181,25 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
       - **Se dejó para la tanda 2**: la canasta flotante tapa un importe en el
         teléfono; "Por entregar" del Resumen como acción destacada; un
         rediseño de las tarjetas de producto (menos espacio muerto).
-- [ ] **Tanda 2, bodega y producción:** inventario y alertas de stock bajo,
-      compras y proveedores, recetas y producción.
+- [ ] **Tanda 2, bodega y producción**, en cuatro pasos:
+      - [x] **2a, Inventario (solo lectura)**, hecho el 28 de octubre de 2026:
+        pestaña `#/admin/inventario` con materiales y su alerta de stock bajo
+        (los que están mal, primero), lotes caducados o que caducan en 30
+        días, producido contra vendido de cada producto y el kardex de cada
+        material. Permiso nuevo **`inventario.ver`** (Administrador y
+        Empleado). Los valores y costos solo los trae la base para quien
+        tiene `reportes.ver` (el Administrador); para el Empleado van en
+        null. Funciones `FN_ADMIN_INVENTARIO` y `FN_ADMIN_KARDEX`; rutas
+        `GET /admin/inventario` y `GET /admin/inventario/MAT###`. Migración
+        `panel_inventario`. Hoy las existencias están en cero (no se ha
+        recibido ninguna compra), así que casi todo sale "Bajo el mínimo".
+      - [ ] 2b, compras y bodega: ver órdenes de compra y proveedores;
+        aprobar o anular (`compras.aprobar`) y confirmar la recepción
+        (`bodega.recibir`).
+      - [ ] 2c, ajustes y producción: ver y aprobar o anular los que ya
+        existen (`inventario.ajustar`, `produccion.registrar`).
+      - [ ] 2d, crear documentos nuevos (orden de compra, de producción,
+        ajuste): formularios largos, solo si hacen falta.
 - [ ] **Tanda 3, administración:** facturas (anular), clientes, empleados,
       nómina, contabilidad, usuarios y roles.
 - Pendiente de datos: el correo de la cuenta del dueño (a 27 de octubre aún no

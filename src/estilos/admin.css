@@ -88,3 +88,17 @@
   .admin-cifras { grid-template-columns: 1fr; }
   .admin-guardar { width: 100%; margin-left: 0; }
 }
+
+/* Inventario */
+.admin-materiales { display: grid; gap: .6rem; margin: 0; padding: 0; list-style: none; }
+.admin-material { padding: .9rem 1rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-chip); }
+.admin-material-cabeza { display: flex; flex-wrap: wrap; align-items: center; gap: .3rem .8rem; color: var(--horno); font: 1rem Arial, sans-serif; }
+.admin-material-datos { margin: .35rem 0 .6rem; color: var(--horno-suave); font: .88rem/1.45 Arial, sans-serif; font-variant-numeric: tabular-nums; }
+.admin-ver-mov { min-height: 44px; padding: .4rem .9rem; border: 1px solid var(--horno); border-radius: var(--r-chip); background: var(--papel); color: var(--horno); font: 700 .88rem Arial, sans-serif; cursor: pointer; }
+.con-puntero .admin-ver-mov:hover { background: var(--ambar-claro); }
+.admin-movimientos { margin: .7rem 0 0; padding: .4rem 0 0; border-top: 1px dashed var(--masa-linea); list-style: none; }
+.admin-movimientos li { display: flex; justify-content: space-between; gap: 1rem; padding: .45rem 0; border-bottom: 1px solid var(--masa-linea); color: var(--horno); font: .9rem Arial, sans-serif; }
+.admin-movimientos small, .admin-caducan small, .admin-productos-inv small { display: block; color: var(--horno-suave); font: .8rem/1.4 Arial, sans-serif; }
+.admin-mov-cifras { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.admin-caducan li::before, .admin-productos-inv li::before { content: none; }
+.admin-ver-mov:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
