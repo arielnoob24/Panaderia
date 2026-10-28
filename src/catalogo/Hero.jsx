@@ -37,7 +37,8 @@ function Hero({ tituloRef }) {
             <p className="frase portada-frase">Pan recién horneado, todos los días.</p>
             <div className="portada-acciones">
               {/* Lleva al catalogo entero: quien pulsa aqui quiere verlo todo. */}
-              <Link className="button button-yellow" to="/tienda-catalogo" state={{ entrar: true }}>
+              <Link className="button button-yellow portada-panes" to="/tienda-catalogo" state={{ entrar: true }}>
+                <i className="portada-filete" aria-hidden="true" />
                 <IconoHogaza clase="ico" />
                 Nuestros panes
               </Link>

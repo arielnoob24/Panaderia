@@ -31,11 +31,15 @@ const IconoHogaza = ({ clase }) => (
   </Linea>
 );
 
-// La galleta de chocolate: Dulces y pasteles en la cinta.
-const IconoGalleta = ({ clase }) => (
-  <svg className={clase || 'ico'} viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true" focusable="false">
-    <path d="M480-80q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-75 29-147t81-128.5q52-56.5 125-91T475-881q21 0 43 2t45 7q-9 45 6 85t45 66.5q30 26.5 71.5 36.5t85.5-5q-26 59 7.5 113t99.5 56q1 11 1.5 20.5t.5 20.5q0 82-31.5 154.5t-85.5 127q-54 54.5-127 86T480-80Zm-60-480q25 0 42.5-17.5T480-620q0-25-17.5-42.5T420-680q-25 0-42.5 17.5T360-620q0 25 17.5 42.5T420-560Zm-80 200q25 0 42.5-17.5T400-420q0-25-17.5-42.5T340-480q-25 0-42.5 17.5T280-420q0 25 17.5 42.5T340-360Zm260 40q17 0 28.5-11.5T640-360q0-17-11.5-28.5T600-400q-17 0-28.5 11.5T560-360q0 17 11.5 28.5T600-320ZM480-160q122 0 216.5-84T800-458q-50-22-78.5-60T683-603q-77-11-132-66t-68-132q-80-2-140.5 29t-101 79.5Q201-644 180.5-587T160-480q0 133 93.5 226.5T480-160Zm0-324Z" />
-  </svg>
+// El pastelito con crema y cereza: Dulces y pasteles en la cinta y en
+// "Filtrar por". De linea, del mismo trazo que la hogaza y la botella.
+const IconoPastelito = ({ clase }) => (
+  <Linea clase={clase}>
+    <path d="M6.2 12.4h11.6l-1.3 7.6a1.6 1.6 0 0 1-1.6 1.3H9.1A1.6 1.6 0 0 1 7.5 20z" />
+    <path d="M10.2 13.2l.4 7.4M13.8 13.2l-.4 7.4" />
+    <path d="M5.2 12.4c-.3-2.5 1.2-4.2 3.3-4.5C8.8 6 10.1 5 12 5s3.2 1 3.5 2.9c2.1.3 3.6 2 3.3 4.5z" />
+    <circle cx="12" cy="3" r="1.1" />
+  </Linea>
 );
 
 // La botella: Bebidas en la cinta.
@@ -92,7 +96,7 @@ function Trigo({ derecha }) {
 // El icono de cada categoria de la tienda, en la cinta de #/ y en "Filtrar
 // por". Si se anade una categoria sin dibujo, sale con la hogaza: mejor que
 // sin nada.
-const ICONOS_CATEGORIA = { panes: IconoHogaza, dulces: IconoGalleta, 'bebidas-frias': IconoBotella };
+const ICONOS_CATEGORIA = { panes: IconoHogaza, dulces: IconoPastelito, 'bebidas-frias': IconoBotella };
 function IconoCategoria({ id, clase }) {
   const Icono = ICONOS_CATEGORIA[id] || IconoHogaza;
   return <Icono clase={clase} />;
@@ -100,5 +104,5 @@ function IconoCategoria({ id, clase }) {
 
 export {
   IconoPin, Chevron, Trigo,
-  IconoHogaza, IconoGalleta, IconoBotella, IconoTrigo, IconoCestaAsa, IconoCategoria,
+  IconoHogaza, IconoPastelito, IconoBotella, IconoTrigo, IconoCestaAsa, IconoCategoria,
 };
