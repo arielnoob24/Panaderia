@@ -30,6 +30,9 @@
 .admin-cifras > div { padding: 1rem; background: var(--masa); border: 1px solid var(--masa-linea); border-radius: var(--r-chip); }
 .admin-cifras dt { color: var(--horno-suave); font: 700 .78rem/1.3 Arial, sans-serif; letter-spacing: .06em; text-transform: uppercase; }
 .admin-cifras dd { margin: .35rem 0 0; color: var(--horno); font: 500 1.9rem/1 var(--letra-titulo); font-variant-numeric: tabular-nums; }
+.admin-cifras > .admin-cifra-urge { background: var(--ambar-claro); border-color: var(--ambar); border-width: 2px; }
+.admin-cifra-ir { display: inline-flex; align-items: center; min-height: 44px; margin-top: .3rem; color: var(--horno); font: 700 .85rem Arial, sans-serif; text-decoration: underline; text-underline-offset: 3px; }
+.admin-cifra-ir:focus-visible { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 .admin-cifras small { display: block; margin-top: .1rem; color: var(--horno-suave); font: 400 .82rem Arial, sans-serif; }
 .admin-lista { margin: 0; padding: 0; list-style: none; counter-reset: top; }
 .admin-lista li { display: flex; justify-content: space-between; gap: 1rem; padding: .65rem 0; border-bottom: 1px solid var(--masa-linea); color: var(--horno); font: .95rem Arial, sans-serif; }
@@ -96,6 +99,8 @@
 
 @media (max-width: 680px) {
   .admin-cifras { grid-template-columns: 1fr; }
+  /* El boton flotante de abajo no tapa lo ultimo de la pagina. */
+  .cuenta-vista-admin .cuenta-vista-caja { margin-bottom: 5rem; }
   .admin-guardar { width: 100%; margin-left: 0; }
   .admin-producto .admin-guardar { width: auto; margin-left: auto; }
 }

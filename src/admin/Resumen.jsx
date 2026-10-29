@@ -1,6 +1,8 @@
 // ---- Panel, Resumen: como va el dia ---------------------------------------
 // Ventas de hoy y del mes (sin los pedidos cancelados), cuantos faltan por
 // entregar y lo mas vendido en los ultimos 30 dias. Todo lo suma la base.
+// "Por entregar" es lo que urge: si hay pedidos se resalta y lleva a Pedidos.
+import { Link } from 'react-router-dom';
 import { dinero } from '../servicios/state.js';
 import { useCarga } from './useCarga.js';
 import Seccion from './Seccion.jsx';
@@ -17,7 +19,12 @@ function Resumen() {
           <dl className="admin-cifras">
             <div><dt>Ventas de hoy</dt><dd>{dinero(Number(r.hoy.ventas))}<small>{cuantos(r.hoy.pedidos, 'pedido', 'pedidos')}</small></dd></div>
             <div><dt>Ventas del mes</dt><dd>{dinero(Number(r.mes.ventas))}<small>{cuantos(r.mes.pedidos, 'pedido', 'pedidos')}</small></dd></div>
-            <div><dt>Por entregar</dt><dd>{r.pendientes}<small>{r.pendientes === 1 ? 'pedido sin cerrar' : 'pedidos sin cerrar'}</small></dd></div>
+            <div className={r.pendientes ? 'admin-cifra-urge' : undefined}>
+              <dt>Por entregar</dt>
+              <dd>{r.pendientes}<small>{r.pendientes === 1 ? 'pedido sin cerrar' : 'pedidos sin cerrar'}</small>
+                {r.pendientes ? <Link className="admin-cifra-ir" to="/admin/pedidos">Ver los pedidos por atender</Link> : null}
+              </dd>
+            </div>
           </dl>
           <h3 className="admin-subtitulo">Lo más vendido en 30 días</h3>
           {r.masVendidos.length ? (

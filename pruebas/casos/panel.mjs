@@ -6,7 +6,7 @@
 // en un producto sigue ahi al volver. El servidor de mentira
 // (supabaseFalso.mjs) pone los permisos de cada rol como la base.
 import { VENTANAS, crearCuenta, espera, esperaQue } from '../arranque.mjs';
-import { ponerRol } from '../supabaseFalso.mjs';
+import { ponerRol, pedidosDe } from '../supabaseFalso.mjs';
 
 export const descripcion = 'el panel: cliente fuera, empleado con pedidos, administrador con todo';
 export const limite = 120;
@@ -172,12 +172,20 @@ async function panel(t, nombre, ventana) {
   ponerRol(CORREO, 'Administrador');
   // Pagina nueva: lo que la pagina sabe del rol vale medio minuto.
   await p.goto('about:blank');
+  // Un pedido sin cerrar, para ver que "Por entregar" se resalta.
+  pedidosDe(CORREO).push(pedido('ET-DDDD', 'retiro', 'Pagado'));
   await p.goto(URL + '#/admin');
   await p.waitForSelector('.admin-cifras');
   ok((await hash()) === '#/admin/resumen', `#/admin no lleva al Resumen: ${await hash()}`);
   ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Resumen,Pedidos,Productos,Inventario,Compras,Bodega,Producción,Ajustes,Equipo,Facturas,Nómina,Contabilidad', 'el administrador no ve las doce pestañas');
   ok((await p.textContent('.admin-cifras')).includes('Ventas de hoy'), 'el resumen no dice las ventas de hoy');
   ok((await p.textContent('.admin-lista')).includes('Pan redondo'), 'lo mas vendido no esta');
+  // "Por entregar" con pedidos pendientes se resalta y lleva a Pedidos.
+  ok((await p.locator('.admin-cifra-urge').count()) === 1, 'Por entregar con pedidos sin cerrar no se resalta');
+  await p.locator('.admin-cifra-ir').click();
+  await p.waitForSelector('.admin-pedido');
+  ok((await hash()) === '#/admin/pedidos', `el enlace de Por entregar no lleva a Pedidos: ${await hash()}`);
+  pedidosDe(CORREO).splice(pedidosDe(CORREO).findIndex((x) => x.numero === 'ET-DDDD'), 1);
   await p.click('.admin-pestana >> text=Productos');
   await p.waitForSelector('.admin-producto');
   const primero = p.locator('.admin-producto').first();
