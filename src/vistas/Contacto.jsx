@@ -4,8 +4,8 @@
 // el titular, la direccion y "Ver en el mapa") y a su lado el mapa en un
 // marco fino con su sello; debajo, sobre la masa y entre las lineas dobles
 // de la cabecera de periodico, el horario como una carta (con el dia de hoy
-// marcado y si se esta abierto) y Escribenos, con WhatsApp e Instagram con
-// la ola de "Cómo llegar" y la nota de que son de ejemplo. El sitio no tiene
+// marcado y si se esta abierto) y Escribenos, con WhatsApp con
+// la ola de "Cómo llegar". El sitio no tiene
 // pie (seccion 4 del plan): esto es lo que llevaba.
 //
 // Como la portada y Nosotros, cabe en una sola pantalla sin desplazarse
@@ -68,10 +68,10 @@ function Contacto() {
             <h1 ref={tituloRef} id="contacto-titulo" className="titular" tabIndex={-1}>Visítanos{' '}<em>en Tena</em></h1>
             <address className="frase contacto-direccion">Esquina de Eloy Alfaro<br />{' '}y Gabriel Espinosa, Tena</address>
             {/* Lo que se viene a hacer aqui es llegar: es el boton principal
-                de la vista y el unico relleno de ambar (WhatsApp e Instagram
-                son secundarios, con borde), el ticket como "Nuestros panes". */}
+                de la vista y el unico relleno de ambar (WhatsApp es secundario,
+                con borde), el ticket como "Nuestros panes". */}
             <a className="button button-yellow contacto-mapa-enlace" href={MAPA} target="_blank" rel="noopener">
-              <IconoPin clase="ico" grosor="1.6" />Ver en el mapa <span aria-hidden="true">↗</span><span className="sr-only"> (abre en una pestaña nueva)</span>
+              <IconoPin clase="ico" grosor="1.6" />Ver en el mapa<span className="sr-only"> (abre en una pestaña nueva)</span>
             </a>
           </div>
           <div className="contacto-mapa">
@@ -126,7 +126,6 @@ function Contacto() {
               <span className="linea-doble" aria-hidden="true"></span>
             </div>
             <div className="contacto-lista"><Contactos /></div>
-            <p className="contacto-nota">Teléfono y redes de ejemplo (proyecto de clase).</p>
           </div>
         </div>
       </section>

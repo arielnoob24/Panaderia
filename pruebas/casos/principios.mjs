@@ -37,8 +37,7 @@ export default async function principios(t) {
     await ctx.close();
   }
 
-  // #/contacto: WhatsApp e Instagram con la nota de que son de ejemplo al
-  // lado, y si esta abierto. La ayuda que esta en el mismo sitio en todas
+  // #/contacto: WhatsApp y si esta abierto. La ayuda que esta en el mismo sitio en todas
   // las vistas (3.2.6) es Contactanos en el menu.
   const ctx = await t.contexto(VENTANAS.escritorio, { nombre: 'contacto' });
   const p = await ctx.newPage();
@@ -46,18 +45,14 @@ export default async function principios(t) {
   await p.waitForSelector('.contacto-escribir');
   const c = await p.evaluate(() => {
     const escribir = document.querySelector('.contacto-escribir');
-    const nota = escribir.querySelector('.contacto-nota');
     return {
       contactos: escribir.querySelectorAll('.contacto-lista a').length,
-      nota: nota?.textContent.trim() || '',
-      notaVisible: Boolean(nota && nota.getClientRects().length),
       estado: Boolean(document.querySelector('.contacto-horario .open-label')),
       menu: Boolean(document.querySelector('#main-nav a[href="#/contacto"]')),
       pie: document.querySelectorAll('footer, .site-footer').length,
     };
   });
-  t.ok(c.contactos >= 2 && c.estado, `#/contacto no trae los contactos (${c.contactos}) o el estado`);
-  t.ok(c.notaVisible && c.nota.startsWith('Teléfono y redes de ejemplo'), `en #/contacto falta la nota de que el telefono y las redes son de ejemplo ("${c.nota}")`);
+  t.ok(c.contactos >= 1 && c.estado, `#/contacto no trae los contactos (${c.contactos}) o el estado`);
   t.ok(c.menu && c.pie === 0, `Contactanos no esta en el menu o queda un pie (${JSON.stringify(c)})`);
   await ctx.close();
 }

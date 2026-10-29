@@ -48,8 +48,7 @@ function Recibo({ recibo: r }) {
             <div className="recibo-cuerpo">
               <p className="recibo-sello"><span aria-hidden="true">✓</span> Pedido registrado</p>
               <p className="recibo-simulado">
-                Pedido simulado. Es una demostración académica: no se realizó ningún cobro y la
-                panadería todavía no ha recibido nada.
+                No se realizó ningún cobro y la panadería todavía no ha recibido este pedido.
               </p>
               <dl className="recibo-datos">
                 <div>

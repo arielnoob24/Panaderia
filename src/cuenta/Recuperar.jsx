@@ -149,7 +149,7 @@ function PasoCorreo({ enfocar, avisoAntes, alLeerAviso }) {
     <div className="cuenta-formulario recuperar-paso recuperar-paso-correo" onKeyDown={alTeclear}>
       <div className="cuenta-cuerpo">
         <p className="cuenta-maqueta recuperar-limite">
-          <strong>Maqueta académica.</strong> Si hay una cuenta con ese correo, te llega el
+          Si hay una cuenta con ese correo, te llega el
           código; si no, no llega nada (así nadie puede averiguar qué correos tienen cuenta).
         </p>
         <p className="recuperar-dicho">

@@ -10,15 +10,14 @@
 // - el horario sin la tarjeta oscura: el h2 entre lineas dobles, el estado
 //   debajo (en tinta de horno, no ambar, sobre la masa) y un <dl>
 //   como una carta, con puntos guia que no son texto y la pastilla "hoy";
-// - Escribenos: el h2 entre lineas dobles, WhatsApp e Instagram con el
+// - Escribenos: el h2 entre lineas dobles, WhatsApp con el
 //   aspecto y la ola de "Cómo llegar" y su rotulo encima, que se abren en
-//   otra pestana y lo dicen en el nombre; la nota de ejemplo, siempre;
+//   otra pestana y lo dicen en el nombre;
 // - todo en una pantalla, sin desplazarse y hasta el borde, de
 //   1440x900 a 360x640; en los telefonos bajos (390x700, 375x667, 360x640)
 //   el estado sube junto al rotulo (uno solo se ve y se lee), el h1 va en
 //   una linea y el mapa baja hasta 120 px; con zoom (320x256, 640x360) o a
 //   320 px crece sin cortar ni pisar nada (WCAG 1.4.10);
-// - la nota de ejemplo es "Teléfono y redes de ejemplo (proyecto de clase).";
 // - la escena entra una vez; con menos movimiento, todo quieto;
 // - foco visible y objetivos de 24 px o mas; la canasta flotante no tapa
 //   ningun enlace.
@@ -91,8 +90,6 @@ const mirar = (p) => p.evaluate(() => {
     hoy: filas.filter((f) => f.classList.contains('is-today')).map((f) => f.querySelector('.dia-hoy')?.textContent),
     feriados: [q('.contacto-horario-nota').textContent, estilo('.contacto-horario-nota').fontStyle],
     contactos,
-    nota: q('.contacto-nota').textContent,
-    notaSeVe: q('.contacto-nota').getClientRects().length > 0 && estilo('.contacto-nota').visibility === 'visible',
     ultimo: vista.lastElementChild.className,
   };
 });
@@ -108,7 +105,7 @@ const medir = (p) => p.evaluate(() => {
   }).map((a) => a.textContent.slice(0, 20)) : [];
   const estados = [...document.querySelectorAll('.vista-contacto .open-label')].filter((e) => e.getClientRects().length);
   const h1 = document.querySelector('.contacto-texto h1');
-  const textos = [...document.querySelectorAll('.vista-contacto :is(.rotulo, h1, address, .contacto-mapa-enlace, h2, .open-label, dt, dd, .contacto-horario-nota, .contacto-valor, .contacto-nota)')];
+  const textos = [...document.querySelectorAll('.vista-contacto :is(.rotulo, h1, address, .contacto-mapa-enlace, h2, .open-label, dt, dd, .contacto-horario-nota, .contacto-valor)')];
   // El ticket lleva su sombra dura fuera de la caja (scrollWidth mayor sin
   // que se corte nada): a el solo se le mira que no se salga de la ventana.
   const cortados = textos.filter((e) => {
@@ -140,7 +137,7 @@ export default async function contacto(t) {
     const ctx = await t.contexto(ventana, { nombre });
     const p = await ctx.newPage();
     await p.goto(t.REACT + '#/contacto');
-    await p.waitForSelector('.contacto-nota');
+    await p.waitForSelector('.contacto-horario-nota');
 
     // La escena: el horario sube tras el texto y acaba a la vista.
     const opacidad = () => p.evaluate(() => Number(getComputedStyle(document.querySelector('.contacto-horario')).opacity));
@@ -171,13 +168,12 @@ export default async function contacto(t) {
     t.ok(m.puntos[0] === '""' && m.puntos[1] === 'dotted', `[${nombre}] faltan los puntos guia o llevan texto (${m.puntos})`);
     t.ok(m.hoy.length === 1 && m.hoy[0] === 'hoy', `[${nombre}] la fila de hoy no lleva su pastilla (${JSON.stringify(m.hoy)})`);
     t.ok(m.feriados[0] === 'En feriados nacionales cerramos.' && m.feriados[1] === 'italic', `[${nombre}] la nota de feriados cambio (${m.feriados})`);
-    t.ok(m.contactos.length === 2 && m.contactos.map((c) => c.rotulo).join() === 'WhatsApp,Instagram', `[${nombre}] faltan WhatsApp o Instagram (${JSON.stringify(m.contactos)})`);
-    t.ok(m.contactos.every((c) => c.encima && /\benlace-llegar\b/.test(c.clases) && c.fuera && c.letras === 'true' && ES_FRAUNCES.test(c.letra) && c.cursiva === 'italic'), `[${nombre}] WhatsApp o Instagram no son como "Cómo llegar" con su rotulo encima (${JSON.stringify(m.contactos)})`);
-    for (const nombreEnlace of ['WhatsApp: +593 99 000 0000 (abre en una pestaña nueva)', 'Instagram: @eltradicional (abre en una pestaña nueva)']) {
+    t.ok(m.contactos.length === 1 && m.contactos[0].rotulo === 'WhatsApp', `[${nombre}] falta WhatsApp o sobra algo (${JSON.stringify(m.contactos)})`);
+    t.ok(m.contactos.every((c) => c.encima && /\benlace-llegar\b/.test(c.clases) && c.fuera && c.letras === 'true' && ES_FRAUNCES.test(c.letra) && c.cursiva === 'italic'), `[${nombre}] WhatsApp no es como "Cómo llegar" con su rotulo encima (${JSON.stringify(m.contactos)})`);
+    for (const nombreEnlace of ['WhatsApp: +593 99 000 0000 (abre en una pestaña nueva)']) {
       const n = await p.getByRole('link', { name: nombreEnlace, exact: true }).count();
       t.ok(n === 1, `[${nombre}] no hay un enlace llamado "${nombreEnlace}" (${n})`);
     }
-    t.ok(m.notaSeVe && m.nota === 'Teléfono y redes de ejemplo (proyecto de clase).', `[${nombre}] la nota de ejemplo no se ve ("${m.nota}")`);
 
     const d = await medir(p);
     t.ok(nombre === 'movil' || d.alto <= d.ventana, `[${nombre}] Contacto no cabe en la pantalla (${JSON.stringify(d)})`);
@@ -217,7 +213,7 @@ export default async function contacto(t) {
     const ctx = await t.contexto({ ...VENTANAS.movil, reducedMotion: 'reduce' }, { nombre: 'quieto' });
     const p = await ctx.newPage();
     await p.goto(t.REACT + '#/contacto');
-    await p.waitForSelector('.contacto-nota');
+    await p.waitForSelector('.contacto-horario-nota');
     const quieto = await p.evaluate(() => [...document.querySelectorAll('.contacto-texto > *, .contacto-mapa-marco iframe, .contacto-sello, .contacto-horario, .contacto-escribir, .contacto-cabeza .linea-doble')]
       .map((e) => [e.className || e.tagName, getComputedStyle(e).animationName, getComputedStyle(e).opacity])
       .filter(([, anima, op]) => anima !== 'none' || op !== '1'));
@@ -231,7 +227,7 @@ export default async function contacto(t) {
     const ctx = await t.contexto({ ...VENTANAS.escritorio, reducedMotion: 'reduce' }, { nombre: 'alturas' });
     const p = await ctx.newPage();
     await p.goto(t.REACT + '#/contacto');
-    await p.waitForSelector('.contacto-nota');
+    await p.waitForSelector('.contacto-horario-nota');
     for (const [ancho, alto] of [[1440, 900], [1366, 768], [1280, 720], [900, 1000], [768, 1024], [390, 844], [390, 700], [375, 667], [360, 640]]) {
       await p.setViewportSize({ width: ancho, height: alto });
       await espera(150);

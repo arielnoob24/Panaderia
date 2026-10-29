@@ -19,12 +19,16 @@ async function ficha(t, nombre, ventana) {
   });
   await p.goto(URL + '#/');
   await espera(300);
-  // Sin sesion: la silueta es un enlace a iniciar sesion.
-  ok(await p.evaluate(() => document.querySelector('.nav-cuenta')?.tagName === 'A'), 'sin sesion no es enlace');
-  ok((await p.getAttribute('.nav-cuenta', 'aria-label')) === 'Iniciar sesión / Registrarse', 'nombre de la silueta');
+  // Sin sesion: la silueta es un boton que abre las dos puertas, no lleva de golpe.
+  ok(await p.evaluate(() => document.querySelector('.nav-cuenta')?.tagName === 'BUTTON'), 'sin sesion no es boton');
+  ok((await p.getAttribute('.nav-cuenta', 'aria-label')) === 'Cuenta: iniciar sesión o crear cuenta', 'nombre de la silueta');
   await pulsar('.nav-cuenta');
   await espera(300);
-  ok((await p.evaluate(() => location.hash)) === '#/cuenta/entrar', 'la silueta no lleva a iniciar sesion');
+  ok((await p.evaluate(() => location.hash)) === '#/', 'la silueta no debe llevar de golpe a iniciar sesion');
+  ok(await p.evaluate(() => document.querySelector('.cuenta-menu-principal')?.textContent === 'Iniciar sesión' && document.querySelector('.cuenta-menu-secundario')?.textContent === 'Crear cuenta'), 'faltan las dos puertas');
+  await pulsar('.cuenta-menu-principal');
+  await espera(300);
+  ok((await p.evaluate(() => location.hash)) === '#/cuenta/entrar', 'Iniciar sesion no lleva a iniciar sesion');
   ok((await activo()) === 'cuenta-vista-titulo', `foco al llegar a iniciar sesion: ${await activo()}`);
 
   await crearCuenta(p, URL);
@@ -144,8 +148,8 @@ async function ficha(t, nombre, ventana) {
   ok((await activo()) === 'Cerrar sesión', `flecha arriba: ${await activo()}`);
   await p.keyboard.press('Enter');
   await espera(300);
-  ok(await p.evaluate(() => document.querySelector('.nav-cuenta').tagName === 'A'), 'tras salir no vuelve la silueta');
-  ok((await activo()) === 'Iniciar sesión / Registrarse', `foco tras salir: ${await activo()}`);
+  ok(await p.evaluate(() => !document.querySelector('.nav-cuenta').classList.contains('is-dentro')), 'tras salir no vuelve la silueta');
+  ok((await activo()) === 'Cuenta: iniciar sesión o crear cuenta', `foco tras salir: ${await activo()}`);
   const aviso = await p.evaluate(() => document.querySelector('[aria-live="polite"]').textContent);
   ok(aviso.includes('Cerraste la sesión de Ana María Pérez.'), `aviso al salir: ${aviso}`);
   // Iniciar sesion otra vez y salir desde #/cuenta: a la portada, con replace.

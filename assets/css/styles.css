@@ -713,7 +713,7 @@ a:focus-visible, button:focus-visible { outline: 3px solid var(--horno); outline
 body.is-checkout .hero, body.is-checkout .sign-band,
 body.is-checkout .catalog, body.is-checkout .story { display: none; }
 body.is-checkout .floating-whatsapp { display: none; }
-.checkout { padding-top: 150px; }
+.checkout { padding-top: 96px; padding-bottom: 1rem; }
 .checkout[hidden] { display: none; }
 /* La cabeza del pago (CabezaPedido.jsx): "Volver a la tienda" a la
    izquierda y el titulo centrado. Es el aspecto que tenia la cabeza de la
@@ -723,15 +723,18 @@ body.is-checkout .floating-whatsapp { display: none; }
 .checkout-volver { display: inline-flex; align-items: center; gap: .5rem; padding: .5rem .9rem .5rem .7rem; background: none; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno); cursor: pointer; font: 700 .82rem Arial, sans-serif; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui); }
 .con-puntero .checkout-volver:hover { background: var(--masa); border-color: var(--ambar); }
 .checkout-volver svg { width: 16px; height: 16px; }
-/* La barra de pasos: dos pastillas unidas por un filete. El paso actual en horno
-   con texto papel (13,7:1), el hecho con la marca en ambar y el que falta tenue. */
-.checkout-pasos { display: flex; align-items: center; gap: .6rem; margin: 0; padding: 0; list-style: none; font: 700 .8rem/1.2 var(--letra-texto); }
-.checkout-pasos li { display: inline-flex; align-items: center; gap: .5rem; padding: .3rem .85rem .3rem .35rem; border: 1px solid var(--masa-linea); border-radius: var(--r-pill); color: var(--horno-suave); }
-.checkout-paso-num { display: grid; place-items: center; width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--masa); color: var(--horno); font-size: .78rem; }
-.checkout-pasos .is-actual { background: var(--horno); border-color: var(--horno); color: var(--papel); }
-.checkout-pasos .is-actual .checkout-paso-num { background: var(--ambar); color: var(--horno); }
+/* La barra de pasos: nodos unidos por una linea. El actual es un nodo horno con
+   la cifra en papel, el hecho un nodo ambar con su marca, y el que falta un
+   nodo vacio; la linea hacia un paso ya alcanzado va en ambar. */
+.checkout-pasos { display: flex; align-items: center; margin: 0; padding: 0; list-style: none; font: 700 .85rem/1.2 var(--letra-texto); }
+.checkout-pasos li { display: inline-flex; align-items: center; gap: .55rem; color: var(--horno-suave); }
+.checkout-pasos li + li::before { width: clamp(2rem, 6vw, 4.5rem); height: 3px; margin: 0 .8rem; background: var(--masa-linea); border-radius: 2px; content: ""; }
+.checkout-pasos .is-actual::before, .checkout-pasos .is-hecho::before { background: var(--ambar); }
+.checkout-paso-num { display: grid; place-items: center; width: 2rem; height: 2rem; flex: 0 0 auto; background: var(--papel); border: 2px solid var(--masa-linea); border-radius: 50%; color: var(--horno-suave); font-size: .85rem; }
+.checkout-pasos .is-actual { color: var(--horno); }
+.checkout-pasos .is-actual .checkout-paso-num { background: var(--horno); border-color: var(--horno); color: var(--papel); }
 .checkout-pasos .is-hecho { color: var(--horno); }
-.checkout-pasos .is-hecho .checkout-paso-num { background: var(--ambar); }
+.checkout-pasos .is-hecho .checkout-paso-num { background: var(--ambar); border-color: var(--ambar); color: var(--horno); }
 .checkout-titulo { align-self: stretch; margin: 0; font: 500 clamp(2.4rem, 5vw, 3.6rem)/1 var(--letra-titulo); text-align: center; }
 .checkout-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); align-items: start; gap: 1.6rem 2.4rem; }
 .checkout-datos { min-width: 0; }
@@ -753,6 +756,15 @@ body.is-checkout .floating-whatsapp { display: none; }
 .recibo-cuerpo { margin-bottom: 1.2rem; }
 .recibo-pie { padding-top: 1.2rem; border-top: 1px solid var(--masa-linea); }
 
+/* En pantalla ancha la cabeza cabe en una sola fila (volver, titulo y pasos),
+   para que el formulario y el resumen se vean enteros sin desplazarse. */
+@media (min-width: 901px) {
+  .checkout-cabeza { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 1rem; margin-bottom: .75rem; }
+  .checkout-volver { justify-self: start; }
+  .checkout-titulo { grid-column: 2; grid-row: 1; font-size: clamp(1.9rem, 3vw, 2.5rem); }
+  .checkout-pasos { grid-column: 3; grid-row: 1; justify-self: end; }
+  .checkout-datos .pago-demo { margin-bottom: .6rem; padding: .45rem .85rem; }
+}
 @media (max-width: 900px) {
   /* Una columna. Aqui lo que se pega abajo es solo el pie con el boton, no el
      resumen entero: pegado entero taparia media pantalla del telefono. */
@@ -776,39 +788,39 @@ body.is-checkout .floating-whatsapp { display: none; }
 
 /* El menu de la cuenta, colgando de su circulo hacia la izquierda: el circulo
    esta en el borde derecho, asi que el menu se abre hacia la pagina. */
-.cuenta-menu { position: absolute; top: calc(100% + .6rem); right: 0; z-index: 11; display: flex; visibility: hidden; width: min(280px, calc(100vw - 32px)); flex-direction: column; gap: .1rem; padding: .45rem; opacity: 0; pointer-events: none; background: var(--horno); border: 1px solid rgba(255, 255, 255, .3); border-radius: var(--r-card); box-shadow: var(--shadow-float); color: var(--sobre-horno); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility var(--dur-micro) var(--ease-out); }
+.cuenta-menu { position: absolute; top: calc(100% + .6rem); right: 0; z-index: 11; display: flex; visibility: hidden; width: min(280px, calc(100vw - 32px)); flex-direction: column; gap: .1rem; padding: .45rem; opacity: 0; pointer-events: none; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-card); box-shadow: var(--shadow-float); color: var(--horno); transform: translateY(-8px) scale(.98); transform-origin: top right; transition: opacity var(--dur-micro) var(--ease-out), transform var(--dur-micro) var(--ease-out), visibility var(--dur-micro) var(--ease-out); }
 /* Visible al instante, por lo mismo que el menu del telefono. */
 .cuenta-menu.is-open { visibility: visible; opacity: 1; pointer-events: auto; transform: none; transition: opacity var(--dur-fast) var(--ease-ui), transform var(--dur-fast) var(--ease-ui), visibility 0s; }
 .cuenta-menu button { padding: .6rem .75rem; background: none; border: 0; border-radius: var(--r-chip); color: inherit; cursor: pointer; font: 700 .9rem Arial, sans-serif; text-align: left; transition: background-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
 /* En hover, ambar claro: el ambar de siempre sobre el fondo aclarado se
    quedaba en 4,19:1 con letra de 14 px. */
-.con-puntero .cuenta-menu button:hover { background: rgba(255, 255, 255, .1); color: var(--ambar-claro); }
+.con-puntero .cuenta-menu button:hover { background: var(--masa); color: var(--horno); }
 /* Arriba, quien eres o un saludo; es lo primero que se lee al abrirlo. */
 .cuenta-menu-cabeza { padding: .65rem .75rem .75rem; }
-.cuenta-menu-cabeza.is-dentro { display: flex; align-items: center; gap: .75rem; margin-bottom: .3rem; padding-bottom: .9rem; border-bottom: 1px solid rgba(255, 255, 255, .14); }
+.cuenta-menu-cabeza.is-dentro { display: flex; align-items: center; gap: .75rem; margin-bottom: .3rem; padding-bottom: .9rem; border-bottom: 1px solid var(--masa-linea); }
 .cuenta-menu-cabeza.is-dentro > div { min-width: 0; }
-.cuenta-menu-hola { margin: 0; color: var(--papel); font: 500 1.4rem/1.15 var(--letra-titulo); }
-.cuenta-menu-dicho { margin: .3rem 0 0; color: var(--sobre-horno-tenue); font: .84rem/1.45 Arial, sans-serif; }
+.cuenta-menu-hola { margin: 0; color: var(--horno); font: 500 1.4rem/1.15 var(--letra-titulo); }
+.cuenta-menu-dicho { margin: .3rem 0 0; color: var(--horno-suave); font: .84rem/1.45 Arial, sans-serif; }
 .cuenta-menu-avatar { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; background: var(--ambar); border-radius: 50%; color: var(--horno); font: 700 1rem/1 Arial, sans-serif; }
 .cuenta-menu-nombre, .cuenta-menu-correo { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.cuenta-menu-nombre { margin: 0; color: var(--papel); font: 500 1.08rem/1.25 var(--letra-titulo); }
-.cuenta-menu-correo { margin: .15rem 0 0; color: var(--sobre-horno-tenue); font: .78rem/1.3 Arial, sans-serif; }
+.cuenta-menu-nombre { margin: 0; color: var(--horno); font: 500 1.08rem/1.25 var(--letra-titulo); }
+.cuenta-menu-correo { margin: .15rem 0 0; color: var(--horno-suave); font: .78rem/1.3 Arial, sans-serif; }
 /* Cada opcion con su dibujo en ambar delante: se encuentra por la forma antes
    que por la palabra. */
 .cuenta-menu .cuenta-menu-opcion { display: flex; min-height: 44px; align-items: center; gap: .75rem; }
 .cuenta-menu-opcion > span:not(.cuenta-menu-numero) { flex: 1; }
-.cuenta-menu-opcion .cuenta-icono { width: 20px; height: 20px; flex: 0 0 auto; color: var(--ambar); }
-.cuenta-menu-numero { display: grid; min-width: 24px; height: 22px; padding: 0 7px; place-items: center; background: rgba(232, 168, 124, .2); border-radius: var(--r-pill); color: var(--papel); font: 700 .74rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }
+.cuenta-menu-opcion .cuenta-icono { width: 20px; height: 20px; flex: 0 0 auto; color: var(--horno); }
+.cuenta-menu-numero { display: grid; min-width: 24px; height: 22px; padding: 0 7px; place-items: center; background: rgba(232, 168, 124, .3); border-radius: var(--r-pill); color: var(--horno); font: 700 .74rem/1 Arial, sans-serif; font-variant-numeric: tabular-nums; }
 .cuenta-menu-numero[hidden] { display: none; }
-.cuenta-menu-raya { margin: .3rem .5rem; border: 0; border-top: 1px solid rgba(255, 255, 255, .14); }
+.cuenta-menu-raya { margin: .3rem .5rem; border: 0; border-top: 1px solid var(--masa-linea); }
 /* Salir va en el tono de "cerrado" del pie: se distingue sin gritar. */
-.cuenta-menu .is-salir, .cuenta-menu .is-salir .cuenta-icono { color: var(--ambar-claro); }
-.con-puntero .cuenta-menu .is-salir:hover, .con-puntero .cuenta-menu .is-salir:hover .cuenta-icono { color: var(--papel); }
+.cuenta-menu .is-salir, .cuenta-menu .is-salir .cuenta-icono { color: var(--horno-suave); }
+.con-puntero .cuenta-menu .is-salir:hover, .con-puntero .cuenta-menu .is-salir:hover .cuenta-icono { color: var(--horno); }
 /* Fuera de sesion, las dos puertas: entrar es la que mas se usa y va llena. */
-.cuenta-menu .cuenta-menu-principal, .cuenta-menu .cuenta-menu-secundario { margin: 0 .3rem; padding: .75rem; border-radius: var(--r-btn); text-align: center; }
+.cuenta-menu .cuenta-menu-principal, .cuenta-menu .cuenta-menu-secundario { display: block; margin: 0 .3rem; font: 700 .9rem Arial, sans-serif; text-decoration: none; padding: .75rem; border-radius: var(--r-btn); text-align: center; }
 .cuenta-menu .cuenta-menu-principal { background: var(--ambar); color: var(--horno); }
 .con-puntero .cuenta-menu .cuenta-menu-principal:hover { background: var(--ambar-claro); color: var(--horno); }
-.cuenta-menu .cuenta-menu-secundario { margin-top: .4rem; margin-bottom: .3rem; border: 1px solid rgba(255, 255, 255, .3); }
+.cuenta-menu .cuenta-menu-secundario { margin-top: .4rem; margin-bottom: .3rem; border: 1px solid var(--horno); }
 
 /* El cuadrito que sale al dejar el cursor quieto sobre algo. Va en el cuerpo y
    se coloca por JS, para que ninguna tarjeta con overflow lo recorte. */
@@ -925,14 +937,13 @@ body.is-checkout .floating-whatsapp { display: none; }
 .con-puntero .ver-clave:hover { background: var(--masa); color: var(--horno); }
 
 /* La entrada a la cuenta vive en la navegacion, sobre el horno. Es solo el
-   dibujo: un circulo perfilado en claro, del tamano de un objetivo tactil, que
+   dibujo: un circulo crema macizo, del tamano de un objetivo tactil, que
    no compite en ancho con los tres enlaces de al lado. */
-.nav-cuenta { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: none; border: 1px solid rgba(255, 255, 255, .45); border-radius: 50%; color: var(--sobre-horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
-.con-puntero .nav-cuenta:hover { background: var(--papel-tenue); border-color: rgba(255, 253, 248, .82); color: var(--papel); }
+.nav-cuenta { display: grid; width: 44px; height: 44px; flex: 0 0 auto; place-items: center; padding: 0; background: var(--masa); border: 1px solid var(--masa); border-radius: 50%; color: var(--horno); cursor: pointer; transition: background-color var(--dur-fast) var(--ease-ui), border-color var(--dur-fast) var(--ease-ui), color var(--dur-fast) var(--ease-ui); }
+.con-puntero .nav-cuenta:hover { background: var(--papel); border-color: var(--papel); color: var(--horno); }
 .nav-cuenta .nav-cuenta-icono { width: 22px; height: 22px; transform-origin: center; transition: transform var(--dur-fast) var(--ease-out); }
 .con-puntero .nav-cuenta:not(.is-dentro):not([aria-current="page"]):hover .nav-cuenta-icono { transform: translateY(-2px) rotate(-7deg) scale(1.08); }
-/* Con sesion, las iniciales permanecen en la gama de blancos de la cabecera. */
-.nav-cuenta.is-dentro { background: none; border-color: rgba(255, 255, 255, .45); color: var(--sobre-horno); }
+/* Con y sin sesion es el mismo circulo crema; las iniciales sustituyen al icono. */
 .nav-cuenta-iniciales { font: 700 .88rem/1 Arial, sans-serif; letter-spacing: .01em; transition: transform var(--dur-fast) var(--ease-out); }
 .con-puntero .nav-cuenta.is-dentro:not([aria-expanded="true"]):not([data-vista-cuenta="true"]):hover .nav-cuenta-iniciales { transform: translateY(-1px) scale(1.05); }
 .con-puntero .nav-cuenta.is-dentro[aria-expanded="true"], .con-puntero .nav-cuenta.is-dentro[data-vista-cuenta="true"],
@@ -1017,9 +1028,9 @@ body.is-checkout .floating-whatsapp { display: none; }
 /* La gaveta de la canasta: fondo crema y cada producto en su tarjeta blanca,
    con foto. Antes eran renglones sueltos sobre blanco, con mucho aire y nada
    que agarrara la vista; asi cada producto es una pieza que se reconoce. */
-.canasta-panel .canasta-cabecera { padding: 1.1rem 1.3rem .95rem; }
+.canasta-panel .canasta-cabecera { padding: 1.1rem 1.3rem .95rem; background: color-mix(in srgb, var(--ambar) 38%, var(--papel)); border-bottom-color: var(--ambar); }
 .canasta-cabecera-titulo { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .75rem; }
-.canasta-cabecera-cuenta { padding: .25rem .65rem; background: rgba(232, 168, 124, .2); border-radius: var(--r-pill); color: var(--horno); font: 700 .76rem/1.2 Arial, sans-serif; }
+.canasta-cabecera-cuenta { padding: .25rem .65rem; background: var(--papel); border-radius: var(--r-pill); color: var(--horno); font: 700 .76rem/1.2 Arial, sans-serif; }
 .canasta-cabecera-cuenta[hidden] { display: none; }
 .canasta-panel .canasta-cuerpo { padding: 1rem 1.1rem 1.2rem; background: var(--masa); }
 .canasta-lista { display: grid; gap: .65rem; margin: 0; padding: 0; list-style: none; }

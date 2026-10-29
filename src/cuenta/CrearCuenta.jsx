@@ -127,9 +127,8 @@ function FormularioCrear() {
       <div className="cuenta-formulario" onKeyDown={alTeclear}>
         <div className="cuenta-cuerpo">
           <p className="cuenta-maqueta">
-            <strong>Maqueta académica.</strong> La cuenta se guarda en el servidor del proyecto
-            (Supabase) y te llega un código a tu correo para verificarla. Aun así, no uses una
-            contraseña que tengas en otro sitio.
+            Te llega un código a tu correo para verificar la cuenta. No uses una contraseña que
+            tengas en otro sitio.
           </p>
           <div className="cuenta-crear-columnas">
             <div className="cuenta-crear-datos">

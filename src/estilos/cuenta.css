@@ -29,10 +29,6 @@ a.nav-cuenta { text-decoration: none; }
 /* Como Nosotros y Contacto, acaba en la franja de espigas pegada al borde de
    abajo (el 30 % de horno de la vista); la hoja deja aire sobre ella. */
 .cuenta-vista .cuenta-vista-caja { width: 100%; flex: 0 0 auto; margin: 0 auto 3rem; }
-/* La losa de horno de la cuenta (seccion 10 del plan, "Tres colores,
-   60-30-10"): de borde a borde, bajo la barra, une la barra con la banda
-   del titulo en un solo bloque oscuro. */
-.cuenta-vista::before { position: absolute; top: 86px; right: 0; left: 0; z-index: -1; height: 130px; content: ""; background: var(--horno); }
 /* Cada paso con el ancho que pide lo que lleva: un formulario corto se lee
    mejor estrecho, y crear la cuenta reparte sus campos en dos columnas. */
 .cuenta-vista-caja { max-width: 600px; }
@@ -40,10 +36,10 @@ a.nav-cuenta { text-decoration: none; }
 .cuenta-vista-pedidos .cuenta-vista-caja { max-width: 760px; }
 .cuenta-vista-crear .cuenta-vista-caja { max-width: 1000px; }
 
-/* La banda: el titulo en papel sobre el horno.
-   Abajo deja sitio para que la hoja se le monte encima. */
-.cuenta-vista-banda { padding: 2rem clamp(1.4rem, 4vw, 2.6rem) 4.4rem; border-radius: var(--r-card); }
-.cuenta-vista-titulo { margin: 0; color: var(--papel); font: 500 clamp(2.2rem, 4.4vw, 3.2rem)/1 var(--letra-titulo); }
+/* La banda: el titulo en horno sobre el fondo claro, con un filete de ambar
+   debajo; ya no es un bloque oscuro pegado a la barra. */
+.cuenta-vista-banda { padding: 1.4rem clamp(.75rem, 3vw, 2rem) 1.1rem; }
+.cuenta-vista-titulo { margin: 0; padding-bottom: .7rem; border-bottom: 3px solid var(--ambar); color: var(--horno); font: 500 clamp(2.2rem, 4.4vw, 3.2rem)/1 var(--letra-titulo); }
 /* Los dibujos de la banda, a la derecha del titulo. */
 .cuenta-vista-banda .fondo-pieza.is-arriba-derecha { top: -18px; right: 4%; width: 230px; }
 .fondo-cuenta-crear .is-arriba-derecha { width: 300px; }
@@ -51,7 +47,7 @@ a.nav-cuenta { text-decoration: none; }
 
 /* La hoja: papel con su filete y una sombra que la separa de la banda. Va
    por encima de la banda, que es la que la sostiene. */
-.cuenta-vista .cuenta-formulario { position: relative; z-index: 1; margin: -3rem clamp(.75rem, 3vw, 2rem) 0; padding: clamp(1.2rem, 3vw, 2rem); background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-card); box-shadow: 0 18px 34px -22px rgba(58, 40, 34, .45); }
+.cuenta-vista .cuenta-formulario { position: relative; z-index: 1; margin: 0 clamp(.75rem, 3vw, 2rem); padding: clamp(1.2rem, 3vw, 2rem); background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-card); box-shadow: 0 18px 34px -22px rgba(58, 40, 34, .45); }
 
 /* En la pagina no hay panel que desplazar ni pie pegado. */
 .cuenta-vista .cuenta-cuerpo { overflow: visible; padding: 0; }
@@ -169,9 +165,8 @@ a.nav-cuenta { text-decoration: none; }
 @media (max-width: 680px) {
   .cuenta-vista { padding: 84px 0 0; }
   .cuenta-vista .cuenta-vista-caja { margin: 0 auto 2rem; }
-  .cuenta-vista::before { top: 70px; height: 100px; }
-  .cuenta-vista-banda { padding: 1.5rem 1.2rem 3.8rem; }
-  .cuenta-vista .cuenta-formulario { margin: -2.6rem .5rem 0; }
+  .cuenta-vista-banda { padding: 1rem .5rem .9rem; }
+  .cuenta-vista .cuenta-formulario { margin: 0 .5rem; }
   .cuenta-vista-banda .fondo-pieza.is-arriba-derecha { right: -30px; width: 170px; }
   /* En el telefono, una columna: la contrasena debajo de tus datos. */
   .cuenta-crear-columnas { grid-template-columns: minmax(0, 1fr); }

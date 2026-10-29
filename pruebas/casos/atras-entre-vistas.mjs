@@ -28,7 +28,8 @@ export default async function atrasEntreVistas(t) {
     for (const inicio of ['#/', '#/tienda-catalogo', '#/contacto', '#/nosotros']) {
       await abrir(inicio);
       await p.mouse.wheel(0, 500); await espera(600);
-      await ir('.nav-cuenta'); await espera(800);
+      await ir('.nav-cuenta'); await espera(300);
+      await ir('.cuenta-menu-principal'); await espera(800);
       await p.mouse.wheel(0, 300); await espera(500);
       await p.goBack(); await espera(1200);
       await mira(`abierta en ${inicio}, cuenta, Atras`);

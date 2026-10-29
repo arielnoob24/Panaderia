@@ -242,8 +242,8 @@ function FormularioPedido() {
           <div className="checkout-grid">
             <div className="checkout-datos" onKeyDown={alTeclear}>
               <p className="pago-demo">
-                <strong>Esto es una demostración.</strong> Es un proyecto de clase: no se procesa ningún
-                cobro real y los datos de la tarjeta no se guardan ni se envían.
+                <strong>No se procesa ningún cobro real.</strong> Los datos de la tarjeta no se guardan ni
+                se envían.
               </p>
               <ElegirEntrega
                 entrega={entrega}

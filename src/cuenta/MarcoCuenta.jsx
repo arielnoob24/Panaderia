@@ -4,13 +4,10 @@
 // (useVista). Las clases son para frontend, que hace la maquetacion: la caja
 // de la vista lleva cuenta-vista y cuenta-vista-<paso>.
 //
-// La maquetacion (cuenta.css): el titulo va en una banda de horno con los
-// dibujos de trigo detras, y el formulario es una hoja de papel que cuelga
-// de ella. La banda lleva
-// banda-oscura para que la cabecera pegada se de la vuelta al pasar encima.
+// La maquetacion (cuenta.css): el titulo va sobre el fondo claro de la pagina,
+// con un filete de ambar debajo, y el formulario es una hoja de papel.
 import { useRef } from 'react';
 import { useVista } from '../comun/useVista.js';
-import FondoDibujo from '../comun/FondoDibujo.jsx';
 import '../estilos/cuenta.css';
 
 function MarcoCuenta({ paso, titulo, pestana, children }) {
@@ -19,8 +16,7 @@ function MarcoCuenta({ paso, titulo, pestana, children }) {
   return (
     <div className={`vista cuenta-vista cuenta-vista-${paso}`}>
       <section className="cuenta-vista-caja container" aria-labelledby="cuenta-vista-titulo">
-        <div className="cuenta-vista-banda banda-oscura con-fondo">
-          <FondoDibujo vista={`cuenta-${paso}`} />
+        <div className="cuenta-vista-banda">
           <h1 ref={tituloRef} id="cuenta-vista-titulo" className="cuenta-vista-titulo" tabIndex={-1}>{titulo}</h1>
         </div>
         {children}

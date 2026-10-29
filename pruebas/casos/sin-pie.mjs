@@ -18,7 +18,7 @@ const ULTIMO = {
   '#/': '.cinta-enlace:last-of-type',
   '#/nosotros': '.principios > li:last-child',
   '#/tienda-catalogo': '.product-card:not([hidden]):last-of-type .card-mas, .product-card:not([hidden]):last-of-type .card-agotado',
-  '#/contacto': '.contacto-nota',
+  '#/contacto': '.contacto-valor',
   '#/cuenta/entrar': '.cuenta-vista .cuenta-pie',
   '#/cuenta/crear': '.cuenta-vista .cuenta-pie',
   '#/cuenta/recuperar': '.cuenta-vista .cuenta-pie',

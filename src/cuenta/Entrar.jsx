@@ -90,7 +90,7 @@ function FormularioEntrar() {
       <div className="cuenta-formulario" onKeyDown={alTeclear}>
         <div className="cuenta-cuerpo">
           <p className="cuenta-maqueta">
-            <strong>Maqueta académica.</strong> Puedes entrar con tu cuenta desde cualquier
+            Puedes entrar con tu cuenta desde cualquier
             navegador o teléfono.
           </p>
           <CampoCuenta

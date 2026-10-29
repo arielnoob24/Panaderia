@@ -364,10 +364,10 @@
 .con-puntero .chip-bebidas-frias:hover .ico { animation: baila-botella var(--dur-slow) var(--ease-soft) both; }
 .chip:active { transform: scale(.97); }
 /* El fondo horno es la pastilla que viaja (.chip-pastilla); la etiqueta solo
-   cambia el color del texto y del icono, y lo hace al llegar la pastilla. */
+   cambia el color del texto, y lo hace al llegar la pastilla. El icono no
+   cambia: conserva sus lineas horno y su relleno ambar. */
 .chip-pastilla { position: absolute; inset: 0; z-index: -1; display: block; background: var(--horno); border-radius: var(--r-pill); pointer-events: none; }
 .chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { background: transparent; color: var(--papel); transition-delay: 90ms, 90ms, 0s; }
-.chip-input:checked + .chip .ico { color: var(--masa); transition-delay: 90ms; }
 /* El anillo de los campos, sobre la etiqueta del radio que tiene el foco. */
 .chip-input:focus-visible + .chip { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 

@@ -1,9 +1,8 @@
 // ---- La cuenta en la cabecera ------------------------------------------
 // El circulo de la cuenta, con las clases de account.js del sitio presentado (nav-cuenta,
 // cuenta-menu...), pero con las vistas de la fase 5 (seccion 15 del plan):
-//   - Sin sesion es la silueta, y es un enlace: lleva directo a
-//     #/cuenta/entrar, donde esta tambien "Creala". No hay nada que elegir
-//     antes, asi que no hace falta un menu de por medio.
+//   - Sin sesion es la silueta, y abre una ficha pequena con las dos
+//     puertas: "Iniciar sesion" y "Crear cuenta". No lleva de golpe a Entrar.
 //   - Con sesion son tus iniciales, y abren una ficha pequena con quien eres,
 //     "Mis datos", "Mis pedidos (N)" y "Cerrar sesion". Es un boton con
 //     aria-expanded y aria-controls; la ficha se recorre con las flechas,
@@ -51,6 +50,21 @@ const SALIR = (
     <path d="M17 8.5l3.5 3.5-3.5 3.5" />
   </>
 );
+
+// La ficha de quien no ha entrado: las dos puertas. Entrar va llena.
+function PuertasCuenta({ opcionesRef, alElegir }) {
+  const guardar = (i) => (el) => { opcionesRef.current[i] = el; };
+  return (
+    <>
+      <div className="cuenta-menu-cabeza">
+        <p className="cuenta-menu-hola">Tu cuenta</p>
+        <p className="cuenta-menu-dicho">Guarda tus pedidos y paga más rápido.</p>
+      </div>
+      <Link ref={guardar(0)} className="cuenta-menu-principal" to="/cuenta/entrar" onClick={() => alElegir('/cuenta/entrar')}>Iniciar sesión</Link>
+      <Link ref={guardar(1)} className="cuenta-menu-secundario" to="/cuenta/crear" onClick={() => alElegir('/cuenta/crear')}>Crear cuenta</Link>
+    </>
+  );
+}
 
 // Lo de dentro de la ficha. Se monta de nuevo cada vez que se abre (la clave
 // de quien la usa): asi el numero de pedidos se vuelve a leer, porque puede
@@ -110,7 +124,6 @@ function FichaCuenta({ alAbrir }) {
   // El rol se pregunta a la API al entrar, para que "Panel" ya este al abrir la ficha.
   const { hayPanel } = usePanel();
   const botonRef = useRef(null);
-  const entrarRef = useRef(null);
   const fichaRef = useRef(null);
   const opcionesRef = useRef([]);
   // Tras cerrar la sesion, el circulo deja de ser boton y pasa a ser enlace:
@@ -124,13 +137,10 @@ function FichaCuenta({ alAbrir }) {
     setDonde(location.key);
     setAbierta(false);
   }
-  // Sin sesion no hay ficha que tener abierta.
-  if (!dentro && abierta) setAbierta(false);
-
   useEffect(() => {
     if (!dentro && enfocarEntrar.current) {
       enfocarEntrar.current = false;
-      entrarRef.current?.focus();
+      botonRef.current?.focus();
     }
   }, [dentro]);
 
@@ -209,40 +219,25 @@ function FichaCuenta({ alAbrir }) {
     avisar(`Cerraste la sesión de ${quien}.`);
   };
 
-  if (!dentro) {
-    return (
-      <Link
-        ref={entrarRef}
-        className="nav-cuenta"
-        to="/cuenta/entrar"
-        aria-label="Iniciar sesión / Registrarse"
-        data-tip="Iniciar sesión / Registrarse"
-        aria-current={location.pathname === '/cuenta/entrar' ? 'page' : undefined}
-        onPointerEnter={pedirCuenta}
-        onFocus={pedirCuenta}
-      >
-        <svg className="nav-cuenta-icono" {...trazo} strokeWidth="1.5">{PERSONA}</svg>
-      </Link>
-    );
-  }
-
   return (
     <>
       <button
         ref={botonRef}
-        className="nav-cuenta is-dentro"
+        className={dentro ? 'nav-cuenta is-dentro' : 'nav-cuenta'}
         type="button"
         aria-expanded={abierta}
         aria-controls="cuenta-menu"
-        aria-label={`Tu cuenta, ${nombre}`}
+        aria-label={dentro ? `Tu cuenta, ${nombre}` : 'Cuenta: iniciar sesión o crear cuenta'}
         data-vista-cuenta={location.pathname.startsWith('/cuenta') ? 'true' : undefined}
-        data-tip="Tu cuenta"
+        data-tip={dentro ? 'Tu cuenta' : 'Iniciar sesión / Crear cuenta'}
         onClick={() => (abierta ? setAbierta(false) : abrir())}
         onKeyDown={alTeclearBoton}
         onPointerEnter={pedirCuenta}
         onFocus={pedirCuenta}
       >
-        <span className="nav-cuenta-iniciales" aria-hidden="true">{iniciales(nombre)}</span>
+        {dentro
+          ? <span className="nav-cuenta-iniciales" aria-hidden="true">{iniciales(nombre)}</span>
+          : <svg className="nav-cuenta-icono" {...trazo} strokeWidth="1.5">{PERSONA}</svg>}
       </button>
       <div
         ref={fichaRef}
@@ -250,16 +245,20 @@ function FichaCuenta({ alAbrir }) {
         className={abierta ? 'cuenta-menu is-open' : 'cuenta-menu'}
         onKeyDown={alTeclearFicha}
       >
-        <OpcionesCuenta
-          key={vez}
-          nombre={nombre}
-          correo={correo}
-          ruta={location.pathname}
-          hayPanel={hayPanel}
-          opcionesRef={opcionesRef}
-          alElegir={alElegir}
-          alSalir={alSalir}
-        />
+        {dentro ? (
+          <OpcionesCuenta
+            key={vez}
+            nombre={nombre}
+            correo={correo}
+            ruta={location.pathname}
+            hayPanel={hayPanel}
+            opcionesRef={opcionesRef}
+            alElegir={alElegir}
+            alSalir={alSalir}
+          />
+        ) : (
+          <PuertasCuenta key={vez} opcionesRef={opcionesRef} alElegir={alElegir} />
+        )}
       </div>
     </>
   );

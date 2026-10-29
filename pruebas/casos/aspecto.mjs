@@ -67,26 +67,6 @@ export default async function aspecto(t) {
     t.ok(portada.fichas === 0 && portada.carrusel === 0 && portada.pie === 0, `[${nombre}] la portada todavia lleva fichas, carrusel o pie (${JSON.stringify(portada)})`);
     t.ok(portada.altoDocumento <= portada.altoVentana && Math.abs(portada.finalCinta - portada.altoVentana) <= 1, `[${nombre}] la portada no llena la pantalla o la cinta no llega al borde (${JSON.stringify(portada)})`);
 
-    // Sobre una banda oscura sigue horno y gana la linea ambar. En #/ ni en
-    // la tienda hay ninguna, asi que se mira con la banda de la cuenta.
-    await p.goto(t.REACT + '#/cuenta/entrar');
-    await p.waitForSelector('.cuenta-vista-banda.banda-oscura');
-    await p.evaluate(() => {
-      const banda = document.querySelector('.cuenta-vista-banda.banda-oscura');
-      // La vista de entrar es corta: sitio de sobra para llevar la banda
-      // bajo la barra.
-      document.body.style.paddingBottom = '2000px';
-      window.scrollTo(0, banda.getBoundingClientRect().top + window.scrollY - 40);
-    });
-    const sobre = await esperaQue(() => p.evaluate(() => document.querySelector('.site-header').classList.contains('is-sobre-oscuro')));
-    // La linea llega con una transicion corta: se espera a que acabe.
-    await esperaQue(() => p.evaluate((ambar) => getComputedStyle(document.querySelector('.site-header')).boxShadow.startsWith(ambar), AMBAR));
-    const sombra = await p.evaluate(() => getComputedStyle(document.querySelector('.site-header')).boxShadow);
-    const fondoOscuro = await p.evaluate(() => getComputedStyle(document.querySelector('.site-header')).backgroundColor);
-    t.ok(sobre, `[${nombre}] la barra no se entera de que tiene debajo una banda oscura`);
-    t.ok(fondoOscuro === HORNO, `[${nombre}] sobre la banda oscura la barra es ${fondoOscuro}, no horno`);
-    t.ok(sombra.includes(AMBAR) && sombra.includes('inset'), `[${nombre}] sobre la banda oscura no hay linea ambar (${sombra})`);
-
     // Las fichas de la tienda: sin hueco entre el nombre y el precio, el
     // nombre en Fraunces y los sellos con letra legible.
     await p.goto(t.REACT + '#/tienda-catalogo');

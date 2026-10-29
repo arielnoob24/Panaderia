@@ -53,7 +53,7 @@ function ResumenPedido({
             ? <><span className="pago-girando" aria-hidden="true"></span> Procesando el pago…</>
             : textoPagar}
         </button>
-        <p className="canasta-nota">Simulación académica: no se cobra ni un centavo.</p>
+        <p className="canasta-nota">No se cobra ni un centavo.</p>
       </div>
     </div>
   );

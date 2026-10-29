@@ -254,8 +254,7 @@ const cuerpoComprobante = (r) => [
   ...(r.notas ? [`Indicaciones: ${r.notas}`] : []),
   `Te llamamos al ${telefonoLargo(r.telefono)} si hace falta.`,
   '',
-  'Este pedido es parte de un proyecto académico: el cobro está simulado y',
-  'no se descontó ningún dinero. El correo, en cambio, es real.',
+  'No se descontó ningún dinero: el cobro de este pedido no se procesa.',
 ].join('\n');
 
 const asuntoComprobante = (r) => `Pedido ${r.numero} · El Tradicional`;

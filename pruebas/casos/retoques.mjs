@@ -148,7 +148,7 @@ export default async function retoques(t) {
     });
     t.ok(con.rellenos.length === 1 && /contacto-mapa-enlace/.test(con.rellenos[0]), `[${nombre}] en Contacto el unico relleno de ambar no es "Ver en el mapa" (${JSON.stringify(con.rellenos)})`);
     const enlaces = await c.evaluate(() => [...document.querySelectorAll('.contacto-escribir .enlace-llegar')].map((e) => ({ fondo: getComputedStyle(e).backgroundColor, borde: getComputedStyle(e).borderTopWidth })));
-    t.ok(enlaces.length === 2 && enlaces.every((e) => e.fondo === TRANSPARENTE && parseFloat(e.borde) >= 1), `[${nombre}] WhatsApp e Instagram no son secundarios con borde (${JSON.stringify(enlaces)})`);
+    t.ok(enlaces.length === 1 && enlaces.every((e) => e.fondo === TRANSPARENTE && parseFloat(e.borde) >= 1), `[${nombre}] WhatsApp no es secundarios con borde (${JSON.stringify(enlaces)})`);
     if (!movil) t.ok(Math.abs(con.horario - con.escribir) <= 1 && con.vertical, `[${nombre}] el horario (${con.horario}) y Escribenos (${con.escribir}) no miden lo mismo`);
 
     // El mapa: sin puntero hasta hacer clic; al salir se restablece.
