@@ -59,11 +59,9 @@
 /* La frase de la portada va recta (27 de octubre de 2026): en cursiva repetia
    la del titular y le restaba contraste. En Nosotros sigue en cursiva. */
 .portada-frase { font-style: normal; }
-/* "Nuestros panes" lleva un filete punteado por dentro, a 8 px del borde
-   (fuera de las mordidas de 9 px), y la hogaza blanca con contorno horno
-   (27 de octubre de 2026). Es un <i> y no un pseudoelemento porque ::before y
-   ::after del boton ya son el vale y su sombra. */
-.portada-filete { position: absolute; inset: 8px; border: 1.5px dotted var(--horno); border-radius: 3px; pointer-events: none; }
+/* "Nuestros panes" lleva la hogaza blanca con contorno horno. El filete
+   punteado de dentro se quito el 29 de octubre de 2026: a 1,5 px los puntos
+   salian desiguales y se veia sucio. */
 .portada-panes .ico { fill: var(--papel); }
 /* "Como llegar": el pin mas grande, macizo en ambar con contorno y punto horno. */
 .enlace-llegar.portada-llegar .ico { width: 26px; height: 26px; fill: var(--ambar); stroke: var(--horno); stroke-width: 1.6; }

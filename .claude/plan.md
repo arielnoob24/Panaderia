@@ -723,9 +723,9 @@ ritmo del movimiento y la accesibilidad no cambian.
   ("Horneado cada mañana"), el `h1` "El sabor / *de siempre*" en Fraunces
   grande (la segunda línea en cursiva en horno y desplazada), la frase
   **"Pan recién horneado, todos los días."** en cursiva, el botón
-  **"Nuestros panes"** con la **hogaza** blanca de contorno horno y un filete
-  punteado por dentro (a 8 px del borde, fuera de las mordidas; desde el 27
-  de octubre de 2026), y "Cómo llegar" con el pin más grande (36 px, 28 en el
+  **"Nuestros panes"** con la **hogaza** blanca de contorno horno, sin filete
+  por dentro (el punteado de 1,5 px se vio desigual y se quitó el 29 de
+  octubre de 2026), y "Cómo llegar" con el pin más grande (36 px, 28 en el
   teléfono), macizo en ámbar con contorno y punto horno. A la derecha la foto **cuadrada en arco** (unos 460 px, marco fino a
   10 px), con el pie "Miga abierta, corteza tostada" y el **sello** "Hecho a
   mano · Pan de la casa", quieto (solo gira un poco con el puntero encima;
