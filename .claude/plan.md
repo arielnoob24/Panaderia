@@ -25,7 +25,7 @@ JavaScript, React Router con `HashRouter`, Motion).
   `sitio-presentado`.
 - Dirección: esquina de Eloy Alfaro y Gabriel Espinosa, Tena.
 - Horario: lunes a viernes 08:00–20:00; sábado y domingo 09:00–21:00.
-- Teléfono, WhatsApp e Instagram son **de ejemplo** (Contáctanos lo avisa).
+- Teléfono y WhatsApp son **de ejemplo**. Instagram se quitó el 29 de octubre de 2026 porque la panadería no tiene; Contáctanos ya no lleva la nota de ejemplo.
 
 ## 2. Reglas que no se rompen
 
@@ -375,13 +375,15 @@ Auth guarda la contraseña y verifica el correo; nombre y teléfono van en
 | `#/cuenta` | **Mis datos**, editables ahí mismo: nombre, teléfono, dirección y forma de pago preferida (Efectivo o Tarjeta; "No guardamos tarjetas"); el correo se ve y no se cambia. "Guardar" (pasa a "Guardado ✓" 2 s) y "Cerrar sesión" | Sin sesión → `#/cuenta/entrar` |
 | `#/cuenta/pedidos` | Una fila por pedido de **esta cuenta** (`ET-XXXX`, fecha, total), más nuevo arriba, en `<details>` que se despliega animando la altura; los de la base dicen su estado ("Pagado", "Pendiente de pago"). Salen de la base (`GET /pedidos`, se ven desde cualquier navegador) más los que solo estén en este navegador (los de antes, también los sin `correo`); sin API, solo estos. Cada uno con "Pedir otra vez" | Sin sesión → `#/cuenta/entrar` |
 
-- **Cabecera**: sin sesión, la silueta ("Iniciar sesión / Registrarse") lleva
-  a `#/cuenta/entrar`; con sesión, las iniciales abren una ficha con "Mis
-  datos", "Mis pedidos (N)" y "Cerrar sesión" (flechas, Inicio, Fin, Esc,
-  `aria-current` en la vista en la que se está). El botón usa tonos claros:
-  línea blanca al inicio y papel tenue con sesión; al abrir la ficha o estar
-  dentro de una vista de cuenta queda en papel, y al pasar el puntero vuelve
-  al blanco tenue del menú superior.
+- **Cabecera** (29 de octubre de 2026): el botón es siempre un círculo
+  `--masa` macizo con el icono o las iniciales en `--horno` (más claro,
+  `--papel`, con el puntero; al abrir la ficha o estar en una vista de cuenta
+  suma un aro). Sin sesión es un botón (no un enlace) que abre una ficha con
+  dos puertas, "Iniciar sesión" (relleno ámbar) y "Crear cuenta"; no lleva de
+  golpe a `#/cuenta/entrar`. Con sesión, las iniciales abren una ficha con
+  "Mis datos", "Mis pedidos (N)" y "Cerrar sesión" (flechas, Inicio, Fin, Esc,
+  `aria-current` en la vista en la que se está). La ficha es de **papel con
+  filete `--masa-linea`**, no de horno, para no confundirse con la barra.
 - **Al terminar** de iniciar sesión, verificar o recuperar: a `#/confirmar`
   si se venía de "Ir a pagar" y la canasta tiene algo; si no, a `#/cuenta`.
   Cerrar sesión no borra la cuenta y lleva a `#/`. Los pasos van con
@@ -683,7 +685,7 @@ pedido sigue valiendo.
   opaca desde que carga la página, con el logo y el texto en claro; va de
   borde a borde y se pega al bajar. Sobre secciones oscuras **no se
   invierte**: sigue en `--horno` y gana una línea ámbar fina abajo para separarse
-  (hoy solo queda la banda de la cuenta).
+  (hoy no queda ninguna banda oscura bajo la barra: la de la cuenta se quitó el 29 de octubre de 2026).
   Cortes en 900, 680 y 420 px.
 - El hover no depende de media queries: el portátil del usuario es táctil y
   `(hover: hover)` le da falso, así que **nunca veía el hover** (y
@@ -953,19 +955,18 @@ entrada), no copiadas.
   papel con el texto en horno, con la palabra "Abierto" o "Cerrado" y un punto ámbar
   (abierto) u horno (cerrado): el
   ámbar de antes era para el fondo oscuro.
-- **Escríbenos**: WhatsApp e Instagram con el aspecto de "Cómo llegar"
+- **Escríbenos** (desde el 29 de octubre de 2026 solo WhatsApp; Instagram y la
+  nota de ejemplo se quitaron): WhatsApp con el aspecto de "Cómo llegar"
   (Fraunces en cursiva, filete fino, su icono ámbar y la ola de letras;
   desde el 26 de octubre de 2026 van **dentro de una banda `--horno`**, con
   el texto y el filete en `--papel`;
   desde el 27 de octubre de 2026 van **rellenos de `--ambar`** con texto e icono
   `--horno` (el filete fino se perdía sobre el horno);
   es el mismo `EnlaceLlegar`, que con `href` se abre en otra pestaña y lo
-  dice en el nombre), uno al lado del otro con el rótulo de cada uno
-  encima, y la nota de que son de ejemplo, que **se ve siempre**:
-  "Teléfono y redes de ejemplo (proyecto de clase)."
+  dice en el nombre), con su rótulo encima.
 - **Un solo principal** (27 de octubre de 2026): "Ver en el mapa" es el
-  único relleno de `--ambar` de la vista; WhatsApp e Instagram son
-  **secundarios**: fondo transparente, borde de 1,5 px `--sobre-horno`,
+  único relleno de `--ambar` de la vista, sin flecha en el texto; WhatsApp es
+  **secundario**: fondo transparente, borde de 1,5 px `--sobre-horno`,
   texto `--sobre-horno` e icono ámbar (13,7:1), con un blanco tenue con el
   puntero. La tarjeta de Escríbenos y la columna del horario miden lo mismo
   (la rejilla las estira y el contenido de la tarjeta va centrado).
@@ -993,8 +994,7 @@ entrada), no copiadas.
   sin el desplazamiento de la segunda; la dirección, en una línea; el
   mapa puede bajar **hasta 120 px**; y los espacios quedan al mínimo (el
   ticket sigue en 44 px). La canasta flotante no tapa ningún enlace.
-- A 320 px de ancho WhatsApp e Instagram van uno debajo del otro y la
-  vista crece unos 55 px. Con zoom o una ventana muy baja, la vista crece
+- A 320 px de ancho la vista crece un poco. Con zoom o una ventana muy baja, la vista crece
   y se desplaza en vez de cortar texto (WCAG 1.4.10).
 - Con menos movimiento todo está quieto y visible desde el principio.
 
@@ -1010,7 +1010,7 @@ pequeñas desde el 25 de octubre, sección 4).
   esquinas `--r-card` y filete `--masa-linea`, sin las líneas dobles: buscar
   a la izquierda, "Ordenar por" y "Mostrar" a la derecha (apilados en el
   teléfono). El buscador y el botón de orden van en `--masa`. "Filtrar por"
-  vuelve a ser texto `--horno` con la pastilla `--horno` y texto `--papel`.
+  vuelve a ser texto `--horno`; la elegida lleva pastilla `--papel` con borde `--horno` y el texto en `--horno` (ver abajo).
   Las opciones de orden por precio y por nombre llevan una **flecha** (↑
   de menor a mayor y de la A a la Z, ↓ de mayor a menor), en el botón y en
   la lista; es adorno, el texto ya dice el sentido.
@@ -1027,7 +1027,8 @@ pequeñas desde el 25 de octubre, sección 4).
 - **"Filtrar por" como la cinta**: Todas ✦ Panes ✦ Dulces y pasteles ✦
   Bebidas, en Fraunces cursiva, cada categoría con su icono de la cinta
   (hogaza, pastelito, botella) y la ola de letras con el puntero. La
-  elegida en una **pastilla `--horno` con el texto `--papel`, que se
+  elegida en una **pastilla `--papel` con borde `--horno` de 1,5 px y texto
+  `--horno` (29 de octubre de 2026; los iconos conservan sus líneas negras), que se
   desliza de una categoría a otra** (un solo elemento compartido,
   `layoutId` de Motion, resorte corto de ~250 ms; con menos movimiento
   salta; si las categorías parten en dos filas, cruza de una a otra). Siguen
@@ -1301,7 +1302,10 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
       pedido del 21 de octubre). El usuario pasa los productos; cada uno con su foto
       `-420.jpg` y `-840.jpg`, y entran en `data/productos.json` y en `bd/`.
 - [x] Barra de pasos: la corta (Confirmar y pagar → Pedido listo) está hecha; la larga con
-      "Canasta" se descartó el 27 de octubre de 2026.
+      "Canasta" se descartó el 27 de octubre de 2026. Desde el 29 de octubre de 2026 son
+      nodos unidos por una línea (ámbar hacia el paso alcanzado), y en pantalla ancha
+      Volver, título y pasos van en una sola fila para ver Confirmar sin desplazarse
+      (cabe a 1440×900 y 1366×768).
 - [x] Modal de confirmación al vaciar la canasta (27 de octubre de 2026); quitar un
       producto también (hoja modal, decidido el mismo día); Deshacer sigue después.
 - [ ] Revisar el formato de los correos de verificación y de comprobante (plantillas en Brevo y EmailJS).
@@ -1583,3 +1587,13 @@ Pendiente de la fase 7:
 - [x] Plan reescrito; `README.md` al día.
 - [x] Verificado (22 pruebas y axe en 46 estados), fusionado en `main` el
       21 de octubre de 2026 (`666f743`) y Pages en verde.
+
+## Cambios del 29 de octubre de 2026
+
+- Se quitaron los textos de "proyecto", "maqueta" y "demostración académica" de
+  la cuenta, Contacto, el pago y el correo del comprobante. **Se mantienen** los
+  avisos de que no se procesa ningún cobro y la tarjeta de prueba, porque son
+  verdad y evitan que alguien crea que pagó.
+- Las vistas de la cuenta (entrar, crear, recuperar, datos, pedidos) ya no llevan
+  banda de horno: el título va en `--horno` sobre la masa con un filete ámbar.
+- La ficha de la canasta tiene la cabecera en ámbar suave con filete ámbar.
