@@ -363,11 +363,10 @@
 .con-puntero .chip-dulces:hover .ico { animation: salta-galleta var(--dur-slow) var(--ease-soft) both; }
 .con-puntero .chip-bebidas-frias:hover .ico { animation: baila-botella var(--dur-slow) var(--ease-soft) both; }
 .chip:active { transform: scale(.97); }
-/* El fondo horno es la pastilla que viaja (.chip-pastilla); la etiqueta solo
-   cambia el color del texto, y lo hace al llegar la pastilla. El icono no
-   cambia: conserva sus lineas horno y su relleno ambar. */
-.chip-pastilla { position: absolute; inset: 0; z-index: -1; display: block; background: var(--horno); border-radius: var(--r-pill); pointer-events: none; }
-.chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { background: transparent; color: var(--papel); transition-delay: 90ms, 90ms, 0s; }
+/* La pastilla que viaja (.chip-pastilla) es papel con borde horno; el texto y
+   el icono siguen en horno, asi que sus lineas no cambian de color. */
+.chip-pastilla { position: absolute; inset: 0; z-index: -1; display: block; background: var(--papel); box-shadow: inset 0 0 0 1.5px var(--horno); border-radius: var(--r-pill); pointer-events: none; }
+.chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { background: transparent; color: var(--horno); }
 /* El anillo de los campos, sobre la etiqueta del radio que tiene el foco. */
 .chip-input:focus-visible + .chip { outline: 3px solid var(--horno); outline-offset: 2px; box-shadow: 0 0 0 5px var(--ambar); }
 
@@ -835,7 +834,7 @@ body.is-vista .catalog { padding-top: 108px; }
    styles.css; esta regla pesa mas que aquella y le pisaria el horno. */
 @media (forced-colors: active) {
   .chip-input:checked + .chip, .con-puntero .chip-input:checked + .chip:hover { forced-color-adjust: none; color: HighlightText; }
-  .chip-pastilla { forced-color-adjust: none; background: Highlight; }
+  .chip-pastilla { forced-color-adjust: none; background: Highlight; box-shadow: none; }
   .chip-input:checked + .chip .ico { color: HighlightText; }
   /* El anillo horno no se ve en colores forzados: el del sistema. */
   .chip-input:focus-visible + .chip { outline-color: CanvasText; box-shadow: none; }

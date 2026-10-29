@@ -9,7 +9,7 @@
 //   Fraunces a la izquierda y la frase en cursiva de cada vista;
 // - "Filtrar por" como la cinta: radios con su nombre de siempre, Fraunces
 //   cursiva, el icono de cada categoria (Todas sin), sin adornos entre ellas,
-//   la elegida en pastilla horno con texto papel, las flechas cambian de
+//   la elegida en pastilla papel con borde y texto horno, las flechas cambian de
 //   categoria y el foco se ve en la etiqueta; en el telefono no se sale;
 // - los mandos entre lineas dobles, buscador papel, Ordenar por solo texto con linea, rotulos en versalitas y
 //   "Mostrando X de Y" en versalitas horno; el aviso del catalogo
@@ -104,8 +104,8 @@ export default async function tienda(t) {
     t.ok(m.etiquetas.map((e) => e.icono).join() === 'false,true,true,true', `[${nombre}] los iconos de las categorias no son los de la cinta (${JSON.stringify(m.etiquetas)})`);
     t.ok(m.etiquetas.every((e) => ES_FRAUNCES.test(e.letra) && e.cursiva === 'italic' && e.ola === 'true' && e.alto >= 24), `[${nombre}] las categorias no van en Fraunces cursiva con la ola, o miden menos de 24 px (${JSON.stringify(m.etiquetas)})`);
     t.ok(m.estrellas.length === 0, `[${nombre}] quedan ${m.estrellas.length} adornos entre las categorias`);
-    // Sobre la masa, la pastilla es horno con texto papel.
-    t.ok(m.elegida?.[0] === HORNO && m.elegida?.[1] === PAPEL && m.elegida?.[2] === 1, `[${nombre}] la elegida no va en la pastilla horno (una sola, la que viaja) con texto papel (${m.elegida})`);
+    // Sobre la masa, la pastilla es papel con borde horno y texto horno.
+    t.ok(m.elegida?.[0] === PAPEL && m.elegida?.[1] === HORNO && m.elegida?.[2] === 1, `[${nombre}] la elegida no va en la pastilla papel (una sola, la que viaja) con texto horno (${m.elegida})`);
     t.ok(m.lineas === 2 && m.campos.length === 1 && m.campos.every((c) => c === MASA), `[${nombre}] los mandos no van en la barra clara o el buscador no es masa (${m.lineas}, ${m.campos})`);
     t.ok(m.ordenBoton[0] === MASA && m.ordenBoton[1] === '1px' && m.ordenBoton[2] === '1px', `[${nombre}] el boton de Ordenar por no es un cuadro papel con filete fino (${m.ordenBoton})`);
     t.ok(m.mando[0] === 'uppercase' && m.cuenta[0].startsWith('Mostrando 17 de 17') && m.cuenta[1] === 'uppercase' && m.cuenta[2] === HORNO, `[${nombre}] los rotulos o la cuenta no van en versalitas (${JSON.stringify([m.mando, m.cuenta])})`);
