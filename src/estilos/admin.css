@@ -41,8 +41,8 @@
 .admin-filtro { min-height: 44px; padding: .5rem 1rem; border: 1px solid var(--horno); border-radius: var(--r-chip); background: var(--papel); color: var(--horno); font: 700 .88rem Arial, sans-serif; cursor: pointer; }
 .admin-filtro[aria-pressed="true"] { background: var(--horno); color: var(--papel); }
 .con-puntero .admin-filtro[aria-pressed="false"]:hover { background: var(--ambar-claro); }
-.admin-pedidos, .admin-productos { display: grid; gap: .8rem; margin: 0; padding: 0; list-style: none; }
-.admin-pedido, .admin-producto { padding: 1rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-chip); }
+.admin-pedidos { display: grid; gap: .8rem; margin: 0; padding: 0; list-style: none; }
+.admin-pedido { padding: 1rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-chip); }
 .admin-pedido-numero { margin: 0; font: 700 1rem Arial, sans-serif; }
 .admin-pedido-cabeza { display: flex; flex-wrap: wrap; align-items: center; gap: .4rem .9rem; color: var(--horno); font: 1rem Arial, sans-serif; }
 .admin-pedido-total { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
@@ -69,10 +69,13 @@
 .admin-no { background: var(--papel); color: var(--horno); }
 .cuenta-vista-admin [aria-disabled="true"] { opacity: .45; cursor: default; }
 
-/* Productos */
-.admin-producto-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3rem .8rem; margin-bottom: .6rem; color: var(--horno); font: 1rem Arial, sans-serif; }
+/* Productos: una fila compacta por producto (nombre y categoria a la izquierda,
+   casillas, precios y Guardar a la derecha); en el telefono se apilan en poco alto. */
+.admin-productos { display: grid; gap: .5rem; margin: 0; padding: 0; list-style: none; }
+.admin-producto { padding: .5rem .8rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-chip); }
+.admin-producto-cabeza { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2rem .8rem; margin-bottom: .1rem; color: var(--horno); font: 1rem Arial, sans-serif; }
 .admin-producto-cat { color: var(--horno-suave); font-size: .85rem; }
-.admin-producto-campos { display: flex; flex-wrap: wrap; align-items: end; gap: .7rem 1.4rem; }
+.admin-producto-campos { display: flex; flex-wrap: wrap; align-items: end; gap: .1rem 1.2rem; }
 .admin-casilla { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; color: var(--horno); font: .92rem Arial, sans-serif; }
 .admin-casilla input { width: 20px; height: 20px; accent-color: var(--horno); }
 .admin-precio { display: grid; gap: .25rem; color: var(--horno); font: 700 .8rem Arial, sans-serif; }
@@ -84,9 +87,17 @@
 .admin-titulo:focus { outline: none; }
 .admin-agotado { padding: .1rem .55rem; border: 1px solid var(--horno); border-radius: var(--r-pill); color: var(--horno); font: 700 .75rem Arial, sans-serif; }
 
+@media (min-width: 900px) {
+  .admin-producto form { display: grid; grid-template-columns: minmax(11rem, 1fr) auto; align-items: center; gap: 0 1.4rem; }
+  .admin-producto-cabeza { margin-bottom: 0; }
+  .admin-producto .admin-guardar { margin-left: .4rem; }
+  .admin-producto .admin-error { grid-column: 1 / -1; }
+}
+
 @media (max-width: 680px) {
   .admin-cifras { grid-template-columns: 1fr; }
   .admin-guardar { width: 100%; margin-left: 0; }
+  .admin-producto .admin-guardar { width: auto; margin-left: auto; }
 }
 
 /* Inventario */
