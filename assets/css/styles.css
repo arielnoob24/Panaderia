@@ -755,7 +755,7 @@ body.is-checkout .floating-whatsapp { display: none; }
    todo lo que necesita un comprobante para leerse. */
 .checkout-recibo { max-width: 540px; margin: 0 auto; }
 .recibo-cuerpo { margin-bottom: 1.2rem; }
-.recibo-pie { padding-top: 1.2rem; border-top: 1px solid var(--masa-linea); }
+.recibo-pie { display: flex; flex-direction: column; align-items: center; padding-top: 1.2rem; border-top: 1px solid var(--masa-linea); }
 
 /* En pantalla ancha la cabeza cabe en una sola fila (volver, titulo y pasos),
    para que el formulario y el resumen se vean enteros sin desplazarse. */
