@@ -151,8 +151,8 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
 
 ### Datos (`data/productos.json`)
 
-Hoy: **17 productos** en 3 categorías (`panes` 6, `dulces` 5,
-`bebidas-frias` 6), 8 marcados como destacados (hoy el sitio no los usa).
+Hoy: **30 productos** en 3 categorías (`panes` 10, `dulces` 10,
+`bebidas-frias` 10), 8 marcados como destacados (hoy el sitio no los usa).
 
 | Campo | Obligatorio | Regla |
 |---|---|---|
@@ -1298,9 +1298,9 @@ en la tanda 2, bodega y producción; el administrador lo ve todo.
   ahora cambiándoles el rol a mano; una pantalla para eso sería de la tanda 3).
 
 ### Contenido y confianza
-- [ ] Llegar a **10 productos por categoría** (hoy 6 panes, 5 dulces, 6 bebidas frías;
-      pedido del 21 de octubre). El usuario pasa los productos; cada uno con su foto
-      `-420.jpg` y `-840.jpg`, y entran en `data/productos.json` y en `bd/`.
+- [x] Llegar a **10 productos por categoría** (10 panes, 10 dulces y 10 bebidas frías;
+      cumplido el 2 de noviembre de 2026 con Tres leches). Cada producto tiene su foto
+      `-420.jpg` y `-840.jpg` y está en `data/productos.json` y en `bd/`.
 - [x] Barra de pasos: la corta (Confirmar y pagar → Pedido listo) está hecha; la larga con
       "Canasta" se descartó el 27 de octubre de 2026. Desde el 29 de octubre de 2026 son
       nodos unidos por una línea (ámbar hacia el paso alcanzado), y en pantalla ancha
