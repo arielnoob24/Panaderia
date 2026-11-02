@@ -2571,7 +2571,8 @@ SELECT c.CAT_Codigo, e.ETI_Codigo, t.TIV_Codigo, v.nombre,
         (26, 'panes',         NULL,               '0', 'Pan integral',                    'pan-integral',                    'Pan redondo integral con semillas en la superficie', TRUE, FALSE),
         (27, 'dulces',        NULL,               '4', 'Quesadilla',                      'quesadilla',                      'Porción de quesadilla horneada con ajonjolí por encima', TRUE, FALSE),
         (28, 'dulces',        NULL,               '4', 'Tarta de frutas',                 'tarta-de-frutas',                  'Porción de tarta con crema y frutas frescas', TRUE, FALSE),
-        (29, 'bebidas-frias', NULL,               '4', 'Yogurt Toni',                     'yogurt-toni',                     'Envase individual de yogur Toni sabor fresa', TRUE, FALSE)
+        (29, 'bebidas-frias', NULL,               '4', 'Yogurt Toni',                     'yogurt-toni',                     'Envase individual de yogur Toni sabor fresa', TRUE, FALSE),
+        (30, 'dulces',        NULL,               '4', 'Tres leches',                     'tres-leches',                     'Porción de pastel tres leches cubierta de crema batida y canela', TRUE, FALSE)
        ) AS v (orden, categoria, etiqueta, iva_sri, nombre, foto, alt, disponible, destacado)
   JOIN CATEGORIAS c   ON c.CAT_Slug = v.categoria
   JOIN TARIFAS_IVA t  ON t.TIV_CodigoSri = v.iva_sri
@@ -2616,7 +2617,8 @@ SELECT p.PRO_Codigo, t.TAM_Codigo, v.precio, v.orden
         ('Pan integral',                    'Único',  0.50, 1),
         ('Quesadilla',                      'Único',  0.75, 1),
         ('Tarta de frutas',                 'Único',  2.00, 1),
-        ('Yogurt Toni',                     'Único',  0.85, 1)
+        ('Yogurt Toni',                     'Único',  0.85, 1),
+        ('Tres leches',                     'Único',  1.00, 1)
        ) AS v (producto, tamano, precio, orden)
   JOIN PRODUCTOS p ON p.PRO_Nombre = v.producto
   JOIN TAMANOS t   ON t.TAM_Descripcion = v.tamano;

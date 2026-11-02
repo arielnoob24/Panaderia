@@ -293,6 +293,13 @@
       "precio": 0.85,
       "foto": "assets/img/productos/yogurt-toni",
       "alt": "Envase individual de yogur Toni sabor fresa"
+    },
+    {
+      "nombre": "Tres leches",
+      "categoria": "dulces",
+      "precio": 1,
+      "foto": "assets/img/productos/tres-leches",
+      "alt": "Porción de pastel tres leches cubierta de crema batida y canela"
     }
   ]
 }

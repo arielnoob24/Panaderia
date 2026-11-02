@@ -40,6 +40,7 @@ export default async function catalogoApi(t) {
   const viva = await abrir(t, 'api-viva', false);
   t.ok(viva.fichas >= 1, 'con la API la tienda no trae fichas');
   if (viva.respuesta === 200) {
+    t.ok(viva.fichas === respaldo.length, `la API trae ${viva.fichas} fichas y el catálogo local tiene ${respaldo.length}`);
     t.ok(!viva.usoRespaldo, 'la API contesto 200 pero la pagina uso el respaldo (CORS o datos que no pasan revisar)');
   } else {
     console.log(`    aviso: la API no contesto 200 (${viva.respuesta ?? 'sin respuesta'}); no se comprueba que se use`);
