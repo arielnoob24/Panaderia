@@ -209,6 +209,90 @@
           "precio": 1.25
         }
       ]
+    },
+    {
+      "nombre": "Alfajor",
+      "categoria": "dulces",
+      "precio": 0.75,
+      "foto": "assets/img/productos/alfajor",
+      "alt": "Alfajor relleno de dulce de leche y espolvoreado con azúcar glas"
+    },
+    {
+      "nombre": "Avena Toni",
+      "categoria": "bebidas-frias",
+      "precio": 0.85,
+      "foto": "assets/img/productos/avena-toni",
+      "alt": "Envase individual de bebida de avena Toni"
+    },
+    {
+      "nombre": "Brownie",
+      "categoria": "dulces",
+      "precio": 1.5,
+      "foto": "assets/img/productos/brownie",
+      "alt": "Porción cuadrada de brownie de chocolate"
+    },
+    {
+      "nombre": "Cacho",
+      "categoria": "panes",
+      "precio": 0.35,
+      "foto": "assets/img/productos/cacho",
+      "alt": "Cacho de masa hojaldrada, dorado y curvado"
+    },
+    {
+      "nombre": "Empanada de queso y jamón",
+      "categoria": "panes",
+      "precio": 1,
+      "foto": "assets/img/productos/empanada-de-queso-y-jamon",
+      "alt": "Empanada horneada rellena de queso y jamón, abierta para mostrar el relleno"
+    },
+    {
+      "nombre": "Fioravanti fresa",
+      "categoria": "bebidas-frias",
+      "precio": 0.85,
+      "foto": "assets/img/productos/fioravanti-fresa",
+      "alt": "Botella de Fioravanti sabor fresa"
+    },
+    {
+      "nombre": "Güitig",
+      "categoria": "bebidas-frias",
+      "precio": 0.85,
+      "foto": "assets/img/productos/guitig",
+      "alt": "Botella de agua mineral Güitig con gas"
+    },
+    {
+      "nombre": "Injerto",
+      "categoria": "panes",
+      "precio": 0.4,
+      "foto": "assets/img/productos/injerto",
+      "alt": "Panecillo redondo de corteza dorada"
+    },
+    {
+      "nombre": "Pan integral",
+      "categoria": "panes",
+      "precio": 0.5,
+      "foto": "assets/img/productos/pan-integral",
+      "alt": "Pan redondo integral con semillas en la superficie"
+    },
+    {
+      "nombre": "Quesadilla",
+      "categoria": "dulces",
+      "precio": 0.75,
+      "foto": "assets/img/productos/quesadilla",
+      "alt": "Porción de quesadilla horneada con ajonjolí por encima"
+    },
+    {
+      "nombre": "Tarta de frutas",
+      "categoria": "dulces",
+      "precio": 2,
+      "foto": "assets/img/productos/tarta-de-frutas",
+      "alt": "Porción de tarta con crema y frutas frescas"
+    },
+    {
+      "nombre": "Yogurt Toni",
+      "categoria": "bebidas-frias",
+      "precio": 0.85,
+      "foto": "assets/img/productos/yogurt-toni",
+      "alt": "Envase individual de yogur Toni sabor fresa"
     }
   ]
 }

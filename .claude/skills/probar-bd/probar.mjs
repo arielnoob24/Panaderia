@@ -400,7 +400,7 @@ ok(await unValor(`SELECT usu_bloqueado FROM vw_usuarios WHERE usu_codigo = $1`, 
 await debeFallar(`DELETE FROM accesos WHERE usu_codigo = '${luis}'`, 'Borrar el log de accesos');
 
 const audCarga = await unValor(`SELECT count(*)::int FROM auditorias WHERE aud_tabla = 'PRODUCTOS' AND usu_codigo IS NULL AND aud_operacion = 'I'`);
-ok(audCarga === 17, `La carga inicial queda auditada sin usuario (${audCarga} productos)`);
+ok(audCarga === 29, `La carga inicial queda auditada sin usuario (${audCarga} productos)`);
 await q(`SELECT set_config('app.usuario', $1, false)`, [ana]);
 const pt = (await q(`SELECT pro_codigo, tam_codigo, pta_precio::text p FROM productos_tamanos ORDER BY pro_codigo, tam_codigo LIMIT 1`))[0];
 await q(`UPDATE productos_tamanos SET pta_precio = pta_precio + 0.05 WHERE pro_codigo = $1 AND tam_codigo = $2`, [pt.pro_codigo, pt.tam_codigo]);

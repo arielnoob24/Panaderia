@@ -100,7 +100,14 @@ El campo `foto` es la raiz del nombre del archivo, sin ancho ni extension: de
 esten las dos.
 
 La categoria tiene que estar en `src/catalogo/categorias.js` (la cinta y "Filtrar por");
-si no, sus productos quedan inalcanzables y el CI no publica.
+si no, sus productos quedan inalcanzables y el CI no publica. Para que el
+catalogo de Supabase y la base de prueba sigan iguales, agrega tambien el
+producto y su tamaño en los inserts iniciales de `bd/BD_EL_TRADICIONAL.sql`;
+la prueba de la base compara los dos catalogos. Para actualizar la base
+alojada, agrega una migracion en `supabase/migrations/`. Antes de aplicarla
+con `supabase db push --linked`, asegúrate de que esa carpeta tenga todas las
+migraciones ya aplicadas en el proyecto: en este checkout faltan 18 del
+historial remoto, así que primero hay que sincronizarlas.
 
 ## Donde se guarda cada cosa
 

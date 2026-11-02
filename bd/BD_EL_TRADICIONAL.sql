@@ -2559,7 +2559,19 @@ SELECT c.CAT_Codigo, e.ETI_Codigo, t.TIV_Codigo, v.nombre,
         (14, 'bebidas-frias', NULL,               '4', 'Sprite',                          'sprite',                          'Botella de Sprite sobre papel blanco', TRUE, FALSE),
         (15, 'bebidas-frias', NULL,               '4', 'Agua',                            'agua',                            'Botella de agua sin gas sobre papel blanco', TRUE, FALSE),
         (16, 'bebidas-frias', NULL,               '4', 'Powerade',                        'powerade',                        'Botella de Powerade azul de tapa negra', FALSE, FALSE),
-        (17, 'bebidas-frias', NULL,               '4', 'Avena polaca',                    'avena-polaca',                    'Vaso de Avena Polaca con su etiqueta roja y blanca', TRUE, FALSE)
+        (17, 'bebidas-frias', NULL,               '4', 'Avena polaca',                    'avena-polaca',                    'Vaso de Avena Polaca con su etiqueta roja y blanca', TRUE, FALSE),
+        (18, 'dulces',        NULL,               '4', 'Alfajor',                         'alfajor',                         'Alfajor relleno de dulce de leche y espolvoreado con azúcar glas', TRUE, FALSE),
+        (19, 'bebidas-frias', NULL,               '4', 'Avena Toni',                      'avena-toni',                      'Envase individual de bebida de avena Toni', TRUE, FALSE),
+        (20, 'dulces',        NULL,               '4', 'Brownie',                         'brownie',                         'Porción cuadrada de brownie de chocolate', TRUE, FALSE),
+        (21, 'panes',         NULL,               '0', 'Cacho',                           'cacho',                           'Cacho de masa hojaldrada, dorado y curvado', TRUE, FALSE),
+        (22, 'panes',         NULL,               '0', 'Empanada de queso y jamón',       'empanada-de-queso-y-jamon',        'Empanada horneada rellena de queso y jamón, abierta para mostrar el relleno', TRUE, FALSE),
+        (23, 'bebidas-frias', NULL,               '4', 'Fioravanti fresa',                'fioravanti-fresa',                 'Botella de Fioravanti sabor fresa', TRUE, FALSE),
+        (24, 'bebidas-frias', NULL,               '4', 'Güitig',                          'guitig',                          'Botella de agua mineral Güitig con gas', TRUE, FALSE),
+        (25, 'panes',         NULL,               '0', 'Injerto',                         'injerto',                         'Panecillo redondo de corteza dorada', TRUE, FALSE),
+        (26, 'panes',         NULL,               '0', 'Pan integral',                    'pan-integral',                    'Pan redondo integral con semillas en la superficie', TRUE, FALSE),
+        (27, 'dulces',        NULL,               '4', 'Quesadilla',                      'quesadilla',                      'Porción de quesadilla horneada con ajonjolí por encima', TRUE, FALSE),
+        (28, 'dulces',        NULL,               '4', 'Tarta de frutas',                 'tarta-de-frutas',                  'Porción de tarta con crema y frutas frescas', TRUE, FALSE),
+        (29, 'bebidas-frias', NULL,               '4', 'Yogurt Toni',                     'yogurt-toni',                     'Envase individual de yogur Toni sabor fresa', TRUE, FALSE)
        ) AS v (orden, categoria, etiqueta, iva_sri, nombre, foto, alt, disponible, destacado)
   JOIN CATEGORIAS c   ON c.CAT_Slug = v.categoria
   JOIN TARIFAS_IVA t  ON t.TIV_CodigoSri = v.iva_sri
@@ -2592,7 +2604,19 @@ SELECT p.PRO_Codigo, t.TAM_Codigo, v.precio, v.orden
         ('Powerade',                        '500 ml', 1.25, 1),
         ('Powerade',                        '1 L',    1.75, 2),
         ('Avena polaca',                    '300 ml', 0.75, 1),
-        ('Avena polaca',                    '500 ml', 1.25, 2)
+        ('Avena polaca',                    '500 ml', 1.25, 2),
+        ('Alfajor',                         'Único',  0.75, 1),
+        ('Avena Toni',                      'Único',  0.85, 1),
+        ('Brownie',                         'Único',  1.50, 1),
+        ('Cacho',                           'Único',  0.35, 1),
+        ('Empanada de queso y jamón',       'Único',  1.00, 1),
+        ('Fioravanti fresa',                'Único',  0.85, 1),
+        ('Güitig',                          'Único',  0.85, 1),
+        ('Injerto',                         'Único',  0.40, 1),
+        ('Pan integral',                    'Único',  0.50, 1),
+        ('Quesadilla',                      'Único',  0.75, 1),
+        ('Tarta de frutas',                 'Único',  2.00, 1),
+        ('Yogurt Toni',                     'Único',  0.85, 1)
        ) AS v (producto, tamano, precio, orden)
   JOIN PRODUCTOS p ON p.PRO_Nombre = v.producto
   JOIN TAMANOS t   ON t.TAM_Descripcion = v.tamano;

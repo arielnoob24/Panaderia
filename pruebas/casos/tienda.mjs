@@ -19,6 +19,7 @@
 // - objetivos de 24 px o mas, la canasta flotante no tapa la cabeza, y con
 //   el espaciado de texto de WCAG 1.4.12 a 320 px nada se sale.
 import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
+import datosProductos from '../../data/productos.json' with { type: 'json' };
 
 export const descripcion = 'Tienda como la portada: cabeza sobre la masa sin banda oscura, rotulo, h1 y frase por categoria, Filtrar por como la cinta (radios, flechas, pastilla horno), mandos entre lineas dobles, escena que no se repite al cambiar de categoria';
 export const limite = 150;
@@ -108,7 +109,8 @@ export default async function tienda(t) {
     t.ok(m.elegida?.[0] === PAPEL && m.elegida?.[1] === HORNO && m.elegida?.[2] === 1, `[${nombre}] la elegida no va en la pastilla papel (una sola, la que viaja) con texto horno (${m.elegida})`);
     t.ok(m.lineas === 2 && m.campos.length === 1 && m.campos.every((c) => c === MASA), `[${nombre}] los mandos no van en la barra clara o el buscador no es masa (${m.lineas}, ${m.campos})`);
     t.ok(m.ordenBoton[0] === MASA && m.ordenBoton[1] === '1px' && m.ordenBoton[2] === '1px', `[${nombre}] el boton de Ordenar por no es un cuadro papel con filete fino (${m.ordenBoton})`);
-    t.ok(m.mando[0] === 'uppercase' && m.cuenta[0].startsWith('Mostrando 17 de 17') && m.cuenta[1] === 'uppercase' && m.cuenta[2] === HORNO, `[${nombre}] los rotulos o la cuenta no van en versalitas (${JSON.stringify([m.mando, m.cuenta])})`);
+    const total = datosProductos.productos.length;
+    t.ok(m.mando[0] === 'uppercase' && m.cuenta[0].startsWith(`Mostrando ${total} de ${total}`) && m.cuenta[1] === 'uppercase' && m.cuenta[2] === HORNO, `[${nombre}] los rotulos o la cuenta no van en versalitas (${JSON.stringify([m.mando, m.cuenta])})`);
     t.ok(m.aviso === 'polite', `[${nombre}] el aviso del catalogo cambio (${m.aviso})`);
     t.ok(m.anchoPagina <= m.ancho && m.etiquetas.every((e) => e.derecha <= m.ancho), `[${nombre}] "Filtrar por" se sale de la pantalla (${JSON.stringify(m.etiquetas.map((e) => Math.round(e.derecha)))})`);
 
