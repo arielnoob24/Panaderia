@@ -8,6 +8,7 @@
 import { dinero } from '../servicios/state.js';
 import { textoEnvio } from '../servicios/cobro.js';
 import { productos } from '../estado/pedido.js';
+import { Lapiz } from './iconosPedido.jsx';
 
 function ResumenPedido({
   lineas, unidades, sumas, correo, onEditar,
@@ -28,7 +29,7 @@ function ResumenPedido({
             <li key={id}><span>{`${l.cantidad} × ${l.nombre}`}</span><span>{dinero(l.precio * l.cantidad)}</span></li>
           ))}
         </ul>
-        <button className="resumen-editar" type="button" onClick={onEditar}>Editar la canasta</button>
+        <button className="resumen-editar" type="button" onClick={onEditar}><Lapiz />Editar la canasta</button>
       </div>
       <dl className="canasta-desglose">
         <div><dt>Subtotal</dt><dd className="desglose-subtotal">{dinero(sumas.subtotal)}</dd></div>

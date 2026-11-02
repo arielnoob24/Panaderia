@@ -33,4 +33,14 @@ function IconoRuta() {
   );
 }
 
-export { Basurero, IconoPersona, IconoRuta };
+// El lapiz de "Editar la canasta" en el resumen de confirmar.
+function Lapiz() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+      <path d="M4.5 19.5l.9-4 10.6-10.6a1.9 1.9 0 0 1 2.7 0l.4.4a1.9 1.9 0 0 1 0 2.7L8.5 18.6l-4 .9Z" />
+      <path d="M13.8 7.2l3 3" />
+    </svg>
+  );
+}
+
+export { Basurero, IconoPersona, IconoRuta, Lapiz };

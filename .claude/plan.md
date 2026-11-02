@@ -1597,3 +1597,9 @@ Pendiente de la fase 7:
 - Las vistas de la cuenta (entrar, crear, recuperar, datos, pedidos) ya no llevan
   banda de horno: el título va en `--horno` sobre la masa con un filete ámbar.
 - La ficha de la canasta tiene la cabecera en ámbar suave con filete ámbar.
+
+## Cambios del 2 de noviembre de 2026
+
+- **Confirmar el pedido**: la barra de pasos va **centrada bajo el título** (escritorio y teléfono). Las opciones (entrega, pago, factura) y los botones principales (Ir a pagar, Confirmar el pedido, Listo, cerrar, los de las hojas) **se ajustan a su contenido** en vez de ocupar todo el ancho; el pie de la canasta los centra. En portátiles de poca altura (≤ 820 px) se aprieta lo vertical: a 1440×900 y 1366×768 la vista entra sin desplazar.
+- "Editar la canasta" lleva un **lápiz** (`Lapiz`, en `pedido/iconosPedido.jsx`).
+- La prueba `botones` ya no exige "a todo lo ancho" en esos botones.

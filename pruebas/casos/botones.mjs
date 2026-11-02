@@ -8,7 +8,7 @@
 // - con el foco del teclado, el anillo de 3 px es el outline del boton, que
 //   no lleva mascara, y la sombra dura sustituye al halo;
 // - "Ir a pagar" y el boton final de pagar son horno con texto papel y sombra ambar
-//   (4,5:1 o mas, medido) y sombra horno, a todo lo ancho; el secundario es
+//   (4,5:1 o mas, medido) y sombra horno, ajustado a su contenido; el secundario es
 //   hueco (filete en anillo) y se rellena de masa con el raton; mientras se
 //   paga, el giro se ve;
 // - "Como llegar" es un enlace en Fraunces cursiva 600 de unos 1.35rem, con
@@ -183,7 +183,7 @@ export default async function botones(t) {
       t.ok(foco.halo === 'none' && foco.sombra === CORRIDA, `[${nombre}] con el foco "Nuestros panes" no cambia el halo por la sombra dura (${JSON.stringify(foco)})`);
     }
 
-    // La canasta con "Ir a pagar" en horno, a todo lo ancho, y el guardado
+    // La canasta con "Ir a pagar" en horno, ajustado a su contenido, y el guardado
     // debajo; la hoja de pagar con el principal y el hueco.
     await p.goto(t.REACT + '#/tienda-catalogo');
     await p.waitForSelector('.product-card:not([hidden]) .card-mas');
@@ -196,7 +196,7 @@ export default async function botones(t) {
     const pagar = await capas(p, '.canasta-enviar');
     t.ok(pagar.papel === HORNO && pagar.texto === PAPEL && pagar.sombra === AMBAR, `[${nombre}] "Ir a pagar" no es el ticket horno con texto papel y sombra ambar (${JSON.stringify(pagar)})`);
     t.ok(contraste(pagar.texto, pagar.papel) >= 4.5, `[${nombre}] el texto de "Ir a pagar" da ${contraste(pagar.texto, pagar.papel).toFixed(2)}:1 sobre su fondo`);
-    t.ok(Math.abs(pagar.ancho - pagar.anchoPadre) <= 1, `[${nombre}] "Ir a pagar" mide ${pagar.ancho} px y su pie ${pagar.anchoPadre}: no va a todo lo ancho`);
+    t.ok(pagar.ancho < pagar.anchoPadre - 20, `[${nombre}] "Ir a pagar" mide ${pagar.ancho} px y su pie ${pagar.anchoPadre}: no se ajusta a su contenido`);
     await pulsar('.canasta-enviar');
     await p.waitForSelector('.pide-cuenta:not([hidden]) .pide-cuenta-otra');
     await espera(700);
@@ -229,7 +229,7 @@ export default async function botones(t) {
     await espera(400);
     revisar(t, nombre, 'confirmar el pedido', await medirBotones(p));
     const final = await capas(p, '.canasta-pagar');
-    t.ok(final.papel === HORNO && final.texto === PAPEL && final.sombra === AMBAR && Math.abs(final.ancho - final.anchoPadre) <= 1, `[${nombre}] el boton final de pagar no es el ticket horno a todo lo ancho (${JSON.stringify(final)})`);
+    t.ok(final.papel === HORNO && final.texto === PAPEL && final.sombra === AMBAR && final.ancho < final.anchoPadre - 10, `[${nombre}] el boton final de pagar no es el ticket horno ajustado a su contenido (${JSON.stringify(final)})`);
     t.ok(contraste(final.texto, final.papel) >= 4.5, `[${nombre}] el texto del boton final de pagar da ${contraste(final.texto, final.papel).toFixed(2)}:1`);
     // Mientras se paga, el boton se queda entero y el giro papel se ve sobre
     // el horno. Con retiro y efectivo basta pulsar.
