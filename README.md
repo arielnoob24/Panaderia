@@ -29,7 +29,8 @@ src/
 assets/
   css/styles.css        los estilos base: colores, tipografia, componentes
   img/                  logo, mascota y fotos de portada e historia
-    productos/          las fotos del catalogo, cada una en 420 y 840 px
+    productos/          fotos del catalogo optimizadas a 420 y 840 px
+      originales/       fuentes de las fotos de productos, no se cargan en el sitio
 data/
   productos.json        el catalogo: nombre, precio, foto, categoria y tamanos
 pruebas/                pruebas de navegador (npm run probar)
@@ -97,7 +98,8 @@ pero hoy el sitio no lo usa.
 El campo `foto` es la raiz del nombre del archivo, sin ancho ni extension: de
 `assets/img/productos/pan-redondo` salen `pan-redondo-420.jpg` y
 `pan-redondo-840.jpg`, y el navegador elige la que le cabe. El CI comprueba que
-esten las dos.
+esten las dos. Las fuentes originales se conservan en
+`assets/img/productos/originales/`; no se usan directamente en las paginas.
 
 La categoria tiene que estar en `src/catalogo/categorias.js` (la cinta y "Filtrar por");
 si no, sus productos quedan inalcanzables y el CI no publica. Para que el
