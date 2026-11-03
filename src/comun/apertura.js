@@ -10,7 +10,26 @@
 // primera vista que se monta: la de abrir la pagina, aunque antes haya pasado
 // por un desvio (#historia -> #/nosotros, #/cuenta sin sesion -> entrar),
 // porque los desvios no montan ninguna vista.
+//
+// Con una pagina HTML por pantalla, "abrir la pagina" y "llegar a una vista"
+// son cargas distintas: la que viene de un enlace del sitio se marca en
+// sessionStorage antes de irse (marcarSalida) y la pagina nueva la lee al
+// arrancar, asi que cuenta como llegada y mueve el foco al titulo. La que se
+// abre sola (un enlace de fuera, recargar, Atras) no la trae.
+const MARCA = 'tradicional:llegando';
 let porAbrir = true;
+try {
+  if (sessionStorage.getItem(MARCA)) porAbrir = false;
+  sessionStorage.removeItem(MARCA);
+} catch { /* sin almacenamiento: todas se abren como la primera */ }
+
+// Se llama justo antes de cargar otra pagina del sitio. Un desvio que sale
+// antes de que la vista se monte (todavia abriendo) no marca: la pagina a
+// la que lleva sigue siendo la de abrir.
+function marcarSalida() {
+  if (porAbrir) return;
+  try { sessionStorage.setItem(MARCA, '1'); } catch { /* idem */ }
+}
 
 // Devuelve si esta es la vista de abrir la pagina, y gasta la marca. Se llama
 // una sola vez por vista, al montarse (en un efecto: un pintado que React
@@ -54,4 +73,4 @@ function cederDesplazamiento() {
 // puede llegar a una categoria de antes.
 const posicionTienda = new Map();
 
-export { esLaDeAbrir, todaviaAbriendo, cederDesplazamiento, posicionTienda };
+export { esLaDeAbrir, marcarSalida, todaviaAbriendo, cederDesplazamiento, posicionTienda };

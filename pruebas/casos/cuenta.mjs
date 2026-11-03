@@ -3,7 +3,7 @@
 // iniciar sesion, de "Ir a pagar" a #/confirmar y Mis pedidos. La cuenta va
 // contra el Supabase de mentira (pruebas/supabaseFalso.mjs): el codigo se lee
 // de lo que "llego" al correo.
-import { VENTANAS, espera, hashDe, llegar } from '../arranque.mjs';
+import { VENTANAS, espera, esperaQue, hashDe, llegar } from '../arranque.mjs';
 import { codigoDe } from '../supabaseFalso.mjs';
 
 // La sesion de Supabase Auth, la que guarda supabase-js.
@@ -141,7 +141,8 @@ async function recorrido(t, nombre, ventana) {
     dt.setData('text/plain', ` ${c.slice(0, 3)}-${c.slice(3)} `);
     document.activeElement.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true }));
   }, codigo);
-  await espera(300);
+  await esperaQue(async () => (await ruta(p)) === '#/cuenta');
+  await espera(600);
   ok((await ruta(p)) === '#/cuenta', `tras verificar sin venir de pagar: ${await ruta(p)}`);
   ok((await foco()) === 'cuenta-vista-titulo', `foco en Mis datos: ${await foco()}`);
   // La copia local lleva los datos y nada de la contrasena; la sesion es la

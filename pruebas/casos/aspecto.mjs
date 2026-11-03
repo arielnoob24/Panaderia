@@ -246,14 +246,14 @@ async function editorial(t) {
     // La cinta: las tres categorias, cada una enlazada a su vista.
     const cinta = p.getByRole('navigation', { name: 'Comprar por categoría' });
     const enlaces = await cinta.getByRole('link').evaluateAll((as) => as.map((a) => a.getAttribute('href')));
-    t.ok(JSON.stringify(enlaces) === JSON.stringify(['#/tienda-panes', '#/tienda-dulces', '#/tienda-bebidas-frias']), `[${nombre}] la cinta enlaza a ${enlaces.join(', ')}`);
+    t.ok(JSON.stringify(enlaces) === JSON.stringify(['/tienda.html?c=panes', '/tienda.html?c=dulces', '/tienda.html?c=bebidas-frias']), `[${nombre}] la cinta enlaza a ${enlaces.join(', ')}`);
     t.ok(await cinta.getByRole('link', { name: 'Dulces y pasteles', exact: true }).count() === 1, `[${nombre}] el enlace de la cinta no se llama "Dulces y pasteles"`);
 
     // Inicio, lo primero del menu de arriba (en el telefono, dentro del
     // menu), con aria-current solo en #/.
     const inicio = p.locator('#main-nav a[href$="index.html"]');
     const primero = await p.evaluate(() => document.querySelector('#main-nav a')?.getAttribute('href'));
-    t.ok(await inicio.count() === 1 && (await inicio.textContent()).trim() === 'Inicio' && primero === '#/', `[${nombre}] el menu no empieza por Inicio (empieza por ${primero})`);
+    t.ok(await inicio.count() === 1 && (await inicio.textContent()).trim() === 'Inicio' && /\/index\.html$/.test(primero), `[${nombre}] el menu no empieza por Inicio (empieza por ${primero})`);
     t.ok(await inicio.getAttribute('aria-current') === 'page', `[${nombre}] Inicio no lleva aria-current en #/`);
 
     // El control: el + solo, que al primer toque se estira en "− n +", y

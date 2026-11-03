@@ -111,7 +111,17 @@ const guardarPendiente = (pendiente) => {
   } catch { /* sin almacenamiento: se pierde al cambiar de pagina */ }
 };
 
-const iniciar = () => ({ ...arranque, pendiente: arranque.hayCuenta ? null : leerPendiente(), recuperacion: null, envioClave: 0, cambios: 0 });
+// Cuando salio el ultimo codigo de recuperar: los 60 s de espera cuentan
+// aunque se cambie de pagina (recuperar.html -> entrar.html -> recuperar.html).
+const CLAVE_ENVIO = 'eltradicional-envio-clave';
+const leerEnvioClave = () => {
+  try { return Number(sessionStorage.getItem(CLAVE_ENVIO)) || 0; } catch { return 0; }
+};
+const guardarEnvioClave = (cuando) => {
+  try { sessionStorage.setItem(CLAVE_ENVIO, String(cuando)); } catch { /* sin almacenamiento */ }
+};
+
+const iniciar = () => ({ ...arranque, pendiente: arranque.cuenta?.dentro ? null : leerPendiente(), recuperacion: null, envioClave: leerEnvioClave(), cambios: 0 });
 
 function SesionProvider({ children }) {
   const [estado, despachar] = useReducer(reductor, undefined, iniciar);
@@ -126,6 +136,7 @@ function SesionProvider({ children }) {
   }, [estado]);
 
   useEffect(() => { guardarPendiente(estado.pendiente); }, [estado.pendiente]);
+  useEffect(() => { if (estado.envioClave) guardarEnvioClave(estado.envioClave); }, [estado.envioClave]);
 
   // El estado de verdad, a mano de las acciones que esperan.
   const actual = useRef(estado);

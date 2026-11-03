@@ -122,12 +122,14 @@ function OrdenarPor({ opciones, valor, onCambio, rotuloId }) {
 
   return (
     <div ref={cajaRef} className={abierto ? 'orden is-open' : 'orden'}>
+      {/* Sin aria-haspopup: un combobox ya abre una lista (ARIA 1.2), y con el
+          atributo axe no da por buena la lista de aria-controls mientras esta
+          cerrada. */}
       <div
         className="orden-boton"
         role="combobox"
         tabIndex={0}
         aria-labelledby={rotuloId}
-        aria-haspopup="listbox"
         aria-expanded={abierto}
         aria-controls={listaId}
         aria-activedescendant={abierto ? idDe(activa) : undefined}

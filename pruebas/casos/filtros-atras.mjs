@@ -4,6 +4,7 @@
 // cambiando la direccion, que es una entrada nueva sin state.entrar, como
 // la que deja la cinta al volver a la portada.
 import { VENTANAS, espera } from '../arranque.mjs';
+import { archivoDeRuta } from '../../src/comun/paginas.js';
 
 export const descripcion = 'Atras y Adelante en la tienda conservan orden, Mostrar y busqueda; un enlace los limpia';
 export const limite = 60;
@@ -19,7 +20,16 @@ export default async function filtrosAtras(t) {
       mostrar: String(document.querySelector('#vista-mostrar-solo')?.checked),
       busca: document.querySelector('.vista-buscar input')?.value,
     }));
-    const irA = async (hash) => { await p.evaluate((h) => { window.__ruta() = h; }, hash); await espera(700); };
+    // De una categoria a otra de la tienda es la misma pagina: se cambia la
+    // direccion con el historial, como hace el enrutador (comun/Enrutador.jsx).
+    const irA = async (hash) => {
+      const destino = new URL(archivoDeRuta(hash.slice(1)), p.url()).href;
+      await p.evaluate((u) => {
+        history.pushState({ k: Math.random().toString(36).slice(2, 8) }, '', u);
+        window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
+      }, destino);
+      await espera(700);
+    };
     await p.goto(t.REACT + '#/tienda-catalogo'); await espera(900);
     await irA('#/tienda-panes');
     await irA('#/tienda-dulces');

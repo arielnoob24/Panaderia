@@ -19,7 +19,7 @@ export default async function recuperar(t) {
     const ultimo = () => codigoDe('ana@correo.com', 'recovery');
     const p = await ctx.newPage();
     const URL = t.REACT;
-    const aviso = () => p.evaluate(() => document.querySelector('[role=status][aria-live=polite]').textContent);
+    const aviso = () => p.evaluate(() => document.querySelector('[role=status][aria-live=polite]')?.textContent ?? '');
     const foco = () => p.evaluate(() => document.activeElement?.id || document.activeElement?.getAttribute('aria-label') || document.activeElement?.tagName);
     const hash = () => hashDe(p);
     const escribirCodigo = async (c) => { await p.click('.codigo-casilla >> nth=0'); await p.keyboard.type(c); await espera(150); };
@@ -114,6 +114,7 @@ export default async function recuperar(t) {
     await p.click('.cuenta-recuperar');
     await esperaQue(async () => (await hash()) === '#/cuenta');
     ok((await hash()) === '#/cuenta', `destino sin pagar: ${await hash()}`);
+    await esperaQue(async () => (await aviso()).startsWith('Contraseña cambiada.'), 50);
     ok((await aviso()) === 'Contraseña cambiada. Iniciaste sesión como Ana María Pérez.', `aviso final: ${await aviso()}`);
     const despues = await p.evaluate(() => JSON.parse(localStorage.getItem('eltradicional-cuenta')));
     ok(despues.telefono === antes.telefono && despues.nombre === antes.nombre && !('clave' in despues), `datos no conservados ${JSON.stringify(despues)}`);
@@ -133,6 +134,7 @@ export default async function recuperar(t) {
     await p.click('.cuenta-entrar');
     await esperaQue(async () => (await hash()) === '#/cuenta');
     ok((await hash()) === '#/cuenta', `la nueva no entro: ${await hash()}`);
+    await esperaQue(async () => (await aviso()).startsWith('Iniciaste sesión'), 50);
     ok((await aviso()) === 'Iniciaste sesión como Ana María Pérez.', `aviso entrar: ${await aviso()}`);
 
     // Con sesion, recuperar lleva a Mis datos.

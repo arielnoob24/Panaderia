@@ -411,22 +411,8 @@ async function menu(t) {
     await espera(300);
     const otra = await estadoMenu(p);
     t.ok(opcion(otra, 'Nosotros').actual === PAPEL && opcion(otra, 'Nosotros').color === HORNO && opcion(otra, 'Inicio').actual === 'sin', `[raton] en #/nosotros la pastilla no pasa a Nosotros (${JSON.stringify(otra)})`);
-    const origen = await p.locator('#main-nav .nav-indicador').boundingBox();
-    const recorrido = await p.evaluate(() => new Promise((resolver) => {
-      const posiciones = [];
-      let cuadros = 0;
-      document.querySelector('#main-nav a[href$="contacto.html"]').click();
-      const medir = () => {
-        posiciones.push(document.querySelector('#main-nav .nav-indicador').getBoundingClientRect().x);
-        cuadros += 1;
-        if (cuadros === 18) resolver(posiciones);
-        else requestAnimationFrame(medir);
-      };
-      requestAnimationFrame(medir);
-    }));
-    await esperaQue(() => p.evaluate(() => window.__ruta() === '#/contacto'));
-    const destino = await p.locator('#main-nav .nav-indicador').boundingBox();
-    t.ok(origen && destino && recorrido.some((x) => x > origen.x + 1 && x < destino.x - 1), `[raton] la pastilla no recorre el menu hacia Contáctanos (${JSON.stringify({ origen, recorrido, destino })})`);
+    // La pastilla ya no recorre el menu entre vistas: cada pantalla es su
+    // pagina y la pastilla nace en el enlace de la actual.
     await p.goto(t.REACT + '#/tienda-dulces');
     await p.waitForSelector('.product-card:not([hidden])');
     await espera(300);

@@ -20,6 +20,7 @@ import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve, sep } from 'node:path';
+import { archivoDeRuta } from '../../src/comun/paginas.js';
 
 const RAIZ = process.cwd();
 if (!existsSync(join(RAIZ, 'index.html')) || !existsSync(join(RAIZ, 'package.json'))) {
@@ -116,14 +117,15 @@ async function recorrer(navegador, url, nombreVentana, ventana) {
     return r.fulfill({ status: 200, body: 'OK' });
   });
   const p = await ctx.newPage();
-  // Como un enlace de la aplicacion (pushState + popstate).
+  // Como un enlace de la aplicacion: cada pantalla es su pagina HTML
+  // (src/comun/paginas.js), asi que se abre el archivo de esa ruta.
   const llegar = async (hash) => {
-    await p.evaluate((h) => {
-      history.pushState({ usr: null, key: 'k' + Math.random().toString(36).slice(2, 8), idx: (history.state?.idx ?? 0) + 1 }, '', h);
-      window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
-    }, hash);
-    await espera(300);
+    await p.goto(new URL(archivoDeRuta(hash.slice(1)), p.url()).href);
+    // La entrada de la vista es un fundido: medir con ella a medias da un
+    // contraste que no es el de la pagina.
+    await espera(1200);
   };
+  const urlEs = (archivo) => (u) => u.pathname.endsWith(archivo);
   // Los radios van escondidos tras su dibujo: se pulsan como lo haria la etiqueta.
   const marcar = async (sel) => { await p.locator(sel).evaluate((i) => i.click()); await espera(150); };
   const paso = async (nombre, ir) => {
@@ -132,7 +134,7 @@ async function recorrer(navegador, url, nombreVentana, ventana) {
     await medir(p, `${nombreVentana}: ${nombre}`, error);
   };
   try {
-    await p.goto(url + '#/');
+    await p.goto(url);
     await p.waitForSelector('.product-card', { timeout: 8000 }).catch(() => {});
     await paso('inicio', async () => {});
     await paso('nosotros', () => llegar('#/nosotros'));
@@ -199,7 +201,7 @@ async function recorrer(navegador, url, nombreVentana, ventana) {
       await p.click('.floating-whatsapp.is-canasta');
       await p.waitForSelector('.canasta-panel.is-open');
       await p.click('.canasta-enviar');
-      await p.waitForFunction(() => location.hash === '#/confirmar', null, { timeout: 5000 });
+      await p.waitForURL(urlEs('/confirmar.html'), { timeout: 5000 });
     });
     await paso('confirmar (domicilio, tarjeta, factura a otra persona) con errores', async () => {
       await marcar('input[name="canasta-entrega"][value="domicilio"]');
@@ -212,7 +214,7 @@ async function recorrer(navegador, url, nombreVentana, ventana) {
       await marcar('input[name="canasta-metodo"][value="efectivo"]');
       await marcar('input[name="canasta-factura"][value="mi"]');
       await p.click('.canasta-pagar');
-      await p.waitForFunction(() => location.hash === '#/comprobante', null, { timeout: 8000 });
+      await p.waitForURL(urlEs('/comprobante.html'), { timeout: 8000 });
     });
     await paso('recuperar: el correo', async () => {
       await llegar('#/cuenta');

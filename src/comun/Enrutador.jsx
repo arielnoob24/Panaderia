@@ -14,6 +14,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Router } from 'react-router-dom';
 import { VIEJAS } from './vistas.js';
+import { marcarSalida } from './apertura.js';
 import { archivoDe, archivoDeRuta, rutaDeDireccion } from './paginas.js';
 
 const PREFIJO = 'tradicional:estado:';
@@ -73,6 +74,7 @@ function Enrutador({ children }) {
       guardarEstado(destino, state);
       const mismaPagina = archivoDe(destino.pathname) === archivoDe(window.location.pathname);
       if (!mismaPagina) {
+        marcarSalida();
         // Otra pagina: carga real. Con replace no deja la de antes en Atras.
         if (reemplazar) window.location.replace(destino.href);
         else window.location.assign(destino.href);

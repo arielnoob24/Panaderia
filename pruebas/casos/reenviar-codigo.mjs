@@ -3,7 +3,7 @@
 // al salir y volver), "Cambiar el correo" conserva lo escrito, reenviar
 // limpia las casillas y el codigo viejo deja de valer, y si el reenvio falla
 // se dice. Con el reloj de Playwright, sin esperar de verdad.
-import { VENTANAS, espera } from '../arranque.mjs';
+import { VENTANAS, espera, esperaQue } from '../arranque.mjs';
 import { codigoDe, quebrar } from '../supabaseFalso.mjs';
 
 export const descripcion = 'verificar: estado del envio, espera de 60 s, cambiar el correo, reenviar y reenvio que falla';
@@ -26,7 +26,7 @@ export default async function reenviar(t) {
     await p.fill('#cuenta-repite', 'Clave123');
     await p.click('.cuenta-crear');
     await p.waitForSelector('.codigo-casilla');
-    const aviso = () => p.evaluate(() => document.querySelector('[aria-live="polite"]').textContent);
+    const aviso = () => p.evaluate(() => document.querySelector('[aria-live="polite"]')?.textContent ?? '');
     ok((await p.textContent('.codigo-estado')).startsWith('Código enviado.'), 'estado del envio: ' + await p.textContent('.codigo-estado'));
     const alertas = await p.evaluate(() => [...document.querySelector('.cuenta-verificar').parentElement.querySelectorAll('[role="alert"]')].map((e) => e.outerHTML));
     ok(alertas.length === 0, 'el pie de verificar aun tiene role=alert: ' + alertas.join(' '));
@@ -44,7 +44,9 @@ export default async function reenviar(t) {
     ok((await p.inputValue('#cuenta-clave')) === '', 'la clave se conservo');
     await p.goBack();
     await p.waitForSelector('.codigo-reenviar');
-    ok((await p.textContent('.codigo-reenviar')) === 'Enviar otro código en 50s', 'volver reinicio la espera: ' + await p.textContent('.codigo-reenviar'));
+    // La pagina nueva sigue contando desde el envio: cuenta lo que pasa al cargar.
+    const espera50 = Number(/(\d+)s$/.exec(await p.textContent('.codigo-reenviar'))?.[1]);
+    ok(espera50 > 0 && espera50 <= 50, 'volver reinicio la espera: ' + await p.textContent('.codigo-reenviar'));
     await p.clock.runFor(51000);
     ok(!(await p.isDisabled('.codigo-reenviar')) && (await p.textContent('.codigo-reenviar')) === 'Enviar otro código', 'tras 60 s: ' + await p.textContent('.codigo-reenviar'));
     await p.click('.codigo-casilla >> nth=0');
@@ -86,6 +88,7 @@ export default async function reenviar(t) {
       await espera(200);
     }
     ok((await p.evaluate(() => window.__ruta())) === '#/cuenta', 'no llego a #/cuenta: ' + await p.evaluate(() => window.__ruta()));
+    await esperaQue(async () => (await aviso()).startsWith('Correo verificado.'), 40);
     ok((await aviso()) === 'Correo verificado. Iniciaste sesión como Ana Pérez.', 'aviso verificado: ' + await aviso());
     await ctx.close();
   }

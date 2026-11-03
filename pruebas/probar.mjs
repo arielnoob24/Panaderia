@@ -137,10 +137,34 @@ try {
         ctx.on('page', (p) => {
           // Los casos dicen '#/cuenta/crear'; aqui se abre la pagina que le toca.
           const ir = p.goto.bind(p);
-          p.goto = (url, opciones) => {
+          // Si la pagina estaba yendo a otra por su cuenta (un clic en Salir
+          // que lleva a la portada), esa carga aborta este goto: se espera a
+          // que acabe y se vuelve a pedir.
+          p.goto = async (url, opciones) => {
             const partes = String(url).split('#');
             const archivo = partes[1]?.startsWith('/') ? archivoDeRuta(partes[1]) : null;
-            return ir(archivo ? new URL(archivo, partes[0] || p.url()).href : url, opciones);
+            const destino = archivo ? new URL(archivo, partes[0] || p.url()).href : url;
+            for (let intento = 0; ; intento += 1) {
+              try {
+                const respuesta = await ir(destino, opciones);
+                // Un desvio (entrar con la sesion abierta lleva a Mis datos) es
+                // otra carga que arranca justo despues: se le da su momento.
+                // Puede encadenar varios (verificar -> entrar -> Mis datos): se
+                // espera a que la direccion lleve 400 ms sin cambiar.
+                let ultima = null;
+                for (let k = 0; k < 8; k += 1) {
+                  await new Promise((listo) => setTimeout(listo, 400));
+                  await p.waitForLoadState('load').catch(() => {});
+                  if (p.url() === ultima) break;
+                  ultima = p.url();
+                }
+                return respuesta;
+              } catch (e) {
+                if (intento >= 3 || !/ERR_ABORTED|interrupted by another navigation/.test(e.message)) throw e;
+                await p.waitForLoadState('load').catch(() => {});
+                await new Promise((listo) => setTimeout(listo, 300));
+              }
+            }
           };
           p.on('pageerror', (e) => fallos.push(`${pre}error de pagina: ${e.message.split('\n')[0]}`));
           p.on('console', (m) => {

@@ -85,9 +85,13 @@ export const VENTANAS = {
 };
 
 // Repite f hasta que de verdad o se acaben las vueltas (100 ms cada una).
+// Una carga de pagina a mitad de la espera (el clic en un enlace abre otro
+// archivo) destruye el contexto de lo que se estaba evaluando: cuenta como
+// "todavia no" y se vuelve a intentar.
+const traslado = (e) => /Execution context was destroyed|Target page, context or browser has been closed|navigat/i.test(String(e?.message));
 export async function esperaQue(f, vueltas = 30) {
   for (let k = 0; k < vueltas; k += 1) {
-    if (await f()) return true;
+    try { if (await f()) return true; } catch (e) { if (!traslado(e)) throw e; }
     await espera(100);
   }
   return Boolean(await f());
@@ -107,14 +111,21 @@ export const SCRIPT_RUTA = `window.__ruta = () => {
     'recuperar.html': '#/cuenta/recuperar', 'mis-pedidos.html': '#/cuenta/pedidos' };
   return rutas[f] || '#/';
 };`;
-export const hashDe = (p) => p.evaluate(() => window.__ruta());
+export async function hashDe(p) {
+  for (let k = 0; k < 40; k += 1) {
+    try { return await p.evaluate(() => window.__ruta()); } catch (e) { if (!traslado(e)) throw e; await espera(100); }
+  }
+  return p.evaluate(() => window.__ruta());
+}
 
 // Como un enlace de la aplicacion: abre la pagina de esa ruta ('#/cuenta' es
 // cuenta.html) con una carga real, igual que un clic en un enlace de otra pagina.
 export async function llegar(p, hash) {
   const url = new URL(archivoDeRuta(hash.slice(1)), p.url());
+  // La marca de llegada que deja el sitio al ir de una pagina a otra
+  // (src/comun/apertura.js): sin ella la pagina se abre sola y no mueve el foco.
+  await p.evaluate(() => sessionStorage.setItem('tradicional:llegando', '1')).catch(() => {});
   await p.goto(url.href);
-  await espera(250);
 }
 
 // Crea y verifica una cuenta por la interfaz de React, con el codigo que

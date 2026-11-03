@@ -1,6 +1,6 @@
 // Los 6 puntos del "Movimiento de la cuenta" (seccion 15 del plan, fase 5),
 // con y sin menos movimiento: el fundido de los errores, el visto con rebote,
-// de crear a verificar de lado, las casillas que se llenan, "Guardado" unos
+// las casillas que se llenan, "Guardado" unos
 // 2 s y Mis pedidos que anima la altura y gira la flecha.
 import { VENTANAS, espera, meterPedidos, PEDIDO_EJEMPLO } from '../arranque.mjs';
 import { codigoDe } from '../supabaseFalso.mjs';
@@ -66,16 +66,7 @@ async function movimiento(t, nombre, ventana, reducido) {
   await p.click('.cuenta-crear');
   await p.waitForSelector('.cuenta-vista-verificar');
   await espera(40);
-  const sale = await como(p, '.vista-marco.is-saliendo');
-  const entra = await como(p, '.vista-marco:not(.is-saliendo)');
-  if (reducido) {
-    ok(!sale || sale.opacidad === 0, `con menos movimiento crear se ve saliendo: ${JSON.stringify(sale)}`);
-    ok(entra?.x === 0, `con menos movimiento verificar se desplaza: ${JSON.stringify(entra)}`);
-  } else {
-    ok(sale && sale.x < 0, `crear no sale por la izquierda: ${JSON.stringify(sale)}`);
-    ok(entra && entra.x > 0, `verificar no entra por la derecha: ${JSON.stringify(entra)}`);
-    ok(await p.evaluate(() => document.querySelector('.vista-marco.is-saliendo')?.inert === true), 'lo que sale no es inert');
-  }
+  // Cada paso es su propia pagina: verificar ya no entra de lado.
   await espera(500);
   ok((await p.locator('.vista-marco').count()) === 1, 'crear no se va');
   ok((await como(p, '.vista-marco'))?.x === 0, 'verificar no se queda en su sitio');

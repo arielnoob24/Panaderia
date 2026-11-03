@@ -2,7 +2,7 @@
 // sesion; con sesion, las iniciales abren la ficha (raton, dedo, teclado),
 // que se cierra con Escape, tocando fuera, tabulando fuera, al navegar y con
 // Atras; en el telefono pliega el menu. Cerrar sesion desde ella.
-import { VENTANAS, crearCuenta, espera, meterPedidos, PEDIDO_EJEMPLO } from '../arranque.mjs';
+import { VENTANAS, crearCuenta, espera, esperaQue, hashDe, meterPedidos, PEDIDO_EJEMPLO } from '../arranque.mjs';
 
 export const descripcion = 'la ficha de la cuenta en la cabecera, con raton, dedo y teclado';
 export const limite = 90;
@@ -27,7 +27,8 @@ async function ficha(t, nombre, ventana) {
   ok((await p.evaluate(() => window.__ruta())) === '#/', 'la silueta no debe llevar de golpe a iniciar sesion');
   ok(await p.evaluate(() => document.querySelector('.cuenta-menu-principal')?.textContent === 'Iniciar sesión' && document.querySelector('.cuenta-menu-secundario')?.textContent === 'Crear cuenta'), 'faltan las dos puertas');
   await pulsar('.cuenta-menu-principal');
-  await espera(300);
+  await esperaQue(async () => (await hashDe(p)) === '#/cuenta/entrar');
+  await espera(800);
   ok((await p.evaluate(() => window.__ruta())) === '#/cuenta/entrar', 'Iniciar sesion no lleva a iniciar sesion');
   ok((await activo()) === 'cuenta-vista-titulo', `foco al llegar a iniciar sesion: ${await activo()}`);
 

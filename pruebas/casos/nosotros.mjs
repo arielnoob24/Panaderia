@@ -155,7 +155,7 @@ export default async function nosotros(t) {
     t.ok(m.h1 === 'El tiempo es nuestro ingrediente' && ES_FRAUNCES.test(m.h1Letra), `[${nombre}] el h1 no es el de la portada ("${m.h1}", ${m.h1Letra})`);
     t.ok(m.emColor === CORTEZA && m.emCursiva === 'italic', `[${nombre}] la segunda linea del h1 no va en cursiva horno (${m.emColor}, ${m.emCursiva})`);
     t.ok(m.frase === 'italic', `[${nombre}] la frase no va en cursiva`);
-    t.ok(/\benlace-llegar\b/.test(m.enlaceClases) && m.enlaceHref === '#/contacto' && m.enlaceNombre === 'Conoce nuestro local' && m.enlaceLetras === 'true' && ES_FRAUNCES.test(m.enlaceLetra), `[${nombre}] "Conoce nuestro local" no es como "Cómo llegar" (${JSON.stringify([m.enlaceClases, m.enlaceHref, m.enlaceNombre, m.enlaceLetras, m.enlaceLetra])})`);
+    t.ok(/\benlace-llegar\b/.test(m.enlaceClases) && /contacto\.html$/.test(m.enlaceHref) && m.enlaceNombre === 'Conoce nuestro local' && m.enlaceLetras === 'true' && ES_FRAUNCES.test(m.enlaceLetra), `[${nombre}] "Conoce nuestro local" no es como "Cómo llegar" (${JSON.stringify([m.enlaceClases, m.enlaceHref, m.enlaceNombre, m.enlaceLetras, m.enlaceLetra])})`);
     t.ok(m.selloTexto?.startsWith('Masa madre · Hecho despacio') && m.selloOculto === 'true' && m.aroEnSuSello, `[${nombre}] el sello no dice lo suyo o su texto sigue otro aro (${JSON.stringify([m.selloTexto, m.selloOculto, m.aroEnSuSello])})`);
     t.ok(m.dentro, `[${nombre}] los principios no van dentro de la historia`);
     t.ok(m.lineas.length === 1 && m.lineas[0] >= m.h2.right, `[${nombre}] el h2 de los principios no lleva una sola linea doble a su derecha (${JSON.stringify(m.lineas)})`);

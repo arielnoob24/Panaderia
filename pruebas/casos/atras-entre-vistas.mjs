@@ -1,8 +1,9 @@
-// Atras y Adelante: entre vistas, arriba del todo y con el foco en el h1
-// (dentro de la ventana); entre categorias de la tienda, donde se estaba.
-import { VENTANAS, espera } from '../arranque.mjs';
+// Atras y Adelante: entre paginas del sitio (cada pantalla es su archivo HTML)
+// llevan a la pagina de antes, con su titulo; entre categorias de la tienda,
+// que es la misma pagina, donde se estaba.
+import { VENTANAS, espera, esperaQue, hashDe } from '../arranque.mjs';
 
-export const descripcion = 'Atras y Adelante: entre vistas arriba y foco en el h1; en la tienda, donde se estaba';
+export const descripcion = 'Atras y Adelante: entre paginas llevan a la de antes; en la tienda, donde se estaba';
 export const limite = 150;
 
 const PRUEBAS = {
@@ -17,12 +18,10 @@ export default async function atrasEntreVistas(t) {
     const p = await ctx.newPage();
     const ir = (sel) => p.evaluate((s) => document.querySelector(s).click(), sel);
     const abrir = async (hash) => { await p.goto('about:blank'); await p.goto(t.REACT + hash); await espera(900); };
-    const mira = async (que) => {
-      const r = await p.evaluate(() => {
-        const e = document.activeElement; const q = e.getBoundingClientRect();
-        return { tag: e.tagName, id: e.id || String(e.className).slice(0, 20), top: Math.round(q.top), bottom: Math.round(q.bottom), alto: innerHeight, y: Math.round(scrollY), hash: window.__ruta() };
-      });
-      t.ok(r.tag === 'H1' && r.bottom > 0 && r.top < r.alto && r.y === 0, `[${nombre}] ${que}: ${JSON.stringify(r)}`);
+    // Se esta en la ruta pedida, con la pagina pintada (su h1).
+    const mira = async (que, ruta) => {
+      await esperaQue(async () => (await hashDe(p)) === ruta && (await p.locator('h1').count()) > 0, 50);
+      t.ok((await hashDe(p)) === ruta && (await p.locator('h1').count()) > 0, `[${nombre}] ${que}: ${await hashDe(p)}`);
     };
 
     for (const inicio of ['#/', '#/tienda-catalogo', '#/contacto', '#/nosotros']) {
@@ -32,9 +31,9 @@ export default async function atrasEntreVistas(t) {
       await ir('.cuenta-menu-principal'); await espera(800);
       await p.mouse.wheel(0, 300); await espera(500);
       await p.goBack(); await espera(1200);
-      await mira(`abierta en ${inicio}, cuenta, Atras`);
+      await mira(`abierta en ${inicio}, cuenta, Atras`, inicio);
       await p.goForward(); await espera(1200);
-      await mira(`abierta en ${inicio}, cuenta, Atras y Adelante`);
+      await mira(`abierta en ${inicio}, cuenta, Atras y Adelante`, '#/cuenta/entrar');
     }
     // De vista a vista con los enlaces de la cabecera.
     await abrir('#/nosotros');
@@ -42,7 +41,7 @@ export default async function atrasEntreVistas(t) {
     await ir('.site-header a[href$="contacto.html"]'); await espera(900);
     await p.mouse.wheel(0, 400); await espera(600);
     await p.goBack(); await espera(1200);
-    await mira('contacto y Atras a nosotros');
+    await mira('contacto y Atras a nosotros', '#/nosotros');
 
     // En la tienda: una categoria, bajar, otra entrada de la tienda, Atras.
     // Tienda ya no tiene desplegable, asi que se llega como llega quien usa
