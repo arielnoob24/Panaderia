@@ -83,6 +83,14 @@ const cargarSesion = async () => {
   const copia = leerCuenta();
   arranque = { cuenta: { ...SIN_CUENTA, ...(copia || {}), dentro: false }, hayCuenta: Boolean(copia) };
   try {
+    // Con el codigo de recuperar aceptado Supabase abre una sesion, pero la
+    // persona aun no puso su contrasena nueva: si cambio de pagina o recargo
+    // sin terminar, esa sesion se cierra en vez de dejarla entrar.
+    if (recuperando()) {
+      marcarRecuperando(false);
+      await supabase.auth.signOut({ scope: 'local' });
+      return;
+    }
     const { data } = await supabase.auth.getSession();
     const usuario = data.session?.user;
     if (!usuario) return;
@@ -109,6 +117,19 @@ const guardarPendiente = (pendiente) => {
     if (pendiente) sessionStorage.setItem(CLAVE_PENDIENTE, JSON.stringify(pendiente));
     else sessionStorage.removeItem(CLAVE_PENDIENTE);
   } catch { /* sin almacenamiento: se pierde al cambiar de pagina */ }
+};
+
+// Marca que hay una recuperacion con el codigo ya aceptado y la contrasena
+// por poner (ver cargarSesion). Se quita al cambiar la contrasena.
+const CLAVE_RECUPERANDO = 'eltradicional-recuperando';
+const recuperando = () => {
+  try { return sessionStorage.getItem(CLAVE_RECUPERANDO) === '1'; } catch { return false; }
+};
+const marcarRecuperando = (si) => {
+  try {
+    if (si) sessionStorage.setItem(CLAVE_RECUPERANDO, '1');
+    else sessionStorage.removeItem(CLAVE_RECUPERANDO);
+  } catch { /* sin almacenamiento: la sesion queda como antes */ }
 };
 
 // Cuando salio el ultimo codigo de recuperar: los 60 s de espera cuentan
@@ -312,6 +333,7 @@ function SesionProvider({ children }) {
       if (quedan === 0) return 'Ese código no es el que enviamos y ya no quedan intentos. Pide otro con "Enviar otro código".';
       return `Ese código no es el que enviamos. ${quedan === 1 ? 'Te queda 1 intento' : `Te quedan ${quedan} intentos`}.`;
     }
+    marcarRecuperando(true);
     despachar({ tipo: 'aciertaRecuperar', ahora: Date.now() });
     return '';
   }, []);
@@ -326,6 +348,7 @@ function SesionProvider({ children }) {
     if (!r?.listo) return { aviso: 'Primero escribe el código que te enviamos.', alCorreo: true };
     const { data, error } = await supabase.auth.updateUser({ password: clave });
     if (error) return { aviso: textoDe(error) };
+    marcarRecuperando(false);
     return meter(data.user);
   }, [meter]);
 

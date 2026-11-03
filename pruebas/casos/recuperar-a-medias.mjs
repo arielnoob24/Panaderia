@@ -49,13 +49,12 @@ export default async function recuperarAMedias(t) {
     // --- 1: acertar, no terminar, entrar y salir: el codigo ya no vale.
     await escribir(c1);
     ok((await p.locator('#cuenta-recuperar-clave').count()) === 1, 'no llego al paso de la clave');
-    // Con una pagina por paso, el codigo ya aceptado deja la sesion de Supabase
-    // abierta al cambiar de pagina: entrar lleva directo a Mis datos.
+    // Con el codigo ya aceptado la sesion de Supabase se cierra al cambiar de
+    // pagina: entrar pide la contrasena, no lleva directo a Mis datos.
     await ir('#/cuenta/entrar'); await p.waitForSelector('#cuenta-entrar-correo, .cuenta-vista-datos');
-    if (await p.locator('#cuenta-entrar-correo').count()) {
-      await p.fill('#cuenta-entrar-correo', 'ana@correo.com'); await p.fill('#cuenta-entrar-clave', 'Clave123');
-      await p.click('.cuenta-entrar');
-    }
+    ok((await p.locator('.cuenta-vista-datos').count()) === 0, 'la recuperacion a medias dejo la sesion abierta');
+    await p.fill('#cuenta-entrar-correo', 'ana@correo.com'); await p.fill('#cuenta-entrar-clave', 'Clave123');
+    await p.click('.cuenta-entrar');
     await p.waitForSelector('.cuenta-vista-datos');
     await p.click('.cuenta-salir'); await espera(400);
     await p.clock.runFor(30 * 60 * 1000); await espera(200);

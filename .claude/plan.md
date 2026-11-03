@@ -141,9 +141,10 @@ código; `comun/paginas.js` las traduce al archivo:
 - **Ya no existe** el movimiento entre vistas (la entrada que desliza Crear
   cuenta, la pastilla del menú que viaja de una a otra): cada página arranca
   con su propia entrada.
-- **Una limitación conocida**: si se deja la recuperación a medias, con el
-  código ya aceptado, la sesión de Supabase queda abierta y la página
-  siguiente trata al usuario como conectado (recargar ya lo hacía).
+- **Recuperación a medias**: con el código aceptado Supabase abre sesión, pero
+  la persona aún no puso su contraseña nueva. Se marca en `sessionStorage`
+  (`eltradicional-recuperando`) y la siguiente página que cargue cierra esa
+  sesión en vez de dejarla entrar; la marca se quita al cambiar la contraseña.
 
 | Menú | Ruta | Contenido |
 |---|---|---|
