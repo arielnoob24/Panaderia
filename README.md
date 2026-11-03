@@ -43,9 +43,13 @@ bd/                     la base de datos en PostgreSQL
 
 - **React 19** con componentes de funcion y hooks; el estado compartido va en
   `Context` + `useReducer`, con reductores puros.
-- **React Router 7** con `HashRouter`: cada opcion del menu es una vista
-  (`#/`, `#/nosotros`, `#/tienda-panes`, `#/contacto`, `#/cuenta`...), asi que
-  Atras y Adelante funcionan y no hay que desplazarse por una pagina larga.
+- **Paginas HTML reales**: cada pantalla es su propio archivo (`index.html`,
+  `nosotros.html`, `tienda.html`, `contacto.html`, `entrar.html`,
+  `crear-cuenta.html`, `recuperar.html`, `mis-pedidos.html`...), generados de
+  `index.html` con `npm run paginas`. Todos cargan el mismo `src/main.jsx` y
+  Vite construye uno por archivo. Atras y Adelante son los del navegador.
+- **React Router 7** con un enrutador propio (`src/comun/Enrutador.jsx`) que
+  abre el archivo de cada ruta en vez de usar el hash.
 - **Motion** para el movimiento: el cambio de vista, el contador y las lineas
   de la canasta, los pasos de la cuenta. Todo se apaga con
   `prefers-reduced-motion`.

@@ -18,7 +18,8 @@
 Sitio de la panadería y pastelería **El Tradicional** (Tena, Ecuador):
 catálogo, canasta, pedido con pago simulado, comprobante y cuenta de cliente.
 Proyecto de la materia Desarrollo de Plataformas. Hecho en **React** (Vite,
-JavaScript, React Router con `HashRouter`, Motion).
+JavaScript, React Router con un enrutador propio, Motion). Cada pantalla es
+una **página HTML real** (sección 4).
 
 - Publicado en GitHub Pages: https://arielnoob24.github.io/Panaderia/
 - El sitio presentado (antes de React) queda en la etiqueta git
@@ -48,7 +49,7 @@ index.html              la pagina: <div id="raiz">, metadatos, JSON-LD y el <nos
 package.json            versiones exactas; scripts dev, build, preview y probar
 vite.config.js          base './' y el plugin que copia hero-1200.jpg sin huella (og:image)
 src/
-  main.jsx              monta App dentro de HashRouter, LazyMotion, MotionConfig y los proveedores
+  main.jsx              monta App dentro del Enrutador, LazyMotion, MotionConfig y los proveedores
   App.jsx               las vistas, la transicion y la carga por partes
   vistas/               Inicio, Nosotros, Contacto
   catalogo/             Catalogo, VistaCabeza, OrdenarPor, FichaProducto, Hero,
@@ -104,7 +105,45 @@ bd/
 
 ## 4. Las vistas y el catálogo
 
-Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
+Cada opción del menú de arriba es una vista propia (`comun/vistas.js`) y,
+desde el 2 de noviembre de 2026, **un archivo HTML de verdad** (el Reto 5 no
+admite una sola página con rutas ni anclas). Las rutas de las tablas de abajo
+(`#/nosotros`, `#/cuenta/entrar`...) son los **nombres de las vistas** en el
+código; `comun/paginas.js` las traduce al archivo:
+
+| Vista | Archivo |
+|---|---|
+| `/` | `index.html` |
+| `/nosotros`, `/contacto`, `/confirmar`, `/comprobante` | `nosotros.html`, `contacto.html`, `confirmar.html`, `comprobante.html` |
+| `/tienda-<categoría>` | `tienda.html?c=<categoría>` |
+| `/cuenta` | `cuenta.html` |
+| `/cuenta/entrar`, `/crear`, `/verificar`, `/recuperar`, `/pedidos` | `entrar.html`, `crear-cuenta.html`, `verificar.html`, `recuperar.html`, `mis-pedidos.html` |
+| `/admin`, `/admin/<pestaña>` | `admin.html?s=<pestaña>` |
+
+- **Cómo funciona**: los 13 archivos cargan el mismo `src/main.jsx` y la vista
+  la decide el nombre del archivo. Se generan de `index.html` con
+  `npm run paginas` (`scripts/paginas.mjs`: cambia título, descripción y
+  direcciones canónicas); si se toca `index.html`, se vuelve a correr y se
+  commitean los dos. `vite.config.js` toma como entradas todos los `*.html`
+  de la raíz, y el CI comprueba que estén todos en `dist/` y al día.
+- **Enrutador** (`comun/Enrutador.jsx`): sustituye al `HashRouter`; `Link`,
+  `NavLink` y `useNavigate` siguen igual. Ir a otro archivo es una **carga
+  real** (`location.assign`; con `replace` no deja la anterior en Atrás). Solo
+  se queda en la página, con `history.pushState`, el cambio de categoría de la
+  tienda y de pestaña del panel.
+- **Lo que cruza de una página a otra** va en `sessionStorage`: el `state` de
+  un enlace (con la dirección de destino de clave), la cuenta que espera su
+  código (sin contraseña), el comprobante, la espera de 60 s para otro código
+  de recuperación, la marca de "se llegó desde un enlace del sitio" y el
+  último aviso (se repite una vez si es de hace menos de 4 s).
+- **Foco**: llegar por un enlace del sitio lleva el foco al `h1`; abrir la
+  página sola, recargar o volver con Atrás no lo mueve (`comun/apertura.js`).
+- **Ya no existe** el movimiento entre vistas (la entrada que desliza Crear
+  cuenta, la pastilla del menú que viaja de una a otra): cada página arranca
+  con su propia entrada.
+- **Una limitación conocida**: si se deja la recuperación a medias, con el
+  código ya aceptado, la sesión de Supabase queda abierta y la página
+  siguiente trata al usuario como conectado (recargar ya lo hacía).
 
 | Menú | Ruta | Contenido |
 |---|---|---|
@@ -129,9 +168,11 @@ Cada opción del menú de arriba es una vista propia (`comun/vistas.js`):
   (`history.scrollRestoration = 'manual'` tras `load`, `auto` en
   `pagehide`). Entre vistas, arriba con el foco en el `h1`; entre categorías
   de la tienda, donde se estaba. Atrás no limpia los filtros.
-- **Direcciones viejas** (de cuando era una sola página): `#historia` →
-  `#/nosotros`, `#visitanos` → `#/contacto`, `#catalogo` →
-  `#/tienda-catalogo`, `#inicio` y `#contenido` → `#/`, con `replace`.
+- **Direcciones viejas** (de cuando era una sola página y de la de rutas con
+  `#/`): `#historia` → `nosotros.html`, `#visitanos` → `contacto.html`,
+  `#catalogo` y `#/tienda-panes` → `tienda.html?c=…`, `#inicio` y
+  `#contenido` → la portada. La portada las sigue con `replace` al abrirse y
+  también si cambia el hash (`abrirDireccionVieja`).
 - **Sin pie de página** (el usuario lo quitó el 22 de octubre de 2026). Lo
   que llevaba se reparte: la nota de que el teléfono y las redes son de
   ejemplo va en `#/contacto`, junto a los contactos; "Tu pedido se guardó…"

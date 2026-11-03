@@ -46,6 +46,15 @@ jobs:
             exit 1
           fi
           test -s dist/index.html
+          # Cada pantalla es un archivo HTML de verdad (Reto 5): si el build
+          # se deja alguno, esa pagina daria 404 en Pages.
+          for pagina in *.html; do
+            test -s "dist/$pagina" || { echo "Falta dist/$pagina en el build."; exit 1; }
+          done
+          # Las paginas se generan de index.html (scripts/paginas.mjs): si
+          # alguien toco index.html y no las regenero, quedan desfasadas.
+          npm run paginas
+          git diff --exit-code -- '*.html' || { echo 'Las paginas HTML no coinciden con index.html: corre npm run paginas.'; exit 1; }
 
       # El catalogo va dentro del build, y si un producto viene mal la portada
       # lo dice en vez de pintar la vitrina: el build sale bien igual. Aqui se
@@ -110,8 +119,8 @@ jobs:
           '
 
           # Es una panaderia: tambien en comentarios y ejemplos.
-          if grep -rEiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html src assets/css data/productos.json; then
-            grep -rEin 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' index.html src assets/css data/productos.json
+          if grep -rEiq 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' ./*.html src assets/css data/productos.json; then
+            grep -rEin 'cocktail|coctel|cóctel|cafeter[ií]a|caf[eé]' ./*.html src assets/css data/productos.json
             echo 'Se encontro una referencia no permitida a cafeteria, cafe o cocteles.'
             exit 1
           fi
