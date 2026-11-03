@@ -48,7 +48,7 @@ export default async function principios(t) {
     return {
       contactos: escribir.querySelectorAll('.contacto-lista a').length,
       estado: Boolean(document.querySelector('.contacto-horario .open-label')),
-      menu: Boolean(document.querySelector('#main-nav a[href="#/contacto"]')),
+      menu: Boolean(document.querySelector('#main-nav a[href$="contacto.html"]')),
       pie: document.querySelectorAll('footer, .site-footer').length,
     };
   });

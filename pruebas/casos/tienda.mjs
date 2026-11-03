@@ -147,10 +147,10 @@ export default async function tienda(t) {
       t.ok(anillo.id === 'vista-sub-todas' && anillo.estilo !== 'none' && parseFloat(anillo.ancho) >= 2, `[${nombre}] el foco del radio no se ve en su etiqueta (${JSON.stringify(anillo)})`);
       for (const [hash, valor, titulo, frase] of VISTAS.slice(1)) {
         await p.keyboard.press('ArrowRight');
-        await esperaQue(() => p.evaluate((h) => location.hash === '#/' + h, hash));
+        await esperaQue(() => p.evaluate((h) => window.__ruta() === '#/' + h, hash));
         await espera(150);
         const v = await p.evaluate(() => ({
-          hash: location.hash,
+          hash: window.__ruta(),
           foco: document.activeElement.id,
           h1: document.querySelector('.tienda-texto h1').textContent,
           frase: document.querySelector('.tienda-frase').textContent,
@@ -175,7 +175,7 @@ export default async function tienda(t) {
       t.ok(invade.length === 0, `[${nombre}] la zona de toque de una categoria invade otra fila (${invade.join(', ')})`);
       // Con el dedo, tocar una categoria la elige.
       await p.tap('label[for="vista-sub-dulces"]');
-      await esperaQue(() => p.evaluate(() => location.hash === '#/tienda-dulces'));
+      await esperaQue(() => p.evaluate(() => window.__ruta() === '#/tienda-dulces'));
       await espera(150);
       const v = await p.evaluate(() => [document.querySelector('.tienda-texto h1').textContent, document.querySelector('.tienda-frase').textContent]);
       t.ok(v[0] === 'Dulces y pasteles' && v[1] === 'Para endulzar la tarde.', `[${nombre}] tocar Dulces no cambia el titulo y la frase (${v})`);

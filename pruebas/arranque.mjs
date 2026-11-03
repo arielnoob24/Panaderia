@@ -15,6 +15,7 @@ import { homedir } from 'node:os';
 import { extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { codigoDe } from './supabaseFalso.mjs';
+import { archivoDeRuta } from '../src/comun/paginas.js';
 
 // La raiz del repo, sacada de donde esta este archivo, y lo construido.
 export const RAIZ = fileURLToPath(new URL('..', import.meta.url));
@@ -92,17 +93,27 @@ export async function esperaQue(f, vueltas = 30) {
   return Boolean(await f());
 }
 
-export const hashDe = (p) => p.evaluate(() => location.hash);
+// La ruta de la vista con la forma de antes ('#/tienda-panes'), para que los
+// casos no dependan de en que archivo vive cada pantalla. Se instala en cada
+// ventana (probar.mjs) como window.__ruta().
+export const SCRIPT_RUTA = `window.__ruta = () => {
+  const f = location.pathname.slice(location.pathname.lastIndexOf('/') + 1) || 'index.html';
+  const q = new URLSearchParams(location.search);
+  if (f === 'tienda.html') return '#/tienda-' + (q.get('c') || 'catalogo');
+  if (f === 'admin.html') return q.get('s') ? '#/admin/' + q.get('s') : '#/admin';
+  const rutas = { 'index.html': '#/', 'nosotros.html': '#/nosotros', 'contacto.html': '#/contacto',
+    'confirmar.html': '#/confirmar', 'comprobante.html': '#/comprobante', 'cuenta.html': '#/cuenta',
+    'entrar.html': '#/cuenta/entrar', 'crear-cuenta.html': '#/cuenta/crear', 'verificar.html': '#/cuenta/verificar',
+    'recuperar.html': '#/cuenta/recuperar', 'mis-pedidos.html': '#/cuenta/pedidos' };
+  return rutas[f] || '#/';
+};`;
+export const hashDe = (p) => p.evaluate(() => window.__ruta());
 
-// Como un enlace de la aplicacion: pushState con clave propia y popstate
-// (location.hash a pelo llega sin clave y React Router lo toma por la
-// direccion de abrir la pagina, que no mueve el foco).
+// Como un enlace de la aplicacion: abre la pagina de esa ruta ('#/cuenta' es
+// cuenta.html) con una carga real, igual que un clic en un enlace de otra pagina.
 export async function llegar(p, hash) {
-  await p.evaluate((h) => {
-    const idx = (history.state?.idx ?? 0) + 1;
-    history.pushState({ usr: null, key: 'k' + Math.random().toString(36).slice(2, 8), idx }, '', h);
-    window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
-  }, hash);
+  const url = new URL(archivoDeRuta(hash.slice(1)), p.url());
+  await p.goto(url.href);
   await espera(250);
 }
 

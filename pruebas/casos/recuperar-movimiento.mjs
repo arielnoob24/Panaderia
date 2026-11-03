@@ -90,7 +90,7 @@ export default async function recuperarMovimiento(t) {
     await p.fill('#cuenta-recuperar-clave', 'Nueva1234');
     await p.fill('#cuenta-recuperar-repite', 'Nueva1234');
     await p.click('.cuenta-recuperar'); await espera(1500);
-    ok((await p.evaluate(() => location.hash)) === '#/cuenta', `al terminar: ${await p.evaluate(() => location.hash)}`);
+    ok((await p.evaluate(() => window.__ruta())) === '#/cuenta', `al terminar: ${await p.evaluate(() => window.__ruta())}`);
     await ctx.close();
   }
 }

@@ -24,11 +24,11 @@ async function ficha(t, nombre, ventana) {
   ok((await p.getAttribute('.nav-cuenta', 'aria-label')) === 'Cuenta: iniciar sesión o crear cuenta', 'nombre de la silueta');
   await pulsar('.nav-cuenta');
   await espera(300);
-  ok((await p.evaluate(() => location.hash)) === '#/', 'la silueta no debe llevar de golpe a iniciar sesion');
+  ok((await p.evaluate(() => window.__ruta())) === '#/', 'la silueta no debe llevar de golpe a iniciar sesion');
   ok(await p.evaluate(() => document.querySelector('.cuenta-menu-principal')?.textContent === 'Iniciar sesión' && document.querySelector('.cuenta-menu-secundario')?.textContent === 'Crear cuenta'), 'faltan las dos puertas');
   await pulsar('.cuenta-menu-principal');
   await espera(300);
-  ok((await p.evaluate(() => location.hash)) === '#/cuenta/entrar', 'Iniciar sesion no lleva a iniciar sesion');
+  ok((await p.evaluate(() => window.__ruta())) === '#/cuenta/entrar', 'Iniciar sesion no lleva a iniciar sesion');
   ok((await activo()) === 'cuenta-vista-titulo', `foco al llegar a iniciar sesion: ${await activo()}`);
 
   await crearCuenta(p, URL);
@@ -111,7 +111,7 @@ async function ficha(t, nombre, ventana) {
   await p.keyboard.press('ArrowDown');
   await p.keyboard.press('Enter');
   await espera(400);
-  ok((await p.evaluate(() => location.hash)) === '#/cuenta/pedidos', 'Mis pedidos no lleva a su vista');
+  ok((await p.evaluate(() => window.__ruta())) === '#/cuenta/pedidos', 'Mis pedidos no lleva a su vista');
   ok((await p.getAttribute(boton, 'aria-expanded')) === 'false', 'navegar no la cierra');
   ok((await p.getAttribute(boton, 'data-vista-cuenta')) === 'true' && (await p.locator(boton).evaluate((b) => getComputedStyle(b).backgroundColor)) === 'rgb(255, 253, 248)', 'la cabecera no marca que se esta en una vista de cuenta con fondo blanco');
   ok((await activo()) === 'cuenta-vista-titulo', `foco tras elegir: ${await activo()}`);
@@ -135,7 +135,7 @@ async function ficha(t, nombre, ventana) {
     ok(caja[0] >= 0 && caja[1] <= caja[2], `la ficha se sale de la pantalla: ${caja}`);
     await p.tap('#cuenta-menu >> text=Mis datos');
     await espera(400);
-    ok((await p.evaluate(() => location.hash)) === '#/cuenta', 'tocar Mis datos no lleva a #/cuenta');
+    ok((await p.evaluate(() => window.__ruta())) === '#/cuenta', 'tocar Mis datos no lleva a #/cuenta');
   }
 
   // Cerrar sesion desde la ficha, en la portada: el foco a la silueta.
@@ -164,7 +164,7 @@ async function ficha(t, nombre, ventana) {
   await espera(200);
   await pulsar('#cuenta-menu .is-salir');
   await espera(400);
-  ok((await p.evaluate(() => location.hash)) === '#/', 'salir desde #/cuenta no lleva a #/');
+  ok((await p.evaluate(() => window.__ruta())) === '#/', 'salir desde #/cuenta no lleva a #/');
   ok((await p.evaluate(() => history.length)) === largo, 'salir desde #/cuenta no es replace');
   ok((await activo()) !== 'BODY', 'foco perdido tras salir desde #/cuenta');
   await ctx.close();

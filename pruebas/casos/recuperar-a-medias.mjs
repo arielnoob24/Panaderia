@@ -17,7 +17,7 @@ export default async function recuperarAMedias(t) {
     await ctx.route('https://ugscqizansixnsuzljtu.supabase.co/auth/v1/recover**', (r) => { correos += 1; return r.fallback(); });
     const ultimo = () => codigoDe('ana@correo.com', 'recovery');
     const p = await ctx.newPage();
-    const ir = (h) => p.evaluate((x) => { location.hash = x; }, h);
+    const ir = (h) => p.evaluate((x) => { window.__ruta() = x; }, h);
     const huella = async () => claveDe('ana@correo.com');
     const avisoPie = () => p.textContent('.recuperar-paso-correo .cuenta-aviso', { timeout: 2000 }).catch(() => '');
     const pedir = async () => {
@@ -77,7 +77,7 @@ export default async function recuperarAMedias(t) {
     ok((await p.locator('#cuenta-recuperar-clave').count()) === 0, 'caducado al pulsar: sigue en la clave');
     ok((await avisoPie()).startsWith('El código caducó'), `caducado al pulsar, aviso: ${await avisoPie()}`);
     ok((await huella()) === original, 'caducado: la contrasena cambio');
-    ok((await p.evaluate(() => location.hash)) === '#/cuenta/recuperar', `caducado: se fue a ${await p.evaluate(() => location.hash)}`);
+    ok((await p.evaluate(() => window.__ruta())) === '#/cuenta/recuperar', `caducado: se fue a ${await p.evaluate(() => window.__ruta())}`);
     await ctx.close();
   }
 }

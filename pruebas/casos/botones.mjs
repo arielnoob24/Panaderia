@@ -365,7 +365,7 @@ async function menu(t) {
 
     // Sobre Nosotros se enciende el blanco tenue en Nosotros y nada mas (no
     // viaja), y el texto sigue claro.
-    await p.hover('#main-nav a[href="#/nosotros"]');
+    await p.hover('#main-nav a[href$="nosotros.html"]');
     await esperaQue(async () => opcion(await estadoMenu(p), 'Nosotros').pastilla === '1');
     const nosotros = await estadoMenu(p);
     t.ok(encendidas(nosotros).join() === 'Nosotros' && esTenue(opcion(nosotros, 'Nosotros').pastillaColor), `[raton] con el raton en Nosotros no se enciende solo Nosotros en blanco tenue (${JSON.stringify(nosotros)})`);
@@ -373,14 +373,14 @@ async function menu(t) {
     t.ok(opcion(await estadoMenu(p), 'Nosotros').color === PAPEL, `[raton] el texto de Nosotros encendido no sigue claro (${opcion(await estadoMenu(p), 'Nosotros').color})`);
 
     // Sobre la pagina actual se queda igual: papel lleno y texto horno.
-    await p.hover('#main-nav a[href="#/"]');
+    await p.hover('#main-nav a[href$="index.html"]');
     await espera(350);
     const sobreActual = opcion(await estadoMenu(p), 'Inicio');
     t.ok(sobreActual.actual === PAPEL && sobreActual.color === HORNO, `[raton] con el raton en la pagina actual cambia (${JSON.stringify(sobreActual)})`);
 
     // Tienda es un enlace simple (seccion 4 del plan): se enciende como las
     // demas y no abre ningun desplegable.
-    await p.hover('#main-nav a[href$="tienda-catalogo"]');
+    await p.hover('#main-nav a[href$="tienda.html?c=catalogo"]');
     await esperaQue(async () => opcion(await estadoMenu(p), 'Tienda').pastilla === '1');
     const tienda = await estadoMenu(p);
     t.ok(encendidas(tienda).join() === 'Tienda' && esTenue(opcion(tienda, 'Tienda').pastillaColor), `[raton] con el raton en Tienda no se enciende solo Tienda en blanco tenue (${JSON.stringify(tienda)})`);
@@ -391,22 +391,22 @@ async function menu(t) {
     await esperaQue(async () => encendidas(await estadoMenu(p)).length === 0);
     t.ok(encendidas(await estadoMenu(p)).length === 0, '[raton] al salir del menu queda una opcion encendida');
     await p.keyboard.press('Shift');
-    await p.focus('#main-nav a[href="#/contacto"]');
+    await p.focus('#main-nav a[href$="contacto.html"]');
     await espera(300);
     t.ok(encendidas(await estadoMenu(p)).length === 0, '[raton] el foco del teclado enciende una opcion');
 
     // El anillo del foco sobre la pagina actual: papel y por fuera de la
     // pastilla, donde la barra es horno.
-    await p.focus('#main-nav a[href="#/"]');
-    const focoInicio = await p.locator('#main-nav a[href="#/"]').evaluate((a) => {
+    await p.focus('#main-nav a[href$="index.html"]');
+    const focoInicio = await p.locator('#main-nav a[href$="index.html"]').evaluate((a) => {
       const c = getComputedStyle(a);
       return { visible: a.matches(':focus-visible'), color: c.outlineColor, ancho: c.outlineWidth, separa: parseFloat(c.outlineOffset) };
     });
     t.ok(focoInicio.visible && focoInicio.color === PAPEL && focoInicio.ancho === '3px' && focoInicio.separa >= 2, `[raton] el anillo del foco de la pagina actual no es papel por fuera de su pastilla (${JSON.stringify(focoInicio)})`);
 
     // En otra vista la pastilla se va con ella.
-    await p.click('#main-nav a[href="#/nosotros"]');
-    await esperaQue(() => p.evaluate(() => location.hash === '#/nosotros'));
+    await p.click('#main-nav a[href$="nosotros.html"]');
+    await esperaQue(() => p.evaluate(() => window.__ruta() === '#/nosotros'));
     await p.mouse.move(640, 600);
     await espera(300);
     const otra = await estadoMenu(p);
@@ -415,7 +415,7 @@ async function menu(t) {
     const recorrido = await p.evaluate(() => new Promise((resolver) => {
       const posiciones = [];
       let cuadros = 0;
-      document.querySelector('#main-nav a[href="#/contacto"]').click();
+      document.querySelector('#main-nav a[href$="contacto.html"]').click();
       const medir = () => {
         posiciones.push(document.querySelector('#main-nav .nav-indicador').getBoundingClientRect().x);
         cuadros += 1;
@@ -424,7 +424,7 @@ async function menu(t) {
       };
       requestAnimationFrame(medir);
     }));
-    await esperaQue(() => p.evaluate(() => location.hash === '#/contacto'));
+    await esperaQue(() => p.evaluate(() => window.__ruta() === '#/contacto'));
     const destino = await p.locator('#main-nav .nav-indicador').boundingBox();
     t.ok(origen && destino && recorrido.some((x) => x > origen.x + 1 && x < destino.x - 1), `[raton] la pastilla no recorre el menu hacia Contáctanos (${JSON.stringify({ origen, recorrido, destino })})`);
     await p.goto(t.REACT + '#/tienda-dulces');
@@ -434,8 +434,8 @@ async function menu(t) {
     t.ok(enTienda.actual === PAPEL && enTienda.color === HORNO, `[raton] en una categoria de la tienda Tienda no es la pastilla papel con el texto horno (${JSON.stringify(enTienda)})`);
     // Como cualquier opcion: el anillo papel, por fuera de su pastilla.
     await p.keyboard.press('Shift');
-    await p.focus('#main-nav a[href$="tienda-catalogo"]');
-    const focoTienda = await p.locator('#main-nav a[href$="tienda-catalogo"]').evaluate((a) => ({ visible: a.matches(':focus-visible'), color: getComputedStyle(a).outlineColor, separa: parseFloat(getComputedStyle(a).outlineOffset) }));
+    await p.focus('#main-nav a[href$="tienda.html?c=catalogo"]');
+    const focoTienda = await p.locator('#main-nav a[href$="tienda.html?c=catalogo"]').evaluate((a) => ({ visible: a.matches(':focus-visible'), color: getComputedStyle(a).outlineColor, separa: parseFloat(getComputedStyle(a).outlineOffset) }));
     t.ok(focoTienda.visible && focoTienda.color === PAPEL && focoTienda.separa >= 2, `[raton] el anillo del foco de Tienda, la pagina actual, no es papel por fuera de su pastilla (${JSON.stringify(focoTienda)})`);
     await ctx.close();
   }
@@ -449,8 +449,8 @@ async function menu(t) {
     await p.waitForSelector('.cinta');
     await p.tap('.menu-toggle');
     await espera(300);
-    await p.tap('#main-nav a[href="#/nosotros"]');
-    await esperaQue(() => p.evaluate(() => location.hash === '#/nosotros'));
+    await p.tap('#main-nav a[href$="nosotros.html"]');
+    await esperaQue(() => p.evaluate(() => window.__ruta() === '#/nosotros'));
     await espera(300);
     await p.tap('.menu-toggle');
     await espera(400);
@@ -466,7 +466,7 @@ async function menu(t) {
     await p.waitForSelector('.product-card:not([hidden])');
     await p.tap('.menu-toggle');
     await espera(400);
-    const tienda = await p.locator('#main-nav a[href$="tienda-catalogo"]').evaluate((a) => {
+    const tienda = await p.locator('#main-nav a[href$="tienda.html?c=catalogo"]').evaluate((a) => {
       const indicador = a.querySelector('.nav-indicador');
       const pastilla = indicador?.getBoundingClientRect();
       const texto = a.getBoundingClientRect();
@@ -481,10 +481,10 @@ async function menu(t) {
     t.ok(tienda.actual === 'page' && tienda.botones === 0 && tienda.pastilla === PAPEL && tienda.color === HORNO, `[dedo] en la tienda, Tienda no es un enlace simple con la pastilla papel y el texto horno (${JSON.stringify(tienda)})`);
     t.ok(tienda.descentrado <= 3, `[dedo] la pastilla de Tienda no esta centrada en su renglon (${Math.round(tienda.descentrado)} px)`);
     // Tocarlo lleva al catalogo entero y pliega el menu.
-    await p.tap('#main-nav a[href$="tienda-catalogo"]');
-    await esperaQue(() => p.evaluate(() => location.hash === '#/tienda-catalogo'));
+    await p.tap('#main-nav a[href$="tienda.html?c=catalogo"]');
+    await esperaQue(() => p.evaluate(() => window.__ruta() === '#/tienda-catalogo'));
     await espera(300);
-    const tras = await p.evaluate(() => [location.hash, document.querySelector('#main-nav').classList.contains('is-open')]);
+    const tras = await p.evaluate(() => [window.__ruta(), document.querySelector('#main-nav').classList.contains('is-open')]);
     t.ok(tras[0] === '#/tienda-catalogo' && tras[1] === false, `[dedo] tocar Tienda no lleva al catalogo o no pliega el menu (${tras})`);
     await ctx.close();
   }

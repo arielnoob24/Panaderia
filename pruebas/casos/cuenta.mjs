@@ -87,7 +87,7 @@ async function recorrido(t, nombre, ventana) {
   await p.fill('#cuenta-repite', 'Clave123');
   ok(!(await p.isVisible('#cuenta-repite-error')), 'error de repite sigue');
   await p.press('#cuenta-repite', 'Enter');
-  await p.waitForFunction(() => location.hash === '#/cuenta/verificar', null, { timeout: 5000 }).catch(() => {});
+  await p.waitForFunction(() => window.__ruta() === '#/cuenta/verificar', null, { timeout: 5000 }).catch(() => {});
   ok((await ruta(p)) === '#/cuenta/verificar', `tras crear: ${await ruta(p)}`);
   ok((await p.evaluate(() => localStorage.getItem('eltradicional-cuenta'))) === null, 'la cuenta se guardo antes de verificar');
 
@@ -246,14 +246,14 @@ async function recorrido(t, nombre, ventana) {
   await p.fill('#cuenta-entrar-correo', 'ana@correo.com');
   await p.fill('#cuenta-entrar-clave', 'Clave123');
   await p.click('.cuenta-entrar');
-  await p.waitForFunction(() => location.hash === '#/confirmar', null, { timeout: 5000 }).catch(() => {});
+  await p.waitForFunction(() => window.__ruta() === '#/confirmar', null, { timeout: 5000 }).catch(() => {});
   ok((await ruta(p)) === '#/confirmar', `entrar viniendo de pagar: ${await ruta(p)}`);
   await espera(300);
   ok((await p.textContent('h1')).includes('Confirmar el pedido'), 'h1 de confirmar');
   // La direccion de la cuenta pasa al pedido.
   ok((await p.evaluate(() => JSON.parse(localStorage.getItem('eltradicional-pedido') || '{}')?.direccion || '')).startsWith('Av. 15'), 'la direccion de la cuenta no paso al pedido');
   await p.click('.canasta-pagar');
-  await p.waitForFunction(() => location.hash === '#/comprobante', null, { timeout: 6000 }).catch(() => {});
+  await p.waitForFunction(() => window.__ruta() === '#/comprobante', null, { timeout: 6000 }).catch(() => {});
   ok((await ruta(p)) === '#/comprobante', `tras pagar: ${await ruta(p)}`);
   await llegar(p, '#/cuenta/pedidos');
   await espera(400);
@@ -293,7 +293,7 @@ async function recorrido(t, nombre, ventana) {
   const cod3 = codigoDe('rosa@correo.ec');
   await c3.click('.codigo-casilla >> nth=0');
   await c3.keyboard.type(cod3);
-  await c3.waitForFunction(() => location.hash === '#/confirmar', null, { timeout: 5000 }).catch(() => {});
+  await c3.waitForFunction(() => window.__ruta() === '#/confirmar', null, { timeout: 5000 }).catch(() => {});
   ok((await ruta(c3)) === '#/confirmar', `verificar viniendo de pagar: ${await ruta(c3)}`);
   // Atras no vuelve a los formularios ya hechos.
   await c3.goBack();

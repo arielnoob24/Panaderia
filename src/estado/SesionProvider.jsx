@@ -97,7 +97,21 @@ const cargarSesion = async () => {
   } catch (e) { /* sin sesion: se empieza fuera */ }
 };
 
-const iniciar = () => ({ ...arranque, pendiente: null, recuperacion: null, envioClave: 0, cambios: 0 });
+// La cuenta que espera su codigo viaja de una pagina a otra (crear.html lleva
+// a verificar.html): se deja en sessionStorage, sin la contrasena, que ya
+// salio hacia Supabase al crear. Se borra al cerrar la pestana.
+const CLAVE_PENDIENTE = 'eltradicional-pendiente';
+const leerPendiente = () => {
+  try { return JSON.parse(sessionStorage.getItem(CLAVE_PENDIENTE)) || null; } catch { return null; }
+};
+const guardarPendiente = (pendiente) => {
+  try {
+    if (pendiente) sessionStorage.setItem(CLAVE_PENDIENTE, JSON.stringify(pendiente));
+    else sessionStorage.removeItem(CLAVE_PENDIENTE);
+  } catch { /* sin almacenamiento: se pierde al cambiar de pagina */ }
+};
+
+const iniciar = () => ({ ...arranque, pendiente: arranque.hayCuenta ? null : leerPendiente(), recuperacion: null, envioClave: 0, cambios: 0 });
 
 function SesionProvider({ children }) {
   const [estado, despachar] = useReducer(reductor, undefined, iniciar);
@@ -110,6 +124,8 @@ function SesionProvider({ children }) {
     guardados.current = estado.cambios;
     if (estado.cuenta.correo) guardarCuenta(estado.cuenta);
   }, [estado]);
+
+  useEffect(() => { guardarPendiente(estado.pendiente); }, [estado.pendiente]);
 
   // El estado de verdad, a mano de las acciones que esperan.
   const actual = useRef(estado);

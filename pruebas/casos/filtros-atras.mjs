@@ -14,12 +14,12 @@ export default async function filtrosAtras(t) {
     const p = await ctx.newPage();
     const ir = (s) => p.evaluate((x) => document.querySelector(x).click(), s);
     const estado = () => p.evaluate(() => ({
-      hash: location.hash,
+      hash: window.__ruta(),
       orden: document.querySelector('.orden-boton')?.textContent.trim(),
       mostrar: String(document.querySelector('#vista-mostrar-solo')?.checked),
       busca: document.querySelector('.vista-buscar input')?.value,
     }));
-    const irA = async (hash) => { await p.evaluate((h) => { location.hash = h; }, hash); await espera(700); };
+    const irA = async (hash) => { await p.evaluate((h) => { window.__ruta() = h; }, hash); await espera(700); };
     await p.goto(t.REACT + '#/tienda-catalogo'); await espera(900);
     await irA('#/tienda-panes');
     await irA('#/tienda-dulces');
@@ -38,7 +38,7 @@ export default async function filtrosAtras(t) {
     const adelante = await estado();
     t.ok(adelante.hash === '#/tienda-dulces' && adelante.orden === puesto.orden && adelante.mostrar === puesto.mostrar && adelante.busca === puesto.busca, `[${nv}] Adelante limpio: ${JSON.stringify(adelante)}`);
     // Entrar con un enlace (Tienda en el menu) si limpia.
-    await ir('#main-nav a[href$="tienda-catalogo"]'); await espera(900);
+    await ir('#main-nav a[href$="tienda.html?c=catalogo"]'); await espera(900);
     const enlace = await estado();
     t.ok(enlace.hash === '#/tienda-catalogo' && enlace.orden === 'Recomendados' && enlace.mostrar === 'false' && enlace.busca === '', `[${nv}] el enlace no limpio: ${JSON.stringify(enlace)}`);
     await ctx.close();

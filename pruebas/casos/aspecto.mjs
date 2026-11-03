@@ -106,9 +106,9 @@ export default async function aspecto(t) {
     if (nombre === 'movil') {
       await p.tap('.menu-toggle');
       await espera(300);
-      await p.tap('#main-nav a[href="#/nosotros"]');
+      await p.tap('#main-nav a[href$="nosotros.html"]');
     } else {
-      await p.click('#main-nav a[href="#/nosotros"]');
+      await p.click('#main-nav a[href$="nosotros.html"]');
     }
     await esperaQue(() => p.evaluate(() => document.activeElement?.tagName === 'H1'));
     const titulo = await p.evaluate(() => {
@@ -120,7 +120,7 @@ export default async function aspecto(t) {
     t.ok(titulo.contorno === 'none' || titulo.ancho === '0px', `[${nombre}] el h1 con el foco pinta recuadro (${titulo.contorno} ${titulo.ancho})`);
     // Tambien cuando se llega con el teclado: el foco visible del enlace pasa al h1.
     if (nombre === 'escritorio') {
-      await p.focus('#main-nav a[href="#/contacto"]');
+      await p.focus('#main-nav a[href$="contacto.html"]');
       await p.keyboard.press('Enter');
       await esperaQue(() => p.evaluate(() => document.activeElement?.id === 'contacto-titulo'));
       const conTeclado = await p.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
@@ -251,7 +251,7 @@ async function editorial(t) {
 
     // Inicio, lo primero del menu de arriba (en el telefono, dentro del
     // menu), con aria-current solo en #/.
-    const inicio = p.locator('#main-nav a[href="#/"]');
+    const inicio = p.locator('#main-nav a[href$="index.html"]');
     const primero = await p.evaluate(() => document.querySelector('#main-nav a')?.getAttribute('href'));
     t.ok(await inicio.count() === 1 && (await inicio.textContent()).trim() === 'Inicio' && primero === '#/', `[${nombre}] el menu no empieza por Inicio (empieza por ${primero})`);
     t.ok(await inicio.getAttribute('aria-current') === 'page', `[${nombre}] Inicio no lleva aria-current en #/`);
@@ -301,10 +301,10 @@ async function editorial(t) {
     await p.waitForSelector('.cinta');
     const dulces = p.getByRole('navigation', { name: 'Comprar por categoría' }).getByRole('link', { name: 'Dulces y pasteles', exact: true });
     if (nombre === 'movil') await dulces.tap(); else await dulces.click();
-    await esperaQue(() => p.evaluate(() => location.hash === '#/tienda-dulces' && Boolean(document.querySelector('h1')?.textContent.includes('Dulces y pasteles'))));
-    const llegada = await p.evaluate(() => ({ hash: location.hash, h1: document.querySelector('h1')?.textContent.trim() }));
+    await esperaQue(() => p.evaluate(() => window.__ruta() === '#/tienda-dulces' && Boolean(document.querySelector('h1')?.textContent.includes('Dulces y pasteles'))));
+    const llegada = await p.evaluate(() => ({ hash: window.__ruta(), h1: document.querySelector('h1')?.textContent.trim() }));
     t.ok(llegada.hash === '#/tienda-dulces' && llegada.h1 === 'Dulces y pasteles', `[${nombre}] la cinta llevo a ${llegada.hash} ("${llegada.h1}")`);
-    t.ok(await p.locator('#main-nav a[href="#/"]').getAttribute('aria-current') === null, `[${nombre}] Inicio sigue con aria-current fuera de #/`);
+    t.ok(await p.locator('#main-nav a[href$="index.html"]').getAttribute('aria-current') === null, `[${nombre}] Inicio sigue con aria-current fuera de #/`);
     await ctx.close();
   }
 

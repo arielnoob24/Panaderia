@@ -17,7 +17,7 @@ export default async function humo(t) {
   await p.waitForSelector('.cinta');
   t.ok(await p.locator('h1').count() === 1, 'la portada no tiene un h1');
   t.ok(await p.locator('.site-header').count() === 1, 'la portada no tiene cabecera');
-  const cinta = await p.locator('.cinta a[href^="#/tienda-"]').count();
+  const cinta = await p.locator('.cinta a[href*="tienda.html?c="]').count();
   t.ok(cinta === 3, `la cinta de la portada tiene ${cinta} enlaces y no 3`);
 
   // La tienda entera: una ficha por producto del catalogo.

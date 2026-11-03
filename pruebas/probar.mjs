@@ -27,6 +27,8 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { DIST, RAIZ, opcionesNavegador, paqueteFuera, servir } from './arranque.mjs';
 import * as supabaseFalso from './supabaseFalso.mjs';
+import { SCRIPT_RUTA } from './arranque.mjs';
+import { archivoDeRuta } from '../src/comun/paginas.js';
 
 const CASOS_DIR = join(RAIZ, 'pruebas', 'casos');
 // Primero el de humo (si eso falla, lo demas no dice nada nuevo); luego por nombre.
@@ -128,8 +130,18 @@ try {
         await ctx.route('https://api.emailjs.com/**', correo || ((r) => r.abort()));
         // La cuenta habla con un Supabase de mentira (pruebas/supabaseFalso.mjs).
         await supabaseFalso.instalar(ctx);
+        // La ruta de la vista ('#/cuenta', '#/tienda-panes') que ya no esta en
+        // location.hash: el sitio son paginas HTML (src/comun/paginas.js).
+        await ctx.addInitScript({ content: SCRIPT_RUTA });
         const pre = etiqueta ? `[${etiqueta}] ` : '';
         ctx.on('page', (p) => {
+          // Los casos dicen '#/cuenta/crear'; aqui se abre la pagina que le toca.
+          const ir = p.goto.bind(p);
+          p.goto = (url, opciones) => {
+            const partes = String(url).split('#');
+            const archivo = partes[1]?.startsWith('/') ? archivoDeRuta(partes[1]) : null;
+            return ir(archivo ? new URL(archivo, partes[0] || p.url()).href : url, opciones);
+          };
           p.on('pageerror', (e) => fallos.push(`${pre}error de pagina: ${e.message.split('\n')[0]}`));
           p.on('console', (m) => {
             // Lo que se corto a proposito (EmailJS, el mapa) sale como ERR_FAILED;

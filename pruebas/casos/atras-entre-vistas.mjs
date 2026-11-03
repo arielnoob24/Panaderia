@@ -20,7 +20,7 @@ export default async function atrasEntreVistas(t) {
     const mira = async (que) => {
       const r = await p.evaluate(() => {
         const e = document.activeElement; const q = e.getBoundingClientRect();
-        return { tag: e.tagName, id: e.id || String(e.className).slice(0, 20), top: Math.round(q.top), bottom: Math.round(q.bottom), alto: innerHeight, y: Math.round(scrollY), hash: location.hash };
+        return { tag: e.tagName, id: e.id || String(e.className).slice(0, 20), top: Math.round(q.top), bottom: Math.round(q.bottom), alto: innerHeight, y: Math.round(scrollY), hash: window.__ruta() };
       });
       t.ok(r.tag === 'H1' && r.bottom > 0 && r.top < r.alto && r.y === 0, `[${nombre}] ${que}: ${JSON.stringify(r)}`);
     };
@@ -39,7 +39,7 @@ export default async function atrasEntreVistas(t) {
     // De vista a vista con los enlaces de la cabecera.
     await abrir('#/nosotros');
     await p.mouse.wheel(0, 700); await espera(600);
-    await ir('.site-header a[href$="contacto"]'); await espera(900);
+    await ir('.site-header a[href$="contacto.html"]'); await espera(900);
     await p.mouse.wheel(0, 400); await espera(600);
     await p.goBack(); await espera(1200);
     await mira('contacto y Atras a nosotros');
@@ -47,7 +47,7 @@ export default async function atrasEntreVistas(t) {
     // En la tienda: una categoria, bajar, otra entrada de la tienda, Atras.
     // Tienda ya no tiene desplegable, asi que se llega como llega quien usa
     // el sitio: Panes desde la cinta de la portada y luego Tienda en el menu
-    // (todo el catalogo). Antes se cambiaba location.hash a mano, pero esas
+    // (todo el catalogo). Antes se cambiaba window.__ruta() a mano, pero esas
     // entradas no llevan clave de React Router ('default' todas) y solo
     // pasaba porque Dulces era lo bastante alta para no mover la pagina; con
     // 5 fichas por fila cabe en una y el navegador la subia.
@@ -55,9 +55,9 @@ export default async function atrasEntreVistas(t) {
     await ir('.cinta-enlace-panes'); await espera(1200);
     await p.mouse.wheel(0, 600); await espera(700);
     const yPanes = await p.evaluate(() => Math.round(scrollY));
-    await ir('.site-header a[href$="tienda-catalogo"]'); await espera(1200);
+    await ir('.site-header a[href$="tienda.html?c=catalogo"]'); await espera(1200);
     await p.goBack(); await espera(1400);
-    const r = await p.evaluate(() => ({ hash: location.hash, y: Math.round(scrollY) }));
+    const r = await p.evaluate(() => ({ hash: window.__ruta(), y: Math.round(scrollY) }));
     t.ok(r.hash === '#/tienda-panes' && Math.abs(r.y - yPanes) <= 40, `[${nombre}] tienda: panes estaba en y=${yPanes} y Atras deja ${r.hash} en y=${r.y}`);
     await ctx.close();
   }

@@ -67,12 +67,12 @@ export default async function tiendaMandos(t) {
     t.ok((await p.getByRole('button', { name: 'Volver al inicio' }).count()) === 0 && (await p.locator('.vista-volver').count()) === 0, `[${nombre}] la tienda sigue teniendo "Volver al inicio"`);
     const menu = await p.evaluate(() => {
       const nav = document.querySelector('#main-nav');
-      const tienda = nav.querySelector('a[href$="tienda-catalogo"]');
+      const tienda = nav.querySelector('a[href$="tienda.html?c=catalogo"]');
       return {
         hijo: tienda?.parentElement === nav,
         actual: tienda?.getAttribute('aria-current'),
         botones: nav.querySelectorAll('button, [aria-expanded]').length,
-        enlacesCategoria: nav.querySelectorAll('a[href*="tienda-"]:not([href$="tienda-catalogo"])').length,
+        enlacesCategoria: nav.querySelectorAll('a[href*="tienda.html?c="]:not([href$="tienda.html?c=catalogo"])').length,
       };
     });
     t.ok(menu.hijo && menu.actual === 'page' && menu.botones === 0 && menu.enlacesCategoria === 0, `[${nombre}] Tienda en el menu no es un enlace simple y la pagina actual (${JSON.stringify(menu)})`);

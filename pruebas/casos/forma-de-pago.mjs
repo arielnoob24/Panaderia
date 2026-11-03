@@ -32,7 +32,7 @@ export default async function formaDePago(t) {
     await p.locator('.product-card .card-mas').first().click(); await espera(900);
     await p.click('.floating-whatsapp.is-canasta'); await espera(400);
     await p.click('.canasta-enviar'); await espera(500);
-    ok((await p.evaluate(() => location.hash)) === '#/confirmar', 'no llega a confirmar');
+    ok((await p.evaluate(() => window.__ruta())) === '#/confirmar', 'no llega a confirmar');
     ok(await p.isChecked('input[name="canasta-metodo"][value="tarjeta"]'), 'confirmar no empieza en tarjeta');
     await ctx.close();
   }

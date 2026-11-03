@@ -16,6 +16,7 @@
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ultimaActualizacion } from '../servicios/storage.js';
+import { rutaDeDireccion } from '../comun/paginas.js';
 import { leerGuardado, guardarPedidoAMedias, borrarGuardado } from '../servicios/guardado.js';
 import { reductor, unidades, subtotal } from './pedido.js';
 import { useSesion } from './SesionProvider.jsx';
@@ -37,13 +38,33 @@ const iniciar = (sesion) => {
   };
 };
 
+// El recibo cruza de confirmar.html a comprobante.html: se deja en
+// sessionStorage al crearlo (a mano y no en un efecto, que no llega a correr
+// antes de que la pagina se vaya) y se olvida al irse del comprobante, como
+// antes se olvidaba al salir de la vista.
+const CLAVE_RECIBO = 'eltradicional-recibo';
+const leerRecibo = () => {
+  try { return JSON.parse(sessionStorage.getItem(CLAVE_RECIBO)) || null; } catch { return null; }
+};
+const guardarRecibo = (recibo) => {
+  try {
+    if (recibo) sessionStorage.setItem(CLAVE_RECIBO, JSON.stringify(recibo));
+    else sessionStorage.removeItem(CLAVE_RECIBO);
+  } catch { /* sin almacenamiento: el comprobante sale solo en esta pagina */ }
+};
+
 function PedidoProvider({ children }) {
   const sesion = useSesion();
   const [estado, despachar] = useReducer(reductor, sesion, iniciar);
   // Cuando se guardo por ultima vez, para el pie. Empieza con la cookie, que
   // es lo que habia antes de abrir la pagina.
   const [guardadoEn, setGuardadoEn] = useState(ultimaActualizacion);
-  const [recibo, setRecibo] = useState(null);
+  const [recibo, setRecibo] = useState(() => (rutaDeDireccion(window.location) === '/comprobante' ? leerRecibo() : null));
+  useEffect(() => {
+    const alIrse = () => { if (rutaDeDireccion(window.location) === '/comprobante') guardarRecibo(null); };
+    window.addEventListener('pagehide', alIrse);
+    return () => window.removeEventListener('pagehide', alIrse);
+  }, []);
 
   // Lo que se leyo al arrancar no se vuelve a escribir: guardar es para los
   // cambios, que el reductor cuenta.
@@ -72,13 +93,19 @@ function PedidoProvider({ children }) {
     hacer({ tipo: 'cumplido' });
     borrarGuardado();
     setGuardadoEn(null);
+    guardarRecibo(nuevo);
     setRecibo(nuevo);
   }, [hacer]);
 
   // Como fue el correo del comprobante, que llega despues. Si mientras tanto
   // ya hay otro recibo, no se toca: hablaria de otro pedido.
   const anotarCorreo = useCallback((numero, envioCorreo) => {
-    setRecibo((r) => (r && r.numero === numero ? { ...r, envioCorreo } : r));
+    setRecibo((r) => {
+      if (!r || r.numero !== numero) return r;
+      const nuevo = { ...r, envioCorreo };
+      guardarRecibo(nuevo);
+      return nuevo;
+    });
   }, []);
 
   // Al salir de #/comprobante el recibo se olvida. Se mira mientras se pinta

@@ -57,7 +57,7 @@ export default async function cedula(t) {
     await p.locator('.product-card .card-mas').first().click(); await espera(900);
     await p.click('.floating-whatsapp.is-canasta'); await espera(400);
     await p.click('.canasta-enviar'); await espera(500);
-    ok((await p.evaluate(() => location.hash)) === '#/confirmar', 'React no llega a confirmar');
+    ok((await p.evaluate(() => window.__ruta())) === '#/confirmar', 'React no llega a confirmar');
     await p.click('label:has(input[name="canasta-factura"][value="otro"])'); await espera(200);
     await probarCampo(p, ok, 'React');
 

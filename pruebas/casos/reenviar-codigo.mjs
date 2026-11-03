@@ -81,11 +81,11 @@ export default async function reenviar(t) {
     quebrar(ctx, null);
     await p.click('.codigo-casilla >> nth=0');
     await p.keyboard.type(c2);
-    for (let k = 0; k < 10 && (await p.evaluate(() => location.hash)) !== '#/cuenta'; k += 1) {
+    for (let k = 0; k < 10 && (await p.evaluate(() => window.__ruta())) !== '#/cuenta'; k += 1) {
       await p.clock.runFor(200);
       await espera(200);
     }
-    ok((await p.evaluate(() => location.hash)) === '#/cuenta', 'no llego a #/cuenta: ' + await p.evaluate(() => location.hash));
+    ok((await p.evaluate(() => window.__ruta())) === '#/cuenta', 'no llego a #/cuenta: ' + await p.evaluate(() => window.__ruta()));
     ok((await aviso()) === 'Correo verificado. Iniciaste sesión como Ana Pérez.', 'aviso verificado: ' + await aviso());
     await ctx.close();
   }

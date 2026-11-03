@@ -3,7 +3,6 @@
 // sesion para rellenar la direccion), la canasta y la aplicacion.
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
 import { LazyMotion, MotionConfig, domMax } from 'motion/react';
 // Fraunces, la letra de los titulos (seccion 10 del plan), servida desde el
 // propio sitio: Vite copia sus woff2 al build y nada se pide a Google. full
@@ -22,6 +21,7 @@ import { SesionProvider } from './estado/SesionProvider.jsx';
 import { PedidoProvider } from './estado/PedidoProvider.jsx';
 import { CanastaProvider } from './pedido/CanastaProvider.jsx';
 import App from './App.jsx';
+import Enrutador, { abrirDireccionVieja } from './comun/Enrutador.jsx';
 import { cargarCatalogo } from './servicios/catalogo.js';
 import { cargarSesion } from './estado/SesionProvider.jsx';
 import { cederDesplazamiento } from './comun/apertura.js';
@@ -39,8 +39,8 @@ cederDesplazamiento();
 // traen sin prisa para que esten cuando se abran (comun/cargaPorPartes.js).
 precargarEnReposo();
 
-// HashRouter y no BrowserRouter: con la ruta despues del '#', GitHub Pages
-// siempre sirve el mismo index.html y no hace falta el truco del 404.
+// El Enrutador (comun/Enrutador.jsx) abre un archivo HTML por pantalla: todos
+// cargan este mismo script y la vista la decide el nombre del archivo.
 // Motion (seccion 15 del plan): LazyMotion con domMax activa tambien las
 // transiciones de layout del indicador compartido; los componentes animados
 // se escriben con m.div y no con motion.div. Con
@@ -51,11 +51,13 @@ precargarEnReposo();
 // respaldo) y la sesion (servicios/supabase.js), para que la tienda no
 // aparezca vacia y la cuenta no salga cerrada para abrirse un momento despues.
 // Las dos se piden a la vez.
-Promise.all([cargarCatalogo(), cargarSesion()]).then(() => createRoot(document.getElementById('raiz')).render(
+// Una direccion vieja que se pega con la portada ya abierta tambien se sigue.
+window.addEventListener('hashchange', abrirDireccionVieja);
+if (!abrirDireccionVieja()) Promise.all([cargarCatalogo(), cargarSesion()]).then(() => createRoot(document.getElementById('raiz')).render(
   <StrictMode>
     <LazyMotion features={domMax}>
       <MotionConfig reducedMotion="user">
-        <HashRouter>
+        <Enrutador>
           <AvisosProvider>
             <SesionProvider>
               <PedidoProvider>
@@ -65,7 +67,7 @@ Promise.all([cargarCatalogo(), cargarSesion()]).then(() => createRoot(document.g
               </PedidoProvider>
             </SesionProvider>
           </AvisosProvider>
-        </HashRouter>
+        </Enrutador>
       </MotionConfig>
     </LazyMotion>
   </StrictMode>,

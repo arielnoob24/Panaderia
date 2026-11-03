@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "probar": "node pruebas/probar.mjs"
+    "probar": "node pruebas/probar.mjs",
+    "paginas": "node scripts/paginas.mjs"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "5.3.0",

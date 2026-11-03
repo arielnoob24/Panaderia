@@ -29,7 +29,7 @@ export default async function checkoutCabeza(t) {
     await p.waitForSelector('.canasta-panel.is-open .canasta-enviar');
     await espera(300);
     await pulsar('.canasta-enviar');
-    await esperaQue(() => p.evaluate(() => location.hash === '#/confirmar'));
+    await esperaQue(() => p.evaluate(() => window.__ruta() === '#/confirmar'));
     await p.waitForSelector('.checkout-cabeza');
     await espera(300);
 
@@ -62,8 +62,8 @@ export default async function checkoutCabeza(t) {
     t.ok(pasos[0].fondo === 'rgb(58, 40, 34)' && pasos[0].color === 'rgb(255, 253, 248)', `[${nombre}] el nodo del paso actual no es horno con cifra papel (${JSON.stringify(pasos[0])})`);
 
     await pulsar('.checkout-volver');
-    await esperaQue(() => p.evaluate(() => location.hash === '#/'));
-    t.ok((await p.evaluate(() => location.hash)) === '#/', `[${nombre}] "Volver a la tienda" no sale del pago`);
+    await esperaQue(() => p.evaluate(() => window.__ruta() === '#/'));
+    t.ok((await p.evaluate(() => window.__ruta())) === '#/', `[${nombre}] "Volver a la tienda" no sale del pago`);
     await ctx.close();
   }
 }

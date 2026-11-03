@@ -24,7 +24,7 @@ export default async function pedidosApi(t) {
     await espera(700);
     await p.click('.floating-whatsapp.is-canasta'); await espera(400);
     await p.click('.canasta-enviar');
-    await p.waitForFunction(() => location.hash === '#/confirmar', null, { timeout: 5000 }).catch(() => {});
+    await p.waitForFunction(() => window.__ruta() === '#/confirmar', null, { timeout: 5000 }).catch(() => {});
     ok((await hashDe(p)) === '#/confirmar', `no llego a confirmar: ${await hashDe(p)}`);
 
     // La API falla: no hay pedido, se dice junto al boton y no se vacia nada.
@@ -52,7 +52,7 @@ export default async function pedidosApi(t) {
     // Con la API bien: el comprobante lleva el numero y el total de la base.
     quebrar(ctx, null);
     await p.click('.canasta-pagar');
-    await p.waitForFunction(() => location.hash === '#/comprobante', null, { timeout: 8000 }).catch(() => {});
+    await p.waitForFunction(() => window.__ruta() === '#/comprobante', null, { timeout: 8000 }).catch(() => {});
     ok((await hashDe(p)) === '#/comprobante', `tras pagar: ${await hashDe(p)}`);
     const enBase = pedidosDe('ana@correo.com');
     ok(enBase.length === 1, `pedidos en la base: ${enBase.length}`);

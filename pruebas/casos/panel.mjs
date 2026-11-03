@@ -24,7 +24,7 @@ async function panel(t, nombre, ventana) {
   const ctx = await t.contexto(ventana, { nombre });
   const p = await ctx.newPage();
   const URL = t.REACT;
-  const hash = () => p.evaluate(() => location.hash);
+  const hash = () => p.evaluate(() => window.__ruta());
   const abrirFicha = async () => {
     await p.click('.nav-cuenta');
     await espera(300);
@@ -63,7 +63,7 @@ async function panel(t, nombre, ventana) {
   await abrirFicha();
   await esperaQue(async () => (await opcionesFicha()).includes('Panel'));
   ok((await opcionesFicha()).includes('Panel'), `un empleado no ve la opcion Panel: ${await opcionesFicha()}`);
-  await p.click('#cuenta-menu a[href$="/admin"]');
+  await p.click('#cuenta-menu a[href$="admin.html"]');
   await p.waitForSelector('.admin-pedido');
   ok((await hash()) === '#/admin/pedidos', `#/admin no lleva a Pedidos: ${await hash()}`);
   ok((await p.$$eval('.admin-pestana', (l) => l.map((x) => x.textContent))).join() === 'Pedidos,Inventario,Bodega,Producción,Ajustes', 'el empleado no ve sus cinco pestañas');
