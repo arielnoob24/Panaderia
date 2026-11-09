@@ -13,6 +13,7 @@ import { fotoDe, ANCHOS } from '../servicios/catalogo.js';
 import { useCargaImagen, clases } from '../comun/useCargaImagen.js';
 import { nombreCategoria } from './categorias.js';
 import ControlCantidad from '../pedido/ControlCantidad.jsx';
+import BotonFavorito from './BotonFavorito.jsx';
 
 // Cuanto mide la foto en la cuadricula, igual que SIZES_CUADRICULA de
 // view.js: sin esto el telefono bajaria la de 840 donde basta la de 420.
@@ -94,6 +95,7 @@ function FichaProducto({ producto, vista, visible, orden, retraso, entrando, ele
           {...carga.imagen}
         />
         <Etiqueta producto={producto} />
+        <BotonFavorito nombre={producto.nombre} />
       </div>
       <div className="product-info">
         {/* Sin nombre conocido no se pone rotulo: mejor nada que 'bebidas-frias'. */}

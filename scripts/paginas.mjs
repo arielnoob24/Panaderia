@@ -19,6 +19,7 @@ const PAGINAS = {
   'recuperar.html': ['Recuperar la contraseña', 'Recupera el acceso a tu cuenta de El Tradicional.'],
   'cuenta.html': ['Mis datos', 'Tus datos y tu forma de pago en El Tradicional.'],
   'mis-pedidos.html': ['Mis pedidos', 'Tus pedidos anteriores en El Tradicional, para pedirlos otra vez.'],
+  'favoritos.html': ['Mis favoritos', 'Tus productos favoritos en El Tradicional, para agregarlos a la canasta de una vez.'],
   'confirmar.html': ['Confirmar el pedido', 'Revisa tu canasta, elige la entrega y paga.'],
   'comprobante.html': ['Comprobante', 'El comprobante de tu pedido en El Tradicional.'],
   'admin.html': ['Panel', 'El panel de quien atiende el local.'],

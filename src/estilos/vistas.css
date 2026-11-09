@@ -877,3 +877,18 @@ body.is-vista .catalog { padding-top: 108px; }
 .mapa-ruta svg path { fill: var(--ambar); }
 .mapa-ruta svg circle { fill: var(--horno); }
 .pide-cuenta-dibujo svg :is(path, circle) { fill: var(--papel); }
+
+/* ---- Favoritos: el corazon de la ficha y la hoja que pide sesion --------- */
+.boton-favorito { position: absolute; top: 6px; right: 6px; z-index: 1; display: grid; width: 44px; height: 44px; padding: 0; place-items: center; background: color-mix(in srgb, var(--papel) 88%, transparent); border: 1px solid var(--masa-linea); border-radius: 50%; color: var(--horno); cursor: pointer; transition: transform var(--dur-micro) var(--ease-ui), background-color var(--dur-micro) var(--ease-ui); }
+.boton-favorito:active { transform: scale(.92); }
+.boton-favorito .ico-corazon { width: 24px; height: 24px; transition: fill var(--dur-micro) var(--ease-ui), stroke var(--dur-micro) var(--ease-ui); }
+.boton-favorito.is-activo { border-color: var(--rojo); color: var(--rojo); }
+.boton-favorito.is-activo .ico-corazon { fill: var(--rojo); }
+.con-puntero .boton-favorito:hover { background: var(--papel); }
+@media (prefers-reduced-motion: reduce) { .boton-favorito, .boton-favorito .ico-corazon { transition: none; } }
+/* La hoja de "Inicia sesion para guardar favoritos" cubre la pagina, no la canasta. */
+.pide-cuenta-fija { position: fixed; z-index: 60; }
+@media (min-width: 681px) {
+  .pide-cuenta-fija { align-items: center; justify-content: center; }
+  .pide-cuenta-fija .pide-cuenta-hoja { width: min(26rem, calc(100% - 2rem)); border-radius: 22px; }
+}

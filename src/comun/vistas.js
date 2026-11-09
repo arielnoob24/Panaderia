@@ -9,7 +9,7 @@
 //   #/confirmar, #/comprobante  el pedido (src/pedido/)
 //   #/cuenta/entrar, #/cuenta/crear, #/cuenta/verificar, #/cuenta/recuperar,
 //   #/cuenta (Mis
-//   datos), #/cuenta/pedidos   la cuenta (src/cuenta/); cada una lleva a
+//   datos), #/cuenta/pedidos, #/cuenta/favoritos   la cuenta (src/cuenta/); cada una lleva a
 //   otra con replace cuando no corresponde (fase 5 en la seccion 15 del plan)
 //   #/admin, #/admin/resumen, #/admin/pedidos, #/admin/productos, #/admin/inventario, #/admin/compras, #/admin/bodega, #/admin/produccion, #/admin/ajustes, #/admin/equipo, #/admin/facturas, #/admin/nomina, #/admin/contabilidad  el panel
 //   de quien atiende el local (src/admin/), sin enlace publico
@@ -36,6 +36,7 @@ const CUENTA = {
   '/cuenta/verificar': 'cuenta-verificar',
   '/cuenta/recuperar': 'cuenta-recuperar',
   '/cuenta/pedidos': 'cuenta-pedidos',
+  '/cuenta/favoritos': 'cuenta-favoritos',
 };
 
 // Que vista pide la direccion, o null si no es ninguna.

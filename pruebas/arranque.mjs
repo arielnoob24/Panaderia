@@ -108,7 +108,7 @@ export const SCRIPT_RUTA = `window.__ruta = () => {
   const rutas = { 'index.html': '#/', 'nosotros.html': '#/nosotros', 'contacto.html': '#/contacto',
     'confirmar.html': '#/confirmar', 'comprobante.html': '#/comprobante', 'cuenta.html': '#/cuenta',
     'entrar.html': '#/cuenta/entrar', 'crear-cuenta.html': '#/cuenta/crear', 'verificar.html': '#/cuenta/verificar',
-    'recuperar.html': '#/cuenta/recuperar', 'mis-pedidos.html': '#/cuenta/pedidos' };
+    'recuperar.html': '#/cuenta/recuperar', 'mis-pedidos.html': '#/cuenta/pedidos', 'favoritos.html': '#/cuenta/favoritos' };
   return rutas[f] || '#/';
 };`;
 export async function hashDe(p) {

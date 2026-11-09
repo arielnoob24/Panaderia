@@ -1645,3 +1645,10 @@ Pendiente de la fase 7:
 - **Confirmar el pedido**: la barra de pasos va **centrada bajo el título** (escritorio y teléfono). Las opciones (entrega, pago, factura) y los botones principales (Ir a pagar, Confirmar el pedido, Listo, cerrar, los de las hojas) **se ajustan a su contenido** en vez de ocupar todo el ancho; el pie de la canasta los centra. En portátiles de poca altura (≤ 820 px) se aprieta lo vertical: a 1440×900 y 1366×768 la vista entra sin desplazar.
 - "Editar la canasta" lleva un **lápiz** (`Lapiz`, en `pedido/iconosPedido.jsx`).
 - La prueba `botones` ya no exige "a todo lo ancho" en esos botones.
+
+## Cambios del 9 de noviembre de 2026
+
+- **Favoritos** (solo con cuenta): corazón en cada ficha (`catalogo/BotonFavorito.jsx`). Sin sesión no guarda: abre la hoja "Inicia sesión para guardar favoritos" (`catalogo/PideCuentaFavoritos.jsx`) con Iniciar sesión / Crear cuenta / Ahora no. Con sesión se guarda en `localStorage` por correo (`servicios/favoritos.js`, clave `tradicional:favoritos:<correo>`, máximo 50, lista de nombres de producto) y vive en `estado/FavoritosProvider.jsx`. No viajan entre navegadores: no hay tabla en la base.
+- Nueva vista `#/cuenta/favoritos` (`favoritos.html`, `cuenta/MisFavoritos.jsx`, opción "Mis favoritos" en la ficha de la cuenta): lista, "Agregar" por producto y "Agregar todos a la canasta" (una unidad de cada uno, en su primer tamaño, con el precio de hoy; reutiliza `pedirOtraVez`). Un favorito que ya no está en el catálogo sale como "Ya no lo tenemos" para poder quitarlo.
+- "Repetir último pedido" ya existía como "Pedir otra vez" en Mis pedidos. Canastas armadas por el usuario: pendientes (la lista de favoritos hace ese papel por ahora).
+- Prueba nueva: `favoritos`.

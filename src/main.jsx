@@ -18,6 +18,7 @@ import '/assets/css/styles.css';
 import './estilos/vistas.css';
 import { AvisosProvider } from './comun/Avisos.jsx';
 import { SesionProvider } from './estado/SesionProvider.jsx';
+import { FavoritosProvider } from './estado/FavoritosProvider.jsx';
 import { PedidoProvider } from './estado/PedidoProvider.jsx';
 import { CanastaProvider } from './pedido/CanastaProvider.jsx';
 import App from './App.jsx';
@@ -60,11 +61,13 @@ if (!abrirDireccionVieja()) Promise.all([cargarCatalogo(), cargarSesion()]).then
         <Enrutador>
           <AvisosProvider>
             <SesionProvider>
-              <PedidoProvider>
-                <CanastaProvider>
-                  <App />
-                </CanastaProvider>
-              </PedidoProvider>
+              <FavoritosProvider>
+                <PedidoProvider>
+                  <CanastaProvider>
+                    <App />
+                  </CanastaProvider>
+                </PedidoProvider>
+              </FavoritosProvider>
             </SesionProvider>
           </AvisosProvider>
         </Enrutador>

@@ -38,6 +38,11 @@ const PEDIDOS = (
     <path d="M9 8h6M9 11.5h6M9 15h3.5" />
   </>
 );
+const FAVORITOS = (
+  <>
+    <path d="M12 20.2S3.8 15 3.8 9.2A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8.2 2.2c0 5.8-8.2 11-8.2 11Z" />
+  </>
+);
 const PANEL = (
   <>
     <path d="M4.5 19.5v-9M10 19.5V5M15.5 19.5v-6M21 19.5H3" />
@@ -96,15 +101,19 @@ function OpcionesCuenta({ nombre, correo, ruta, hayPanel, opcionesRef, alElegir,
             el numero va en su pastilla. */}
         {n ? <span className="cuenta-menu-numero"><span className="sr-only">(</span>{n}<span className="sr-only">)</span></span> : null}
       </Link>
+      <Link ref={guardar(2)} className="cuenta-menu-opcion" to="/cuenta/favoritos" aria-current={actual('/cuenta/favoritos')} onClick={() => alElegir('/cuenta/favoritos')}>
+        <svg className="cuenta-icono" {...trazo}>{FAVORITOS}</svg>
+        <span>Mis favoritos</span>
+      </Link>
       {/* Solo para quien atiende el local: la API dice si el rol lo permite. */}
       {hayPanel ? (
-        <Link ref={guardar(2)} className="cuenta-menu-opcion" to="/admin" aria-current={ruta.startsWith('/admin') ? 'page' : undefined} onClick={() => alElegir(ruta)} onPointerEnter={() => precargar('admin')} onFocus={() => precargar('admin')}>
+        <Link ref={guardar(3)} className="cuenta-menu-opcion" to="/admin" aria-current={ruta.startsWith('/admin') ? 'page' : undefined} onClick={() => alElegir(ruta)} onPointerEnter={() => precargar('admin')} onFocus={() => precargar('admin')}>
           <svg className="cuenta-icono" {...trazo}>{PANEL}</svg>
           <span>Panel</span>
         </Link>
       ) : null}
       <hr className="cuenta-menu-raya" />
-      <button ref={guardar(3)} className="cuenta-menu-opcion is-salir" type="button" onClick={alSalir}>
+      <button ref={guardar(4)} className="cuenta-menu-opcion is-salir" type="button" onClick={alSalir}>
         <svg className="cuenta-icono" {...trazo}>{SALIR}</svg>
         <span>Cerrar sesión</span>
       </button>

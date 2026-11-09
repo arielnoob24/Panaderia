@@ -61,13 +61,14 @@ const APARTE = {
   'cuenta-recuperar': aparte(() => import('../cuenta/Recuperar.jsx'), 'cuenta'),
   cuenta: aparte(() => import('../cuenta/MisDatos.jsx'), 'cuenta'),
   'cuenta-pedidos': aparte(() => import('../cuenta/MisPedidos.jsx'), 'cuenta'),
+  'cuenta-favoritos': aparte(() => import('../cuenta/MisFavoritos.jsx'), 'cuenta'),
   // El panel no se precarga en reposo: casi nadie lo abre. Se pide con la
   // intencion (la opcion "Panel" de la ficha) o al entrar a #/admin.
   admin: aparte(() => import('../admin/Panel.jsx'), 'admin'),
 };
 
 const GRUPOS = {
-  cuenta: ['cuenta-entrar', 'cuenta-crear', 'cuenta-verificar', 'cuenta-recuperar', 'cuenta', 'cuenta-pedidos'],
+  cuenta: ['cuenta-entrar', 'cuenta-crear', 'cuenta-verificar', 'cuenta-recuperar', 'cuenta', 'cuenta-pedidos', 'cuenta-favoritos'],
   pago: ['confirmar', 'comprobante'],
   admin: ['admin'],
 };

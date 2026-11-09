@@ -67,6 +67,14 @@ const IconoCestaAsa = ({ clase = 'canasta-icono' }) => (
   </Linea>
 );
 
+// El corazon de los favoritos: contorno, y la hoja de estilos lo rellena
+// cuando el producto esta guardado.
+const IconoCorazon = ({ clase = 'ico-corazon' }) => (
+  <Linea clase={clase}>
+    <path d="M12 20.2S3.8 15 3.8 9.2A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8.2 2.2c0 5.8-8.2 11-8.2 11Z" />
+  </Linea>
+);
+
 // El chevron de "Volver a la tienda".
 function Chevron({ izquierda, grosor = '1.9' }) {
   return (
@@ -104,5 +112,5 @@ function IconoCategoria({ id, clase }) {
 
 export {
   IconoPin, Chevron, Trigo,
-  IconoHogaza, IconoPastelito, IconoBotella, IconoTrigo, IconoCestaAsa, IconoCategoria,
+  IconoHogaza, IconoPastelito, IconoBotella, IconoTrigo, IconoCestaAsa, IconoCorazon, IconoCategoria,
 };
