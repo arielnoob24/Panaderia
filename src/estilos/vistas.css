@@ -892,3 +892,4 @@ body.is-vista .catalog { padding-top: 108px; }
   .pide-cuenta-fija { align-items: center; justify-content: center; }
   .pide-cuenta-fija .pide-cuenta-hoja { width: min(26rem, calc(100% - 2rem)); border-radius: 22px; }
 }
+.canasta-guardar-fija { display: block; min-height: 44px; margin-left: auto; padding: .4rem .2rem; background: none; border: 0; color: var(--horno); cursor: pointer; font: 700 .8rem Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }

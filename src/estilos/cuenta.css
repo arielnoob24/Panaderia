@@ -196,7 +196,7 @@ a.nav-cuenta { text-decoration: none; }
 /* ---- #/cuenta/favoritos ------------------------------------------------- */
 .cuenta-favoritos-vacio { display: grid; justify-items: start; gap: 1rem; padding: 1.5rem 0; }
 .cuenta-favoritos-vacio p { margin: 0; color: var(--horno-suave); font: 1rem/1.5 Arial, sans-serif; }
-.cuenta-favoritos-acciones { margin: 0 0 .8rem; }
+
 .cuenta-favoritos-nota { margin: 0 0 .8rem; color: var(--horno); font: .88rem/1.45 Arial, sans-serif; }
 .cuenta-favoritos-lista { display: grid; gap: .6rem; margin: 0; padding: 0; list-style: none; }
 .cuenta-favorito { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: .6rem; padding: .8rem 1rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-chip); }
@@ -213,4 +213,34 @@ a.nav-cuenta { text-decoration: none; }
   .cuenta-favorito { grid-template-columns: 1fr 1fr; }
   .cuenta-favorito-datos { grid-column: 1 / -1; }
   .cuenta-favorito.is-ido .cuenta-favorito-quitar { grid-column: 1 / -1; }
+}
+
+/* ---- #/cuenta/canasta: Mi canasta predeterminada ------------------------- */
+.cuenta-fija { display: grid; gap: 1rem; }
+.cuenta-fija-dicho, .cuenta-fija-vacio { margin: 0; color: var(--horno-suave); font: 1rem/1.5 Arial, sans-serif; }
+.cuenta-fija-agregar { display: grid; gap: .35rem; }
+.cuenta-fija-agregar label { color: var(--horno); font: 700 .85rem Arial, sans-serif; }
+.cuenta-fija-agregar-fila { display: flex; gap: .6rem; }
+.cuenta-fija-agregar select { flex: 1; min-width: 0; min-height: 44px; padding: .4rem .6rem; background: var(--papel); border: 1px solid var(--horno); border-radius: var(--r-chip); color: var(--horno); font: .95rem Arial, sans-serif; }
+.cuenta-fija-boton, .cuenta-fija-quitar { min-height: 44px; padding: .4rem .9rem; background: var(--papel); border: 1px solid var(--horno); border-radius: var(--r-chip); color: var(--horno); cursor: pointer; font: 700 .85rem Arial, sans-serif; }
+.cuenta-fija-boton:disabled { opacity: .5; cursor: not-allowed; }
+.cuenta-fija-quitar { border-color: var(--masa-linea); color: var(--horno-suave); }
+.con-puntero .cuenta-fija-boton:not(:disabled):hover { background: var(--ambar-claro); }
+.con-puntero .cuenta-fija-quitar:hover { color: var(--rojo); border-color: var(--rojo); }
+.cuenta-fija-lista { display: grid; gap: .6rem; margin: 0; padding: 0; list-style: none; }
+.cuenta-fija-linea { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: .6rem; padding: .8rem 1rem; background: var(--papel); border: 1px solid var(--masa-linea); border-radius: var(--r-chip); }
+.cuenta-fija-linea.is-ido .cuenta-fija-datos { opacity: .7; }
+.cuenta-fija-datos { display: grid; gap: .15rem; min-width: 0; }
+.cuenta-fija-datos strong { color: var(--horno); font: 500 1.1rem/1.2 var(--letra-titulo); }
+.cuenta-fija-datos span { color: var(--horno-suave); font: .85rem/1.4 Arial, sans-serif; }
+.cuenta-fija-cantidad { display: inline-flex; align-items: center; gap: .3rem; }
+.cuenta-fija-cantidad button { width: 44px; height: 44px; background: var(--papel); border: 1px solid var(--horno); border-radius: 50%; color: var(--horno); cursor: pointer; font: 700 1.1rem Arial, sans-serif; }
+.cuenta-fija-cantidad button:disabled { opacity: .4; cursor: not-allowed; }
+.cuenta-fija-cantidad output { min-width: 2ch; color: var(--horno); font: 700 1rem Arial, sans-serif; text-align: center; font-variant-numeric: tabular-nums; }
+.cuenta-fija-total { margin: 0; color: var(--horno); font: 1rem Arial, sans-serif; }
+.cuenta-fija-acciones { margin: 0; }
+.cuenta-fija-nota { margin: 0; color: var(--horno); font: .88rem/1.45 Arial, sans-serif; }
+@media (max-width: 520px) {
+  .cuenta-fija-linea { grid-template-columns: 1fr auto; }
+  .cuenta-fija-datos { grid-column: 1 / -1; }
 }

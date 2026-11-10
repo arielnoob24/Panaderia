@@ -1,11 +1,11 @@
 // ---- #/cuenta/favoritos: Mis favoritos -------------------------------------
-// Los productos que la cuenta guardo con el corazon, y "Agregar todos a la
-// canasta" para pedirlos de una vez. Sin sesion, a entrar (Desvio).
+// Los productos que la cuenta guardo con el corazon, cada uno con "Agregar" a
+// la canasta y "Quitar". Es solo una lista de gustos: la canasta que se pide
+// de una vez es otra cosa (#/cuenta/canasta). Sin sesion, a entrar (Desvio).
 //
 // Lo que entra a la canasta lo decide pedido/pedirOtraVez.js, la misma regla
-// de "Pedir otra vez": solo lo que sigue en el catalogo y disponible, con el
-// precio de hoy, una unidad de cada uno (en su primer tamano, si trae varios),
-// sumado a lo que ya hubiera. Lo que ya no esta se dice por su nombre. Un
+// de "Pedir otra vez": solo lo disponible, con el precio de hoy, una unidad (en
+// su primer tamano, si trae varios), sumado a lo que ya hubiera. Lo que ya no esta se dice por su nombre. Un
 // favorito que ya no existe en el catalogo se muestra aparte, para poder
 // quitarlo. Clases: cuenta-favoritos, cuenta-favorito...
 import { useState } from 'react';
@@ -66,11 +66,6 @@ function Lista() {
         </div>
       ) : (
         <div className="cuenta-favoritos">
-          <p className="cuenta-favoritos-acciones">
-            <button className="button button-yellow cuenta-favoritos-todos" type="button" onClick={() => agregar(vivos)} disabled={vivos.length === 0}>
-              Agregar todos a la canasta
-            </button>
-          </p>
           {nota ? <p className="cuenta-favoritos-nota">{nota}</p> : null}
           <ul className="cuenta-favoritos-lista">
             {vivos.map((n) => {

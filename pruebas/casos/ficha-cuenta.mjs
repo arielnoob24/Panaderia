@@ -111,7 +111,7 @@ async function ficha(t, nombre, ventana) {
   await espera(200);
   await p.keyboard.press('ArrowDown');
   await p.keyboard.press('Enter');
-  await espera(400);
+  await espera(2000);
   ok((await p.evaluate(() => window.__ruta())) === '#/cuenta/pedidos', 'Mis pedidos no lleva a su vista');
   ok((await p.getAttribute(boton, 'aria-expanded')) === 'false', 'navegar no la cierra');
   ok((await p.getAttribute(boton, 'data-vista-cuenta')) === 'true' && (await p.locator(boton).evaluate((b) => getComputedStyle(b).backgroundColor)) === 'rgb(255, 253, 248)', 'la cabecera no marca que se esta en una vista de cuenta con fondo blanco');

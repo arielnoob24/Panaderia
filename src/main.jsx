@@ -19,6 +19,7 @@ import './estilos/vistas.css';
 import { AvisosProvider } from './comun/Avisos.jsx';
 import { SesionProvider } from './estado/SesionProvider.jsx';
 import { FavoritosProvider } from './estado/FavoritosProvider.jsx';
+import { CanastaFijaProvider } from './estado/CanastaFijaProvider.jsx';
 import { PedidoProvider } from './estado/PedidoProvider.jsx';
 import { CanastaProvider } from './pedido/CanastaProvider.jsx';
 import App from './App.jsx';
@@ -62,11 +63,13 @@ if (!abrirDireccionVieja()) Promise.all([cargarCatalogo(), cargarSesion()]).then
           <AvisosProvider>
             <SesionProvider>
               <FavoritosProvider>
-                <PedidoProvider>
-                  <CanastaProvider>
-                    <App />
-                  </CanastaProvider>
-                </PedidoProvider>
+                <CanastaFijaProvider>
+                  <PedidoProvider>
+                    <CanastaProvider>
+                      <App />
+                    </CanastaProvider>
+                  </PedidoProvider>
+                </CanastaFijaProvider>
               </FavoritosProvider>
             </SesionProvider>
           </AvisosProvider>

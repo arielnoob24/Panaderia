@@ -20,6 +20,7 @@ import { useAtraparFoco, apagarDetras } from '../comun/useAtraparFoco.js';
 import { precargar } from '../comun/cargaPorPartes.js';
 import { fotoDeLinea } from '../servicios/catalogo.js';
 import { useSesion } from '../estado/SesionProvider.jsx';
+import { useCanastaFija } from '../estado/CanastaFijaProvider.jsx';
 import { useCanasta } from './CanastaProvider.jsx';
 import LineaCanasta from './LineaCanasta.jsx';
 import PideCuenta from './PideCuenta.jsx';
@@ -33,6 +34,7 @@ function Canasta() {
   } = useCanasta();
   const avisar = useAvisos();
   const sesion = useSesion();
+  const fija = useCanastaFija();
   const navegar = useNavigate();
   const { pathname } = useLocation();
 
@@ -165,6 +167,12 @@ function Canasta() {
     avisar('Vaciaste la canasta.');
     deshacerRef.current?.focus();
   };
+  // ---- Guardar como mi canasta predeterminada ----------------------------
+  const guardarComoFija = () => {
+    fija.poner(lineas.map(([, l]) => ({ nombre: l.nombre, cantidad: l.cantidad })));
+    avisar('Guardaste esta canasta como tu canasta predeterminada. La encuentras en tu cuenta.');
+  };
+
   // ---- Ir a pagar ------------------------------------------------------
   // Pagar pide una cuenta con el correo verificado: el comprobante va a ese
   // correo. Sin ella sale la hoja de "Inicia sesion para pagar" dentro de
@@ -246,6 +254,11 @@ function Canasta() {
                 <button className="canasta-vacio-ir" type="button" onClick={verVitrina}>Ver la vitrina</button>
               </div>
               <div className="canasta-vaciar-zona" hidden={!hayAlgo}>
+                {sesion.dentro ? (
+                  <button className="canasta-guardar-fija" type="button" onClick={guardarComoFija}>
+                    {fija.lineas.length ? 'Reemplazar mi canasta predeterminada' : 'Guardar como mi canasta predeterminada'}
+                  </button>
+                ) : null}
                 <button ref={vaciarRef} className="canasta-vaciar" type="button" onClick={alVaciar}>Vaciar la canasta</button>
               </div>
             </div>

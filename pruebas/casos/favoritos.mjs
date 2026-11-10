@@ -5,7 +5,7 @@
 // lo saca.
 import { VENTANAS, crearCuenta, espera } from '../arranque.mjs';
 
-export const descripcion = 'favoritos: sin sesion pide entrar, con sesion guarda, lista, agregar todos y quitar';
+export const descripcion = 'favoritos: sin sesion pide entrar, con sesion guarda, lista, agregar y quitar';
 export const limite = 120;
 
 const CORAZON = 'button[aria-label="Favorito: Pan redondo"]';
@@ -55,14 +55,15 @@ export default async function favoritos(t) {
     const filas = await p.$$eval('.cuenta-favorito strong', (e) => e.map((x) => x.textContent.trim()));
     ok(filas.join(',') === 'Pan redondo', `lista: ${filas.join(',')}`);
 
-    // Agregar todos: entra con el precio de hoy y la canasta se abre.
-    await p.click('.cuenta-favoritos-todos');
+    // Agregar: entra con el precio de hoy y la canasta se abre.
+    ok(await p.locator('.cuenta-favoritos-todos').count() === 0, 'sigue el boton Agregar todos');
+    await p.click('button[aria-label="Agregar Pan redondo a la canasta"]');
     await espera(600);
-    ok(await p.locator('.canasta-panel.is-open').count() === 1, 'agregar todos: la canasta no se abrio');
+    ok(await p.locator('.canasta-panel.is-open').count() === 1, 'agregar: la canasta no se abrio');
     const linea = await p.$$eval('.canasta-lista .canasta-linea', (l) => l.map((li) => [
       li.querySelector('h3')?.textContent.trim(), li.querySelector('output')?.textContent.trim(),
     ].join(' | ')).join(' ; '));
-    ok(linea === 'Pan redondo | 1', `agregar todos: ${linea}`);
+    ok(linea === 'Pan redondo | 1', `agregar: ${linea}`);
     await p.keyboard.press('Escape');
     await espera(400);
 
