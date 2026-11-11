@@ -59,6 +59,11 @@
 /* La frase de la portada va recta (27 de octubre de 2026): en cursiva repetia
    la del titular y le restaba contraste. En Nosotros sigue en cursiva. */
 .portada-frase { font-style: normal; }
+/* El filete punteado de dentro de "Nuestros panes" y "Ver en el mapa" (como el
+   de "Conoce nuestro local"): un <i> pegado 4 px al borde, que deja libre la
+   mordida de la esquina de arriba a la izquierda con la misma mascara del
+   boton. */
+.button .filete-punteado { position: absolute; inset: 4px; border: 1.5px dotted var(--horno); border-radius: 4px; pointer-events: none; -webkit-mask: radial-gradient(circle calc(var(--mordida) + 3px) at -4px -4px, #0000 98%, #000); mask: radial-gradient(circle calc(var(--mordida) + 3px) at -4px -4px, #0000 98%, #000); }
 /* "Nuestros panes" lleva la hogaza blanca con contorno horno. El filete
    punteado de dentro se quito el 29 de octubre de 2026: a 1,5 px los puntos
    salian desiguales y se veia sucio. */

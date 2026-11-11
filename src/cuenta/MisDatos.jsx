@@ -141,14 +141,12 @@ function FormularioDatos() {
     <MarcoCuenta paso="datos" titulo="Mis datos">
       <div className="cuenta-formulario" onKeyDown={alTeclear}>
         <div className="cuenta-cuerpo">
-          <div className="cuenta-datos-celda">
-            <dl className="cuenta-datos cuenta-datos-correo">
-              <div><dt>Correo</dt><dd>{sesion.correo}</dd></div>
-            </dl>
-            <p className="cuenta-nota cuenta-nota-izq">
-              El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.
-            </p>
-          </div>
+          <dl className="cuenta-datos cuenta-datos-correo">
+            <div><dt>Correo</dt><dd>{sesion.correo}</dd></div>
+          </dl>
+          <p className="cuenta-nota cuenta-nota-izq">
+            El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.
+          </p>
           {campo('nombre', { etiqueta: 'Nombre y apellido', type: 'text', autoComplete: 'name', maxLength: 60 })}
           {/* Sin maxLength, como en crear: el tope de nueve lo pone soloNueve. */}
           {campo('telefono', {
@@ -184,10 +182,6 @@ function FormularioDatos() {
           </Link>
           <Link className="cuenta-editar cuenta-ver-pedidos" to="/cuenta/pago">Forma de pago</Link>
           <button className="button button-otro cuenta-salir" type="button" onClick={alSalir}>Cerrar sesión</button>
-          <p className="cuenta-nota">
-            Tu cuenta se guarda en nuestro servidor: entras con tu correo y tu contraseña desde
-            cualquier navegador o teléfono.
-          </p>
         </div>
       </div>
     </MarcoCuenta>

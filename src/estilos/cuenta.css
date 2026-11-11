@@ -32,7 +32,7 @@ a.nav-cuenta { text-decoration: none; }
 /* Cada paso con el ancho que pide lo que lleva: un formulario corto se lee
    mejor estrecho, y crear la cuenta reparte sus campos en dos columnas. */
 .cuenta-vista-caja { max-width: 600px; }
-.cuenta-vista-datos .cuenta-vista-caja { max-width: 900px; }
+.cuenta-vista-datos .cuenta-vista-caja { max-width: 640px; }
 .cuenta-vista-pedidos .cuenta-vista-caja { max-width: 760px; }
 .cuenta-vista-pago .cuenta-vista-caja { max-width: 640px; }
 .cuenta-vista-crear .cuenta-vista-caja { max-width: 1000px; }
@@ -187,18 +187,17 @@ a.nav-cuenta { text-decoration: none; }
   .cuenta-vista .cuenta-pedido summary::after { transition: none; }
 }
 
-/* Mis datos cabe en la pantalla de la computadora sin bajar: hoja mas ancha,
-   los campos en dos columnas y los botones en una fila. En el telefono vuelve
-   a una columna (corte de 680 px). */
+/* Mis datos, en una columna: sin la forma de pago la hoja es corta, y en
+   la computadora se aprieta un poco el aire para que quepa sin bajar. */
 @media (min-width: 681px) {
-  .cuenta-vista-datos .cuenta-cuerpo { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 2rem; align-items: start; }
-  .cuenta-vista-datos .cuenta-cuerpo .cuenta-hecho { grid-column: 1 / -1; }
-  .cuenta-vista-datos .cuenta-nota-izq { margin-bottom: .9rem; }
-  .cuenta-vista-datos .cuenta-pie { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem 1rem; margin-top: .3rem; }
-  .cuenta-vista-datos .cuenta-pie .cuenta-aviso, .cuenta-vista-datos .cuenta-pie .cuenta-nota { flex-basis: 100%; margin: 0; }
-  .cuenta-vista-datos .cuenta-pie > .button { width: auto; min-width: 14rem; }
-  .cuenta-vista-datos .cuenta-pie .cuenta-ver-pedidos { margin: 0; padding: .6rem .4rem; }
-  .cuenta-vista-datos .cuenta-pie .cuenta-salir { margin-left: auto; }
+  .cuenta-vista-datos .cuenta-nota-izq { margin: .3rem 0 .7rem; }
+  .cuenta-vista-datos .cuenta-campo { margin-bottom: .6rem; }
+  .cuenta-vista-datos .cuenta-pie { margin-top: .5rem; padding-top: .8rem; }
+  .cuenta-vista-datos .cuenta-pie .cuenta-ver-pedidos { min-height: 40px; margin: .3rem 0; padding: .35rem 0; }
+  .cuenta-vista-datos { padding-top: 96px; }
+  .cuenta-vista-datos .cuenta-vista-banda { padding-block: .8rem .7rem; }
+  .cuenta-vista-datos .cuenta-vista-caja { margin-bottom: 1.2rem; }
+  .cuenta-vista-datos .cuenta-formulario { padding-block: 1rem; }
 }
 
 /* La forma de pago preferida (#/cuenta/pago): la leyenda se ve como la etiqueta

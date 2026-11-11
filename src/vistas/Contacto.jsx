@@ -71,7 +71,7 @@ function Contacto() {
                 de la vista y el unico relleno de ambar (WhatsApp es secundario,
                 con borde), el ticket como "Nuestros panes". */}
             <a className="button button-yellow contacto-mapa-enlace" href={MAPA} target="_blank" rel="noopener">
-              <IconoPin clase="ico" grosor="1.6" />Ver en el mapa<span className="sr-only"> (abre en una pestaña nueva)</span>
+              <i className="filete-punteado" aria-hidden="true" /><IconoPin clase="ico" grosor="1.6" />Ver en el mapa<span className="sr-only"> (abre en una pestaña nueva)</span>
             </a>
           </div>
           <div className="contacto-mapa">
