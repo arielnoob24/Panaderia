@@ -40,6 +40,9 @@ export default async function humo(t) {
   t.ok(cuenta.correo === 'ana@correo.com' && Boolean(await p.evaluate(() => localStorage.getItem('sb-ugscqizansixnsuzljtu-auth-token'))), 'la cuenta no quedo con la sesion de Supabase abierta');
   t.ok(!JSON.stringify(cuenta).includes('Clave123'), 'la contrasena se guardo en claro');
   // Lo de la canasta sigue ahi despues de crear la cuenta, y esta guardado.
+  // #/cuenta va sin cabecera: el boton de la canasta se lee desde la portada.
+  await p.goto(t.REACT + '#/');
+  await p.waitForSelector('.canasta-cuenta-numero');
   t.ok((await p.textContent('.canasta-cuenta-numero')).trim() === '1', `la canasta dice ${await p.textContent('.canasta-cuenta-numero')} tras crear la cuenta`);
   const pedido = JSON.parse(await p.evaluate(() => localStorage.getItem('eltradicional-pedido')) || '{}');
   t.ok(Array.isArray(pedido.lineas) && pedido.lineas.length === 1, 'el pedido no se guardo en localStorage');
