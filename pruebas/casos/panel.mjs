@@ -26,6 +26,8 @@ async function panel(t, nombre, ventana) {
   const URL = t.REACT;
   const hash = () => p.evaluate(() => window.__ruta());
   const abrirFicha = async () => {
+    // La cabecera no esta en las vistas de la cuenta: se abre desde la portada.
+    if ((await p.locator('.nav-cuenta').count()) === 0) { await p.goto(URL + '#/'); await espera(400); }
     await p.click('.nav-cuenta');
     await espera(300);
   };

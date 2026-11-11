@@ -113,14 +113,21 @@ async function ficha(t, nombre, ventana) {
   await p.keyboard.press('Enter');
   await espera(2000);
   ok((await p.evaluate(() => window.__ruta())) === '#/cuenta/pedidos', 'Mis pedidos no lleva a su vista');
-  ok((await p.getAttribute(boton, 'aria-expanded')) === 'false', 'navegar no la cierra');
-  ok((await p.getAttribute(boton, 'data-vista-cuenta')) === 'true' && (await p.locator(boton).evaluate((b) => getComputedStyle(b).backgroundColor)) === 'rgb(255, 253, 248)', 'la cabecera no marca que se esta en una vista de cuenta con fondo blanco');
+  // Las vistas de la cuenta van sin cabecera, con un Volver a lo de antes.
+  ok((await p.locator('.site-header').count()) === 0, 'la vista de la cuenta conserva la cabecera');
   ok((await activo()) === 'cuenta-vista-titulo', `foco tras elegir: ${await activo()}`);
+  ok(await p.isVisible('.cuenta-volver-sitio'), 'no hay boton Volver');
+  await p.click('.cuenta-volver-sitio');
+  await espera(600);
+  ok((await p.evaluate(() => window.__ruta())) === '#/', 'Volver no lleva a lo de antes');
+  ok((await p.locator('.site-header').count()) === 1, 'al volver no reaparece la cabecera');
   // Navegar con Atras tambien la cierra.
   await pulsar(boton);
   await espera(200);
   await p.goBack();
   await espera(300);
+  await p.goForward();
+  await espera(500);
   ok((await p.getAttribute(boton, 'aria-expanded')) === 'false', 'Atras no la cierra');
 
   // En el telefono, abrir la ficha pliega el menu, y la ficha cabe.
@@ -161,9 +168,7 @@ async function ficha(t, nombre, ventana) {
   await p.waitForSelector('.cuenta-vista-datos');
   await espera(300);
   const largo = await p.evaluate(() => history.length);
-  await pulsar(boton);
-  await espera(200);
-  await pulsar('#cuenta-menu .is-salir');
+  await pulsar('.cuenta-salir');
   await espera(400);
   ok((await p.evaluate(() => window.__ruta())) === '#/', 'salir desde #/cuenta no lleva a #/');
   ok((await p.evaluate(() => history.length)) === largo, 'salir desde #/cuenta no es replace');

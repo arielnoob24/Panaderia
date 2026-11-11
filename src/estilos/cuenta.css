@@ -37,6 +37,13 @@ a.nav-cuenta { text-decoration: none; }
 .cuenta-vista-pago .cuenta-vista-caja { max-width: 640px; }
 .cuenta-vista-crear .cuenta-vista-caja { max-width: 1000px; }
 
+/* Sin la cabecera no hace falta el hueco de 112 px que ella ocupaba: arriba
+   va el "Volver". Mas especifico que los paddings de cada corte. */
+.cuenta-vista.cuenta-sin-barra { padding-top: 1rem; }
+.cuenta-volver-sitio { display: inline-flex; align-items: center; gap: .3rem; min-height: 44px; margin: 0 0 .2rem -.5rem; padding: 0 .6rem; color: var(--horno); font: 700 .9rem/1 Arial, sans-serif; text-decoration: none; border-radius: var(--r-pill); }
+.cuenta-volver-sitio svg { width: 1.15rem; height: 1.15rem; }
+.cuenta-volver-sitio:hover { color: var(--horno); background: var(--papel-tenue); }
+
 /* La banda: el titulo en horno sobre el fondo claro, con un filete de ambar
    debajo; ya no es un bloque oscuro pegado a la barra. */
 .cuenta-vista-banda { padding: 1.4rem clamp(.75rem, 3vw, 2rem) 1.1rem; }

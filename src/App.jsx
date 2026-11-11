@@ -18,6 +18,7 @@ import { RegionAvisos } from './comun/Avisos.jsx';
 import SaltoContenido from './comun/SaltoContenido.jsx';
 import { VIEJAS, vistaDeRuta } from './comun/vistas.js';
 import { todaviaAbriendo } from './comun/apertura.js';
+import { SIN_CABECERA, recordarSitio } from './comun/dondeVenia.js';
 import { CURVA, DURACION } from './comun/movimiento.js';
 import Inicio from './vistas/Inicio.jsx';
 import Nosotros from './vistas/Nosotros.jsx';
@@ -94,6 +95,9 @@ function App() {
   const reducido = useReducedMotion();
   const { pathname } = location;
   const cual = vistaDeRuta(pathname);
+  // Las vistas de "Tu cuenta" van sin cabecera, con un "Volver" a lo de antes.
+  recordarSitio(pathname + location.search);
+  const sinCabecera = SIN_CABECERA.has(pathname);
   // De que vista se viene: decide por donde entra la nueva. Se ajusta
   // mientras se pinta, para que la vista nueva ya nazca sabiendolo. Cada
   // llegada lleva su numero (vez), tambien la que vuelve con Atras.
@@ -114,7 +118,7 @@ function App() {
   return (
     <>
       <SaltoContenido />
-      <Cabecera />
+      {sinCabecera ? null : <Cabecera />}
       <main id="contenido" tabIndex={-1}>
         {/* Suspense va por fuera de la vista y no dentro: React Router cambia
             de direccion en una transicion, y con un Suspense que ya se esta

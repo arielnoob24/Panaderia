@@ -29,6 +29,8 @@ export default async function pedidosPorCuenta(t) {
       return p.$$eval('.cuenta-pedido-numero', (l) => l.map((e) => e.textContent.trim()).join(','));
     };
     const ficha = async () => {
+      // Sin cabecera en las vistas de la cuenta: se abre desde la portada.
+      await p.goto(t.REACT + '#/'); await espera(500);
       await p.click('.nav-cuenta'); await espera(400);
       const n = await p.locator('.cuenta-menu-numero').textContent({ timeout: 3000 }).catch(() => '');
       await p.keyboard.press('Escape'); await espera(200);
