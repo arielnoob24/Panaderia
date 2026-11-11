@@ -11,7 +11,7 @@
 //   /cuenta/verificar    verificar.html     /cuenta/recuperar  recuperar.html
 //   /cuenta              cuenta.html        /cuenta/pedidos    mis-pedidos.html
 //   /cuenta/favoritos    favoritos.html
-//   /cuenta/canasta      canasta-fija.html
+//   /cuenta/canasta      canasta-fija.html  /cuenta/pago  pago.html
 //   /confirmar           confirmar.html     /comprobante       comprobante.html
 //   /admin, /admin/<x>   admin.html?s=<x>
 // Las dos del final con parametro (tienda y admin) cambian de ruta sin
@@ -31,6 +31,7 @@ const ARCHIVOS = {
   '/cuenta/pedidos': 'mis-pedidos.html',
   '/cuenta/favoritos': 'favoritos.html',
   '/cuenta/canasta': 'canasta-fija.html',
+  '/cuenta/pago': 'pago.html',
 };
 const RUTAS = Object.fromEntries(Object.entries(ARCHIVOS).map(([ruta, archivo]) => [archivo, ruta]));
 

@@ -38,6 +38,7 @@ const CUENTA = {
   '/cuenta/pedidos': 'cuenta-pedidos',
   '/cuenta/favoritos': 'cuenta-favoritos',
   '/cuenta/canasta': 'cuenta-canasta',
+  '/cuenta/pago': 'cuenta-pago',
 };
 
 // Que vista pide la direccion, o null si no es ninguna.

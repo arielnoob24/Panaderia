@@ -21,6 +21,7 @@ const PAGINAS = {
   'mis-pedidos.html': ['Mis pedidos', 'Tus pedidos anteriores en El Tradicional, para pedirlos otra vez.'],
   'favoritos.html': ['Mis favoritos', 'Tus productos favoritos en El Tradicional, para agregarlos a la canasta de una vez.'],
   'canasta-fija.html': ['Mi canasta predeterminada', 'Tu canasta de siempre en El Tradicional, lista para pedir cuando quieras.'],
+  'pago.html': ['Forma de pago', 'Tu forma de pago preferida en El Tradicional.'],
   'confirmar.html': ['Confirmar el pedido', 'Revisa tu canasta, elige la entrega y paga.'],
   'comprobante.html': ['Comprobante', 'El comprobante de tu pedido en El Tradicional.'],
   'admin.html': ['Panel', 'El panel de quien atiende el local.'],

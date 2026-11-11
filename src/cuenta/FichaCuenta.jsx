@@ -49,6 +49,12 @@ const CESTA = (
     <path d="M7 11c0-4 2.2-7 5-7s5 3 5 7" />
   </>
 );
+const PAGO = (
+  <>
+    <rect x="3" y="5.5" width="18" height="13" rx="2.2" />
+    <path d="M3 10h18M6.5 15h3.5" />
+  </>
+);
 const PANEL = (
   <>
     <path d="M4.5 19.5v-9M10 19.5V5M15.5 19.5v-6M21 19.5H3" />
@@ -115,15 +121,19 @@ function OpcionesCuenta({ nombre, correo, ruta, hayPanel, opcionesRef, alElegir,
         <svg className="cuenta-icono" {...trazo}>{CESTA}</svg>
         <span>Mi canasta predeterminada</span>
       </Link>
+      <Link ref={guardar(4)} className="cuenta-menu-opcion" to="/cuenta/pago" aria-current={actual('/cuenta/pago')} onClick={() => alElegir('/cuenta/pago')}>
+        <svg className="cuenta-icono" {...trazo}>{PAGO}</svg>
+        <span>Forma de pago</span>
+      </Link>
       {/* Solo para quien atiende el local: la API dice si el rol lo permite. */}
       {hayPanel ? (
-        <Link ref={guardar(4)} className="cuenta-menu-opcion" to="/admin" aria-current={ruta.startsWith('/admin') ? 'page' : undefined} onClick={() => alElegir(ruta)} onPointerEnter={() => precargar('admin')} onFocus={() => precargar('admin')}>
+        <Link ref={guardar(5)} className="cuenta-menu-opcion" to="/admin" aria-current={ruta.startsWith('/admin') ? 'page' : undefined} onClick={() => alElegir(ruta)} onPointerEnter={() => precargar('admin')} onFocus={() => precargar('admin')}>
           <svg className="cuenta-icono" {...trazo}>{PANEL}</svg>
           <span>Panel</span>
         </Link>
       ) : null}
       <hr className="cuenta-menu-raya" />
-      <button ref={guardar(5)} className="cuenta-menu-opcion is-salir" type="button" onClick={alSalir}>
+      <button ref={guardar(6)} className="cuenta-menu-opcion is-salir" type="button" onClick={alSalir}>
         <svg className="cuenta-icono" {...trazo}>{SALIR}</svg>
         <span>Cerrar sesión</span>
       </button>

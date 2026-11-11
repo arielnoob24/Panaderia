@@ -1,5 +1,5 @@
 // ---- #/cuenta: Mis datos ---------------------------------------------------
-// Nombre, telefono, direccion y forma de pago preferida, editables aqui mismo con las mismas reglas que
+// Nombre, telefono y direccion, editables aqui mismo con las mismas reglas que
 // al crear la cuenta; el correo se ve pero no se cambia: es con el que se
 // entra y adonde llega el comprobante, y cambiarlo pediria verificarlo otra
 // vez. "Guardar los cambios" y "Cerrar sesion", que no borra la cuenta y
@@ -20,7 +20,6 @@ import { soloNueve, fallosEditar, avisoFaltan } from '../servicios/cuenta.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import CampoCuenta from './CampoCuenta.jsx';
 import TextoSuave from './TextoSuave.jsx';
-import FormaDePago from './FormaDePago.jsx';
 import { Desvio } from './Desvio.jsx';
 import { useEnterAvanza } from './useEnterAvanza.js';
 import { usePedidosGuardados } from './usePedidosGuardados.js';
@@ -53,9 +52,6 @@ function FormularioDatos() {
   const [datos, setDatos] = useState(() => ({
     nombre: sesion.nombre, telefono: sesion.telefono, direccion: sesion.direccion,
   }));
-  // La forma de pago va aparte de los campos de texto: no tiene errores ni
-  // se recorta, y es uno de dos.
-  const [metodo, setMetodo] = useState(sesion.metodo);
   const [tocados, setTocados] = useState(() => new Set());
   const [intentado, setIntentado] = useState(false);
   const [aviso, setAviso] = useState('');
@@ -84,11 +80,6 @@ function FormularioDatos() {
     setHecho('');
     setGuardado(0);
   };
-  const alMetodo = (valor) => {
-    setMetodo(valor);
-    setHecho('');
-    setGuardado(0);
-  };
   const alDejar = (campo) => () => setTocados((t) => (t.has(campo) ? t : new Set(t).add(campo)));
 
   // Guardar va a la base por la API: mientras contesta, el boton no vuelve
@@ -104,7 +95,7 @@ function FormularioDatos() {
     }
     const v = limpios(datos);
     setOcupado(true);
-    const problema = await sesion.editar({ ...v, metodo });
+    const problema = await sesion.editar({ ...v, metodo: sesion.metodo });
     setOcupado(false);
     if (problema) { setHecho(''); setAviso(problema); return; }
     // Si la direccion del pedido era la de la cuenta, cambia con ella. Si en
@@ -150,12 +141,14 @@ function FormularioDatos() {
     <MarcoCuenta paso="datos" titulo="Mis datos">
       <div className="cuenta-formulario" onKeyDown={alTeclear}>
         <div className="cuenta-cuerpo">
-          <dl className="cuenta-datos cuenta-datos-correo">
-            <div><dt>Correo</dt><dd>{sesion.correo}</dd></div>
-          </dl>
-          <p className="cuenta-nota cuenta-nota-izq">
-            El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.
-          </p>
+          <div className="cuenta-datos-celda">
+            <dl className="cuenta-datos cuenta-datos-correo">
+              <div><dt>Correo</dt><dd>{sesion.correo}</dd></div>
+            </dl>
+            <p className="cuenta-nota cuenta-nota-izq">
+              El correo no se cambia aquí: es con el que entras y adonde te llega el comprobante.
+            </p>
+          </div>
           {campo('nombre', { etiqueta: 'Nombre y apellido', type: 'text', autoComplete: 'name', maxLength: 60 })}
           {/* Sin maxLength, como en crear: el tope de nueve lo pone soloNueve. */}
           {campo('telefono', {
@@ -166,7 +159,6 @@ function FormularioDatos() {
             etiqueta: 'Dirección', type: 'text', autoComplete: 'street-address', maxLength: 80,
             placeholder: 'Calle, número y una referencia', opcional: true,
           })}
-          <FormaDePago metodo={metodo} onMetodo={alMetodo} />
           <p className="cuenta-hecho" hidden={!hecho}><TextoSuave texto={hecho} /></p>
         </div>
         <div className="cuenta-pie">
@@ -190,10 +182,11 @@ function FormularioDatos() {
           <Link className="cuenta-editar cuenta-ver-pedidos" to="/cuenta/pedidos">
             {n ? `Ver mis pedidos (${n})` : 'Ver mis pedidos'}
           </Link>
+          <Link className="cuenta-editar cuenta-ver-pedidos" to="/cuenta/pago">Forma de pago</Link>
           <button className="button button-otro cuenta-salir" type="button" onClick={alSalir}>Cerrar sesión</button>
           <p className="cuenta-nota">
-            Tu cuenta se guarda en nuestro servidor: puedes volver a entrar con tu correo y tu
-            contraseña desde cualquier navegador o teléfono.
+            Tu cuenta se guarda en nuestro servidor: entras con tu correo y tu contraseña desde
+            cualquier navegador o teléfono.
           </p>
         </div>
       </div>

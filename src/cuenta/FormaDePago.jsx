@@ -1,8 +1,8 @@
-// La forma de pago preferida, dentro de Mis datos (secciones 7 y 15 del plan):
+// La forma de pago preferida, en su propia vista, #/cuenta/pago (secciones 7 y 15 del plan):
 // Efectivo o Tarjeta, con el mismo dibujo y la misma frase que METODOS_CUENTA
 // de account.js del sitio presentado y las clases de su fieldset en styles.css. Es una
 // preferencia y nada mas: #/confirmar empieza con ella y ahi se puede cambiar.
-// Se guarda con el resto de Mis datos, con el mismo boton.
+// Se guarda con el boton de esa vista.
 //
 // Numeros de tarjeta no se guardan: sin un servidor seguro no hay donde
 // tenerlos bien guardados, y el aviso lo dice al lado.

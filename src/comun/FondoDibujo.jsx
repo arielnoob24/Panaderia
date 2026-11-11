@@ -87,6 +87,9 @@ const PIEZAS = {
   'cuenta-canasta': [
     { donde: 'arriba-derecha', caja: '-120 -80 240 160', trazos: [barra({ x: -40, y: 0, giro: -10, escala: 0.7 }), hogaza({ x: 50, y: 14, giro: 8, escala: 0.6 })] },
   ],
+  'cuenta-pago': [
+    { donde: 'arriba-derecha', caja: '-120 -80 240 160', trazos: [enrollado({ x: -30, y: 0, giro: -14, escala: 0.7 }), grano({ x: 60, y: -20, giro: 24 }), grano({ x: 80, y: 30, giro: -30 })] },
+  ],
   'cuenta-admin': [
     { donde: 'arriba-derecha', caja: '-120 -80 240 160', trazos: [barra({ x: -30, y: 0, giro: -10, escala: 0.7 }), enrollado({ x: 56, y: 14, giro: 14, escala: 0.6 })] },
   ],

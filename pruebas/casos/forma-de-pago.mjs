@@ -1,8 +1,8 @@
-// La forma de pago preferida en Mis datos: el fieldset, el teclado, que solo
+// La forma de pago preferida en su vista (#/cuenta/pago): el fieldset, el teclado, que solo
 // se guarda con "Guardar los cambios" y que #/confirmar empieza con ella.
 import { VENTANAS, crearCuenta, espera, llegar } from '../arranque.mjs';
 
-export const descripcion = 'forma de pago preferida en Mis datos y en #/confirmar';
+export const descripcion = 'forma de pago preferida en #/cuenta/pago y en #/confirmar';
 export const limite = 90;
 
 export default async function formaDePago(t) {
@@ -11,6 +11,9 @@ export default async function formaDePago(t) {
     const ctx = await t.contexto(ventana, { nombre: nv });
     const p = await ctx.newPage();
     await crearCuenta(p, t.REACT, { nombre: 'Ana Pérez', correo: 'ana@correo.com', telefono: '991234567', clave: 'Clave123' });
+    ok((await p.locator('.cuenta-forma-pago').count()) === 0, 'Mis datos ya no lleva la forma de pago');
+    await llegar(p, '#/cuenta/pago');
+    await espera(300);
     ok((await p.locator('fieldset.cuenta-metodos legend').textContent()) === 'Forma de pago preferida', 'legend');
     ok(await p.isChecked('input[name="cuenta-metodo"][value="efectivo"]'), 'no empieza en efectivo');
     ok((await p.locator('.cuenta-metodo-caja svg.cuenta-icono').count()) === 2, 'iconos');
