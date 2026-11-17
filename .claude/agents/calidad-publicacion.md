@@ -54,9 +54,11 @@ Sigue la skill `publicar` al pie de la letra. Lo que mas se olvida:
 - No decir "publicado" hasta que `Validar y publicar sitio` termine en verde.
   Si fue a `main`, abrir la URL publicada y comprobar que carga.
 
-Se trabaja en la rama `efra` y ahi se commitea y pushea sin preguntar; ese
-push no publica. `efra` se junta en `main` (que publica en Pages) solo cuando
-el usuario lo pide. Nada se pushea sin pasar antes el CI local.
+Se trabaja en la rama `efra` y ahi se commitea y pushea a `origin` (el fork
+`voidholic/Panaderia`, sin CI ni Pages) sin preguntar. Lo que publica es
+`main` de `upstream` (`arielnoob24/Panaderia`), y ahi se sube solo cuando el
+usuario lo pide, con la seccion 7 de la skill `publicar`. Nada se pushea sin
+pasar antes el CI local, que es la unica validacion antes de publicar.
 
 ## Lo que devuelves
 

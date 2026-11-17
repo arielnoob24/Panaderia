@@ -18,14 +18,16 @@ lo que el sitio debe hacer está en `.claude/plan.md`.
 ## Reglas fijas
 
 - **Dos ramas, dos momentos** (desde el 17 de noviembre de 2026):
-  - **`efra` es para probar.** Ahí se commitea y se pushea sin preguntar.
-    Se prueba en local (`npm run dev`, `verificar-sitio`) y el push corre
-    la validación en GitHub, pero no publica.
-  - **`main` es la página desplegada.** `efra` se junta en `main` solo
-    cuando el usuario lo pide ("súbelo a la página"), con la sección 7 de
-    la skill `publicar`: se traen a `efra` los cambios de `main`, se
-    verifica, se avanza `main` en línea recta y se espera a que GitHub
-    Pages lo sirva.
+  - **`efra` es para probar.** Ahí se commitea y se pushea sin preguntar,
+    a `origin` (`voidholic/Panaderia`, el fork del usuario). Se prueba en
+    local (`npm run dev`, `verificar-sitio`, CI local); el fork no corre
+    CI en GitHub ni publica.
+  - **`main` del repo original es la página desplegada.** `upstream` es
+    `arielnoob24/Panaderia`, y su `main` es lo que sirve GitHub Pages. Se
+    sube ahí solo cuando el usuario lo pide ("súbelo a la página"), con
+    la sección 7 de la skill `publicar`: se traen a `efra` los cambios de
+    `upstream/main`, se verifica, `main` avanza en línea recta, se pushea
+    a `upstream` y se espera a que Pages lo sirva.
   - La rama `mejoras` ya no se usa.
 - Solo servicios gratis, sin tarjeta.
 - Los informes de clase admiten como máximo un 5% de texto de IA: lo que

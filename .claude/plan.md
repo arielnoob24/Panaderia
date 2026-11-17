@@ -37,7 +37,7 @@ una **página HTML real** (sección 4).
 | Dependencias **con versión exacta** (sin `^`), solo las que diga este plan | Que un `npm ci` de hoy y uno de dentro de un mes construyan lo mismo |
 | Se abre **por HTTP** (Pages, `npm run dev`, `npm run preview`); con doble clic no | Decidido al elegir React: un sitio publicado se abre por HTTP |
 | El CI rechaza las palabras de cafetería, café y cóctel, **también en comentarios** | Es una panadería; lo revisa `ci-cd.yml` |
-| Se trabaja en la rama **`efra`**: se commitea y pushea ahí sin preguntar (desde el 17 de noviembre de 2026; antes era `main`, y `mejoras` ya no se usa). `efra` se junta en `main`, que es lo que sirve GitHub Pages, solo cuando el usuario lo pide | El push a `efra` solo valida; el de `main` publica. El CI local va siempre antes |
+| Se trabaja en la rama **`efra`** y se pushea sin preguntar a `origin`, el fork `voidholic/Panaderia` (desde el 17 de noviembre de 2026; antes era `main`, y `mejoras` ya no se usa). `main` se sube a `upstream`, `arielnoob24/Panaderia`, que es lo que sirve GitHub Pages, solo cuando el usuario lo pide | El fork no corre CI ni publica, así que el CI local va siempre antes de subir a `upstream` |
 | Lo guardado en el navegador **no cambia de formato** sin plan (claves de la sección 8) | Quien ya usó el sitio conserva su canasta, su cuenta y sus pedidos |
 | Los informes de clase admiten **máximo 5% de texto de IA** | Pasarse cuesta la mitad de la nota; lo que escribe Claude es referencia |
 | La base de datos (`bd/`) cumple las **reglas del modelo** de la sección 8 | Las pusieron el usuario y el profesor |
@@ -1153,8 +1153,10 @@ pequeñas desde el 25 de octubre, sección 4).
    (`git commit -m ... -- <rutas>`: un `git commit` sin rutas se lleva lo que
    otro agente tenga en el índice), mensaje en español.
 4. `bash .claude/skills/publicar/ci-local.sh`.
-5. Push a `main` y esperar a que `Validar y publicar sitio` salga en verde
-   (`validate` y `deploy`, que publica en Pages).
+5. Push de `efra` a `origin`. Solo si el usuario lo pide, `main` avanza
+   hasta `efra` y se pushea a `upstream`; ahí se espera a que `Validar y
+   publicar sitio` salga en verde (`validate` y `deploy`, que publica en
+   Pages).
 
 El CI (`validate`, en cualquier rama): `npm ci`, build sin avisos, `revisar()`
 de cada producto, categorías ↔ `CATEGORIAS`, fotos en los dos anchos y de la

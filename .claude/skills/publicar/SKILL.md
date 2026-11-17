@@ -1,16 +1,26 @@
 ---
 name: publicar
-description: Sube un cambio del sitio de la panaderia a GitHub Pages - verifica el build y las pruebas, commitea solo lo tocado, pasa el CI en local, pushea a efra (que valida en el CI sin publicar) y espera al workflow; a main (que publica en Pages) solo cuando el usuario lo pide. Usala al terminar cualquier cambio del sitio; el usuario quiere que todo se suba sin preguntar.
+description: Sube un cambio del sitio de la panaderia a GitHub Pages - verifica el build y las pruebas, commitea solo lo tocado, pasa el CI en local, pushea a efra en el fork (no publica) y, solo cuando el usuario lo pide, sube main al repo original (que publica en Pages) y espera al deploy. Usala al terminar cualquier cambio del sitio; el usuario quiere que todo se suba sin preguntar.
 ---
 
 # Publicar en GitHub Pages
 
-Se trabaja en la rama `efra`. Cada cambio se commitea y se pushea a `efra`
-sin preguntar, siguiendo estos pasos en orden; ese push solo corre `validate`
-en GitHub, no publica. Lo que sirve Pages
-(https://arielnoob24.github.io/Panaderia/) es `main`: `efra` se junta en
-`main` solo cuando el usuario lo pide ("subelo a la pagina" o parecido), con
-la seccion 7. El CI local (paso 4) no se salta nunca.
+Hay dos repos en GitHub:
+
+- `origin` = `voidholic/Panaderia`, el fork del usuario. Ahi vive `efra`.
+  En el fork Actions esta apagado: un push ahi no corre CI ni publica.
+- `upstream` = `arielnoob24/Panaderia`, el original. Su `main` es lo que
+  sirve Pages (https://arielnoob24.github.io/Panaderia/) y ahi corre
+  `Validar y publicar sitio`.
+
+Cada cambio se commitea en `efra` y se pushea a `origin` sin preguntar,
+siguiendo estos pasos en orden. A `upstream` se sube solo cuando el usuario lo
+pide ("subelo a la pagina" o parecido), con la seccion 7. Como el fork no
+tiene CI, el CI local (paso 4) es la unica validacion antes de publicar y no
+se salta nunca.
+
+`gh` no esta instalado: el estado de los runs se lee de la API publica con
+`curl` (sin token, el repo es publico).
 
 Lo que se publica es `dist/`, lo que arma `npm run build`: el CI lo construye
 y lo sube. No hay nada que regenerar a mano ni `?v=` que subir: Vite pone una
@@ -77,61 +87,70 @@ que mas lo tumba:
 Si falla, se arregla y se corrige el commit (todavia no se ha pusheado, asi que
 `git commit --amend` esta bien aqui).
 
-## 5. Pushear y esperar
+## 5. Pushear a efra
 
 ```bash
-git branch --show-current          # efra (main solo si el usuario lo pidio)
-git push origin HEAD
-gh run list --limit 1
-gh run watch <id> --exit-status
+git branch --show-current          # efra
+git push origin efra
 ```
 
-No digas que esta subido hasta que el workflow `Validar y publicar sitio`
-termine en verde (`validate`, y en `main` tambien `deploy`). Si falla, `gh run view <id> --log-failed`, arreglar y volver
-a publicar con un commit nuevo (lo pusheado no se reescribe).
+Con eso el cambio queda guardado en el fork. No esta en la pagina: no digas
+"publicado".
 
-En GitHub, `validate` instala, construye sin avisos, valida el catalogo y los
-textos y pasa la prueba de humo (`npm run probar -- humo`) en el Chrome del
-runner; si falla solo la de humo, su log dice que comprobacion fue. `deploy`
-vuelve a construir y sube `dist/` a Pages.
+## 6. Confirmar en vivo (despues de la seccion 7)
 
-## 6. Confirmar en vivo (solo si se pusheo a main)
+`Validar y publicar sitio` corre en `upstream` con `validate` (instala,
+construye sin avisos, valida catalogo y textos, prueba de humo en Chrome) y
+`deploy` (vuelve a construir y sube `dist/` a Pages). Esperar a que termine
+el run del commit pusheado:
 
-Pages tarda un minuto en servir lo nuevo. Comprobar contra la URL publicada
-que el `index.html` servido pide el JS que construyo el job `deploy` de ese
-run (en Windows los saltos de linea cambian la huella, asi que no se compara
-con un build local):
+```bash
+git rev-parse main
+curl -s "https://api.github.com/repos/arielnoob24/Panaderia/actions/runs?branch=main&per_page=5" \
+  | grep -E '"(head_sha|status|conclusion|html_url)"'
+```
+
+Se repite (con Monitor, no con sleep) hasta que el run cuyo `head_sha` es ese
+commit tenga `"status": "completed"`. Si `conclusion` no es `success`, se abre
+su `html_url` para ver el log, se arregla en `efra` con un commit nuevo (lo
+pusheado no se reescribe) y se vuelve a la seccion 7.
+
+Con el run en verde, Pages tarda un minuto. La huella del JS servido tiene que
+ser distinta de la que habia antes de subir (se anota antes del push):
 
 ```bash
 curl -s https://arielnoob24.github.io/Panaderia/ | grep -o 'assets/index-[A-Za-z0-9_-]*\.js'
-gh run view <id> --log | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | sort -u
 ```
 
-Y abrirla: portada, tienda, canasta y cuenta.
+Si el cambio solo toco `.claude/` u otros archivos que no entran a `dist/`,
+la huella no cambia y basta con el run en verde. Despues abrir la pagina:
+portada, tienda, canasta y cuenta.
 
 ## 7. Subir a la pagina (solo cuando el usuario lo pide)
 
-`efra` ya esta pusheada y en verde (pasos 1 a 5). Se junta en `main` sin
-crear commits de mezcla y sin que `main` pierda nada:
+`efra` ya esta commiteada, con el CI local en verde y pusheada (pasos 1 a 5).
+Primero se trae lo que `main` del original haya recibido por otro lado:
 
 ```bash
-git fetch origin
+git fetch origin && git fetch upstream
 git switch efra
-git merge origin/main          # si main recibio algo de otro lado, entra aqui
+git merge upstream/main        # si alguien subio algo, entra aqui
                                # y los conflictos se resuelven en efra
 ```
 
 Si ese merge trajo algo, se vuelve a verificar (`verificar-sitio` y el CI
-local del paso 4) y se pushea `efra` antes de seguir. Despues:
+local del paso 4) y se pushea `efra`. Despues `main` avanza en linea recta y
+se sube a los dos repos:
 
 ```bash
+curl -s https://arielnoob24.github.io/Panaderia/ | grep -o 'assets/index-[A-Za-z0-9_-]*\.js'   # huella de antes
 git switch main
-git merge --ff-only efra       # si no avanza en linea recta, parar y avisar
-git push origin main
+git merge --ff-only upstream/main   # main local al dia con el original
+git merge --ff-only efra            # si no avanza en linea recta, parar y avisar
+git push upstream main              # esto publica
+git push origin main                # el fork queda igual
 git switch efra
-gh run list --branch main --limit 1
-gh run watch <id> --exit-status
 ```
 
-Y el paso 6 contra la URL publicada. Al usuario se le dice que quedo en la
-pagina solo cuando `deploy` termino en verde y la URL sirve el JS nuevo.
+Y el paso 6. Al usuario se le dice que quedo en la pagina solo cuando el run
+de ese commit termino en verde y la pagina sirve lo nuevo.
