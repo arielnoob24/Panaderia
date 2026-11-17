@@ -9,9 +9,8 @@ Se trabaja en la rama `efra`. Cada cambio se commitea y se pushea a `efra`
 sin preguntar, siguiendo estos pasos en orden; ese push solo corre `validate`
 en GitHub, no publica. Lo que sirve Pages
 (https://arielnoob24.github.io/Panaderia/) es `main`: `efra` se junta en
-`main` solo cuando el usuario lo pide (`git switch main`, `git merge efra`,
-`git push origin main`, `git switch efra`). El CI local (paso 4) no se salta
-nunca.
+`main` solo cuando el usuario lo pide ("subelo a la pagina" o parecido), con
+la seccion 7. El CI local (paso 4) no se salta nunca.
 
 Lo que se publica es `dist/`, lo que arma `npm run build`: el CI lo construye
 y lo sube. No hay nada que regenerar a mano ni `?v=` que subir: Vite pone una
@@ -109,3 +108,30 @@ gh run view <id> --log | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | sort -u
 ```
 
 Y abrirla: portada, tienda, canasta y cuenta.
+
+## 7. Subir a la pagina (solo cuando el usuario lo pide)
+
+`efra` ya esta pusheada y en verde (pasos 1 a 5). Se junta en `main` sin
+crear commits de mezcla y sin que `main` pierda nada:
+
+```bash
+git fetch origin
+git switch efra
+git merge origin/main          # si main recibio algo de otro lado, entra aqui
+                               # y los conflictos se resuelven en efra
+```
+
+Si ese merge trajo algo, se vuelve a verificar (`verificar-sitio` y el CI
+local del paso 4) y se pushea `efra` antes de seguir. Despues:
+
+```bash
+git switch main
+git merge --ff-only efra       # si no avanza en linea recta, parar y avisar
+git push origin main
+git switch efra
+gh run list --branch main --limit 1
+gh run watch <id> --exit-status
+```
+
+Y el paso 6 contra la URL publicada. Al usuario se le dice que quedo en la
+pagina solo cuando `deploy` termino en verde y la URL sirve el JS nuevo.
