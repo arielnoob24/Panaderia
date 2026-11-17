@@ -37,7 +37,7 @@ una **página HTML real** (sección 4).
 | Dependencias **con versión exacta** (sin `^`), solo las que diga este plan | Que un `npm ci` de hoy y uno de dentro de un mes construyan lo mismo |
 | Se abre **por HTTP** (Pages, `npm run dev`, `npm run preview`); con doble clic no | Decidido al elegir React: un sitio publicado se abre por HTTP |
 | El CI rechaza las palabras de cafetería, café y cóctel, **también en comentarios** | Es una panadería; lo revisa `ci-cd.yml` |
-| Se trabaja directo en **`main`**, que es lo que sirve GitHub Pages: se commitea y pushea sin preguntar (desde el 21 de octubre de 2026; `mejoras` ya no se usa) | Cada push publica, así que el CI local va siempre antes |
+| Se trabaja en la rama **`efra`**: se commitea y pushea ahí sin preguntar (desde el 17 de noviembre de 2026; antes era `main`, y `mejoras` ya no se usa). `efra` se junta en `main`, que es lo que sirve GitHub Pages, solo cuando el usuario lo pide | El push a `efra` solo valida; el de `main` publica. El CI local va siempre antes |
 | Lo guardado en el navegador **no cambia de formato** sin plan (claves de la sección 8) | Quien ya usó el sitio conserva su canasta, su cuenta y sus pedidos |
 | Los informes de clase admiten **máximo 5% de texto de IA** | Pasarse cuesta la mitad de la nota; lo que escribe Claude es referencia |
 | La base de datos (`bd/`) cumple las **reglas del modelo** de la sección 8 | Las pusieron el usuario y el profesor |

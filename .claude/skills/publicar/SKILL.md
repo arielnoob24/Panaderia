@@ -1,14 +1,17 @@
 ---
 name: publicar
-description: Sube un cambio del sitio de la panaderia a GitHub Pages - verifica el build y las pruebas, commitea solo lo tocado, pasa el CI en local, pushea a main (que publica en Pages) y espera al workflow. Usala al terminar cualquier cambio del sitio; el usuario quiere que todo se suba sin preguntar.
+description: Sube un cambio del sitio de la panaderia a GitHub Pages - verifica el build y las pruebas, commitea solo lo tocado, pasa el CI en local, pushea a efra (que valida en el CI sin publicar) y espera al workflow; a main (que publica en Pages) solo cuando el usuario lo pide. Usala al terminar cualquier cambio del sitio; el usuario quiere que todo se suba sin preguntar.
 ---
 
 # Publicar en GitHub Pages
 
-Se trabaja directo en `main`, que es lo que sirve Pages
-(https://arielnoob24.github.io/Panaderia/). Cada cambio se commitea y se
-pushea a `main` sin preguntar, siguiendo estos pasos en orden; como cada push
-publica, el CI local (paso 4) no se salta nunca.
+Se trabaja en la rama `efra`. Cada cambio se commitea y se pushea a `efra`
+sin preguntar, siguiendo estos pasos en orden; ese push solo corre `validate`
+en GitHub, no publica. Lo que sirve Pages
+(https://arielnoob24.github.io/Panaderia/) es `main`: `efra` se junta en
+`main` solo cuando el usuario lo pide (`git switch main`, `git merge efra`,
+`git push origin main`, `git switch efra`). El CI local (paso 4) no se salta
+nunca.
 
 Lo que se publica es `dist/`, lo que arma `npm run build`: el CI lo construye
 y lo sube. No hay nada que regenerar a mano ni `?v=` que subir: Vite pone una
@@ -78,14 +81,14 @@ Si falla, se arregla y se corrige el commit (todavia no se ha pusheado, asi que
 ## 5. Pushear y esperar
 
 ```bash
-git branch --show-current          # main
+git branch --show-current          # efra (main solo si el usuario lo pidio)
 git push origin HEAD
 gh run list --limit 1
 gh run watch <id> --exit-status
 ```
 
 No digas que esta subido hasta que el workflow `Validar y publicar sitio`
-termine en verde (`validate` y despues `deploy`). Si falla, `gh run view <id> --log-failed`, arreglar y volver
+termine en verde (`validate`, y en `main` tambien `deploy`). Si falla, `gh run view <id> --log-failed`, arreglar y volver
 a publicar con un commit nuevo (lo pusheado no se reescribe).
 
 En GitHub, `validate` instala, construye sin avisos, valida el catalogo y los

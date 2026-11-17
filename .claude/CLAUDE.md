@@ -17,9 +17,11 @@ lo que el sitio debe hacer está en `.claude/plan.md`.
 
 ## Reglas fijas
 
-- Se trabaja directo en **`main`** (desde el 21 de octubre de 2026): se
-  commitea y se pushea ahí sin preguntar, y cada push publica en GitHub
-  Pages. La rama `mejoras` ya no se usa.
+- Se trabaja en la rama **`efra`** (desde el 17 de noviembre de 2026): se
+  commitea y se pushea ahí sin preguntar. Un push a `efra` no publica.
+  `efra` se junta en `main` (y eso publica en GitHub Pages) solo cuando el
+  usuario lo pide. Si `main` recibe cambios de otro lado, se traen a `efra`
+  con `git merge main` antes de seguir. La rama `mejoras` ya no se usa.
 - Solo servicios gratis, sin tarjeta.
 - Los informes de clase admiten como máximo un 5% de texto de IA: lo que
   escribe Claude es material de referencia, nunca texto para entregar.

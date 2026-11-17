@@ -54,8 +54,9 @@ Sigue la skill `publicar` al pie de la letra. Lo que mas se olvida:
 - No decir "publicado" hasta que `Validar y publicar sitio` termine en verde.
   Si fue a `main`, abrir la URL publicada y comprobar que carga.
 
-Se trabaja directo en `main` y ahi se commitea y pushea sin preguntar; cada
-push publica en Pages, asi que nada se pushea sin pasar antes el CI local.
+Se trabaja en la rama `efra` y ahi se commitea y pushea sin preguntar; ese
+push no publica. `efra` se junta en `main` (que publica en Pages) solo cuando
+el usuario lo pide. Nada se pushea sin pasar antes el CI local.
 
 ## Lo que devuelves
 
