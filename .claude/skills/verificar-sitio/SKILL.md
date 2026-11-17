@@ -1,6 +1,6 @@
 ---
 name: verificar-sitio
-description: Construye el sitio de la panaderia (npm run build, sin avisos) y le pasa sus pruebas de navegador en Edge (npm run probar) - portada, tienda, canasta, pago, cuenta, Atras y Adelante, en escritorio y en el telefono. Usala despues de tocar src/, index.html, assets/, data/productos.json o vite.config.js, y siempre antes de commitear, porque un build que sale bien no prueba que la pagina arranque.
+description: Construye el sitio de la panaderia (npm run build, sin avisos) y le pasa sus pruebas de navegador en Chrome (npm run probar) - portada, tienda, canasta, pago, cuenta, Atras y Adelante, en escritorio y en el telefono. Usala despues de tocar src/, index.html, assets/, data/productos.json o vite.config.js, y siempre antes de commitear, porque un build que sale bien no prueba que la pagina arranque.
 ---
 
 # Verificar que el sitio arranca
@@ -21,12 +21,12 @@ npm run probar -- humo # solo la rapida (unos 5 s), la que corre el CI
 ```
 
 La primera vez instala `playwright-core` en `%LOCALAPPDATA%\panaderia-herramientas`
-(fuera del repo y de `package.json`). Usa Edge, que ya viene con Windows, asi
-que no baja ningun Chromium.
+(fuera del repo y de `package.json`). Usa el Chrome instalado en la
+maquina, asi que no baja ningun Chromium.
 
 ## Que comprueba
 
-`npm run probar` sirve una copia de `dist/` en un puerto libre, abre Edge y
+`npm run probar` sirve una copia de `dist/` en un puerto libre, abre Chrome y
 corre los casos de `pruebas/casos/` uno tras otro, con `humo` primero:
 
 - `humo`: la portada arranca con su `h1` y la cinta de categorias, la tienda
@@ -48,7 +48,7 @@ falla.
 - La lista con lo que mira cada uno: `npm run probar -- --lista`.
 - Prueba lo construido: si `src/` es mas nuevo que `dist/`, avisa. Corre
   `npm run build` antes.
-- Otro navegador: `NAVEGADOR=chrome` (o `chromium`, o `NAVEGADOR_RUTA=...`).
+- Otro navegador: `NAVEGADOR=msedge` (o `chromium`, o `NAVEGADOR_RUTA=...`).
 
 ## Al leer los fallos
 

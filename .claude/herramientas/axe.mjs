@@ -1,5 +1,5 @@
 // ---- Pasar axe-core por los estados del sitio -------------------------
-// La parte automatica de la revision WCAG: abre la pagina en Edge, la lleva
+// La parte automatica de la revision WCAG: abre la pagina en Chrome, la lleva
 // a cada estado que importa y en cada uno corre axe-core con las reglas de
 // WCAG 2.0, 2.1 y 2.2, niveles A y AA (y las buenas practicas).
 // Mide lo construido (dist/, de npm run build), a 1280 y a 390 px: cada
@@ -239,7 +239,7 @@ async function recorrer(navegador, url, nombreVentana, ventana) {
 }
 
 const servidores = [];
-const navegador = await playwright.chromium.launch({ channel: 'msedge', timeout: 30000 });
+const navegador = await playwright.chromium.launch({ channel: 'chrome', timeout: 30000 });
 try {
   const dist = await servir(DIST); servidores.push(dist);
   await recorrer(navegador, dist.url, '1280', ESCRITORIO);

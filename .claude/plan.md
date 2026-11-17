@@ -71,7 +71,7 @@ assets/
 data/
   productos.json        el catalogo: nombre, precio, foto, categoria y tamanos
 pruebas/
-  probar.mjs            corre los casos en Edge (o Chrome) contra dist/
+  probar.mjs            corre los casos en Chrome (o Edge) contra dist/
   arranque.mjs          servidor, navegador y ayudas comunes
   casos/                un caso por archivo
 bd/
@@ -1147,7 +1147,7 @@ pequeñas desde el 25 de octubre, sección 4).
 
 1. `npm run build` sin errores ni avisos.
 2. `npm run probar` (todas las pruebas de navegador de `pruebas/casos/`, en
-   Edge; `npm run probar -- <nombre>` para una). Lo nuevo que ninguna prueba
+   Chrome; `npm run probar -- <nombre>` para una). Lo nuevo que ninguna prueba
    mira lleva su caso, en escritorio y en el teléfono, en el mismo commit.
 3. Commit solo de los archivos del cambio, por nombre
    (`git commit -m ... -- <rutas>`: un `git commit` sin rutas se lleva lo que

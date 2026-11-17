@@ -1,6 +1,6 @@
 ---
 name: revision-visual
-description: Revisor del aspecto y el movimiento del sitio de la panaderia. Saca capturas en Edge en los cortes del plan (1440, 900, 680 y 390 px), las mira junto al CSS y el codigo de Motion, y devuelve un informe priorizado de lo que se ve mal o se mueve mal (fichas, control de cantidad, barra, tipografia, espacios, 60-30-10, duraciones y curvas), con el arreglo propuesto. Solo lee y mide, no cambia nada. Usalo antes de un cambio de diseno, despues de uno para comprobarlo, o cuando algo "no se ve bien" y no se sabe por que.
+description: Revisor del aspecto y el movimiento del sitio de la panaderia. Saca capturas en Chrome en los cortes del plan (1440, 900, 680 y 390 px), las mira junto al CSS y el codigo de Motion, y devuelve un informe priorizado de lo que se ve mal o se mueve mal (fichas, control de cantidad, barra, tipografia, espacios, 60-30-10, duraciones y curvas), con el arreglo propuesto. Solo lee y mide, no cambia nada. Usalo antes de un cambio de diseno, despues de uno para comprobarlo, o cuando algo "no se ve bien" y no se sabe por que.
 tools: Read, Grep, Glob, Bash, WebFetch
 skills:
   - frontend-design

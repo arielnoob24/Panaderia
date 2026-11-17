@@ -83,8 +83,8 @@ npm run probar -- humo    # solo una
 ```
 
 Recorren la portada, la tienda, la canasta, el pago, la cuenta y Atras y
-Adelante, en escritorio y en el telefono. Usan `playwright-core` con Edge (o
-Chrome con `NAVEGADOR=chrome`), instalado fuera del repositorio en
+Adelante, en escritorio y en el telefono. Usan `playwright-core` con Chrome (o
+Edge con `NAVEGADOR=msedge`), instalado fuera del repositorio en
 `%LOCALAPPDATA%\panaderia-herramientas`.
 
 El CI de GitHub, en cada push: instala, construye sin avisos, revisa cada

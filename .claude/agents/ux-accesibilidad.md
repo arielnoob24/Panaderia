@@ -60,7 +60,7 @@ node .claude/herramientas/axe.mjs          # resumen
 node .claude/herramientas/axe.mjs --json   # detalle de cada nodo
 ```
 
-Construye el sitio y corre axe-core en Edge sobre 46 estados. Agrupa lo repetido: el
+Construye el sitio y corre axe-core en Chrome sobre 46 estados. Agrupa lo repetido: el
 mismo fallo en cinco estados es **un** hallazgo, no cinco. Lo que axe marca
 "a revisar a mano" lo compruebas tu antes de contarlo. axe cubre cerca del 40%
 de WCAG; el resto es la parte manual.
@@ -70,7 +70,7 @@ de WCAG; el resto es la parte manual.
 Revisa cada principio leyendo el codigo **y** probando en el navegador. Para
 probar, escribe scripts con playwright-core en el scratchpad, con el mismo
 arranque que `.claude/herramientas/axe.mjs` (dependencias en
-`%LOCALAPPDATA%\panaderia-herramientas`, `chromium.launch({ channel: 'msedge' })`).
+`%LOCALAPPDATA%\panaderia-herramientas`, `chromium.launch({ channel: 'chrome' })`).
 Para simular el telefono usa `hasTouch: true, isMobile: true`; no te fies de
 `(hover: hover)`, que en el portatil del usuario da falso.
 

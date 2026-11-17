@@ -9,9 +9,9 @@
 //   npm run probar -- --lista   los nombres y que comprueba cada uno
 // Sale con codigo 1 si algun caso falla, con un resumen al final.
 //
-// El navegador: Edge en Windows, Chrome en lo demas; NAVEGADOR=chrome (o
-// msedge, chromium) lo cambia. playwright-core vive fuera del repo
-// (arranque.mjs) y no entra en package.json.
+// El navegador: Chrome; NAVEGADOR=msedge (o chromium) lo cambia.
+// playwright-core vive fuera del repo (arranque.mjs) y no entra en
+// package.json.
 //
 // Un caso es un modulo de casos/ que exporta:
 //   export const descripcion = 'que comprueba';

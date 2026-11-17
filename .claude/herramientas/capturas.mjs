@@ -1,5 +1,5 @@
 // ---- Capturas del sitio para la revision visual -------------------------
-// Abre lo construido (dist/, de npm run build) en Edge y saca capturas de
+// Abre lo construido (dist/, de npm run build) en Chrome y saca capturas de
 // cada vista en los cortes del plan (1440, 900, 680 y 390 px): arriba del
 // todo, a media pagina (la barra pegada) y la pagina entera. Ademas, en
 // escritorio, una ficha con el puntero encima, la canasta abierta y una
@@ -95,7 +95,7 @@ const llegar = (p, hash) => p.evaluate((h) => {
   window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
 }, hash);
 
-const navegador = await playwright.chromium.launch({ channel: process.platform === 'win32' ? 'msedge' : 'chrome' });
+const navegador = await playwright.chromium.launch({ channel: 'chrome' });
 try {
   for (const v of VENTANAS) {
     const ctx = await navegador.newContext(v);

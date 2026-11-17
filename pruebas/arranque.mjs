@@ -38,12 +38,12 @@ export function paqueteFuera(paquete, version) {
   return createRequire(join(CACHE, 'package.json'))(carpeta);
 }
 
-// Que navegador se abre. NAVEGADOR=msedge|chrome|chromium lo fija; si no, en
-// Windows Edge (viene con el sistema) y en lo demas Chrome (el del runner de
+// Que navegador se abre. NAVEGADOR=chrome|msedge|chromium lo fija; si no,
+// Chrome, en todas partes (el de la maquina de trabajo y el del runner de
 // GitHub). NAVEGADOR_RUTA apunta a un ejecutable concreto.
 export function opcionesNavegador() {
   if (process.env.NAVEGADOR_RUTA) return { executablePath: process.env.NAVEGADOR_RUTA };
-  const canal = process.env.NAVEGADOR || (process.platform === 'win32' ? 'msedge' : 'chrome');
+  const canal = process.env.NAVEGADOR || 'chrome';
   return canal === 'chromium' ? {} : { channel: canal };
 }
 
