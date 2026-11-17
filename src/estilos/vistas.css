@@ -59,11 +59,6 @@
 /* La frase de la portada va recta (27 de octubre de 2026): en cursiva repetia
    la del titular y le restaba contraste. En Nosotros sigue en cursiva. */
 .portada-frase { font-style: normal; }
-/* El filete punteado de dentro de "Nuestros panes" y "Ver en el mapa" (como el
-   de "Conoce nuestro local"): un <i> pegado 4 px al borde, que deja libre la
-   mordida de la esquina de arriba a la izquierda con la misma mascara del
-   boton. */
-.button .filete-punteado { position: absolute; inset: 4px; border: 1.5px dotted var(--horno); border-radius: 4px; pointer-events: none; -webkit-mask: radial-gradient(circle calc(var(--mordida) + 3px) at -4px -4px, #0000 98%, #000); mask: radial-gradient(circle calc(var(--mordida) + 3px) at -4px -4px, #0000 98%, #000); }
 /* "Nuestros panes" lleva la hogaza blanca con contorno horno. El filete
    punteado de dentro se quito el 29 de octubre de 2026: a 1,5 px los puntos
    salian desiguales y se veia sucio. */
@@ -261,12 +256,12 @@
    el degradado se perdia con el fondo). Lleva el pin y no una flecha. Texto
    horno sobre ambar: 7,5:1. Con el puntero o el foco sube 2 px, se aclara y
    la sombra dura crece. */
-.enlace-llegar.nosotros-llegar { background: var(--ambar); border: 2px solid var(--horno); color: var(--horno); box-shadow: 0 4px 0 var(--horno); transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
-.enlace-llegar.nosotros-llegar::before { content: ""; position: absolute; inset: 4px; border: 1.5px dotted var(--horno); border-radius: calc(var(--r-btn) - 4px); pointer-events: none; }
-.enlace-llegar.nosotros-llegar .ico { color: var(--horno); fill: var(--papel); }
-.enlace-llegar.nosotros-llegar .ico circle { fill: var(--horno); }
-.con-puntero .enlace-llegar.nosotros-llegar:hover, .enlace-llegar.nosotros-llegar:focus-visible { background: var(--ambar-claro); transform: translateY(-2px); box-shadow: 0 6px 0 var(--horno); }
-.enlace-llegar.nosotros-llegar:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--horno); }
+.enlace-llegar:is(.nosotros-llegar, .enlace-ambar) { background: var(--ambar); border: 2px solid var(--horno); color: var(--horno); box-shadow: 0 4px 0 var(--horno); transition: background-color var(--dur-fast) var(--ease-ui), box-shadow var(--dur-fast) var(--ease-ui), transform var(--dur-micro) var(--ease-ui); }
+.enlace-llegar:is(.nosotros-llegar, .enlace-ambar)::before { content: ""; position: absolute; inset: 4px; border: 1.5px dotted var(--horno); border-radius: calc(var(--r-btn) - 4px); pointer-events: none; }
+.enlace-llegar:is(.nosotros-llegar, .enlace-ambar) .ico { color: var(--horno); fill: var(--papel); }
+.enlace-llegar:is(.nosotros-llegar, .enlace-ambar) .ico circle { fill: var(--horno); }
+.con-puntero .enlace-llegar:is(.nosotros-llegar, .enlace-ambar):hover, .enlace-llegar:is(.nosotros-llegar, .enlace-ambar):focus-visible { background: var(--ambar-claro); transform: translateY(-2px); box-shadow: 0 6px 0 var(--horno); }
+.enlace-llegar:is(.nosotros-llegar, .enlace-ambar):active { transform: translateY(2px); box-shadow: 0 1px 0 var(--horno); }
 /* La foto con peso: el arco (4:5) y su pie ocupan casi todo el alto que
    dejan la barra (86 px), la franja con su curva (86) y el aire: unos
    520 px de ancho a 1440x900 y 420 a 1366x768, sin pasar de 540 ni del
@@ -876,8 +871,6 @@ body.is-vista .catalog { padding-top: 108px; }
 .floating-whatsapp .canasta-icono :is(path, circle) { fill: var(--papel); }
 /* "Ver en el mapa", sobre el boton ambar: pin papel con el punto en horno
    (WhatsApp e Instagram de la banda horno quedan como estaban). */
-.contacto-mapa-enlace .ico { fill: var(--papel); }
-.contacto-mapa-enlace .ico circle { fill: var(--horno); }
 /* "Como llegar" al confirmar, y la persona de "Inicia sesion para pagar" sobre su circulo ambar. */
 .mapa-ruta svg path { fill: var(--ambar); }
 .mapa-ruta svg circle { fill: var(--horno); }

@@ -150,7 +150,7 @@ export default async function contacto(t) {
     t.ok(m.h1 === 'Visítanos en Tena' && /\btitular\b/.test(m.h1Clase) && ES_FRAUNCES.test(m.h1Letra), `[${nombre}] el h1 no es el de la portada ("${m.h1}", ${m.h1Clase}, ${m.h1Letra})`);
     t.ok(m.emColor === CORTEZA && m.emCursiva === 'italic', `[${nombre}] "en Tena" no va en cursiva horno (${m.emColor}, ${m.emCursiva})`);
     t.ok(m.direccion === 'Esquina de Eloy Alfaro y Gabriel Espinosa, Tena' && m.direccionCursiva === 'italic', `[${nombre}] la direccion no va en su address en cursiva ("${m.direccion}", ${m.direccionCursiva})`);
-    t.ok(/\bbutton-yellow\b/.test(m.mapaClases) && m.mapaFuera, `[${nombre}] "Ver en el mapa" no es el ticket ambar que abre otra pestana (${m.mapaClases})`);
+    t.ok(/\benlace-ambar\b/.test(m.mapaClases) && m.mapaFuera, `[${nombre}] "Ver en el mapa" no es el enlace ambar que abre otra pestana (${m.mapaClases})`);
     // El filete horno a 10 px de la masa (a 6 en el telefono), sin radio.
     t.ok(m.iframe && /rgb\(58, 40, 34\) 0px 0px 0px (7|11)px/.test(m.marco) && m.radio === '0px', `[${nombre}] el mapa no va en su marco fino recto (${m.marco}, radio ${m.radio})`);
     t.ok(m.selloTexto.startsWith('Eloy Alfaro · Gabriel Espinosa') && m.selloOculto === 'true' && m.aroEnSuSello, `[${nombre}] el sello del mapa no dice lo suyo (${JSON.stringify([m.selloTexto, m.selloOculto, m.aroEnSuSello])})`);

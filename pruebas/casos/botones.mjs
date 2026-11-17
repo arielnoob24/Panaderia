@@ -124,9 +124,10 @@ export default async function botones(t) {
         t.ok(activo, `[${nombre}] el icono de ${control} no responde al pasar el cursor`);
       }
     }
-    revisar(t, nombre, 'la portada', await medirBotones(p));
-    const principal = await capas(p, '.portada-acciones .button-yellow');
-    t.ok(principal.papel === AMBAR && principal.sombra === HORNO && principal.corrida === CORRIDA, `[${nombre}] "Nuestros panes" no es el ticket ambar con sombra dura horno (${JSON.stringify(principal)})`);
+    revisar(t, nombre, 'la portada', await medirBotones(p), 0);
+    // "Nuestros panes" ya no es un ticket: es el enlace ambar de "Conoce nuestro local".
+    const principal = await p.locator('.portada-panes').evaluate((a) => { const c = getComputedStyle(a); return { fondo: c.backgroundColor, borde: c.borderTopColor, ancho: c.borderTopWidth, sombra: c.boxShadow }; });
+    t.ok(principal.fondo === AMBAR && principal.borde === HORNO && principal.ancho === '2px' && principal.sombra.includes('0px 4px 0px'), `[${nombre}] "Nuestros panes" no es el enlace ambar con borde y sombra dura horno (${JSON.stringify(principal)})`);
     const llegar = await p.locator('.portada-llegar').evaluate((a) => {
       const c = getComputedStyle(a);
       const pin = a.querySelector('svg');
@@ -166,21 +167,6 @@ export default async function botones(t) {
       }));
       t.ok(encima.color === 'rgb(58, 40, 34)' && encima.pin !== 'none', `[${nombre}] con el raton "Como llegar" no cambia su borde a horno o el pin no salta (${JSON.stringify(encima)})`);
       t.ok(encima.ola.length === 11 && encima.ola.every((n) => n === 'salta') && encima.turnos[0] !== encima.turnos[10], `[${nombre}] con el raton las letras de "Como llegar" no saltan en ola (${JSON.stringify(encima)})`);
-
-      // Con el foco del teclado: el anillo de 3 px es el outline del boton
-      // (fuera de la mascara) y la sombra dura se queda en lugar del halo.
-      await p.mouse.move(700, 200);
-      await p.keyboard.press('Shift');
-      await p.focus('.portada-acciones .button-yellow');
-      const foco = await p.locator('.portada-acciones .button-yellow').evaluate((b) => {
-        const c = getComputedStyle(b);
-        return {
-          visible: b.matches(':focus-visible'), anillo: `${c.outlineStyle} ${c.outlineWidth}`, color: c.outlineColor,
-          halo: c.boxShadow, mascara: c.maskImage || c.webkitMaskImage, sombra: getComputedStyle(b, '::after').transform,
-        };
-      });
-      t.ok(foco.visible && foco.anillo === 'solid 3px' && foco.color === HORNO && foco.mascara === 'none', `[${nombre}] el foco de "Nuestros panes" no es un anillo horno de 3 px fuera de la mascara (${JSON.stringify(foco)})`);
-      t.ok(foco.halo === 'none' && foco.sombra === CORRIDA, `[${nombre}] con el foco "Nuestros panes" no cambia el halo por la sombra dura (${JSON.stringify(foco)})`);
     }
 
     // La canasta con "Ir a pagar" en horno, ajustado a su contenido, y el guardado
@@ -219,7 +205,7 @@ export default async function botones(t) {
       await p.reload();
       await p.waitForSelector(sel);
       await espera(300);
-      revisar(t, nombre, donde, await medirBotones(p));
+      revisar(t, nombre, donde, await medirBotones(p), donde === 'Contacto' ? 0 : 1);
     }
 
     // El boton final de pagar, con cuenta y algo en la canasta.

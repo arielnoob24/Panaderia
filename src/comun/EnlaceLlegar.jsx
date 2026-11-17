@@ -16,7 +16,7 @@ import { clases } from './useCargaImagen.js';
 import { IconoPin } from './iconos.jsx';
 import TextoOla from './TextoOla.jsx';
 
-function EnlaceLlegar({ className, children, href, prefijo, icono = <IconoPin clase="ico" grosor="1.8" /> }) {
+function EnlaceLlegar({ className, children, href, prefijo, to = '/contacto', state = { entrar: true }, icono = <IconoPin clase="ico" grosor="1.8" /> }) {
   if (href) {
     return (
       <a className={clases('enlace-llegar', className)} href={href} target="_blank" rel="noopener">
@@ -28,7 +28,7 @@ function EnlaceLlegar({ className, children, href, prefijo, icono = <IconoPin cl
     );
   }
   return (
-    <Link className={clases('enlace-llegar', className)} to="/contacto" state={{ entrar: true }}>
+    <Link className={clases('enlace-llegar', className)} to={to} state={state}>
       {icono}
       <TextoOla>{children}</TextoOla>
     </Link>

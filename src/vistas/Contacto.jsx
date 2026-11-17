@@ -18,6 +18,7 @@ import EstadoAbierto from '../comun/EstadoAbierto.jsx';
 import Contactos from '../comun/Contactos.jsx';
 import Sello from '../comun/Sello.jsx';
 import { IconoPin, IconoTrigo } from '../comun/iconos.jsx';
+import EnlaceLlegar from '../comun/EnlaceLlegar.jsx';
 import FondoDibujo from '../comun/FondoDibujo.jsx';
 
 // Las dos filas del horario y que dias cubre cada una (0 es domingo, como
@@ -70,9 +71,7 @@ function Contacto() {
             {/* Lo que se viene a hacer aqui es llegar: es el boton principal
                 de la vista y el unico relleno de ambar (WhatsApp es secundario,
                 con borde), el ticket como "Nuestros panes". */}
-            <a className="button button-yellow contacto-mapa-enlace" href={MAPA} target="_blank" rel="noopener">
-              <i className="filete-punteado" aria-hidden="true" /><IconoPin clase="ico" grosor="1.6" />Ver en el mapa<span className="sr-only"> (abre en una pestaña nueva)</span>
-            </a>
+            <EnlaceLlegar className="enlace-ambar contacto-mapa-enlace" href={MAPA}>Ver en el mapa</EnlaceLlegar>
           </div>
           <div className="contacto-mapa">
             {/* El marco es el filete de la foto en arco, recto para no

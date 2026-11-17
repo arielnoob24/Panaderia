@@ -13,7 +13,6 @@
 // El rotulo con la espiga, el titular, la frase, el enlace con la ola, la
 // foto en arco y el sello son las mismas piezas que usa #/nosotros
 // (seccion 10, "Nosotros con el estilo de la portada").
-import { Link } from 'react-router-dom';
 import heroChica from '/assets/img/hero-900.jpg';
 import heroGrande from '/assets/img/hero-1600.jpg';
 import { IconoHogaza, IconoTrigo } from '../comun/iconos.jsx';
@@ -37,11 +36,7 @@ function Hero({ tituloRef }) {
             <p className="frase portada-frase">Pan recién horneado, todos los días.</p>
             <div className="portada-acciones">
               {/* Lleva al catalogo entero: quien pulsa aqui quiere verlo todo. */}
-              <Link className="button button-yellow portada-panes" to="/tienda-catalogo" state={{ entrar: true }}>
-                <i className="filete-punteado" aria-hidden="true" />
-                <IconoHogaza clase="ico" />
-                Nuestros panes
-              </Link>
+              <EnlaceLlegar className="enlace-ambar portada-panes" to="/tienda-catalogo" icono={<IconoHogaza clase="ico" />}>Nuestros panes</EnlaceLlegar>
               {/* El camino secundario es un enlace, no un boton (L1, seccion
                   10): con el puntero sus letras saltan en ola, y se sigue
                   llamando "Cómo llegar". */}
