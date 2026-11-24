@@ -1,0 +1,756 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model accesos {
+  acc_codigo  String   @id(map: "pk_accesos") @default(dbgenerated("('ACC'::text || lpad((nextval('seq_accesos'::regclass))::text, 9, '0'::text))")) @db.Char(12)
+  usu_codigo  String   @db.Char(10)
+  acc_fecha   DateTime @default(now()) @db.Timestamptz(6)
+  acc_exitoso Boolean
+  acc_motivo  String?  @db.Char(3)
+  usuarios    usuarios @relation(fields: [usu_codigo], references: [usu_codigo], map: "fk_accesos_usuarios")
+
+  @@index([usu_codigo, acc_fecha], map: "ix_accesos_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ajustes_inventario {
+  aju_codigo                                                 String            @id(map: "pk_ajustes_inventario") @default(dbgenerated("('AJU'::text || lpad((nextval('seq_ajustes_inventario'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  emp_codigo                                                 String            @db.Char(10)
+  emp_codigoautoriza                                         String?           @db.Char(10)
+  aju_fecha                                                  DateTime          @default(now()) @db.Timestamptz(6)
+  aju_motivo                                                 String            @db.VarChar(150)
+  aju_estado                                                 String            @default("ABI") @db.Char(3)
+  empleados_ajustes_inventario_emp_codigoautorizaToempleados empleados?        @relation("ajustes_inventario_emp_codigoautorizaToempleados", fields: [emp_codigoautoriza], references: [emp_codigo], onDelete: Restrict, map: "fk_ajustes_inventario_autoriza")
+  empleados_ajustes_inventario_emp_codigoToempleados         empleados         @relation("ajustes_inventario_emp_codigoToempleados", fields: [emp_codigo], references: [emp_codigo], map: "fk_ajustes_inventario_empleados")
+  detalles_ajuste                                            detalles_ajuste[]
+
+  @@index([emp_codigoautoriza], map: "ix_ajustes_inventario_autoriza")
+  @@index([emp_codigo], map: "ix_ajustes_inventario_empleado")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model alergenos {
+  ale_codigo          String                @id(map: "pk_alergenos") @default(dbgenerated("('ALE'::text || lpad((nextval('seq_alergenos'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  ale_nombre          String                @unique(map: "uq_alergenos_nombre") @db.VarChar(40)
+  productos_alergenos productos_alergenos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model asientos {
+  asi_codigo       String             @id(map: "pk_asientos") @default(dbgenerated("('ASI'::text || lpad((nextval('seq_asientos'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  emp_codigo       String?            @db.Char(10)
+  asi_fecha        DateTime           @default(now()) @db.Timestamptz(6)
+  asi_descripcion  String             @db.VarChar(150)
+  asi_origen       String             @default("MAN") @db.Char(3)
+  asi_referencia   String?            @db.Char(10)
+  asi_estado       String             @default("ABI") @db.Char(3)
+  empleados        empleados?         @relation(fields: [emp_codigo], references: [emp_codigo], onDelete: Restrict, map: "fk_asientos_empleados")
+  detalles_asiento detalles_asiento[]
+
+  @@index([emp_codigo], map: "ix_asientos_empleado")
+  @@index([asi_origen, asi_referencia], map: "ix_asientos_referencia")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model auditorias {
+  aud_codigo    String    @id(map: "pk_auditorias") @default(dbgenerated("('AUD'::text || lpad((nextval('seq_auditorias'::regclass))::text, 9, '0'::text))")) @db.Char(12)
+  usu_codigo    String?   @db.Char(10)
+  aud_fecha     DateTime  @default(now()) @db.Timestamptz(6)
+  aud_tabla     String    @db.VarChar(40)
+  aud_operacion String    @db.Char(1)
+  aud_clave     String    @db.VarChar(60)
+  aud_antes     Json?
+  aud_despues   Json?
+  usuarios      usuarios? @relation(fields: [usu_codigo], references: [usu_codigo], onDelete: Restrict, map: "fk_auditorias_usuarios")
+
+  @@index([aud_tabla, aud_clave], map: "ix_auditorias_fila")
+  @@index([usu_codigo], map: "ix_auditorias_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cantones {
+  can_codigo  String        @id(map: "pk_cantones") @db.Char(4)
+  prv_codigo  String        @db.Char(2)
+  can_nombre  String        @db.VarChar(60)
+  provincias  provincias    @relation(fields: [prv_codigo], references: [prv_codigo], map: "fk_cantones_provincias")
+  direcciones direcciones[]
+  empleados   empleados[]
+  proveedores proveedores[]
+
+  @@unique([prv_codigo, can_nombre], map: "uq_cantones_nombre")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cargos {
+  car_codigo    String      @id(map: "pk_cargos") @default(dbgenerated("('CAR'::text || lpad((nextval('seq_cargos'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  car_nombre    String      @unique(map: "uq_cargos_nombre") @db.VarChar(40)
+  car_funciones String?     @db.VarChar(250)
+  empleados     empleados[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model categorias {
+  cat_codigo String      @id(map: "pk_categorias") @default(dbgenerated("('CAT'::text || lpad((nextval('seq_categorias'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  cat_nombre String      @unique(map: "uq_categorias_nombre") @db.VarChar(40)
+  cat_slug   String      @unique(map: "uq_categorias_slug") @db.VarChar(40)
+  productos  productos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model clientes {
+  cli_codigo           String               @id(map: "pk_clientes") @default(dbgenerated("('CLI'::text || lpad((nextval('seq_clientes'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  tid_codigo           String               @db.Char(2)
+  cli_identificacion   String               @db.VarChar(20)
+  cli_razonsocial      String               @db.VarChar(150)
+  cli_correo           String?              @db.VarChar(254)
+  cli_telefono         String?              @db.VarChar(10)
+  cli_direccion        String?              @db.VarChar(200)
+  tipos_identificacion tipos_identificacion @relation(fields: [tid_codigo], references: [tid_codigo], map: "fk_clientes_tipos_identificacion")
+  facturas             facturas[]
+
+  @@unique([tid_codigo, cli_identificacion], map: "uq_clientes_identificacion")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model conceptos_nomina {
+  cno_codigo        String            @id(map: "pk_conceptos_nomina") @default(dbgenerated("('CNO'::text || lpad((nextval('seq_conceptos_nomina'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  cue_codigo        String            @db.Char(6)
+  cno_numero        String            @unique(map: "uq_conceptos_nomina_numero") @db.Char(4)
+  cno_nombre        String            @unique(map: "uq_conceptos_nomina_nombre") @db.VarChar(60)
+  cno_tipo          String            @db.Char(3)
+  cuentas_contables cuentas_contables @relation(fields: [cue_codigo], references: [cue_codigo], map: "fk_conceptos_nomina_cuentas_contables")
+  detalles_nomina   detalles_nomina[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model consumos_produccion {
+  orp_codigo         String             @db.Char(10)
+  lma_codigo         String             @db.Char(10)
+  cpr_cantidad       Decimal            @db.Decimal(14, 3)
+  cpr_costounitario  Decimal            @db.Decimal(18, 10)
+  lotes_material     lotes_material     @relation(fields: [lma_codigo], references: [lma_codigo], map: "fk_consumos_produccion_lotes_material")
+  ordenes_produccion ordenes_produccion @relation(fields: [orp_codigo], references: [orp_codigo], map: "fk_consumos_produccion_ordenes_produccion")
+
+  @@id([orp_codigo, lma_codigo], map: "pk_consumos_produccion")
+  @@index([lma_codigo], map: "ix_consumos_produccion_lote")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cuentas_contables {
+  cue_codigo       String             @id(map: "pk_cuentas_contables") @default(dbgenerated("('CUE'::text || lpad((nextval('seq_cuentas_contables'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  cue_numero       String             @unique(map: "uq_cuentas_contables_numero") @db.VarChar(20)
+  cue_nombre       String             @db.VarChar(80)
+  cue_tipo         String             @db.Char(3)
+  cue_activa       Boolean            @default(true)
+  conceptos_nomina conceptos_nomina[]
+  detalles_asiento detalles_asiento[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model detalles_ajuste {
+  aju_codigo         String             @db.Char(10)
+  lma_codigo         String             @db.Char(10)
+  daj_cantidad       Decimal            @db.Decimal(14, 3)
+  ajustes_inventario ajustes_inventario @relation(fields: [aju_codigo], references: [aju_codigo], onDelete: Cascade, map: "fk_detalles_ajuste_ajustes_inventario")
+  lotes_material     lotes_material     @relation(fields: [lma_codigo], references: [lma_codigo], map: "fk_detalles_ajuste_lotes_material")
+
+  @@id([aju_codigo, lma_codigo], map: "pk_detalles_ajuste")
+  @@index([lma_codigo], map: "ix_detalles_ajuste_lote")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model detalles_asiento {
+  asi_codigo        String            @db.Char(10)
+  cue_codigo        String            @db.Char(6)
+  das_debe          Decimal           @default(0) @db.Decimal(12, 2)
+  das_haber         Decimal           @default(0) @db.Decimal(12, 2)
+  asientos          asientos          @relation(fields: [asi_codigo], references: [asi_codigo], onDelete: Cascade, map: "fk_detalles_asiento_asientos")
+  cuentas_contables cuentas_contables @relation(fields: [cue_codigo], references: [cue_codigo], map: "fk_detalles_asiento_cuentas_contables")
+
+  @@id([asi_codigo, cue_codigo], map: "pk_detalles_asiento")
+  @@index([cue_codigo], map: "ix_detalles_asiento_cuenta")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model detalles_nomina {
+  nom_codigo       String           @db.Char(10)
+  cno_codigo       String           @db.Char(6)
+  dno_cantidad     Decimal          @default(1) @db.Decimal(6, 2)
+  dno_valor        Decimal          @db.Decimal(10, 2)
+  conceptos_nomina conceptos_nomina @relation(fields: [cno_codigo], references: [cno_codigo], map: "fk_detalles_nomina_conceptos_nomina")
+  nominas          nominas          @relation(fields: [nom_codigo], references: [nom_codigo], onDelete: Cascade, map: "fk_detalles_nomina_nominas")
+
+  @@id([nom_codigo, cno_codigo], map: "pk_detalles_nomina")
+  @@index([cno_codigo], map: "ix_detalles_nomina_concepto")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model detalles_orden_compra {
+  oco_codigo         String           @db.Char(10)
+  mat_codigo         String           @db.Char(6)
+  doc_cantidad       Decimal          @db.Decimal(10, 2)
+  doc_preciounitario Decimal          @db.Decimal(10, 4)
+  doc_porcentajeiva  Decimal          @db.Decimal(5, 2)
+  materiales         materiales       @relation(fields: [mat_codigo], references: [mat_codigo], map: "fk_detalles_orden_compra_materiales")
+  ordenes_compra     ordenes_compra   @relation(fields: [oco_codigo], references: [oco_codigo], onDelete: Cascade, map: "fk_detalles_orden_compra_ordenes_compra")
+  lotes_material     lotes_material[]
+
+  @@id([oco_codigo, mat_codigo], map: "pk_detalles_orden_compra")
+  @@index([mat_codigo], map: "ix_detalles_orden_compra_material")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model detalles_pedido {
+  ped_codigo         String            @db.Char(10)
+  pro_codigo         String            @db.Char(6)
+  tam_codigo         String            @db.Char(6)
+  dpe_cantidad       Int               @db.SmallInt
+  dpe_preciounitario Decimal           @db.Decimal(8, 2)
+  dpe_porcentajeiva  Decimal           @db.Decimal(5, 2)
+  pedidos            pedidos           @relation(fields: [ped_codigo], references: [ped_codigo], onDelete: Cascade, map: "fk_detalles_pedido_pedidos")
+  productos_tamanos  productos_tamanos @relation(fields: [pro_codigo, tam_codigo], references: [pro_codigo, tam_codigo], map: "fk_detalles_pedido_productos_tamanos")
+
+  @@id([ped_codigo, pro_codigo, tam_codigo], map: "pk_detalles_pedido")
+  @@index([pro_codigo, tam_codigo], map: "ix_detalles_pedido_producto")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model direcciones {
+  dir_codigo          String    @id(map: "pk_direcciones") @default(dbgenerated("('DIR'::text || lpad((nextval('seq_direcciones'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  usu_codigo          String    @db.Char(10)
+  can_codigo          String    @db.Char(4)
+  dir_alias           String    @default("Casa") @db.VarChar(30)
+  dir_calleprincipal  String    @db.VarChar(80)
+  dir_callesecundaria String?   @db.VarChar(80)
+  dir_numeracion      String?   @db.VarChar(10)
+  dir_referencia      String?   @db.VarChar(150)
+  cantones            cantones  @relation(fields: [can_codigo], references: [can_codigo], map: "fk_direcciones_cantones")
+  usuarios            usuarios  @relation(fields: [usu_codigo], references: [usu_codigo], map: "fk_direcciones_usuarios")
+  pedidos             pedidos[]
+
+  @@unique([usu_codigo, dir_alias], map: "uq_direcciones_alias")
+  @@unique([dir_codigo, usu_codigo], map: "uq_direcciones_usuario")
+  @@index([can_codigo], map: "ix_direcciones_canton")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model empleados {
+  emp_codigo                                                          String               @id(map: "pk_empleados") @default(dbgenerated("('EMP'::text || lpad((nextval('seq_empleados'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  can_codigo                                                          String               @db.Char(4)
+  car_codigo                                                          String               @db.Char(6)
+  emp_cedula                                                          String               @unique(map: "uq_empleados_cedula") @db.Char(10)
+  emp_primerapellido                                                  String               @db.VarChar(30)
+  emp_segundoapellido                                                 String?              @db.VarChar(30)
+  emp_primernombre                                                    String               @db.VarChar(30)
+  emp_segundonombre                                                   String?              @db.VarChar(30)
+  emp_fechanacimiento                                                 DateTime             @db.Date
+  emp_sexo                                                            String               @db.Char(1)
+  emp_tiposangre                                                      String?              @db.VarChar(3)
+  emp_correo                                                          String               @unique(map: "uq_empleados_correo") @db.VarChar(254)
+  emp_celular                                                         String               @db.Char(10)
+  emp_direccion                                                       String               @db.VarChar(200)
+  emp_foto                                                            String?              @db.VarChar(150)
+  emp_tipocontrato                                                    String               @default("PER") @db.Char(3)
+  emp_sueldo                                                          Decimal              @db.Decimal(8, 2)
+  emp_banco                                                           String?              @db.VarChar(40)
+  emp_cuentabancaria                                                  String?              @db.VarChar(20)
+  emp_fechaingreso                                                    DateTime             @default(dbgenerated("CURRENT_DATE")) @db.Date
+  emp_activo                                                          Boolean              @default(true)
+  ajustes_inventario_ajustes_inventario_emp_codigoautorizaToempleados ajustes_inventario[] @relation("ajustes_inventario_emp_codigoautorizaToempleados")
+  ajustes_inventario_ajustes_inventario_emp_codigoToempleados         ajustes_inventario[] @relation("ajustes_inventario_emp_codigoToempleados")
+  asientos                                                            asientos[]
+  cantones                                                            cantones             @relation(fields: [can_codigo], references: [can_codigo], map: "fk_empleados_cantones")
+  cargos                                                              cargos               @relation(fields: [car_codigo], references: [car_codigo], map: "fk_empleados_cargos")
+  nominas                                                             nominas[]
+  ordenes_compra                                                      ordenes_compra[]
+  ordenes_produccion                                                  ordenes_produccion[]
+  recepciones                                                         recepciones[]
+  usuarios                                                            usuarios[]
+
+  @@index([can_codigo], map: "ix_empleados_canton")
+  @@index([car_codigo], map: "ix_empleados_cargo")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model estados_pedido {
+  epe_codigo String    @id(map: "pk_estados_pedido") @default(dbgenerated("('EPE'::text || lpad((nextval('seq_estados_pedido'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  epe_nombre String    @unique(map: "uq_estados_pedido_nombre") @db.VarChar(30)
+  epe_orden  Int       @unique(map: "uq_estados_pedido_orden") @db.SmallInt
+  pedidos    pedidos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model etiquetas {
+  eti_codigo String      @id(map: "pk_etiquetas") @default(dbgenerated("('ETI'::text || lpad((nextval('seq_etiquetas'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  eti_texto  String      @unique(map: "uq_etiquetas_texto") @db.VarChar(30)
+  eti_color  String      @db.VarChar(10)
+  productos  productos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model facturas {
+  fac_codigo          String    @id(map: "pk_facturas") @default(dbgenerated("('FAC'::text || lpad((nextval('seq_facturas'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  ped_codigo          String    @unique(map: "ux_facturas_vigente", where: raw("(fac_fechaanulacion IS NULL)")) @db.Char(10)
+  cli_codigo          String    @db.Char(10)
+  fac_establecimiento String    @default("001") @db.Char(3)
+  fac_puntoemision    String    @default("001") @db.Char(3)
+  fac_secuencial      String    @db.Char(9)
+  fac_claveacceso     String?   @unique(map: "uq_facturas_claveacceso") @db.Char(49)
+  fac_fechaemision    DateTime  @default(now()) @db.Timestamptz(6)
+  fac_fechaanulacion  DateTime? @db.Timestamptz(6)
+  clientes            clientes  @relation(fields: [cli_codigo], references: [cli_codigo], map: "fk_facturas_clientes")
+  pedidos             pedidos   @relation(fields: [ped_codigo], references: [ped_codigo], map: "fk_facturas_pedidos")
+
+  @@unique([fac_establecimiento, fac_puntoemision, fac_secuencial], map: "uq_facturas_numero")
+  @@index([cli_codigo], map: "ix_facturas_cliente")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model lotes_material {
+  lma_codigo            String                 @id(map: "pk_lotes_material") @default(dbgenerated("('LMA'::text || lpad((nextval('seq_lotes_material'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  mat_codigo            String                 @db.Char(6)
+  rcp_codigo            String?                @db.Char(10)
+  oco_codigo            String?                @db.Char(10)
+  lma_fechaingreso      DateTime               @default(now()) @db.Timestamptz(6)
+  lma_fechacaducidad    DateTime?              @db.Date
+  lma_cantidadrecibida  Decimal                @db.Decimal(10, 2)
+  lma_cantidadinicial   Decimal                @db.Decimal(14, 3)
+  lma_costounitario     Decimal                @db.Decimal(18, 10)
+  consumos_produccion   consumos_produccion[]
+  detalles_ajuste       detalles_ajuste[]
+  detalles_orden_compra detalles_orden_compra? @relation(fields: [oco_codigo, mat_codigo], references: [oco_codigo, mat_codigo], map: "fk_lotes_material_detalles_orden_compra")
+  materiales            materiales             @relation(fields: [mat_codigo], references: [mat_codigo], map: "fk_lotes_material_materiales")
+  recepciones           recepciones?           @relation(fields: [rcp_codigo, oco_codigo], references: [rcp_codigo, oco_codigo], onDelete: Restrict, map: "fk_lotes_material_recepciones")
+
+  @@index([mat_codigo, lma_fechaingreso], map: "ix_lotes_material_material")
+  @@index([oco_codigo, mat_codigo], map: "ix_lotes_material_orden")
+  @@index([rcp_codigo], map: "ix_lotes_material_recepcion")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model materiales {
+  mat_codigo                                                       String                   @id(map: "pk_materiales") @default(dbgenerated("('MAT'::text || lpad((nextval('seq_materiales'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  tma_codigo                                                       String                   @db.Char(6)
+  mco_codigo                                                       String                   @db.Char(6)
+  tiv_codigo                                                       String                   @db.Char(6)
+  umi_codigocompra                                                 String                   @db.Char(6)
+  umi_codigoproduccion                                             String                   @db.Char(6)
+  mat_nombre                                                       String                   @unique(map: "uq_materiales_nombre") @db.VarChar(60)
+  mat_factorconversion                                             Decimal                  @db.Decimal(12, 4)
+  mat_perecible                                                    Boolean                  @default(false)
+  mat_diasvidautil                                                 Int?                     @db.SmallInt
+  mat_stockminimo                                                  Decimal                  @default(0) @db.Decimal(14, 3)
+  mat_codigobarras                                                 String?                  @unique(map: "uq_materiales_codigobarras") @db.VarChar(14)
+  mat_activo                                                       Boolean                  @default(true)
+  detalles_orden_compra                                            detalles_orden_compra[]
+  lotes_material                                                   lotes_material[]
+  metodos_costeo                                                   metodos_costeo           @relation(fields: [mco_codigo], references: [mco_codigo], map: "fk_materiales_metodos_costeo")
+  tarifas_iva                                                      tarifas_iva              @relation(fields: [tiv_codigo], references: [tiv_codigo], map: "fk_materiales_tarifas_iva")
+  tipos_material                                                   tipos_material           @relation(fields: [tma_codigo], references: [tma_codigo], map: "fk_materiales_tipos_material")
+  unidades_medida_materiales_umi_codigocompraTounidades_medida     unidades_medida          @relation("materiales_umi_codigocompraTounidades_medida", fields: [umi_codigocompra], references: [umi_codigo], map: "fk_materiales_unidad_compra")
+  unidades_medida_materiales_umi_codigoproduccionTounidades_medida unidades_medida          @relation("materiales_umi_codigoproduccionTounidades_medida", fields: [umi_codigoproduccion], references: [umi_codigo], map: "fk_materiales_unidad_produccion")
+  proveedores_materiales                                           proveedores_materiales[]
+  recetas                                                          recetas[]
+
+  @@index([tma_codigo], map: "ix_materiales_tipo")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model metodos_costeo {
+  mco_codigo String       @id(map: "pk_metodos_costeo") @default(dbgenerated("('MCO'::text || lpad((nextval('seq_metodos_costeo'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  mco_sigla  String       @unique(map: "uq_metodos_costeo_sigla") @db.VarChar(4)
+  mco_nombre String       @db.VarChar(60)
+  materiales materiales[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model metodos_pago {
+  mpa_codigo     String  @id(map: "pk_metodos_pago") @default(dbgenerated("('MPA'::text || lpad((nextval('seq_metodos_pago'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  mpa_nombre     String  @unique(map: "uq_metodos_pago_nombre") @db.VarChar(30)
+  mpa_codigosri  String  @db.Char(2)
+  mpa_usatarjeta Boolean @default(false)
+  pagos          pagos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model nominas {
+  nom_codigo      String            @id(map: "pk_nominas") @default(dbgenerated("('NOM'::text || lpad((nextval('seq_nominas'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  emp_codigo      String            @db.Char(10)
+  nom_anio        Int               @db.SmallInt
+  nom_mes         Int               @db.SmallInt
+  nom_fechapago   DateTime?         @db.Date
+  nom_estado      String            @default("ABI") @db.Char(3)
+  detalles_nomina detalles_nomina[]
+  empleados       empleados         @relation(fields: [emp_codigo], references: [emp_codigo], map: "fk_nominas_empleados")
+
+  @@unique([emp_codigo, nom_anio, nom_mes], map: "ux_nominas_mes", where: raw("(nom_estado <> 'ANU'::bpchar)"))
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ordenes_compra {
+  oco_codigo            String                  @id(map: "pk_ordenes_compra") @default(dbgenerated("('OCO'::text || lpad((nextval('seq_ordenes_compra'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  pvd_codigo            String                  @db.Char(10)
+  emp_codigo            String                  @db.Char(10)
+  oco_fecha             DateTime                @default(now()) @db.Timestamptz(6)
+  oco_fechaentrega      DateTime                @db.Date
+  oco_estado            String                  @default("ABI") @db.Char(3)
+  oco_observacion       String?                 @db.VarChar(250)
+  detalles_orden_compra detalles_orden_compra[]
+  empleados             empleados               @relation(fields: [emp_codigo], references: [emp_codigo], map: "fk_ordenes_compra_empleados")
+  proveedores           proveedores             @relation(fields: [pvd_codigo], references: [pvd_codigo], map: "fk_ordenes_compra_proveedores")
+  recepciones           recepciones[]
+
+  @@index([emp_codigo], map: "ix_ordenes_compra_empleado")
+  @@index([pvd_codigo, oco_fecha(sort: Desc)], map: "ix_ordenes_compra_proveedor")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ordenes_produccion {
+  orp_codigo          String                @id(map: "pk_ordenes_produccion") @default(dbgenerated("('ORP'::text || lpad((nextval('seq_ordenes_produccion'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  pro_codigo          String                @db.Char(6)
+  tam_codigo          String                @db.Char(6)
+  emp_codigo          String                @db.Char(10)
+  orp_fecha           DateTime              @default(now()) @db.Timestamptz(6)
+  orp_cantidad        Int
+  orp_estado          String                @default("ABI") @db.Char(3)
+  consumos_produccion consumos_produccion[]
+  empleados           empleados             @relation(fields: [emp_codigo], references: [emp_codigo], map: "fk_ordenes_produccion_empleados")
+  productos_tamanos   productos_tamanos     @relation(fields: [pro_codigo, tam_codigo], references: [pro_codigo, tam_codigo], map: "fk_ordenes_produccion_productos_tamanos")
+
+  @@index([emp_codigo], map: "ix_ordenes_produccion_empleado")
+  @@index([pro_codigo, tam_codigo], map: "ix_ordenes_produccion_producto")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pagos {
+  pag_codigo         String       @id(map: "pk_pagos") @default(dbgenerated("('PAG'::text || lpad((nextval('seq_pagos'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  ped_codigo         String       @db.Char(10)
+  mpa_codigo         String       @db.Char(6)
+  pag_monto          Decimal      @db.Decimal(10, 2)
+  pag_fecha          DateTime     @default(now()) @db.Timestamptz(6)
+  pag_aprobado       Boolean      @default(false)
+  pag_ultimosdigitos String?      @db.Char(4)
+  pag_autorizacion   String?      @db.VarChar(20)
+  metodos_pago       metodos_pago @relation(fields: [mpa_codigo], references: [mpa_codigo], map: "fk_pagos_metodos_pago")
+  pedidos            pedidos      @relation(fields: [ped_codigo], references: [ped_codigo], map: "fk_pagos_pedidos")
+
+  @@index([mpa_codigo], map: "ix_pagos_metodo")
+  @@index([ped_codigo], map: "ix_pagos_pedido")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model pedidos {
+  ped_codigo      String            @id(map: "pk_pedidos") @default(dbgenerated("('PED'::text || lpad((nextval('seq_pedidos'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  usu_codigo      String            @db.Char(10)
+  ten_codigo      String            @db.Char(6)
+  dir_codigo      String?           @db.Char(10)
+  epe_codigo      String            @db.Char(6)
+  ped_numero      String            @unique(map: "uq_pedidos_numero") @db.Char(7)
+  ped_fecha       DateTime          @default(now()) @db.Timestamptz(6)
+  ped_costoenvio  Decimal           @db.Decimal(6, 2)
+  ped_observacion String?           @db.VarChar(250)
+  ped_claveenvio  String?           @unique(map: "uq_pedidos_claveenvio") @db.Uuid
+  detalles_pedido detalles_pedido[]
+  facturas        facturas?
+  pagos           pagos[]
+  direcciones     direcciones?      @relation(fields: [dir_codigo, usu_codigo], references: [dir_codigo, usu_codigo], map: "fk_pedidos_direcciones")
+  estados_pedido  estados_pedido    @relation(fields: [epe_codigo], references: [epe_codigo], map: "fk_pedidos_estados_pedido")
+  tipos_entrega   tipos_entrega     @relation(fields: [ten_codigo], references: [ten_codigo], map: "fk_pedidos_tipos_entrega")
+  usuarios        usuarios          @relation(fields: [usu_codigo], references: [usu_codigo], map: "fk_pedidos_usuarios")
+
+  @@index([dir_codigo], map: "ix_pedidos_direccion")
+  @@index([epe_codigo], map: "ix_pedidos_estado")
+  @@index([usu_codigo, ped_fecha(sort: Desc)], map: "ix_pedidos_usuario")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model permisos {
+  per_codigo      String           @id(map: "pk_permisos") @default(dbgenerated("('PER'::text || lpad((nextval('seq_permisos'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  per_nombre      String           @unique(map: "uq_permisos_nombre") @db.VarChar(50)
+  per_descripcion String?          @db.VarChar(150)
+  roles_permisos  roles_permisos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model productos {
+  pro_codigo           String                @id(map: "pk_productos") @default(dbgenerated("('PRO'::text || lpad((nextval('seq_productos'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  cat_codigo           String                @db.Char(6)
+  eti_codigo           String?               @db.Char(6)
+  tiv_codigo           String                @db.Char(6)
+  pro_nombre           String                @unique(map: "uq_productos_nombre") @db.VarChar(80)
+  pro_descripcion      String?               @db.VarChar(300)
+  pro_foto             String                @db.VarChar(150)
+  pro_textoalternativo String                @db.VarChar(200)
+  pro_disponible       Boolean               @default(true)
+  pro_destacado        Boolean               @default(false)
+  categorias           categorias            @relation(fields: [cat_codigo], references: [cat_codigo], map: "fk_productos_categorias")
+  etiquetas            etiquetas?            @relation(fields: [eti_codigo], references: [eti_codigo], map: "fk_productos_etiquetas")
+  tarifas_iva          tarifas_iva           @relation(fields: [tiv_codigo], references: [tiv_codigo], map: "fk_productos_tarifas_iva")
+  productos_alergenos  productos_alergenos[]
+  productos_tamanos    productos_tamanos[]
+
+  @@index([cat_codigo], map: "ix_productos_categoria")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model productos_alergenos {
+  pro_codigo String    @db.Char(6)
+  ale_codigo String    @db.Char(6)
+  pal_trazas Boolean   @default(false)
+  alergenos  alergenos @relation(fields: [ale_codigo], references: [ale_codigo], onDelete: Cascade, map: "fk_productos_alergenos_alergenos")
+  productos  productos @relation(fields: [pro_codigo], references: [pro_codigo], onDelete: Cascade, map: "fk_productos_alergenos_productos")
+
+  @@id([pro_codigo, ale_codigo], map: "pk_productos_alergenos")
+  @@index([ale_codigo], map: "ix_productos_alergenos_alergeno")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model productos_tamanos {
+  pro_codigo         String               @db.Char(6)
+  tam_codigo         String               @db.Char(6)
+  pta_precio         Decimal              @db.Decimal(8, 2)
+  pta_orden          Int                  @default(1) @db.SmallInt
+  detalles_pedido    detalles_pedido[]
+  ordenes_produccion ordenes_produccion[]
+  productos          productos            @relation(fields: [pro_codigo], references: [pro_codigo], onDelete: Cascade, map: "fk_productos_tamanos_productos")
+  tamanos            tamanos              @relation(fields: [tam_codigo], references: [tam_codigo], map: "fk_productos_tamanos_tamanos")
+  recetas            recetas[]
+
+  @@id([pro_codigo, tam_codigo], map: "pk_productos_tamanos")
+  @@unique([pro_codigo, pta_orden], map: "uq_productos_tamanos_orden")
+  @@index([tam_codigo], map: "ix_productos_tamanos_tamano")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model proveedores {
+  pvd_codigo             String                   @id(map: "pk_proveedores") @default(dbgenerated("('PVD'::text || lpad((nextval('seq_proveedores'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  tid_codigo             String                   @db.Char(2)
+  can_codigo             String                   @db.Char(4)
+  pvd_identificacion     String                   @db.VarChar(13)
+  pvd_razonsocial        String                   @db.VarChar(150)
+  pvd_telefono           String?                  @db.VarChar(10)
+  pvd_celular            String?                  @db.Char(10)
+  pvd_correo             String                   @db.VarChar(254)
+  pvd_direccion          String                   @db.VarChar(200)
+  pvd_activo             Boolean                  @default(true)
+  ordenes_compra         ordenes_compra[]
+  cantones               cantones                 @relation(fields: [can_codigo], references: [can_codigo], map: "fk_proveedores_cantones")
+  tipos_identificacion   tipos_identificacion     @relation(fields: [tid_codigo], references: [tid_codigo], map: "fk_proveedores_tipos_identificacion")
+  proveedores_materiales proveedores_materiales[]
+
+  @@unique([tid_codigo, pvd_identificacion], map: "uq_proveedores_identificacion")
+  @@index([can_codigo], map: "ix_proveedores_canton")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model proveedores_materiales {
+  pvd_codigo           String      @db.Char(10)
+  mat_codigo           String      @db.Char(6)
+  pma_precioreferencia Decimal     @db.Decimal(10, 4)
+  pma_diasentrega      Int         @default(1) @db.SmallInt
+  materiales           materiales  @relation(fields: [mat_codigo], references: [mat_codigo], onDelete: Cascade, map: "fk_proveedores_materiales_materiales")
+  proveedores          proveedores @relation(fields: [pvd_codigo], references: [pvd_codigo], onDelete: Cascade, map: "fk_proveedores_materiales_proveedores")
+
+  @@id([pvd_codigo, mat_codigo], map: "pk_proveedores_materiales")
+  @@index([mat_codigo], map: "ix_proveedores_materiales_material")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model provincias {
+  prv_codigo String     @id(map: "pk_provincias") @db.Char(2)
+  prv_nombre String     @unique(map: "uq_provincias_nombre") @db.VarChar(40)
+  cantones   cantones[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model recepciones {
+  rcp_codigo      String           @id(map: "pk_recepciones") @default(dbgenerated("('RCP'::text || lpad((nextval('seq_recepciones'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  oco_codigo      String           @db.Char(10)
+  emp_codigo      String?          @db.Char(10)
+  rcp_fecha       DateTime         @default(now()) @db.Timestamptz(6)
+  rcp_estado      String           @default("PEN") @db.Char(3)
+  rcp_observacion String?          @db.VarChar(250)
+  lotes_material  lotes_material[]
+  empleados       empleados?       @relation(fields: [emp_codigo], references: [emp_codigo], onDelete: Restrict, map: "fk_recepciones_empleados")
+  ordenes_compra  ordenes_compra   @relation(fields: [oco_codigo], references: [oco_codigo], map: "fk_recepciones_ordenes_compra")
+
+  @@unique([rcp_codigo, oco_codigo], map: "uq_recepciones_orden")
+  @@index([oco_codigo], map: "ix_recepciones_orden")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model recetas {
+  pro_codigo        String            @db.Char(6)
+  tam_codigo        String            @db.Char(6)
+  mat_codigo        String            @db.Char(6)
+  rct_cantidad      Decimal           @db.Decimal(12, 3)
+  materiales        materiales        @relation(fields: [mat_codigo], references: [mat_codigo], map: "fk_recetas_materiales")
+  productos_tamanos productos_tamanos @relation(fields: [pro_codigo, tam_codigo], references: [pro_codigo, tam_codigo], onDelete: Cascade, map: "fk_recetas_productos_tamanos")
+
+  @@id([pro_codigo, tam_codigo, mat_codigo], map: "pk_recetas")
+  @@index([mat_codigo], map: "ix_recetas_material")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model roles {
+  rol_codigo      String           @id(map: "pk_roles") @default(dbgenerated("('ROL'::text || lpad((nextval('seq_roles'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  rol_nombre      String           @unique(map: "uq_roles_nombre") @db.VarChar(30)
+  rol_descripcion String?          @db.VarChar(150)
+  roles_permisos  roles_permisos[]
+  usuarios        usuarios[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model roles_permisos {
+  rol_codigo          String   @db.Char(6)
+  per_codigo          String   @db.Char(6)
+  rpe_fechaasignacion DateTime @default(now()) @db.Timestamptz(6)
+  permisos            permisos @relation(fields: [per_codigo], references: [per_codigo], onDelete: Cascade, map: "fk_roles_permisos_permisos")
+  roles               roles    @relation(fields: [rol_codigo], references: [rol_codigo], onDelete: Cascade, map: "fk_roles_permisos_roles")
+
+  @@id([rol_codigo, per_codigo], map: "pk_roles_permisos")
+  @@index([per_codigo], map: "ix_roles_permisos_permiso")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tamanos {
+  tam_codigo        String              @id(map: "pk_tamanos") @default(dbgenerated("('TAM'::text || lpad((nextval('seq_tamanos'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  tam_descripcion   String              @unique(map: "uq_tamanos_descripcion") @db.VarChar(20)
+  productos_tamanos productos_tamanos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tarifas_iva {
+  tiv_codigo      String       @id(map: "pk_tarifas_iva") @default(dbgenerated("('TIV'::text || lpad((nextval('seq_tarifas_iva'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  tiv_codigosri   String       @unique(map: "uq_tarifas_iva_codigosri") @db.VarChar(2)
+  tiv_descripcion String       @db.VarChar(30)
+  tiv_porcentaje  Decimal      @db.Decimal(5, 2)
+  materiales      materiales[]
+  productos       productos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tipos_entrega {
+  ten_codigo        String    @id(map: "pk_tipos_entrega") @default(dbgenerated("('TEN'::text || lpad((nextval('seq_tipos_entrega'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  ten_nombre        String    @unique(map: "uq_tipos_entrega_nombre") @db.VarChar(30)
+  ten_costo         Decimal   @default(0) @db.Decimal(6, 2)
+  ten_pidedireccion Boolean
+  pedidos           pedidos[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tipos_identificacion {
+  tid_codigo  String        @id(map: "pk_tipos_identificacion") @db.Char(2)
+  tid_nombre  String        @unique(map: "uq_tipos_identificacion_nombre") @db.VarChar(30)
+  clientes    clientes[]
+  proveedores proveedores[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tipos_material {
+  tma_codigo String       @id(map: "pk_tipos_material") @default(dbgenerated("('TMA'::text || lpad((nextval('seq_tipos_material'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  tma_nombre String       @unique(map: "uq_tipos_material_nombre") @db.VarChar(40)
+  materiales materiales[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model unidades_medida {
+  umi_codigo                                                  String       @id(map: "pk_unidades_medida") @default(dbgenerated("('UMI'::text || lpad((nextval('seq_unidades_medida'::regclass))::text, 3, '0'::text))")) @db.Char(6)
+  umi_nombre                                                  String       @unique(map: "uq_unidades_medida_nombre") @db.VarChar(30)
+  umi_abreviatura                                             String       @unique(map: "uq_unidades_medida_abreviatura") @db.VarChar(10)
+  materiales_materiales_umi_codigocompraTounidades_medida     materiales[] @relation("materiales_umi_codigocompraTounidades_medida")
+  materiales_materiales_umi_codigoproduccionTounidades_medida materiales[] @relation("materiales_umi_codigoproduccionTounidades_medida")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model usuarios {
+  usu_codigo        String           @id(map: "pk_usuarios") @default(dbgenerated("('USU'::text || lpad((nextval('seq_usuarios'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  rol_codigo        String           @db.Char(6)
+  emp_codigo        String?          @db.Char(10)
+  usu_nombres       String           @db.VarChar(60)
+  usu_apellidos     String           @db.VarChar(60)
+  usu_correo        String           @unique(map: "uq_usuarios_correo") @db.VarChar(254)
+  usu_celular       String           @db.Char(10)
+  usu_codigoauth    String           @unique(map: "uq_usuarios_codigoauth") @db.Uuid
+  usu_activo        Boolean          @default(true)
+  usu_fecharegistro DateTime         @default(now()) @db.Timestamptz(6)
+  accesos           accesos[]
+  auditorias        auditorias[]
+  direcciones       direcciones[]
+  pedidos           pedidos[]
+  empleados         empleados?       @relation(fields: [emp_codigo], references: [emp_codigo], onDelete: Restrict, map: "fk_usuarios_empleados")
+  roles             roles            @relation(fields: [rol_codigo], references: [rol_codigo], map: "fk_usuarios_roles")
+  verificaciones    verificaciones[]
+
+  @@index([emp_codigo], map: "ix_usuarios_empleado")
+  @@index([rol_codigo], map: "ix_usuarios_rol")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model verificaciones {
+  ver_codigo      String    @id(map: "pk_verificaciones") @default(dbgenerated("('VER'::text || lpad((nextval('seq_verificaciones'::regclass))::text, 7, '0'::text))")) @db.Char(10)
+  usu_codigo      String    @db.Char(10)
+  ver_clave       String    @db.Char(6)
+  ver_fechaenvio  DateTime  @default(now()) @db.Timestamptz(6)
+  ver_fechaexpira DateTime  @default(dbgenerated("(now() + '00:15:00'::interval)")) @db.Timestamptz(6)
+  ver_fechauso    DateTime? @db.Timestamptz(6)
+  ver_intentos    Int       @default(0) @db.SmallInt
+  usuarios        usuarios  @relation(fields: [usu_codigo], references: [usu_codigo], onDelete: Cascade, map: "fk_verificaciones_usuarios")
+
+  @@index([usu_codigo], map: "ix_verificaciones_usuario")
+}

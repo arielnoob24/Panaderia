@@ -1,0 +1,2 @@
+# Lo escribe Prisma: el motor de las migraciones de esta carpeta.
+provider = "postgresql"

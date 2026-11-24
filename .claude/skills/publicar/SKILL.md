@@ -65,7 +65,9 @@ al final la linea `Co-Authored-By` que pida el sistema.
 bash .claude/skills/publicar/ci-local.sh
 ```
 
-Corre lo mismo que `.github/workflows/ci-cd.yml`, leido del propio archivo:
+Corre lo mismo que `.github/workflows/ci-cd.yml`, leido del propio archivo (y al
+final, el paso "Probar el backend" del job `backend`: `npm ci`, `npm run generar`
+y las pruebas de `backend/` contra la base de `bd/` en PGlite):
 el paso "Construir" (build sin avisos), el paso "Validar catalogo, fotos y
 textos" y, en vez de solo la prueba de humo del CI, **todas** las pruebas de
 navegador (`npm run probar`, con Chrome), todo dentro de `frontend/`. Si falta

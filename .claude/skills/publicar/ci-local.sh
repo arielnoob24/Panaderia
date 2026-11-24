@@ -50,4 +50,10 @@ bash -c "$validar"
 echo '== Pruebas de navegador (todas)'
 npm run probar
 
+# El backend, con el paso "Probar el backend" del job backend de ci-cd.yml.
+echo '== Backend (Express + Prisma) contra la base en PGlite'
+backend=$(cd .. && paso 'Probar el backend')
+[ -n "$backend" ] || { echo 'No encontre el paso "Probar el backend" en ci-cd.yml.'; exit 1; }
+(cd ../backend && bash -c "$backend")
+
 echo 'CI local: en orden.'

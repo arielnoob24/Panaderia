@@ -1,0 +1,30 @@
+# ---- El backend en Render (Blueprint) -------------------------------------
+# Un Web Service gratis con la API Express de backend/. En Render:
+# New -> Blueprint -> el repo -> Render lee este archivo. Las variables con
+# sync: false se escriben a mano en Render (son secretas y no van al repo).
+# El plan gratis se apaga tras 15 minutos sin trafico y tarda ~1 minuto en
+# despertar; sin tarjeta, si se pasa de los limites se suspende, no cobra.
+services:
+  - type: web
+    name: el-tradicional-api
+    runtime: node
+    plan: free
+    rootDir: backend
+    # prisma es de desarrollo, pero hace falta para generar el cliente.
+    buildCommand: npm ci --include=dev && npm run generar
+    startCommand: npm start
+    healthCheckPath: /api/salud
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: SUPABASE_URL
+        value: https://ugscqizansixnsuzljtu.supabase.co
+      - key: ORIGENES_PERMITIDOS
+        value: https://arielnoob24.github.io,https://el-tradicional-panaderia.netlify.app,https://*--el-tradicional-panaderia.netlify.app
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_JWT_SECRET
+        sync: false

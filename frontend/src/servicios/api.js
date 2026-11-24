@@ -7,8 +7,10 @@
 import { tokenActual } from './supabase.js';
 
 // La direccion sale de VITE_API_URL (vite.config.js): hoy la Edge Function
-// de Supabase; cuando el backend Express este en Render, la suya.
+// de Supabase; cuando el backend Express este en Render, la suya. El panel
+// (/admin/...) sigue en la Edge Function: va a VITE_API_ADMIN_URL.
 const API = import.meta.env.VITE_API_URL.replace(/\/$/, '');
+const API_ADMIN = import.meta.env.VITE_API_ADMIN_URL.replace(/\/$/, '');
 
 // Si la API no contesta a tiempo se deja de esperar: la pagina no se puede
 // quedar en blanco porque el servidor tarde.
@@ -32,7 +34,7 @@ const pedirApi = async (ruta, { metodo = 'GET', cuerpo, sesion = false, espera =
   if (sesion) cabeceras.Authorization = `Bearer ${await tokenActual()}`;
   let r;
   try {
-    r = await window.fetch(`${API}${ruta}`, {
+    r = await window.fetch(`${ruta.startsWith('/admin/') ? API_ADMIN : API}${ruta}`, {
       method: metodo,
       headers: cabeceras,
       body: cuerpo === undefined ? undefined : JSON.stringify(cuerpo),

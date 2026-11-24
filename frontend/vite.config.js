@@ -16,6 +16,9 @@ import react from '@vitejs/plugin-react';
 const PUBLICAS = {
   // La API: hoy la Edge Function; con el backend en Render, su direccion + /api.
   VITE_API_URL: 'https://ugscqizansixnsuzljtu.supabase.co/functions/v1/api',
+  // El panel (/admin/...) se queda en la Edge Function aunque VITE_API_URL
+  // apunte al backend Express.
+  VITE_API_ADMIN_URL: 'https://ugscqizansixnsuzljtu.supabase.co/functions/v1/api',
   VITE_SUPABASE_URL: 'https://ugscqizansixnsuzljtu.supabase.co',
   VITE_SUPABASE_CLAVE_PUBLICA: 'sb_publishable_T4ayAx_e96H98bv_dlnCrg_AncGFwos',
   // Firestore (avisos del local): el proyecto de Firebase y su clave web,

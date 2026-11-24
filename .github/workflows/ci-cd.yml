@@ -145,6 +145,34 @@ jobs:
         timeout-minutes: 5
         run: npm run probar -- humo
 
+  # El backend (backend/, Express + Prisma): instala, genera el cliente de
+  # Prisma y corre sus pruebas contra bd/BD_EL_TRADICIONAL.sql en PGlite, sin
+  # Supabase ni secretos. No para la publicacion de Pages, que solo depende
+  # del frontend; si falla, se ve aqui. ci-local.sh corre lo mismo.
+  backend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Descargar codigo
+        uses: actions/checkout@v7.0.1
+
+      - name: Preparar Node
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: '24.15.0'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Probar el backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run generar
+          npm run probar
+
   # Se publica frontend/dist/, lo que arma Vite, y nada mas: ni src/ ni
   # node_modules ni backend/ llegan a Pages.
   deploy:
