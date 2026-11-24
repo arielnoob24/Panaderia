@@ -1,80 +1,62 @@
-# Handoff: dónde nos quedamos (20 de octubre de 2026)
+# Handoff: dónde nos quedamos (proyecto final, integración hecha)
 
 ## En una línea
-Estamos migrando el sitio a **React** en la rama `mejoras`. Las fases 1, 2 y
-**3 (la canasta)** están hechas, con el CI en verde. Falta la revisión de
-`ux-accesibilidad` de la fase 3 y una decisión tuya (abajo).
+Las tres capas del proyecto final están desplegadas y conectadas: el sitio en
+**Netlify** le pide todo al backend **Express + Prisma en Render**, que trabaja
+sobre la base **PostgreSQL de Supabase** de Ariel. Todo vive en la rama `efra`
+(fork `voidholic/Panaderia`). **`main` y `upstream` no se han tocado**: la
+página de GitHub Pages sigue con lo de antes hasta que el usuario diga
+"súbelo a la página".
 
-## Lo primero mañana
-1. `git switch mejoras && git pull`
-2. **Decidir** lo del pie (ver "Decisión pendiente").
-3. Pedir la **revisión de `ux-accesibilidad`** de la fase 3, como se hizo con
-   la fase 2, y arreglar lo que salga.
-4. Seguir con la **fase 4: pedido y pago**.
-
-## Decisión pendiente
-El sitio actual vuelve a guardar el pedido cada vez que se abre la página, y
-por eso el pie dice siempre "Tu pedido se guardó hoy a las <hora de entrar>",
-aunque la canasta esté vacía. React solo guarda cuando cambias algo, y enseña
-la fecha real. Recomendación de Claude: quedarse con lo de React (es lo
-correcto) y arreglar igual el sitio actual. Si se prefiere copiar el sitio
-actual, es una línea.
-
-Para retomar, se le puede decir a Claude:
-> Lee `.claude/handoff.md` y `.claude/plan.md` y sigamos donde quedamos.
-
-## Cómo trabajamos (está en `.claude/CLAUDE.md`)
-conversar el cambio → plan (`.claude/plan.md`) → agentes (`.claude/agents/`)
-→ skills → los agentes aplican → cerrar (el plan igual al sitio).
-Todo se commitea y se pushea a `mejoras` sin preguntar. `main` es lo que se
-presentó y no se toca hasta que tú lo digas.
-
-## Lo decidido hasta ahora
-- **React** con Vite, JavaScript (sin TypeScript), React Router con `HashRouter`.
-- **Sin doble clic** en la versión React: se sirve por HTTP.
-- El código de React vive en `react/` hasta la fase 7; después pasa a la raíz.
-- Mismo CSS, mismos textos, mismas reglas y mismas claves de guardado que el
-  sitio actual.
-- Los enlaces de sección (`#historia`, saltar al contenido...) no son rutas:
-  bajan suave y pasan el foco.
-- Precios con punto decimal (`$1.25`).
-- **Vista previa en internet: en pausa.** La decides al final
-  (estaba propuesto Netlify; `netlify.toml` está listo en la raíz).
-
-## Fases de la migración
-1. ✅ Andamiaje (Vite, rutas, CSS, una ficha)
-2. ✅ Catálogo y página (cabecera, portada, pie, mostrador, vista de catálogo)
-   - ✅ Revisión de `ux-accesibilidad` y los 12 arreglos hechos
-3. ✅ Canasta (falta la revisión de `ux-accesibilidad`)
-4. Pedido y pago (`#confirmar`, factura, tarjeta, comprobante)
-5. Cuenta (crear, verificar correo, entrar, editar, historial)
-6. Calidad (adaptar `verificar-sitio`, `publicar`, axe y el CI al build de Vite)
-7. Cambio: React pasa a la raíz, se borra lo viejo, y se decide cómo publicar
-
-## Agentes (`.claude/agents/`)
-| Agente | Hace | Skills |
+## Dónde está cada cosa
+| Capa | Dónde | Notas |
 |---|---|---|
-| `frontend` | HTML, CSS, catálogo, cabecera, rutas | verificar-sitio, wcag-audit-patterns, componente-react, vercel-react-best-practices, vercel-composition-patterns |
-| `logica-datos` | Canasta, pago, cuenta, guardado, correo, catálogo JSON | verificar-sitio, nielsen-usability-heuristics, componente-react, las dos de Vercel |
-| `ux-accesibilidad` | Revisa WCAG 2.2 y Nielsen (solo lee) | wcag-audit-patterns, nielsen-usability-heuristics |
-| `calidad-publicacion` | Revisa bugs, CI y sube los cambios | verificar-sitio, publicar, vercel-react-best-practices |
+| Frontend | https://el-tradicional-panaderia.netlify.app | Netlify conectado a `voidholic/Panaderia`, rama `efra`, base `frontend/` (`netlify.toml`). Variables `VITE_...` en Netlify; `VITE_API_URL` apunta a Render |
+| Backend | https://el-tradicional-api.onrender.com/api/salud | Render, plan free, servicio `srv-dc2l6ejrjlhs73d2oob0`, rama `efra`, carpeta `backend`. Variables de Supabase puestas por Ariel |
+| Base | Supabase `ugscqizansixnsuzljtu` (de Ariel) | Ni el backend ni nadie cambia tablas. La única migración de Prisma es la base (`0_base`), sin aplicar |
+| Panel | Edge Function `api` de Supabase | `/admin/*` va por `VITE_API_ADMIN_URL`; ya tiene el CORS de Netlify |
+| Avisos | Firebase `el-tradicional-panaderia` (del usuario) | Colección `avisos`, reglas en `firebase/firestore.rules` |
+| GitHub Pages | https://arielnoob24.github.io/Panaderia/ | Sigue en `fd0362f` (antes del proyecto final) |
 
-## Pendientes sueltos
-- `cart.js` del sitio actual mete el nombre de cada línea guardada con
-  `innerHTML` sin `escapar()`. Solo se explota tocando el propio navegador,
-  pero conviene arreglarlo. React no lo tiene.
-- Dos avisos menores de axe en los dos sitios (`aside` con `role="dialog"` y
-  la barra de deshacer fuera de una región).
-- En la fase 5: comprobar que el foco entra al abrir el panel de la cuenta
-  (le pasaba lo mismo a la canasta y ya se arregló).
-- La pantalla de confirmar pedido no tiene `h1` (se arregla en la fase 4).
-- En el plan, sección 13: contactos de ejemplo, alérgenos, unidad del precio,
-  SEO (`robots.txt`, `sitemap.xml`...).
-- Contenidos de IHC para el agente de UX: cuando pases los temas de la materia.
-- En el CI hay dos avisos de GitHub: subir `actions/checkout` y `setup-node`
-  a v5 (fase 6).
+## Lo primero la próxima vez
+1. `git fetch origin && git fetch upstream`, `git status`,
+   `git log --oneline efra..upstream/main` (tiene que salir vacío).
+2. Leer `PENDIENTES.md`: lo que queda está marcado **Pendiente**.
+3. Si el usuario dice "súbelo a la página": sección 7 de la skill `publicar`,
+   y después cambiar la rama de producción a `main` en **Netlify y en Render**
+   (`PENDIENTES.md` 2.4).
 
-## Para ver los cambios
-- Todo lo de la rama: https://github.com/arielnoob24/Panaderia/compare/main...mejoras
-- React en tu máquina: `cd react`, `npm install`, `npm run dev`, y abrir
-  http://localhost:5173
+## Lo que queda
+- **1.4 (Ariel)**: `prisma migrate diff` contra la base real con
+  `node --env-file=.env node_modules/prisma/build/index.js ...` (Prisma 7 no
+  lee `.env` solo).
+- **Limpiar el producto de prueba** del CRUD en vivo (queda retirado y se ve
+  como agotado en la tienda): el `DELETE` de SQL está en `PENDIENTES.md` 2.3.
+- **Subir a la página** cuando el usuario lo pida, y cambiar las ramas.
+- El día de la presentación: despertar Render abriendo `/api/salud` 2–3
+  minutos antes (el despertador del sitio ya lo hace para cualquier visita).
+
+## Cómo se trabaja (está en `.claude/CLAUDE.md`)
+Conversar → hacer y verificar (build, pruebas, CI local) → aprobación →
+cerrar (`.claude/plan.md`). Todo se commitea y se pushea a `efra` en `origin`
+sin preguntar; a `upstream` solo con "súbelo a la página".
+
+## Comprobaciones que hay que correr antes de subir
+```sh
+npm run build                                  # sin avisos
+npm run probar                                 # 43 pruebas de navegador
+cd backend && npm run probar                   # 24 pruebas de la API (PGlite)
+bash .claude/skills/publicar/ci-local.sh       # todo junto (~17 min)
+node .claude/herramientas/axe.mjs              # 46 estados, 0 fallos
+```
+
+## Cosas que conviene saber
+- En Git Bash, un argumento que empieza por `/` (como
+  `--health-check-path /api/salud`) se vuelve ruta de Windows: usar
+  `MSYS_NO_PATHCONV=1`.
+- El sello "Powered by Netlify" del plan gratis está apagado
+  (`built_with_badge_enabled: false`): tapaba la canasta en el teléfono.
+- En Netlify Free, las variables no pueden tener *scopes* (la API responde
+  Forbidden): se crean sin ellos.
+- `npm audit` está en 0 en `frontend/` y `backend/` (en el backend, gracias al
+  `overrides` de `effect`).

@@ -2,13 +2,12 @@
 
 > Material de referencia del proyecto, no texto para entregar en un informe.
 
-Estado al 24 de noviembre de 2026: el frontend está en Netlify
-(https://el-tradicional-panaderia.netlify.app) y sigue usando la Edge
-Function de Supabase. El backend Express + Prisma está en `backend/`, con sus
-pruebas en verde contra una copia local de la base, y creado en Render
-(https://el-tradicional-api.onrender.com), donde por ahora solo responde
-`/api/salud`. Lo que falta necesita credenciales o la cuenta de Supabase de
-Ariel, o viene después de eso.
+**Estado: integración hecha.** Las tres capas están conectadas: el sitio en
+Netlify (https://el-tradicional-panaderia.netlify.app) le pide todo al
+backend Express en Render (https://el-tradicional-api.onrender.com), que lee
+y escribe en la base real de Supabase. La Edge Function sigue desplegada (con
+el CORS de Netlify) y la usa el panel de administración. Lo marcado ✅ ya está
+hecho y comprobado; lo que queda está marcado **Pendiente**.
 
 Los comandos son para Git Bash o PowerShell, desde la raíz del repo. Donde
 dice `<...>` va un valor que no está en el repo.
@@ -17,7 +16,10 @@ dice `<...>` va un valor que no está en el repo.
 
 ## Parte 1: lo que hace Ariel (su cuenta de Supabase)
 
-### 1.1 Desplegar la Edge Function con el CORS de Netlify
+### 1.1 ✅ Desplegar la Edge Function con el CORS de Netlify
+
+Hecho por Ariel. Comprobado: el `OPTIONS` de abajo responde
+`Access-Control-Allow-Origin: https://el-tradicional-panaderia.netlify.app`.
 
 El código ya permite `https://el-tradicional-panaderia.netlify.app` y sus
 vistas previas (`supabase/functions/api/index.ts`, líneas 10–28). Hasta que
@@ -40,7 +42,7 @@ curl -s -D - -o /dev/null -X OPTIONS \
   -H "Access-Control-Request-Method: GET" | grep -i access-control-allow-origin
 ```
 
-### 1.2 Sacar los datos de conexión (no van al repo ni por chat)
+### 1.2 ✅ Sacar los datos de conexión (no van al repo ni por chat)
 
 En el panel de Supabase del proyecto `ugscqizansixnsuzljtu`:
 
@@ -51,7 +53,11 @@ En el panel de Supabase del proyecto `ugscqizansixnsuzljtu`:
 | `SUPABASE_SERVICE_ROLE_KEY` | **Project Settings → API Keys** → la clave secreta (`sb_secret_...`) o, en *Legacy*, la `service_role` | Guardar la dirección y la forma de pago en la cuenta de Auth (`/api/cuenta`) |
 | `SUPABASE_JWT_SECRET` | **Project Settings → JWT Keys** | **Solo si** el proyecto todavía firma con el secreto HS256 (*Legacy JWT secret*). Si usa *JWT Signing Keys* (ECC o RSA), se deja vacía: el backend lee las claves públicas (JWKS) |
 
-### 1.3 Poner las variables en Render
+### 1.3 ✅ Poner las variables en Render
+
+Hecho. No hizo falta `sslmode` ni cambiar el host del pooler: con las
+cadenas tal como las da Supabase, `/api/salud`, `/api/categorias` y
+`/api/productos` responden 200 con los 30 productos de la base real.
 
 El servicio `el-tradicional-api` está en la cuenta de Render de Efraín. Con
 Efraín al lado, en https://dashboard.render.com → `el-tradicional-api` →
@@ -70,14 +76,16 @@ sin comprobar el certificado de Supabase). Lo correcto a largo plazo es
 bajar el certificado de Supabase (*Database Settings → SSL Configuration*) y
 pasarlo como archivo secreto, pero para la presentación basta lo primero.
 
-### 1.4 Comprobar que el esquema de Prisma coincide con la base real
+### 1.4 Pendiente: comprobar que el esquema de Prisma coincide con la base real
 
-En su máquina, sin escribir nada en la base:
+En su máquina, sin escribir nada en la base. Prisma 7 **no lee `.env`
+solo**: el archivo se le pasa a Node con `--env-file`. `backend/.env` (con
+`DIRECT_URL`, la de 1.2) no va al repo.
 
 ```sh
 cd backend
 npm ci
-DIRECT_URL="<la de 1.2>" npx prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script
+node --env-file=.env node_modules/prisma/build/index.js migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script
 ```
 
 - Si sale `-- This is an empty migration.`, `prisma/schema.prisma` es fiel a
@@ -85,7 +93,7 @@ DIRECT_URL="<la de 1.2>" npx prisma migrate diff --from-config-datasource --to-s
 - Si sale SQL, son las diferencias entre `bd/BD_EL_TRADICIONAL.sql` y la base
   real (algo de `supabase/migrations/` que no pasó a `bd/`, o al revés). Para
   ver el esquema real sin tocar el del repo:
-  `DIRECT_URL="<...>" npx prisma db pull --print > esquema-real.prisma` y
+  `node --env-file=.env node_modules/prisma/build/index.js db pull --print > esquema-real.prisma` y
   compararlo. Luego se decide si se arregla `bd/` o el esquema.
 
 **No correr** `prisma migrate dev`, `migrate deploy` ni `migrate reset`
@@ -94,7 +102,9 @@ contra Supabase: cambiarían tablas. Marcar la migración base como aplicada
 `_prisma_migrations`: solo si Ariel lo aprueba, y no hace falta para que la
 API funcione.
 
-### 1.5 (Opcional) Un usuario administrador para probar el CRUD
+### 1.5 ✅ Un usuario administrador para probar el CRUD
+
+Hecho: `efrainbrito00@gmail.com` es administradora.
 
 El CRUD de `/api/productos` pide el permiso `productos.gestionar` (rol
 Administrador). Si Ariel quiere que una cuenta lo tenga, en el editor SQL de
@@ -110,7 +120,7 @@ UPDATE usuarios
 
 ## Parte 2: lo que hace Efraín después
 
-### 2.1 Comprobar el backend en Render
+### 2.1 ✅ Comprobar el backend en Render
 
 ```sh
 curl -s https://el-tradicional-api.onrender.com/api/salud
@@ -122,7 +132,12 @@ curl -s https://el-tradicional-api.onrender.com/api/categorias
 da 500, el log de Render tiene el error con el mismo `correlacion` que la
 respuesta.
 
-### 2.2 Pasar el frontend a Express
+### 2.2 ✅ Pasar el frontend a Express
+
+Hecho: `VITE_API_URL=https://el-tradicional-api.onrender.com/api` en Netlify y
+build nuevo de `efra@9eb88eb`. Comprobado en Chrome: la tienda pide
+`GET /api/salud` (el despertador) y `GET /api/productos` a Render (200, con
+`X-Correlation-ID`), pinta 30 fichas y no usa el respaldo.
 
 Netlify (o en la web: *Site configuration → Environment variables*):
 
@@ -137,7 +152,33 @@ Para que GitHub Pages también use Express, se cambia el valor por defecto de
 `VITE_API_URL` en `frontend/vite.config.js` (tabla `PUBLICAS`) y se sube con
 "súbelo a la página".
 
-### 2.3 Probar de punta a punta en Netlify
+### 2.3 ✅ Probar de punta a punta en Netlify
+
+Hecho en el sitio publicado, con Chrome y la base real:
+
+| Paso | Resultado |
+|---|---|
+| Tienda | `GET /api/salud` y `GET /api/productos` a Render (200), 30 fichas, sin respaldo |
+| Crear cuenta `efrainbrito00+prueba@gmail.com` | `GET /cuenta` 404 → `POST /cuenta` **201** → `GET /cuenta` 200 |
+| Pedido (retiro, efectivo) | `POST /pedidos` **201**, comprobante **ET-46D9** con el número de la base |
+| Mis pedidos | `GET /pedidos` trae ET-46D9; "Tu resumen" (SQLite): 1 pedido, $0.50 |
+| CRUD con la cuenta administradora | `POST` 201 (**PRO031**), `GET` 200, `PUT` 200, `PATCH` 200, `DELETE` 200 (queda retirado); sin token 401; IVA "9" 400; `PRO999` 404 |
+
+El 403 (cuenta de cliente que intenta escribir) lo cubren las pruebas del
+backend; en vivo no se repitió para no pedir otra contraseña.
+
+**Pendiente (Ariel): borrar el producto de prueba.** PRO031 ("Producto de
+prueba (borrar) v2") quedó retirado y se ve como agotado en la tienda. En el
+editor SQL de Supabase (sus tamaños se borran solos, `ON DELETE CASCADE`):
+
+```sql
+DELETE FROM productos WHERE pro_codigo = 'PRO031';
+```
+
+La cuenta `efrainbrito00+prueba@gmail.com` y el pedido ET-46D9 son de prueba;
+pueden quedarse o borrarse cuando se quiera.
+
+Para repetir la prueba a mano:
 
 En https://el-tradicional-panaderia.netlify.app, con las herramientas del
 navegador abiertas (pestaña Red):
