@@ -174,18 +174,18 @@ jobs:
           npm run probar
 
   # Se publica frontend/dist/, lo que arma Vite, y nada mas: ni src/ ni
-  # node_modules ni backend/ llegan a Pages.
-  deploy:
+  # node_modules ni backend/ llegan a Pages. Va en dos jobs, como la
+  # plantilla de GitHub: "empaquetar" construye y sube el paquete, y "deploy"
+  # lo publica despues. Con los dos pasos en el mismo job, deploy-pages a
+  # veces busca el paquete antes de que GitHub lo registre y falla con "No
+  # artifacts named github-pages" (actions/deploy-pages#451).
+  empaquetar:
     needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     defaults:
       run:
         working-directory: frontend
@@ -217,6 +217,18 @@ jobs:
         with:
           path: frontend/dist
 
+  deploy:
+    needs: empaquetar
+    runs-on: ubuntu-latest
+    # actions: read para que deploy-pages pueda listar los paquetes del run.
+    permissions:
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
       - name: Publicar en GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5.0.1
