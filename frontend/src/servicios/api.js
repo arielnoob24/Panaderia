@@ -6,7 +6,9 @@
 // protege la base es que las tablas no dejan entrar a nadie mas que a la API.
 import { tokenActual } from './supabase.js';
 
-const API = 'https://ugscqizansixnsuzljtu.supabase.co/functions/v1/api';
+// La direccion sale de VITE_API_URL (vite.config.js): hoy la Edge Function
+// de Supabase; cuando el backend Express este en Render, la suya.
+const API = import.meta.env.VITE_API_URL.replace(/\/$/, '');
 
 // Si la API no contesta a tiempo se deja de esperar: la pagina no se puede
 // quedar en blanco porque el servidor tarde.

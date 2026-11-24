@@ -9,8 +9,9 @@
 // renueva sola.
 import { createClient } from '@supabase/supabase-js';
 
-const URL_PROYECTO = 'https://ugscqizansixnsuzljtu.supabase.co';
-const CLAVE_PUBLICA = 'sb_publishable_T4ayAx_e96H98bv_dlnCrg_AncGFwos';
+// Las dos salen de las variables VITE_ (vite.config.js y .env.example).
+const URL_PROYECTO = import.meta.env.VITE_SUPABASE_URL;
+const CLAVE_PUBLICA = import.meta.env.VITE_SUPABASE_CLAVE_PUBLICA;
 
 const supabase = createClient(URL_PROYECTO, CLAVE_PUBLICA, {
   auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },

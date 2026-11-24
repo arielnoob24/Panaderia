@@ -2,3 +2,9 @@
 # van al repo. Lo que se publica es dist/, que arma el CI.
 node_modules/
 dist/
+
+# Las variables de cada maquina (frontend/ y backend/) no van al repo: lo que
+# hace falta saber esta en cada .env.example.
+.env
+.env.*
+!.env.example

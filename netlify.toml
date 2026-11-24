@@ -1,0 +1,14 @@
+# ---- El sitio en Netlify -------------------------------------------------
+# Netlify construye el frontend (frontend/) igual que el CI de Pages y
+# publica lo que arma Vite. Las variables VITE_... se ponen en Netlify
+# (Site configuration -> Environment variables); si faltan, valen las de
+# frontend/vite.config.js. Ver frontend/.env.example.
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  # Relativo a base: frontend/dist.
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"

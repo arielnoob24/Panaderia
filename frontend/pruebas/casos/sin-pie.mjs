@@ -1,6 +1,8 @@
 // El sitio sin pie de pagina (seccion 4 del plan), en escritorio y en el
 // telefono (390 px, tactil):
-// - ninguna vista lleva <footer>;
+// - ninguna vista lleva el pie general del sitio: un <footer> fuera de
+//   article/aside/nav/section (el contentinfo) o .site-footer. El <footer>
+//   de un componente, como el del panel de la canasta, si vale;
 // - "Tu pedido se guardo..." sale en la canasta, bajo "Ir a pagar", solo si
 //   hay algo en ella;
 // - al llegar al final de una vista (tambien las de la cuenta: entrar,
@@ -9,7 +11,7 @@
 import { VENTANAS, ANA, espera, esperaQue } from '../arranque.mjs';
 import { codigoDe } from '../supabaseFalso.mjs';
 
-export const descripcion = 'sin pie: ninguna vista con <footer>, el guardado en la canasta bajo Ir a pagar, y el final de cada vista libre de la canasta flotante';
+export const descripcion = 'sin pie: ninguna vista con el pie general (<footer> fuera de un componente), el guardado en la canasta bajo Ir a pagar, y el final de cada vista libre de la canasta flotante';
 export const limite = 120;
 
 const VISTAS = ['#/', '#/nosotros', '#/tienda-catalogo', '#/contacto', '#/cuenta/entrar', '#/cuenta/crear', '#/cuenta/recuperar'];
@@ -59,11 +61,13 @@ export default async function sinPie(t) {
         texto: nota.textContent.trim(),
         debajo: nota.getBoundingClientRect().top >= boton.getBoundingClientRect().bottom,
         enPanel: Boolean(nota.closest('.canasta-panel .canasta-pie')),
+        // El pie del panel es un <footer> de verdad, dentro del <section> del panel.
+        footer: Boolean(nota.closest('.canasta-panel section footer.canasta-pie')),
         dentro: nota.getBoundingClientRect().bottom <= window.innerHeight,
       };
     });
     t.ok(/^Tu pedido se guardó .+ en este navegador\.$/.test(g.texto), `[${nombre}] la canasta no dice cuando se guardo el pedido ("${g.texto}")`);
-    t.ok(g.debajo && g.enPanel && g.dentro, `[${nombre}] "Tu pedido se guardo" no va en el pie de la canasta, bajo "Ir a pagar" y a la vista (${JSON.stringify(g)})`);
+    t.ok(g.debajo && g.enPanel && g.footer && g.dentro, `[${nombre}] "Tu pedido se guardo" no va en el pie de la canasta, bajo "Ir a pagar" y a la vista (${JSON.stringify(g)})`);
 
     // Verificar el correo ("Cambiar el correo" es lo ultimo) y Mis datos, con
     // la canasta flotante a la vista porque hay algo en ella.
@@ -102,7 +106,7 @@ async function mirarFinal(t, p, nombre, donde, sel) {
     const f = flotante && getComputedStyle(flotante).position === 'fixed' && flotante.getClientRects().length ? flotante.getBoundingClientRect() : null;
     const pisa = f ? Math.max(0, Math.min(r.right, f.right) - Math.max(r.left, f.left)) * Math.max(0, Math.min(r.bottom, f.bottom) - Math.max(r.top, f.top)) : 0;
     return {
-      pies: document.querySelectorAll('footer, .site-footer').length,
+      pies: [...document.querySelectorAll('footer')].filter((f) => !f.parentElement.closest('article, aside, nav, section')).length + document.querySelectorAll('.site-footer').length,
       aire: Math.round(window.innerHeight - r.bottom),
       pisa,
     };

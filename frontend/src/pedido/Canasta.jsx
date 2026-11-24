@@ -262,7 +262,9 @@ function Canasta() {
                 <button ref={vaciarRef} className="canasta-vaciar" type="button" onClick={alVaciar}>Vaciar la canasta</button>
               </div>
             </div>
-            <div className="canasta-pie">
+            {/* <footer> del panel (es un <section>), no de la pagina: el
+                sitio no lleva pie general (seccion 4 del plan). */}
+            <footer className="canasta-pie">
               <div className="canasta-total">
                 <span>Subtotal <small className="canasta-total-cuenta">{hayAlgo ? `(${cuantos})` : ''}</small></span>
                 <strong>{dinero(subtotal)}</strong>
@@ -281,7 +283,7 @@ function Canasta() {
               </button>
               <p className="canasta-nota">Después eliges cómo lo recibes y cómo pagas.</p>
               <GuardadoCanasta />
-            </div>
+            </footer>
           </section>
         </div>
         <ConfirmarCanasta

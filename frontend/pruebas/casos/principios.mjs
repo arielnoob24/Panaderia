@@ -49,7 +49,7 @@ export default async function principios(t) {
       contactos: escribir.querySelectorAll('.contacto-lista a').length,
       estado: Boolean(document.querySelector('.contacto-horario .open-label')),
       menu: Boolean(document.querySelector('#main-nav a[href$="contacto.html"]')),
-      pie: document.querySelectorAll('footer, .site-footer').length,
+      pie: [...document.querySelectorAll('footer')].filter((f) => !f.parentElement.closest('article, aside, nav, section')).length + document.querySelectorAll('.site-footer').length,
     };
   });
   t.ok(c.contactos >= 1 && c.estado, `#/contacto no trae los contactos (${c.contactos}) o el estado`);

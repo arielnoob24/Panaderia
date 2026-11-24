@@ -15,6 +15,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useVista } from '../comun/useVista.js';
 import { useHorario } from '../comun/useHorario.js';
 import EstadoAbierto from '../comun/EstadoAbierto.jsx';
+import AvisosDelLocal from '../comun/AvisosDelLocal.jsx';
 import Contactos from '../comun/Contactos.jsx';
 import Sello from '../comun/Sello.jsx';
 import { IconoPin, IconoTrigo } from '../comun/iconos.jsx';
@@ -115,6 +116,7 @@ function Contacto() {
               })}
             </dl>
             <p className="contacto-horario-nota">En feriados nacionales cerramos.</p>
+            <AvisosDelLocal />
           </div>
           {/* Va despues del horario: lo primero que se busca es donde y si
               esta abierto; escribir viene luego. */}

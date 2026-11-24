@@ -186,7 +186,11 @@ código; `comun/paginas.js` las traduce al archivo:
   que llevaba se reparte: la nota de que el teléfono y las redes son de
   ejemplo va en `#/contacto`, junto a los contactos; "Tu pedido se guardó…"
   va en el pie del panel de la canasta, bajo "Ir a pagar"
-  (`pedido/GuardadoCanasta.jsx`); abierto/cerrado ya lo dice la
+  (`pedido/GuardadoCanasta.jsx`). Ese pie es un `<footer>` del panel
+  (dentro de su `<section>`, no de la página: desde el 24 de noviembre de
+  2026, por el temario de HTML5); lo prohibido es el **pie general** del
+  sitio, un `<footer>` fuera de `article`/`aside`/`nav`/`section` o
+  `.site-footer` (`sin-pie`, `aspecto`, `principios`). Abierto/cerrado ya lo dice la
   cabecera de periódico de la portada y Contacto. La ayuda constante (WCAG
   3.2.6) es "Contáctanos" en el menú, en el mismo sitio en todas las vistas.
   Nosotros, Contacto, la tienda y la cuenta ya no llevan franja de espigas
@@ -1666,3 +1670,14 @@ Pendiente de la fase 7:
 - **Mis datos sin scroll y Forma de pago aparte**: Mis datos (`#/cuenta`) va en una sola columna, con los botones apilados, y en escritorio cabe sin bajar (medido en 1366×768 y 1440×900; se quitó la nota del servidor para ganar altura). Se probó en dos columnas y no gustó. La forma de pago preferida salió de ahí y es la vista `#/cuenta/pago` (`pago.html`, `cuenta/MiFormaDePago.jsx`, opción "Forma de pago" en la ficha de la cuenta y botón en Mis datos); guarda con `sesion.editar` reenviando los demás datos. Prueba `forma-de-pago` adaptada.
 - "Nuestros panes" (portada) y "Ver en el mapa" (Contacto) llevan el filete punteado interior de "Conoce nuestro local": un `<i className="filete-punteado">` dentro del botón (`vistas.css`), que respeta la mordida de la esquina.
 - **Vistas de «Tu cuenta» sin cabecera**: Mis datos, Mis pedidos, Mis favoritos, Mi canasta predeterminada y Forma de pago (`SIN_CABECERA` en `comun/dondeVenia.js`) se ven sin la cabecera; arriba llevan «‹ Volver» (`.cuenta-volver-sitio`, en `MarcoCuenta.jsx`), que lleva a la última dirección que no era de la cuenta (o a `#/`). Entrar, Crear, Verificar y Recuperar conservan la cabecera. Pruebas `ficha-cuenta`, `panel` y `pedidos-por-cuenta` adaptadas (abren la ficha desde la portada).
+
+## Cambios del 24 de noviembre de 2026 (proyecto final, fases 2 y 3)
+
+- **Frontend y backend separados**: el sitio vive en `frontend/` y la API Express + Prisma en `backend/` (sección 3). Regla nueva de tres capas (sección 2).
+- **Variables `VITE_…`** (`frontend/vite.config.js`, `frontend/.env.example`): `VITE_API_URL`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_CLAVE_PUBLICA`, `VITE_FIREBASE_PROJECT_ID` y `VITE_FIREBASE_API_KEY`. Todas públicas. Si no se ponen, valen las de hoy (tabla `PUBLICAS` de `vite.config.js`), así que Pages y el CI no cambian. `VITE_API_URL` es el interruptor de la Edge Function al backend Express. El `preconnect` de los HTML usa `%VITE_SUPABASE_URL%`.
+- **Netlify** (`netlify.toml`, base `frontend`, `npm run build`, publica `dist`, Node 24): https://el-tradicional-panaderia.netlify.app, en la cuenta del usuario (plan Free), con las cinco variables puestas. El sello "Powered by Netlify" del plan gratis se apagó (`built_with_badge_enabled: false`): en el teléfono tapaba el botón de la canasta. Mientras el repo no esté conectado, se publica a mano: `npm run build` y `npx netlify-cli deploy --prod --no-build --dir frontend/dist --site 6958a261-3e56-4e9c-8a1b-26b1a32563b5`.
+- **CORS de la Edge Function** (`supabase/functions/api/index.ts`): además de Pages y localhost, `https://el-tradicional-panaderia.netlify.app` y sus vistas previas (`<rama>--el-tradicional-panaderia.netlify.app`). Hay que desplegarla (Ariel): hasta entonces, en Netlify el catálogo sale del respaldo y la cuenta no habla con la API.
+- **Tu resumen en Mis pedidos** (`cuenta/ResumenPedidos.jsx`): cuántos pedidos, cuánto en total, el promedio y lo que más se pide, con SQL (JOIN, GROUP BY) sobre **SQLite en el navegador** (`sql.js` 1.17.0, `servicios/sqlite.js`, se carga solo ahí; el `.wasm` va con huella). Descargas: **CSV** (`servicios/csv.js`, una fila por cosa pedida, RFC 4180, con BOM para Excel) y la base **`.sqlite`** (`db.export()`). Prueba `resumen-pedidos`.
+- **XML**: `npm run paginas` también escribe `public/sitemap.xml` (las 4 páginas públicas) y `public/robots.txt` (lo privado fuera; vale en Netlify, que sirve en la raíz). El CI comprueba que estén al día.
+- **Avisos del local desde Firestore** (NoSQL), bajo el horario de Contáctanos (`comun/AvisosDelLocal.jsx`, `servicios/firestore.js`): colección `avisos` `{ texto, activo, orden }` del proyecto de Firebase `el-tradicional-panaderia` (cuenta del usuario, plan Spark), leída por la API REST con `fetch` (sin el SDK: el SDK trae `@grpc/grpc-js`, que da 4 alertas altas de `npm audit`). Es un `<div role="note">` con su `h3`; si Firestore no contesta, no sale nada. Reglas en `firebase/firestore.rules`: solo se leen los activos y nadie escribe desde fuera (los avisos se cambian en la consola de Firebase). Se suben con `cd firebase && npx firebase-tools deploy --only firestore:rules`. Prueba `avisos-local`.
+- **Herramientas**: `axe.mjs` usa la Supabase de mentira de `frontend/pruebas/` (y un Firestore con un aviso) y mide los 46 estados; `capturas.mjs` abre cada vista como su HTML. La Supabase de mentira deja meter pedidos con `pedidosDe(correo).push(...)` aunque la cuenta no tenga ninguno.

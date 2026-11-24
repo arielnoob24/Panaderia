@@ -1,0 +1,18 @@
+rules_version = '2';
+
+// Reglas de Firestore del proyecto de El Tradicional.
+// La pagina solo lee la coleccion "avisos" y solo los avisos activos
+// (frontend/src/servicios/firestore.js pregunta por activo == true, y aqui
+// se exige lo mismo). Nadie escribe desde fuera: los avisos se cambian en la
+// consola de Firebase. Todo lo demas queda cerrado.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /avisos/{aviso} {
+      allow get, list: if resource.data.activo == true;
+      allow write: if false;
+    }
+    match /{documento=**} {
+      allow read, write: if false;
+    }
+  }
+}

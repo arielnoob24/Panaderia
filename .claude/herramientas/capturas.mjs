@@ -16,6 +16,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } 
 import { tmpdir } from 'node:os';
 import { extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { archivoDeRuta } from '../../frontend/src/comun/paginas.js';
 
 // El sitio vive en frontend/; REPO es la raiz, donde no se deja ninguna captura.
 const REPO = fileURLToPath(new URL('../..', import.meta.url)).replace(/[\\/]$/, '');
@@ -57,7 +58,7 @@ const TIPOS = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.svg': 'image/svg+xml',
-  '.webp': 'image/webp', '.woff2': 'font/woff2',
+  '.webp': 'image/webp', '.woff2': 'font/woff2', '.wasm': 'application/wasm',
 };
 const base = resolve(DIST);
 const servidor = createServer((req, res) => {
@@ -92,19 +93,21 @@ const foto = async (p, nombre, opciones = {}) => {
   await p.screenshot({ path: archivo, ...opciones });
   hechas.push(archivo);
 };
-// Como un enlace de la aplicacion (pushState + popstate).
-const llegar = (p, hash) => p.evaluate((h) => {
-  history.pushState({ usr: null, key: 'k' + Math.random().toString(36).slice(2, 8), idx: (history.state?.idx ?? 0) + 1 }, '', h);
-  window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
-}, hash);
+// Como un enlace de la aplicacion: cada pantalla es su pagina HTML
+// (src/comun/paginas.js), asi que se abre el archivo de esa ruta. Con
+// hasta: 'commit' vuelve en cuanto empieza a llegar la pagina nueva (para
+// los fotogramas de la entrada).
+const llegar = (p, hash, hasta = 'load') => p.goto(new URL(archivoDeRuta(hash.slice(1)), URL_SITIO).href, { waitUntil: hasta });
 
 const navegador = await playwright.chromium.launch({ channel: 'chrome' });
 try {
   for (const v of VENTANAS) {
     const ctx = await navegador.newContext(v);
-    await ctx.route('https://api.emailjs.com/**', (r) => r.abort());
+    // Sin internet, como npm run probar: el catalogo sale del respaldo
+    // (data/productos.json) y la foto es siempre la misma.
+    await ctx.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, (r) => r.abort());
     const p = await ctx.newPage();
-    await p.goto(URL_SITIO + '#/');
+    await p.goto(URL_SITIO);
     await p.waitForSelector('.product-card', { timeout: 10000 }).catch(() => {});
     for (const [nombre, hash] of VISTAS) {
       await llegar(p, hash);
@@ -130,18 +133,18 @@ try {
       await espera(600);
       await foto(p, '1440-ficha-hover', { clip: await ficha.boundingBox().then((b) => ({ x: b.x - 20, y: b.y - 20, width: b.width + 40, height: b.height + 40 })) });
       // La canasta abierta con un producto.
-      const agregar = p.locator('.product-card button:has-text("+"), .product-card [aria-label*="Agregar"], .product-card [aria-label*="Sumar"]').first();
-      await agregar.click().catch(() => {});
+      await p.locator('.product-card .card-mas:visible').first().click();
       await espera(1000);
-      await p.locator('.site-header [aria-label*="anasta"], .site-header button:has-text("Canasta")').first().click().catch(() => {});
+      await p.click('.floating-whatsapp.is-canasta');
+      await p.waitForSelector('.canasta-panel.is-open');
       await espera(900);
       await foto(p, '1440-canasta-abierta');
       await p.keyboard.press('Escape');
       await espera(600);
-      // Fotogramas del cambio de vista: cada 70 ms desde que se pulsa.
+      // Fotogramas de la entrada de una vista: cada 70 ms desde que llega.
       await llegar(p, '#/');
       await espera(1200);
-      await llegar(p, '#/nosotros');
+      await llegar(p, '#/nosotros', 'commit');
       for (let i = 0; i < 8; i++) {
         await foto(p, `1440-transicion-${String(i * 70).padStart(3, '0')}ms`, { clip: { x: 0, y: 0, width: 1440, height: 600 } });
         await espera(70);

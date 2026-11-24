@@ -1,0 +1,15 @@
+User-agent: *
+Disallow: /entrar.html
+Disallow: /crear-cuenta.html
+Disallow: /verificar.html
+Disallow: /recuperar.html
+Disallow: /cuenta.html
+Disallow: /mis-pedidos.html
+Disallow: /favoritos.html
+Disallow: /canasta-fija.html
+Disallow: /pago.html
+Disallow: /confirmar.html
+Disallow: /comprobante.html
+Disallow: /admin.html
+
+Sitemap: https://arielnoob24.github.io/Panaderia/sitemap.xml

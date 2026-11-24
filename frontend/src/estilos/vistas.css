@@ -891,3 +891,11 @@ body.is-vista .catalog { padding-top: 108px; }
   .pide-cuenta-fija .pide-cuenta-hoja { width: min(26rem, calc(100% - 2rem)); border-radius: 22px; }
 }
 .canasta-guardar-fija { display: block; min-height: 44px; margin-left: auto; padding: .4rem .2rem; background: none; border: 0; color: var(--horno); cursor: pointer; font: 700 .8rem Arial, sans-serif; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+
+/* ---- Avisos del local, bajo el horario de Contactanos -------------------
+   Salen de Firestore (comun/AvisosDelLocal.jsx); sin avisos no hay nada.
+   Una nota con filete ambar: se ve que es de hoy y no del horario fijo. */
+.avisos-local { margin: clamp(.6rem, 1.6svh, 1rem) 0 0; padding: .7rem .9rem; border-left: 3px solid var(--ambar); border-radius: 0 var(--r-chip) var(--r-chip) 0; background: var(--papel); }
+.avisos-local-titulo { margin: 0 0 .3rem; color: var(--horno); font: 700 .72rem/1.4 Arial, sans-serif; letter-spacing: .08em; text-transform: uppercase; }
+.avisos-local-lista { margin: 0; padding: 0; list-style: none; color: var(--horno); font: .95rem/1.45 Arial, sans-serif; }
+.avisos-local-lista li + li { margin-top: .25rem; }

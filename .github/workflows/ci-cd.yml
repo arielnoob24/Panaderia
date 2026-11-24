@@ -56,10 +56,12 @@ jobs:
           for pagina in *.html; do
             test -s "dist/$pagina" || { echo "Falta dist/$pagina en el build."; exit 1; }
           done
-          # Las paginas se generan de index.html (scripts/paginas.mjs): si
-          # alguien toco index.html y no las regenero, quedan desfasadas.
+          # Las paginas se generan de index.html (scripts/paginas.mjs), y con
+          # ellas public/sitemap.xml y public/robots.txt: si alguien toco
+          # index.html o la lista de paginas y no las regenero, quedan desfasadas.
+          test -s dist/sitemap.xml && test -s dist/robots.txt
           npm run paginas
-          git diff --exit-code -- '*.html' || { echo 'Las paginas HTML no coinciden con index.html: corre npm run paginas.'; exit 1; }
+          git diff --exit-code -- '*.html' public/sitemap.xml public/robots.txt || { echo 'Las paginas, sitemap.xml o robots.txt no coinciden: corre npm run paginas.'; exit 1; }
 
       # El catalogo va dentro del build, y si un producto viene mal la portada
       # lo dice en vez de pintar la vitrina: el build sale bien igual. Aqui se

@@ -57,7 +57,7 @@ export default async function aspecto(t) {
       return {
         fichas: document.querySelectorAll('.vista-inicio .product-card').length,
         carrusel: document.querySelectorAll('.mostrador, .fila-flecha, .fila-barra, #mas-pedidos-titulo').length,
-        pie: document.querySelectorAll('footer').length,
+        pie: [...document.querySelectorAll('footer')].filter((f) => !f.parentElement.closest('article, aside, nav, section')).length + document.querySelectorAll('.site-footer').length,
         aire: final,
         altoDocumento: document.documentElement.scrollHeight,
         altoVentana: window.innerHeight,

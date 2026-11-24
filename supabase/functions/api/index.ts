@@ -7,15 +7,19 @@ const base = createClient(
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
 );
 
-// 2. Quien puede llamar a la API (CORS): la pagina publicada y la de tu
-//    computador en cualquier puerto (npm run dev, npm run preview, las pruebas).
+// 2. Quien puede llamar a la API (CORS): la pagina publicada (GitHub Pages y
+//    Netlify, con las vistas previas de rama de Netlify, como
+//    efra--el-tradicional-panaderia.netlify.app) y la de tu computador en
+//    cualquier puerto (npm run dev, npm run preview, las pruebas).
 const PUBLICADA = "https://arielnoob24.github.io";
+const NETLIFY = /^https:\/\/([a-z0-9-]+--)?el-tradicional-panaderia\.netlify\.app$/;
 const LOCAL = /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
 function cabeceras(req: Request) {
   const origen = req.headers.get("Origin") ?? "";
+  const permitido = origen === PUBLICADA || NETLIFY.test(origen) || LOCAL.test(origen);
   return {
-    "Access-Control-Allow-Origin": origen === PUBLICADA || LOCAL.test(origen) ? origen : PUBLICADA,
+    "Access-Control-Allow-Origin": permitido ? origen : PUBLICADA,
     "Vary": "Origin",
     "Access-Control-Allow-Headers": "authorization, content-type",
     "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",

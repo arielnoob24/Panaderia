@@ -30,6 +30,7 @@ import { pedirOtraVez } from '../pedido/pedirOtraVez.js';
 import MarcoCuenta from './MarcoCuenta.jsx';
 import { Desvio } from './Desvio.jsx';
 import { usePedidosGuardados } from './usePedidosGuardados.js';
+import ResumenPedidos from './ResumenPedidos.jsx';
 
 function MisPedidos() {
   // Se mira al llegar y no despues (vease Desvio.jsx).
@@ -149,6 +150,7 @@ function Historial() {
               Todavía no has hecho ningún pedido desde este navegador. Cuando pagues uno, aparecerá aquí.
             </p>
           ) : null}
+          {pedidos?.length ? <ResumenPedidos pedidos={pedidos} /> : null}
           <ul className="cuenta-historial">
             {(pedidos || []).map((p) => <li key={p.numero}><Pedido p={p} /></li>)}
           </ul>

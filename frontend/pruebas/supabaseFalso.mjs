@@ -251,11 +251,15 @@ async function pedidos(sv, route) {
   return typeof r === 'string' ? contestar(route, 400, { error: r }) : contestar(route, 201, r);
 }
 
-// Los pedidos que la base tiene de ese correo (para que un caso los mire).
+// Los pedidos que la base tiene de ese correo (para que un caso los mire, o
+// les meta uno con push: la lista queda puesta en la cuenta).
 const pedidosDe = (correo) => {
   const c = String(correo).toLowerCase();
   const sv = [...servidores].reverse().find((x) => x.cuentas.has(c));
-  return sv?.cuentas.get(c).pedidos || [];
+  if (!sv) return [];
+  const cuenta = sv.cuentas.get(c);
+  if (!cuenta.pedidos) cuenta.pedidos = [];
+  return cuenta.pedidos;
 };
 
 // ---- El panel (/functions/v1/api/admin/...) --------------------------------

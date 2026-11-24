@@ -22,6 +22,9 @@ import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'no
 import { extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { archivoDeRuta } from '../../frontend/src/comun/paginas.js';
+// La Supabase de mentira de las pruebas: con ella se crea y verifica la
+// cuenta, se piden los pedidos y se recupera la contrasena sin internet.
+import { instalar, codigoDe, pedidosDe } from '../../frontend/pruebas/supabaseFalso.mjs';
 
 // El sitio vive en frontend/, dos carpetas arriba de esta.
 const RAIZ = fileURLToPath(new URL('../../frontend', import.meta.url));
@@ -59,7 +62,7 @@ const TIPOS = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8',
   '.png': 'image/png', '.jpg': 'image/jpeg', '.ico': 'image/x-icon', '.svg': 'image/svg+xml',
-  '.webp': 'image/webp', '.woff2': 'font/woff2',
+  '.webp': 'image/webp', '.woff2': 'font/woff2', '.wasm': 'application/wasm',
 };
 async function servir(carpeta) {
   const base = resolve(carpeta);
@@ -109,15 +112,19 @@ async function medir(pagina, estado, error) {
 async function recorrer(navegador, url, nombreVentana, ventana) {
   const ctx = await navegador.newContext(ventana);
   ctx.setDefaultTimeout(8000);
-  // EmailJS: cortado (sale el recuadro con el codigo) hasta recuperar, que
-  // necesita que el correo salga; de lo enviado se saca el codigo.
-  let correoSale = false; let ultimo = null;
-  await ctx.route('https://api.emailjs.com/**', (r) => {
-    if (!correoSale) return r.abort();
-    const tp = JSON.parse(r.request().postData() || '{}').template_params || {};
-    ultimo = (String(tp.cuerpo || '').match(/\d{6}/) || [])[0];
-    return r.fulfill({ status: 200, body: 'OK' });
-  });
+  // Como en npm run probar: sin internet (lo que no es el sitio se corta), el
+  // comprobante "sale" por EmailJS y Auth y la API son la Supabase de mentira
+  // (Playwright mira primero la ruta registrada la ultima).
+  await ctx.route(/^https?:\/\/(?!127\.0\.0\.1[:/])/, (r) => r.abort());
+  await ctx.route('https://api.emailjs.com/**', (r) => r.fulfill({ status: 200, body: 'OK' }));
+  await instalar(ctx);
+  // Firestore contesta con un aviso, para medir Contactanos con los avisos
+  // del local puestos (src/comun/AvisosDelLocal.jsx).
+  await ctx.route('https://firestore.googleapis.com/v1/projects/*/databases/**', (r) => r.fulfill({
+    status: 200, contentType: 'application/json',
+    body: JSON.stringify([{ document: { name: 'projects/p/databases/(default)/documents/avisos/a', fields: { texto: { stringValue: 'Los pedidos a domicilio de hoy salen hasta las 19:30.' }, activo: { booleanValue: true }, orden: { integerValue: '1' } } } }]),
+  }));
+  const CORREO = 'ana@correo.com';
   const p = await ctx.newPage();
   // Como un enlace de la aplicacion: cada pantalla es su pagina HTML
   // (src/comun/paginas.js), asi que se abre el archivo de esa ruta.
@@ -159,14 +166,15 @@ async function recorrer(navegador, url, nombreVentana, ventana) {
     await paso('crear cuenta con errores', () => p.click('.cuenta-crear'));
     await paso('verificar, con el recuadro del codigo', async () => {
       await p.fill('#cuenta-nombre', 'Ana María Pérez');
-      await p.fill('#cuenta-correo', 'ana@correo.com');
+      await p.fill('#cuenta-correo', CORREO);
       await p.fill('#cuenta-telefono', '991234567');
       await p.fill('#cuenta-clave', 'Clave123');
       await p.fill('#cuenta-repite', 'Clave123');
       await p.click('.cuenta-crear');
-      await p.waitForSelector('.codigo-falso');
+      await p.waitForSelector('.codigo-casilla');
     });
-    const codigo = (await p.textContent('.codigo-valor', { timeout: 3000 }).catch(() => '')).trim();
+    // El codigo que "llego" al correo, de la Supabase de mentira.
+    const codigo = codigoDe(CORREO);
     await paso('verificar con un codigo malo', async () => {
       await p.click('.codigo-casilla >> nth=0');
       await p.keyboard.type(codigo === '111111' ? '222222' : '111111');
@@ -180,26 +188,22 @@ async function recorrer(navegador, url, nombreVentana, ventana) {
     await paso('mis datos con un error', async () => { await p.fill('#cuenta-editar-telefono', '12'); await p.locator('#cuenta-editar-telefono').blur(); });
     await paso('ficha de la cuenta abierta', async () => {
       await p.fill('#cuenta-editar-telefono', '991234567');
+      // Las vistas de la cuenta no llevan la cabecera: la ficha se abre desde la portada.
+      await llegar('#/');
       await p.click('.nav-cuenta');
       await p.waitForSelector('#cuenta-menu .cuenta-menu-opcion');
     });
     await paso('mis pedidos, con uno abierto', async () => {
       await p.keyboard.press('Escape');
-      await p.evaluate(() => new Promise((listo, mal) => {
-        const r = indexedDB.open('eltradicional');
-        r.onupgradeneeded = () => r.result.createObjectStore('pedidos', { keyPath: 'numero' });
-        r.onsuccess = () => {
-          const t = r.result.transaction('pedidos', 'readwrite');
-          t.objectStore('pedidos').put({ numero: 'ET-7KQ2', fecha: new Date().toISOString(), correo: 'ana@correo.com', total: 6.5, subtotal: 5, envio: 1.5, modo: 'domicilio', direccion: 'Calle 1 y Calle 2', metodo: 'Efectivo', lineas: [{ nombre: 'Pan de yuca', cantidad: 2, precio: 1.25 }, { nombre: 'Torta de chocolate', cantidad: 1, precio: 2.5 }] });
-          t.oncomplete = () => { r.result.close(); listo(); }; t.onerror = mal;
-        };
-        r.onerror = mal;
-      }));
+      // Mis pedidos los lee de la base: el pedido va en la Supabase de mentira.
+      pedidosDe(CORREO).push({ numero: 'ET-7KQ2', fecha: new Date().toISOString(), estado: 'Pagado', total: 6.5, subtotal: 5, envio: 1.5, modo: 'domicilio', direccion: 'Calle 1 y Calle 2', metodo: 'Efectivo al recibir', lineas: [{ nombre: 'Pan de yuca', cantidad: 2, precio: 1.25 }, { nombre: 'Torta de chocolate', cantidad: 1, precio: 2.5 }] });
       await llegar('#/cuenta/pedidos');
       await p.waitForSelector('details.cuenta-pedido');
       await p.click('.cuenta-pedido summary');
     });
     await paso('confirmar (retiro, efectivo)', async () => {
+      // Tampoco la canasta flotante: se vuelve a la tienda, con lo de antes en la canasta.
+      await llegar('#/tienda-catalogo');
       await p.click('.floating-whatsapp.is-canasta');
       await p.waitForSelector('.canasta-panel.is-open');
       await p.click('.canasta-enviar');
@@ -225,14 +229,13 @@ async function recorrer(navegador, url, nombreVentana, ventana) {
       await p.waitForSelector('#cuenta-recuperar-correo');
     });
     await paso('recuperar: el codigo', async () => {
-      correoSale = true;
-      await p.fill('#cuenta-recuperar-correo', 'ana@correo.com');
+      await p.fill('#cuenta-recuperar-correo', CORREO);
       await p.click('.cuenta-recuperar');
       await p.waitForSelector('.recuperar-paso-codigo .codigo-casilla');
     });
     await paso('recuperar: la contrasena nueva', async () => {
       await p.click('.codigo-casilla >> nth=0');
-      await p.keyboard.type(ultimo || '');
+      await p.keyboard.type(codigoDe(CORREO, 'recovery'));
       await p.waitForSelector('#cuenta-recuperar-clave');
     });
   } finally {

@@ -2,7 +2,7 @@
 // Cada pantalla es su propio archivo (src/comun/paginas.js); todas cargan el
 // mismo script y solo cambian el titulo, la descripcion y la direccion
 // canonica. Si cambia index.html, se vuelve a correr y se commitean los dos.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 const BASE = 'https://arielnoob24.github.io/Panaderia/';
@@ -47,3 +47,32 @@ for (const [archivo, [titulo, descripcion]] of Object.entries(PAGINAS)) {
 }
 console.log(`${Object.keys(PAGINAS).length} paginas escritas.`);
 console.log(Object.keys(PAGINAS).join('\n'));
+
+// ---- sitemap.xml y robots.txt (en public/, que Vite copia a dist/) -------
+// El mapa del sitio en XML (el formato de sitemaps.org) le dice a Google y a
+// los demas buscadores que paginas hay que leer: solo las publicas, sin la
+// cuenta, el pago ni el panel. robots.txt dice donde esta y que no se lea
+// lo privado. Sin <lastmod>: cambiaria en cada vuelta y el CI no podria
+// comprobar que el archivo esta al dia. Los buscadores solo leen robots.txt
+// en la raiz del dominio: vale en Netlify, que sirve el sitio en la raiz; en
+// Pages el sitio esta en /Panaderia/ y ahi solo cuenta el sitemap.
+const PUBLICAS = ['', 'tienda.html', 'nosotros.html', 'contacto.html'];
+const PRIVADAS = Object.keys(PAGINAS).filter((a) => !PUBLICAS.includes(a));
+const sitemap = [
+  '<?xml version="1.0" encoding="UTF-8"?>',
+  '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+  ...PUBLICAS.map((a) => `  <url><loc>${BASE}${a}</loc></url>`),
+  '</urlset>',
+  '',
+].join('\n');
+const robots = [
+  'User-agent: *',
+  ...PRIVADAS.map((a) => `Disallow: /${a}`),
+  '',
+  `Sitemap: ${BASE}sitemap.xml`,
+  '',
+].join('\n');
+mkdirSync(raiz('public'), { recursive: true });
+writeFileSync(raiz('public/sitemap.xml'), sitemap);
+writeFileSync(raiz('public/robots.txt'), robots);
+console.log(`public/sitemap.xml (${PUBLICAS.length} paginas) y public/robots.txt escritos.`);
