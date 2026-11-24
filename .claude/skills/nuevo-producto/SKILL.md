@@ -55,7 +55,7 @@ reglas de abajo no son de estilo: si no se cumplen, el sitio no publica.
 Si el usuario pasa una imagen, se prepara con:
 
 ```bash
-python .claude/skills/nuevo-producto/foto.py <imagen> assets/img/productos/<slug>
+python .claude/skills/nuevo-producto/foto.py <imagen> frontend/assets/img/productos/<slug>
 ```
 
 Recorta al centro a 4:3 y pone el fondo transparente en blanco. El `<slug>` va en

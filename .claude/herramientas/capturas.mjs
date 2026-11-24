@@ -5,7 +5,7 @@
 // escritorio, una ficha con el puntero encima, la canasta abierta y una
 // tira de fotogramas del cambio de vista para ver como se mueve.
 //
-// Uso, desde la raiz del repo y despues de npm run build:
+// Uso, desde la raiz del repo y despues de npm run build en frontend/:
 //   node .claude/herramientas/capturas.mjs [carpeta]
 // Sin carpeta, las deja en %TEMP%/panaderia-capturas (nunca en el repo).
 // Imprime la lista de archivos para leerlos despues.
@@ -15,10 +15,13 @@ import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { extname, join, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const RAIZ = process.cwd();
+// El sitio vive en frontend/; REPO es la raiz, donde no se deja ninguna captura.
+const REPO = fileURLToPath(new URL('../..', import.meta.url)).replace(/[\\/]$/, '');
+const RAIZ = join(REPO, 'frontend');
 if (!existsSync(join(RAIZ, 'index.html')) || !existsSync(join(RAIZ, 'package.json'))) {
-  console.error('Correlo desde la raiz del repo de la panaderia.');
+  console.error(`No encuentro el sitio en ${RAIZ}.`);
   process.exit(1);
 }
 
@@ -42,7 +45,7 @@ if (!existsSync(join(DIST, 'index.html'))) {
   process.exit(1);
 }
 const SALIDA = resolve(process.argv[2] || join(tmpdir(), 'panaderia-capturas'));
-if (SALIDA === RAIZ || SALIDA.startsWith(RAIZ + sep)) {
+if (SALIDA === REPO || SALIDA.startsWith(REPO + sep)) {
   console.error('Las capturas no van dentro del repo.');
   process.exit(1);
 }

@@ -9,7 +9,7 @@
 // con tarjeta y factura, con errores), el comprobante y los tres pasos de
 // recuperar.
 //
-// Uso, desde la raiz del repo y despues de npm run build:
+// Uso, desde la raiz del repo y despues de npm run build en frontend/:
 //   node .claude/herramientas/axe.mjs            -> resumen legible
 //   node .claude/herramientas/axe.mjs --json     -> todo, para procesarlo
 //
@@ -20,11 +20,13 @@ import { createRequire } from 'node:module';
 import { execSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve, sep } from 'node:path';
-import { archivoDeRuta } from '../../src/comun/paginas.js';
+import { fileURLToPath } from 'node:url';
+import { archivoDeRuta } from '../../frontend/src/comun/paginas.js';
 
-const RAIZ = process.cwd();
+// El sitio vive en frontend/, dos carpetas arriba de esta.
+const RAIZ = fileURLToPath(new URL('../../frontend', import.meta.url));
 if (!existsSync(join(RAIZ, 'index.html')) || !existsSync(join(RAIZ, 'package.json'))) {
-  console.error('Correlo desde la raiz del repo de la panaderia.');
+  console.error(`No encuentro el sitio en ${RAIZ}.`);
   process.exit(1);
 }
 

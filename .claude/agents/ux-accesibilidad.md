@@ -7,6 +7,8 @@ skills:
   - nielsen-usability-heuristics
 ---
 
+> **Rutas (desde el 24 de noviembre de 2026):** el sitio vive en `frontend/` y la API Express en `backend/`. Las rutas de este archivo como `src/`, `assets/`, `data/`, `pruebas/`, `scripts/`, `index.html`, `vite.config.js` y `package.json` son dentro de `frontend/`; `bd/`, `supabase/`, `.github/` y `.claude/` siguen en la raiz. Los `npm run` funcionan desde la raiz o desde `frontend/`.
+
 Eres el especialista en UX y accesibilidad del sitio de la panaderia El
 Tradicional (una SPA de React construida con Vite y servida por GitHub Pages:
 `index.html`, `src/`, `assets/css/styles.css` y el catalogo en

@@ -13,6 +13,11 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    # El sitio vive en frontend/ (el backend, en backend/): cada "run" de
+    # este job corre ahi dentro.
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - name: Descargar codigo
         uses: actions/checkout@v7.0.1
@@ -24,7 +29,7 @@ jobs:
         with:
           node-version: '24.15.0'
           cache: npm
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Instalar
         shell: bash
@@ -138,8 +143,8 @@ jobs:
         timeout-minutes: 5
         run: npm run probar -- humo
 
-  # Se publica dist/, lo que arma Vite, y no la raiz: ni src/ ni node_modules
-  # llegan a Pages.
+  # Se publica frontend/dist/, lo que arma Vite, y nada mas: ni src/ ni
+  # node_modules ni backend/ llegan a Pages.
   deploy:
     needs: validate
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -151,6 +156,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - name: Descargar codigo
         uses: actions/checkout@v7.0.1
@@ -160,7 +168,7 @@ jobs:
         with:
           node-version: '24.15.0'
           cache: npm
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Construir
         shell: bash
@@ -177,7 +185,7 @@ jobs:
       - name: Empaquetar sitio
         uses: actions/upload-pages-artifact@v5.0.0
         with:
-          path: dist
+          path: frontend/dist
 
       - name: Publicar en GitHub Pages
         id: deployment

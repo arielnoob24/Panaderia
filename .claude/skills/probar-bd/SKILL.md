@@ -24,7 +24,7 @@ las comprueba con `probar.mjs`, que está junto a este archivo.
 
    ```bash
    cp "<repo>/.claude/skills/probar-bd/probar.mjs" "$S/"
-   cd "$S" && node probar.mjs "<repo>/bd/BD_EL_TRADICIONAL.sql" "<repo>/data/productos.json"
+   cd "$S" && node probar.mjs "<repo>/bd/BD_EL_TRADICIONAL.sql" "<repo>/frontend/data/productos.json"
    ```
 
    Se ejecuta solo el paso 2 del script (lo que va después de `\connect`):

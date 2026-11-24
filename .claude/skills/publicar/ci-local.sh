@@ -7,8 +7,9 @@
 #      fotos, categorias de la tienda, palabras prohibidas y
 #      espacios al final de linea);
 #   3. y, en vez de solo la prueba de humo del CI, todas las pruebas de
-#      navegador de pruebas/ (npm run probar), con Edge.
-# Si falta node_modules o el package-lock.json es mas nuevo, hace npm ci.
+#      navegador de frontend/pruebas/ (npm run probar), con Chrome.
+# Si falta frontend/node_modules o su package-lock.json es mas nuevo, hace
+# npm ci.
 # Uso, desde la raiz del repo y con lo cambiado ya commiteado:
 #   bash .claude/skills/publicar/ci-local.sh
 set -euo pipefail
@@ -30,6 +31,10 @@ construir=$(paso 'Construir')
 [ -n "$construir" ] || { echo 'No encontre el paso "Construir" en ci-cd.yml.'; exit 1; }
 validar=$(paso 'Validar catalogo, fotos y textos')
 [ -n "$validar" ] || { echo 'No encontre el paso "Validar catalogo, fotos y textos" en ci-cd.yml.'; exit 1; }
+
+# El sitio vive en frontend/, como dice "working-directory" en ci-cd.yml:
+# los pasos se corren ahi dentro.
+cd frontend
 
 echo '== Instalar si hace falta'
 if [ ! -f node_modules/.package-lock.json ] || [ package-lock.json -nt node_modules/.package-lock.json ]; then

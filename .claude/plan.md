@@ -9,7 +9,7 @@
 > `.claude/CLAUDE.md`. Las secciones 1 a 14 describen el sitio **como está
 > hoy** (React); la 15 es la historia corta de cómo se llegó aquí.
 
-Última actualización: 27 de octubre de 2026.
+Última actualización: 24 de noviembre de 2026.
 
 ---
 
@@ -32,7 +32,7 @@ una **página HTML real** (sección 4).
 
 | Regla | Por qué |
 |---|---|
-| Sitio **estático**: GitHub Pages sirve lo que construye Vite (`dist/`); sin servidor propio | GitHub Pages solo sirve archivos |
+| **Tres capas desplegadas** (desde el 24 de noviembre de 2026): el sitio (`frontend/`) es estático y lo sirven GitHub Pages y Netlify (lo que construye Vite, `frontend/dist/`); la API es un **backend Express + Prisma propio** (`backend/`) en Render, sobre la base de Supabase que ya existe; los datos, en esa base. Hasta que Ariel configure `DATABASE_URL`, el sitio sigue hablando con la Edge Function, y el paso a Express es solo una variable `VITE_…` | Antes la regla era "sin servidor propio", porque GitHub Pages solo sirve archivos. Se cambió porque el temario del proyecto final de Desarrollo en Plataformas exige un backend Node.js + Express modular con middlewares (sección 5) y un ORM con modelos, migraciones y relaciones (sección 8), y eso no cabe en una Edge Function |
 | **Solo servicios gratis**, nada que pida tarjeta (ni SMS, ni WhatsApp Business, ni Firebase Blaze) | Proyecto de clase sin presupuesto |
 | Dependencias **con versión exacta** (sin `^`), solo las que diga este plan | Que un `npm ci` de hoy y uno de dentro de un mes construyan lo mismo |
 | Se abre **por HTTP** (Pages, `npm run dev`, `npm run preview`); con doble clic no | Decidido al elegir React: un sitio publicado se abre por HTTP |
@@ -44,7 +44,14 @@ una **página HTML real** (sección 4).
 
 ## 3. Cómo está repartido
 
+Desde el 24 de noviembre de 2026 el repo tiene dos partes: **`frontend/`** (el
+sitio, todo lo de abajo hasta `pruebas/`) y **`backend/`** (la API Express +
+Prisma). En la raíz quedan `bd/`, `supabase/`, `.github/`, `.claude/` y un
+`package.json` sin dependencias, que pasa `npm run dev|build|preview|probar|paginas`
+a `frontend/` (y `npm run instalar` hace su `npm ci`).
+
 ```
+frontend/
 index.html              la pagina: <div id="raiz">, metadatos, JSON-LD y el <noscript>
 package.json            versiones exactas; scripts dev, build, preview y probar
 vite.config.js          base './' y el plugin que copia hero-1200.jpg sin huella (og:image)
@@ -74,6 +81,7 @@ pruebas/
   probar.mjs            corre los casos en Chrome (o Edge) contra dist/
   arranque.mjs          servidor, navegador y ayudas comunes
   casos/                un caso por archivo
+backend/                la API Express + Prisma (Fase 4 del proyecto final)
 bd/
   BD_EL_TRADICIONAL.sql la base de datos en PostgreSQL (seccion 8)
 .github/workflows/      el CI: valida, prueba y publica dist/
@@ -513,7 +521,7 @@ POST y PUT `/cuenta` escriben con `FN_USUARIOS_GUARDAR`, que fija
   en `USUARIOS`: van en el `user_metadata` de Auth.
 - **CORS**: solo la página publicada (`https://arielnoob24.github.io`) y
   `localhost`/`127.0.0.1` en cualquier puerto.
-- Se sube con `npx supabase functions deploy api --use-api` (sin Docker).
+- Se sube con `npx supabase functions deploy api --use-api` (sin Docker), desde `frontend/`, que tiene el CLI; el CLI encuentra `supabase/` en la carpeta de arriba.
 - En la página, `src/servicios/api.js` es la única pieza que sabe la
   dirección (`pedirApi`, deja de esperar a los **4 s**).
   `servicios/catalogo.js` la pide en cuanto se importa y `main.jsx` pinta
@@ -1158,11 +1166,12 @@ pequeñas desde el 25 de octubre, sección 4).
    publicar sitio` salga en verde (`validate` y `deploy`, que publica en
    Pages).
 
-El CI (`validate`, en cualquier rama): `npm ci`, build sin avisos, `revisar()`
-de cada producto, categorías ↔ `CATEGORIAS`, fotos en los dos anchos y de la
-portada, palabras prohibidas en `index.html`, `src/`,
-`assets/css/` y `data/productos.json`, espacios al final de línea, y la
-prueba `humo` en Chrome. `deploy` (solo `main`) construye y publica `dist/`.
+El CI (`validate`, en cualquier rama, con `working-directory: frontend`):
+`npm ci`, build sin avisos, `revisar()` de cada producto, categorías ↔
+`CATEGORIAS`, fotos en los dos anchos y de la portada, palabras prohibidas en
+los `.html`, `src/`, `assets/css/` y `data/productos.json`, espacios al final
+de línea, y la prueba `humo` en Chrome. `deploy` (solo `main`) construye y
+publica `frontend/dist/`.
 `.claude/herramientas/axe.mjs` mide 46 estados del sitio.
 
 ## 13. Pendiente

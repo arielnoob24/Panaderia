@@ -1,26 +1,13 @@
 {
-  "name": "el-tradicional",
+  "name": "el-tradicional-repo",
   "private": true,
-  "version": "0.1.0",
-  "type": "module",
+  "description": "Atajos desde la raiz: el sitio vive en frontend/ y la API en backend/, cada uno con sus dependencias.",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
-    "probar": "node pruebas/probar.mjs",
-    "paginas": "node scripts/paginas.mjs"
-  },
-  "dependencies": {
-    "@fontsource-variable/fraunces": "5.3.0",
-    "@supabase/supabase-js": "^2.118.0",
-    "motion": "13.5.1",
-    "react": "19.3.1",
-    "react-dom": "19.3.1",
-    "react-router-dom": "7.18.4"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-react": "6.1.2",
-    "supabase": "^2.122.0",
-    "vite": "8.3.4"
+    "instalar": "npm ci --prefix frontend",
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "preview": "npm run preview --prefix frontend",
+    "probar": "npm run probar --prefix frontend --",
+    "paginas": "npm run paginas --prefix frontend"
   }
 }

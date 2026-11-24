@@ -10,7 +10,17 @@ GitHub Pages. No hay servidor detras: todo corre en el navegador.
 
 ## Como esta repartido
 
+El repositorio tiene dos partes:
+
+- **`frontend/`**: el sitio en React (lo de abajo, hasta `pruebas/`).
+- **`backend/`**: la API REST en Express + Prisma, sobre la base de Supabase.
+
+En la raiz quedan la base (`bd/`, `supabase/`), el CI y un `package.json` sin
+dependencias que pasa los comandos a `frontend/`.
+
 ```
+package.json            atajos: npm run instalar|dev|build|preview|probar|paginas
+frontend/
 index.html              la pagina: metadatos, JSON-LD y el aviso sin JavaScript
 package.json            dependencias con version exacta y los scripts
 vite.config.js          la configuracion de Vite
@@ -34,7 +44,9 @@ assets/
 data/
   productos.json        el catalogo: nombre, precio, foto, categoria y tamanos
 pruebas/                pruebas de navegador (npm run probar)
+backend/                la API Express + Prisma
 bd/                     la base de datos en PostgreSQL
+supabase/               la Edge Function api y las migraciones de la base
 .github/workflows/      el CI: valida, prueba y publica
 .claude/                agentes, skills y plan.md (como debe funcionar todo)
 ```
@@ -63,16 +75,17 @@ aparte de la pagina, es el correo y el mapa de Google en Contacto.
 
 ## Para verlo en tu maquina
 
-Hace falta Node 24.
+Hace falta Node 24. Desde la raiz del repo (o dentro de `frontend/`, con
+`npm ci` en vez de `npm run instalar`):
 
 ```sh
-npm ci            # instala las dependencias exactas de package-lock.json
+npm run instalar  # npm ci en frontend/: las dependencias exactas de su package-lock.json
 npm run dev       # servidor de desarrollo, se recarga al guardar
-npm run build     # construye el sitio en dist/
-npm run preview   # sirve dist/ como lo serviria GitHub Pages
+npm run build     # construye el sitio en frontend/dist/
+npm run preview   # sirve frontend/dist/ como lo serviria GitHub Pages
 ```
 
-Con doble clic en `index.html` no funciona: es una aplicacion de React y se
+Con doble clic en `frontend/index.html` no funciona: es una aplicacion de React y se
 abre por HTTP.
 
 ## Pruebas
@@ -93,7 +106,9 @@ corre la prueba `humo` en Chrome. Solo en `main` publica `dist/` en Pages.
 
 ## Para tocar el catalogo
 
-Meter, quitar o cambiar un producto es editar `data/productos.json`. Cada
+Las rutas de esta seccion son dentro de `frontend/` (menos `bd/` y
+`supabase/`, que estan en la raiz). Meter, quitar o cambiar un producto es
+editar `data/productos.json`. Cada
 producto necesita `nombre`, `categoria`, `precio`, `foto` y `alt`;
 `disponible: false` lo marca como agotado, `etiqueta` le pone el sello de
 color, `tamanos` le da varias medidas con su precio y `destacado` se guarda

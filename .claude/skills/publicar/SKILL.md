@@ -22,7 +22,8 @@ se salta nunca.
 `gh` no esta instalado: el estado de los runs se lee de la API publica con
 `curl` (sin token, el repo es publico).
 
-Lo que se publica es `dist/`, lo que arma `npm run build`: el CI lo construye
+Lo que se publica es `frontend/dist/`, lo que arma `npm run build` (el sitio
+vive en `frontend/`; el `package.json` de la raiz pasa cada comando ahi): el CI lo construye
 y lo sube. No hay nada que regenerar a mano ni `?v=` que subir: Vite pone una
 huella en el nombre de cada archivo (`index-a1b2c3.js`), asi que cada cambio
 llega con un nombre nuevo y el navegador no sirve el viejo de su cache.
@@ -35,7 +36,7 @@ git status --short
 
 Solo entran los archivos del cambio. **No** commitear lo que no es tuyo ni del
 cambio: PDFs de la clase, `GUIA_PARA_EXPLICAR.md`, `auditoria*.md` u otros
-`.md` sueltos sin seguimiento. Ni `dist/` ni `node_modules/` (los ignora
+`.md` sueltos sin seguimiento. Ni `dist/` ni `node_modules/` (de `frontend/` o `backend/`) (los ignora
 `.gitignore`).
 
 ## 2. Revisar antes de commitear
@@ -67,14 +68,14 @@ bash .claude/skills/publicar/ci-local.sh
 Corre lo mismo que `.github/workflows/ci-cd.yml`, leido del propio archivo:
 el paso "Construir" (build sin avisos), el paso "Validar catalogo, fotos y
 textos" y, en vez de solo la prueba de humo del CI, **todas** las pruebas de
-navegador (`npm run probar`, con Edge). Si falta `node_modules` o el
-`package-lock.json` es mas nuevo, hace `npm ci`. Va despues del commit porque
+navegador (`npm run probar`, con Chrome), todo dentro de `frontend/`. Si falta
+`frontend/node_modules` o su `package-lock.json` es mas nuevo, hace `npm ci`. Va despues del commit porque
 `git diff --check` mira lo que queda sin commitear. Tarda unos 7 minutos. Lo
 que mas lo tumba:
 
 - **La palabra prohibida**: el CI rechaza `cafe`, `cafeteria`, `coctel` (con o
-  sin tilde) en `index.html`, `src/` (todo), `assets/css/` y
-  `data/productos.json`, **tambien dentro de comentarios y ejemplos**.
+  sin tilde) en los `.html`, `src/` (todo), `assets/css/` y
+  `data/productos.json` de `frontend/`, **tambien dentro de comentarios y ejemplos**.
 - Un aviso de `npm run build` (un import que no se resuelve, un trozo de mas de
   500 kB).
 - Un producto que no pasa `revisar()` (`src/servicios/reglasCatalogo.js`), una

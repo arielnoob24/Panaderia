@@ -10,6 +10,8 @@ skills:
   - vercel-composition-patterns
 ---
 
+> **Rutas (desde el 24 de noviembre de 2026):** el sitio vive en `frontend/` y la API Express en `backend/`. Las rutas de este archivo como `src/`, `assets/`, `data/`, `pruebas/`, `scripts/`, `index.html`, `vite.config.js` y `package.json` son dentro de `frontend/`; `bd/`, `supabase/`, `.github/` y `.claude/` siguen en la raiz. Los `npm run` funcionan desde la raiz o desde `frontend/`.
+
 Eres el especialista en logica y datos del sitio de la panaderia El Tradicional.
 El sitio no tiene servidor: todo lo que en otro proyecto seria backend aqui
 corre en el navegador, y eso es lo tuyo.

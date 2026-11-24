@@ -12,7 +12,8 @@ verde. Por eso se abre lo construido en un navegador de verdad.
 
 ## Como se corre
 
-En la raiz del repo:
+En la raiz del repo (el `package.json` de la raiz pasa cada comando a
+`frontend/`, donde vive el sitio) o dentro de `frontend/`:
 
 ```bash
 npm run build          # sin avisos: el CI falla si hay alguno
@@ -26,8 +27,8 @@ maquina, asi que no baja ningun Chromium.
 
 ## Que comprueba
 
-`npm run probar` sirve una copia de `dist/` en un puerto libre, abre Chrome y
-corre los casos de `pruebas/casos/` uno tras otro, con `humo` primero:
+`npm run probar` sirve una copia de `frontend/dist/` en un puerto libre, abre Chrome y
+corre los casos de `frontend/pruebas/casos/` uno tras otro, con `humo` primero:
 
 - `humo`: la portada arranca con su `h1` y la cinta de categorias, la tienda
   tiene una ficha por producto de `data/productos.json`, agregar deja una

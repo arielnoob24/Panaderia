@@ -12,7 +12,8 @@ Lo que cada parte debe hacer esta en las secciones 4 a 11 de
 ## Donde va cada cosa
 
 ```
-package.json, vite.config.js, index.html   en la raiz del repo
+Todo esto vive en frontend/ (el backend, en backend/):
+package.json, vite.config.js, index.html   en la raiz de frontend/
 src/
   main.jsx          monta <App /> dentro de HashRouter y los proveedores
   App.jsx           las rutas
@@ -80,7 +81,7 @@ pruebas/            las pruebas de navegador (npm run probar)
 
 ## Antes de dar algo por terminado
 
-1. En la raiz del repo: `npm run build` sin errores ni avisos.
+1. En la raiz del repo (pasa a frontend/) o en frontend/: `npm run build` sin errores ni avisos.
 2. `npm run probar` (todas las pruebas de navegador de `pruebas/`, en Edge;
    `npm run probar -- <nombre>` para una). Lo que el cambio trae y ninguna
    prueba mira se comprueba con un caso nuevo en `pruebas/casos/<nombre>.mjs`
