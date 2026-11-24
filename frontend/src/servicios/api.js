@@ -48,4 +48,14 @@ const pedirApi = async (ruta, { metodo = 'GET', cuerpo, sesion = false, espera =
   return datos;
 };
 
-export { API, pedirApi, FalloApi };
+// El despertador: Render gratis apaga la API tras 15 minutos sin trafico y
+// tarda cerca de un minuto en volver. Al abrir la pagina se le toca la puerta
+// (/salud) sin esperar respuesta: el catalogo de esa primera visita puede
+// salir del respaldo, pero cuando alguien crea su cuenta o paga, la API ya
+// esta despierta. Solo con la API en Render; la Edge Function no duerme.
+const despertarApi = () => {
+  if (!/\.onrender\.com\//.test(`${API}/`)) return;
+  window.fetch(`${API}/salud`, { signal: AbortSignal.timeout(90000) }).catch(() => {});
+};
+
+export { API, pedirApi, FalloApi, despertarApi };

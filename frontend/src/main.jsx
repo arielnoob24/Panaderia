@@ -29,6 +29,10 @@ import { cargarSesion } from './estado/SesionProvider.jsx';
 import { cederDesplazamiento } from './comun/apertura.js';
 import { precargarEnReposo } from './comun/cargaPorPartes.js';
 import { vigilarPuntero } from './comun/puntero.js';
+import { despertarApi } from './servicios/api.js';
+
+// Si la API esta en Render, se la despierta ya (servicios/api.js).
+despertarApi();
 
 // Los efectos de pasar por encima, solo con raton o lapiz (comun/puntero.js).
 vigilarPuntero();

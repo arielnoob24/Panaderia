@@ -11,7 +11,13 @@ const pedirAuth = async (ruta, opciones = {}) => {
   if (!config.supabaseUrl || !config.claveServicio) throw new Error('Falta SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY');
   const r = await fetch(`${config.supabaseUrl}/auth/v1/admin/users/${ruta}`, {
     ...opciones,
-    headers: { apikey: config.claveServicio, Authorization: `Bearer ${config.claveServicio}`, 'Content-Type': 'application/json' },
+    headers: {
+      apikey: config.claveServicio,
+      // La service_role de antes es un JWT y va tambien aqui; la secreta
+      // nueva (sb_secret_...) no es un JWT y va solo en apikey.
+      ...(config.claveServicio.startsWith('eyJ') ? { Authorization: `Bearer ${config.claveServicio}` } : {}),
+      'Content-Type': 'application/json',
+    },
     signal: AbortSignal.timeout(8000),
   });
   if (r.status === 404) throw new ErrorHttp(401, 'Inicia sesión otra vez.');
